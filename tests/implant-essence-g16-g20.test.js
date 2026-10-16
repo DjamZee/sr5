@@ -12,7 +12,7 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken, withoutPeak, resetEssencePeak
+  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken, registerWithoutPeak, resetEssencePeak
 } from "../modules/system/implant-register.js"
 import {
   mentorMagic
@@ -874,7 +874,7 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
       uuid, system: {
       }
     }, 1.5, register)).toBe(3)
-    const reset = withoutPeak(register, uuid)
+    const reset = registerWithoutPeak(register, uuid)
     expect(reset).toEqual({
       [uuid]: {
         underAdapsine: false
@@ -886,7 +886,7 @@ describe("Apollinaire's review: the marks of a removed implant, an accessory, an
       uuid, system: {
       }
     }, 1.5, reset)).toBe(1.5)
-    expect(withoutPeak(reset, uuid)).toBe(null)
+    expect(registerWithoutPeak(reset, uuid)).toBe(null)
     // Only the active GM: a player's call does nothing (no confirmation asked, nothing written)
     const users = globalThis.game.users
     globalThis.game.users = {

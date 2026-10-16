@@ -15,6 +15,15 @@ export const HOST_TYPE_PAGES = {
 const atLeastOne = value => Math.max(1, value)
 
 /**
+ * The attributes a host's type sets, which the sheet shows under a padlock instead of the drag handle (DjamZ, 17/10:
+ * nothing showed that the others swap by drag and drop). {attack: true, …}, empty for an untyped host.
+ */
+export function lockedHostAttributes(type) {
+  return Object.fromEntries(Object.keys(hostTypeLayout(type)?.fixed ?? {
+  }).map(key => [key, true]))
+}
+
+/**
  * The attribute array of a host type.
  * fixed: the attributes the type sets, with their offset from the rating;
  * free: the offsets dealt to the other attributes, in the default order of `freeKeys`;

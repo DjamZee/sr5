@@ -21,6 +21,8 @@ vi.mock('../modules/rolls/roll-message.js', () => ({
 vi.mock('../modules/rolls/roll-helpers/mark.js', () => ({
   SR5_MarkHelpers: {
     findMarkValue: async () => 1,
+    // An IC reads its marks with its host's (D2, SR5 p. 249)
+    iceMarkValue: () => 1,
   },
 }))
 vi.mock('../modules/rolls/roll-helpers/matrix.js', () => ({

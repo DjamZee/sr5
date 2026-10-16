@@ -17,6 +17,9 @@ import {
 import {
   contentWithRowDone, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM, gmIds
+} from "./card-helpers.js"
 
 export const DEFRAG_ECHO = /d[ée]frag/i
 
@@ -137,16 +140,6 @@ export function fadingIsPhysical(strength, resonance){
 /* -------------------------------------------- */
 /* Foundry                                      */
 /* -------------------------------------------- */
-
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
 
 async function rollPool(dicePool, limit, explose = false){
   if (dicePool <= 0) return {

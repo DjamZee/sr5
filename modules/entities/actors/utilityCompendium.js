@@ -11,6 +11,12 @@ import {
   isAlwaysActive
 } from "../items/always-active.js"
 import {
+  spriteGivenPowers
+} from "./sprite-types.js"
+import {
+  MEGAPACK_FULL_ID, activeMegapackId
+} from "../../system/megapack.js"
+import {
   insectRacePowers
 } from "../items/insect-races.js"
 
@@ -42,11 +48,15 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
-  // "auto" reads the Megapack first (megapack-sr5-foundry-vtt, every kind of item in one pack), then the
+  // "auto" reads the active Megapack first (full or Lite, every kind of item in one pack), then the
   // sr5-compendiums packs of the world language as a fallback (arbitrage de DjamZ, séance H, H18).
   // Items are recognized by their systemEffects (KEY_CATEGORIES), never by their name.
-  static MEGAPACK = {
-    module: "megapack-sr5-foundry-vtt", pack: "megapack-sr5-foundry-vtt.sr5-megapack-items"
+  // With no Megapack active, the full one is named (the missing compendium warning asks for it).
+  static get MEGAPACK() {
+    const module = activeMegapackId() ?? MEGAPACK_FULL_ID
+    return {
+      module, pack: `${module}.sr5-megapack-items`
+    }
   }
 
   // The systemEffect categories that name what an item gives an actor. A spirit or sprite power key is
@@ -267,6 +277,8 @@ export class SR5_CompendiumUtility extends Actor {
     if (actorType === "actorSprite") {
       const spritePowers = await SR5_CompendiumUtility.getCategoryItems("spritePowers")
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, spritePowers, actorSubType)
+      // A type registered by a module may name its own powers (sprite-types.js), wherever they are kept
+      baseItems = baseItems.concat(await SR5_CompendiumUtility.givenSpritePowers(actorSubType, baseItems))
     }
 
     // A spirit or a sprite that comes with nothing at all is almost always a
@@ -301,6 +313,27 @@ export class SR5_CompendiumUtility extends Actor {
     if (SR5_CompendiumUtility._warnedEmptyBaseItems.has(key)) return
     SR5_CompendiumUtility._warnedEmptyBaseItems.add(key)
     ui.notifications.warn(game.i18n.localize("SR5.WARN_NoBaseItems"))
+  }
+
+  /** The powers a registered sprite type gives by UUID, minus those already found by name. Unreadable UUIDs are skipped. */
+  static async givenSpritePowers(spriteType, already = [], {
+    resolve = uuid => globalThis.fromUuid?.(uuid)
+  } = {
+  }) {
+    const names = new Set(already.map(i => i.name))
+    const given = []
+    for (const uuid of spriteGivenPowers(spriteType)) {
+      let doc = null
+      try {
+        doc = await resolve(uuid)
+      } catch {
+        doc = null
+      }
+      if (!doc || names.has(doc.name)) continue
+      names.add(doc.name)
+      given.push(SR5_CompendiumUtility.givenItem(doc))
+    }
+    return given
   }
 
   static async findBaseItemInCompendium(baseItems, compendium, actorType) {
@@ -445,14 +478,6 @@ export class SR5_CompendiumUtility extends Actor {
       }
     }
 
-    return baseItems
-  }
-
-  static async createItemFromArray(ItemArray) {
-    let baseItems = []
-    for (let i of ItemArray) {
-      baseItems.push(i)
-    }
     return baseItems
   }
 

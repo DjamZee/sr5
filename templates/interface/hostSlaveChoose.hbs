@@ -1,0 +1,13 @@
+{{!-- S2: the devices of the host's scene, to slave to it; one already slaved elsewhere is greyed, with its master --}}
+<div class="sr5-host-slave-choose">
+	{{#each candidates}}
+	<div class="form-group">
+		<label {{#if this.master}}class="SR-LightGreyColor"{{/if}}>
+			<input type="checkbox" name="slave" value="{{this.uuid}}" {{#if this.mine}}checked disabled{{/if}} {{#if this.other}}disabled{{/if}}>
+			{{this.name}}{{#if this.other}} — {{this.other}}{{/if}}
+		</label>
+	</div>
+	{{else}}
+	<p>{{localize 'SR5.HostSlavesNone'}}</p>
+	{{/each}}
+</div>

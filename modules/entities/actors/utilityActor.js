@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  woundResolveHolds
+} from "../../system/wound-resolve.js"
+import {
   calledShotSkillsOf, calledShotEffectValue, isMartialArtsModifierTarget
 } from "../../rolls/roll-helpers/calledShotSkills.js"
 import {
@@ -37,6 +40,12 @@ import {
 import {
   SR5_SpiritTypes
 } from "../items/spirit-types.js"
+import {
+  spriteTypeDefinition, spriteSkills, spriteMatrixModifiers, spriteInitiativeDice, spriteInitiativeBonus, SPRITE_MATRIX_KEYS
+} from "./sprite-types.js"
+import {
+  fadingResistanceAttribute
+} from "./fading-resistance.js"
 import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../items/magic-masteries.js"
@@ -114,7 +123,8 @@ import {
   actsAsRcc, fixedRccRatings, rccRatings, hasLocalAutosoftRunning, rccAutosoftsForDrone, autosoftFitsDrone, droneAutopilot, localAutosoftRating
 } from "./rcc.js"
 import {
-  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating
+  streamOf, firewallBonusOfStream, sleazeBonusOfStream, sourcererFreeSustain, resonanceRestoredByStream, machineMindRating,
+  hasResonantDissonance, RESONANT_DISSONANCE_ACTIONS
 } from "./technomancer-streams.js"
 import {
   VR_PILOTING_LIMIT_BONUS, controlRigThresholdModifier, dataProcessingCapModifier
@@ -141,6 +151,9 @@ import {
 import {
   isPlainDevice, lacksAttackAndSleaze
 } from "./device-attributes.js"
+import {
+  iceDefenseType, iceDesignOf
+} from "../../system/ice-design.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -864,6 +877,8 @@ export class SR5_CharacterUtility extends Actor {
             actorData.penalties[key].actual.base = -Math.floor((actorData.conditionMonitors[key].actual.value - actorData.penalties[key].boxReduction.value) / actorData.penalties[key].step.value)
             if (actorData.specialProperties.doublePenalties) actorData.penalties[key].actual.base = actorData.penalties[key].actual.base * 2
             if (actorData.penalties[key].actual.base > 0) actorData.penalties[key].actual.base = 0
+            //Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): « ignore tous les modificateurs de blessure »
+            if (woundResolveHolds(actor)) actorData.penalties[key].actual.base = 0
           }
           break
         case "matrix":
@@ -2346,7 +2361,7 @@ export class SR5_CharacterUtility extends Actor {
       case "actorSprite":
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.Level'), "linkedAttribute", actorData.level)
         SR5_EntityHelpers.updateModifier(initMat, game.i18n.localize('SR5.DataProcessing'), "linkedAttribute", matrixAttributes.dataProcessing.value)
-        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, 4)
+        SR5_EntityHelpers.updateModifier(initMat.dice, game.i18n.localize(SR5.spriteTypes[actorData.type]), `${game.i18n.localize('TYPES.Actor.actorSprite')}`, spriteInitiativeDice(actorData.type))
         break
       case "actorAgent":
         SR5_EntityHelpers.updateModifier(initMat, `${game.i18n.localize('SR5.Rating')}`, "linkedAttribute", actorData.rating)
@@ -2749,7 +2764,7 @@ export class SR5_CharacterUtility extends Actor {
     if (actorData.offRoadMode) {
       if (actorData.isSecondaryPropulsionActivate) {
         handlingMode = attributes.secondaryPropulsionHandlingOffRoad.augmented.value
-        handlingName = game.i18n.localize('SR5.VehicleStat_SecondaryHandlingORShort')
+        handlingName = game.i18n.localize('SR5.VehicleStat_SPHandlingORShort')
       } else {
         handlingMode = attributes.handlingOffRoad.augmented.value
         handlingName = game.i18n.localize('SR5.VehicleStat_HandlingORShort')
@@ -3327,42 +3342,13 @@ export class SR5_CharacterUtility extends Actor {
   static generateSpriteSkills(actor) {
     let actorData = actor.system, skills = actorData.skills
 
-    switch (actorData.type) {
-      case "courier":
-        skills.computer.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      case "crack":
-        skills.computer.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "data":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "fault":
-        skills.computer.rating.base = actorData.level
-        skills.cybercombat.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      case "machine":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        skills.hardware.rating.base = actorData.level
-        break
-      case "companion":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        break
-      case "generalist":
-        skills.computer.rating.base = actorData.level
-        skills.electronicWarfare.rating.base = actorData.level
-        skills.hacking.rating.base = actorData.level
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in '_generateSpriteSkills()'`)
-        return
+    // The type's skills are rated at the Level (SR5 p. 261, Kill Code p. 110; module types: sprite-types.js)
+    if (!spriteTypeDefinition(actorData.type)) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in '_generateSpriteSkills()'`)
+      return
+    }
+    for (let key of spriteSkills(actorData.type)) {
+      if (skills[key]) skills[key].rating.base = actorData.level
     }
 
     for (let key of Object.keys(SR5.skills)) {
@@ -3431,6 +3417,10 @@ export class SR5_CharacterUtility extends Actor {
         this.applyPenalty("matrix", actorData.skills[key].test, actor)
         this.applyPenalty("magic", actorData.skills[key].test, actor)
         this.applyPenalty("special", actorData.skills[key].test, actor)
+        //Écho Dissonance résonante (Better Than Bad p. 145): in hot sim, +2 dice to Compiling and Decompiling
+        if ((key === "compiling" || key === "decompiling") && actorData.matrix?.userMode === "hotsim" && hasResonantDissonance(actor)) {
+          SR5_EntityHelpers.updateModifier(actorData.skills[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "echo", 2)
+        }
         SR5_EntityHelpers.updateDicePool(actorData.skills[key].test, 0)
 
         // limit calculation
@@ -4668,6 +4658,11 @@ export class SR5_CharacterUtility extends Actor {
         if (matrix.userMode === "hotsim" && key === "eraseResonanceSignature") {
           SR5_EntityHelpers.updateModifier(resonanceActions[key].test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 2)
         }
+        //Écho Dissonance résonante (Better Than Bad p. 145, VO p. 161): in hot sim, +2 dice to compile and decompile a
+        //sprite and to thread a complex form
+        if (matrix.userMode === "hotsim" && RESONANT_DISSONANCE_ACTIONS.includes(key) && hasResonantDissonance(actor)) {
+          SR5_EntityHelpers.updateModifier(resonanceActions[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "echo", 2)
+        }
         //test
         SR5_EntityHelpers.updateDicePool(resonanceActions[key].test)
         if (resonanceActions[key].test.dicePool < 0) resonanceActions[key].test.dicePool = 0
@@ -4699,6 +4694,8 @@ export class SR5_CharacterUtility extends Actor {
   static generateMatrixActions(actor) {
     let actorData = actor.system, attributes = actorData.attributes, specialAttributes = actorData.specialAttributes, skills = actorData.skills,
       matrix = actorData.matrix, matrixAttributes = matrix.attributes, matrixActions = matrix.actions
+    //Écho Dissonance résonante (Better Than Bad p. 145): in cold sim, the +2 dice of hot sim kept on every matrix action
+    const coldSimBonus = matrix.userMode === "coldsim" && hasResonantDissonance(actor)
 
     SR5_EntityHelpers.updateModifier(matrixActions.jamSignals.test, game.i18n.localize('SR5.SkillElectronicWarfare'), "skillRating", skills.electronicWarfare.rating.value)
     SR5_EntityHelpers.updateModifier(matrixActions.jamSignals.test, game.i18n.localize('SR5.Logic'), "linkedAttribute", attributes.logic.augmented.value)
@@ -4815,6 +4812,7 @@ export class SR5_CharacterUtility extends Actor {
         if (matrix.userMode === "hotsim") {
           SR5_EntityHelpers.updateModifier(matrixActions[key].test, game.i18n.localize('SR5.VirtualRealityHotSimShort'), "matrixUserMode", 2)
         }
+        if (coldSimBonus) SR5_EntityHelpers.updateModifier(matrixActions[key].test, game.i18n.localize('SR5.EchoResonantDissonance'), "matrixUserMode", 2)
         if (matrixActions[key].specialization) {
           SR5_EntityHelpers.updateModifier(matrixActions[key].test, `${game.i18n.localize('SR5.Specialization')}`, "specialization", 2, false, true)
         }
@@ -5090,7 +5088,9 @@ export class SR5_CharacterUtility extends Actor {
         let personaKey = item.system.type === "headcase" ? "nanite" : "resonance"
         let personaLabel = game.i18n.localize(SR5.characterSpecialAttributes[personaKey])
         SR5_EntityHelpers.updateModifier(matrixResistances.fading, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
-        SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
+        // Willpower by the book (SR5 p. 254); a module may name another attribute (hook sr5.fadingResistance)
+        const fadingAttribute = fadingResistanceAttribute(actor, personaKey)
+        SR5_EntityHelpers.updateModifier(matrixResistances.fading, game.i18n.localize(SR5.characterAttributes[fadingAttribute]), "linkedAttribute", attributes[fadingAttribute].augmented.value)
         // A Monad of the original strain resists with Willpower + Firewall, on both its monitors (Dark Terrors p. 88)
         if (originalStrainDevice(actor) === item) SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, game.i18n.localize('SR5.Willpower'), "linkedAttribute", attributes.willpower.augmented.value)
         else SR5_EntityHelpers.updateModifier(matrixResistances.matrixDamage, personaLabel, "linkedAttribute", specialAttributes[personaKey].augmented.value)
@@ -5207,7 +5207,8 @@ export class SR5_CharacterUtility extends Actor {
 
     //Handle Ice attack and defense
     if (matrix.deviceType === "ice") {
-      actorData.description = game.i18n.localize(SR5.iceTypes[matrix.deviceSubType] + "_GE")
+      //A designed IC keeps its own description (its recipe, written by the module that made it)
+      if (!iceDesignOf(matrix)) actorData.description = game.i18n.localize(SR5.iceTypes[matrix.deviceSubType] + "_GE")
       if (!matrix.ice) matrix.ice = {
         attackDicepool: 0, defenseFirstAttribute: "", defenseSecondAttribute: "" 
       }
@@ -5223,7 +5224,8 @@ export class SR5_CharacterUtility extends Actor {
       }
       SR5_EntityHelpers.updateValue(matrixAttributes.dataProcessing, 0)
       matrix.actions.matrixPerception.limit.value = matrixAttributes.dataProcessing.value
-      switch (matrix.deviceSubType) {
+      //A designed IC defends against with the pair of the book's IC its recipe names (system/ice-design.js)
+      switch (iceDefenseType(matrix)) {
         case "iceAcid":
         case "iceScramble":
           matrix.ice.defenseFirstAttribute = "willpower"
@@ -5301,47 +5303,16 @@ export class SR5_CharacterUtility extends Actor {
 
     //Apply matrix attributes by type
     let label = `${game.i18n.localize(SR5.spriteTypes[actorData.type])}`
-    switch (actorData.type) {
-      case "courier":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "crack":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +2)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +1)
-        break
-      case "data":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", -1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +4)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "fault":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "machine":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +3)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +2)
-        break
-      case "companion":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", -1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +4)
-        break
-      case "generalist":
-        SR5_EntityHelpers.updateModifier(matrixAttributes.attack, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.sleaze, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.dataProcessing, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(matrixAttributes.firewall, label, "spriteType", +1)
-        SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", +1)
-        break
-      default:
-        SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in generateSpriteMatrix()`)
+    // The type's modifiers to the Level (SR5 p. 261, Kill Code p. 110; module types: sprite-types.js)
+    if (!spriteTypeDefinition(actorData.type)) {
+      SR5_SystemHelpers.srLog(1, `Unknown '${actorData.type}' sprite type in generateSpriteMatrix()`)
     }
+    const typeModifiers = spriteMatrixModifiers(actorData.type)
+    for (let key of SPRITE_MATRIX_KEYS) {
+      if (typeModifiers[key]) SR5_EntityHelpers.updateModifier(matrixAttributes[key], label, "spriteType", typeModifiers[key])
+    }
+    const initiativeBonus = spriteInitiativeBonus(actorData.type, actorData.level)
+    if (initiativeBonus) SR5_EntityHelpers.updateModifier(actorData.initiatives.matrixInit, label, "spriteType", initiativeBonus)
 
     //handle matrix attributes
     for (let key of Object.keys(SR5.matrixAttributes)) {

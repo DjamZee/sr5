@@ -34,6 +34,9 @@ import {
   sr5HookRenderMacroConfig,
 } from './hooks/render-ui.js'
 import {
+  sr5HookMarkForeignWindow
+} from './hooks/window-scope.js'
+import {
   sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken, sr5HookDeleteToken 
 } from './hooks/token.js'
 import {
@@ -45,6 +48,9 @@ import {
 import {
   registerIceHostHooks
 } from './system/ice-host.js'
+import {
+  registerOverwatchHook
+} from './system/matrix-hooks.js'
 import {
   registerInsectRaceHooks
 } from './entities/actors/insect-race-hooks.js'
@@ -197,6 +203,8 @@ Hooks.on('hotbarDrop', sr5HookHotbarDrop)
 Hooks.on('renderPlayers', sr5HookRenderPlayers)
 Hooks.on('renderChatMessageHTML', sr5HookRenderChatMessageHTML)
 Hooks.on('renderFolderConfig', sr5HookRenderFolderConfig)
+Hooks.on('renderApplicationV2', sr5HookMarkForeignWindow)
+Hooks.on('renderApplication', sr5HookMarkForeignWindow)
 Hooks.on('renderDialog', sr5HookRenderDialog)
 Hooks.on('renderDialogV2', sr5HookRenderDialogV2)
 Hooks.on('renderSettingsConfig', sr5HookRenderSettingsConfig)
@@ -260,6 +268,8 @@ Hooks.on('getCompendiumContextOptions', sr5HookCompendiumDrawContext)
 Hooks.on('getHeaderControlsCompendium', sr5HookCompendiumDrawHeader)
 Hooks.on('getFolderContextOptions', sr5HookCompendiumDrawFolder)
 Hooks.on('renderSidebar', SR5ShopWindow.onRenderSidebar)
+// An availability card cashed: the buyer's open shop drops what it paid
+Hooks.on('updateChatMessage', SR5ShopWindow.onCardCashed)
 Hooks.on('renderSidebar', SR5DealershipWindow.onRenderSidebar)
 // A sale or a restock on a vendor: its open shop window redraws
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'updateActor']) Hooks.on(hook, SR5ShopVendor.onVendorChanged)
@@ -305,6 +315,8 @@ registerBoneAugmentationGuard()
 registerAgilityZeroHooks()
 // An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
 registerIceHostHooks()
+// S4 C5: the modules hear an Overwatch Score change (sr5.overwatchChanged)
+registerOverwatchHook()
 registerInsectRaceHooks()
 // The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
 registerCyberlimbNotice()

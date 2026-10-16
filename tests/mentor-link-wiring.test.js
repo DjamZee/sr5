@@ -13,7 +13,7 @@ describe("Mentor Spirit quality linked to its mentor (SR5 p. 76): wiring", () =>
   })
 
   it("the quality sheet shows the linked mentor select", () => {
-    expect(read("templates/items/itemQuality-sheet.hbs")).toContain("quality/linkedMentor-edit.hbs")
+    expect(read("templates/items/blocks/quality/quality-stat.hbs")).toContain("quality/linkedMentor-edit.hbs")
     expect(read("templates/items/_partial/editable/quality/linkedMentor-edit.hbs")).toContain('name="system.linkedMentor"')
     expect(read("modules/templates.js")).toContain("quality/linkedMentor-edit.hbs")
     expect(read("modules/entities/items/itemSheet.js")).toContain("context.linkedMentorChoices")

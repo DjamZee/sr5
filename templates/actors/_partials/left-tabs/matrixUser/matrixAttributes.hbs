@@ -39,5 +39,12 @@
 		<!-- Data processing / Firewall -->
 		{{> systems/sr5/templates/actors/_partials/left-tabs/matrixUser/attributes/dataProcessing.hbs}}
 		{{> systems/sr5/templates/actors/_partials/left-tabs/matrixUser/attributes/firewall.hbs}}
+
+		<!-- The values swap by drag and drop (SR5 p. 228, 247-248): said on the sheet, not only in a bubble -->
+		{{#if (or (eq system.matrix.deviceType "cyberdeck")
+		(and (eq actor.type "actorDevice") (eq system.matrix.deviceType "host"))
+		)}}
+		<li class="SR-MatrixSwapHint"><i class="fa-solid fa-grip-vertical"></i> {{localize 'SR5.MatrixAttributeSwapHint'}}</li>
+		{{/if}}
 	</ul>
 </div>

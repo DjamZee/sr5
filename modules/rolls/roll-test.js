@@ -423,7 +423,8 @@ export class SR5_RollTest {
     }
     const mode = dialogData.combat.firingMode.selected, left = dialogData.combat.ammo.value ?? 0
     const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(mode, left)
-    const refuse = () => refuseByRule("ammo", "SR5.WARN_FiringModeAmmo", {
+    //Suppressive fire is refused on an empty magazine only (SR5 p. 181): it does not ask for 20 rounds (Lucas#2058, C3)
+    const refuse = () => refuseByRule("ammo", mode === "SF" ? "SR5.WARN_SuppressiveFireEmpty" : "SR5.WARN_FiringModeAmmo", {
       needed: SR5_ConverterHelpers.firingModeToBullet(mode), left
     }, {
       actor
@@ -431,6 +432,10 @@ export class SR5_RollTest {
     if (missingAmmo && ruleLockBinds("ammo")) return refuse()
     if (!SR5Combat.hasActionsLeft(SR5_RollTest.actionsFighter(actor, dialogData), dialogData.combat.actions)) return true
     if (missingAmmo) refuse()
+    //Fewer than 20 rounds: the zone is narrower, the fire is not refused (SR5 p. 181)
+    else if (mode === "SF" && dialogData.test.typeSub === "rangedWeapon" && left < 20) ui.notifications.info(game.i18n.format("SR5.INFO_SuppressiveFireNarrowed", {
+      left, width: SR5_ConverterHelpers.suppressiveFireWidth(left)
+    }))
     return false
   }
 
@@ -1003,6 +1008,9 @@ export class SR5_RollTest {
         break
       case "mentorDrawback":
         await SR5_AddRollInfo.mentorDrawbackInfo(cardData)
+        break
+      case "woundResolve":
+        await SR5_AddRollInfo.woundResolveInfo(cardData)
         break
       case "autopilotUnforeseen":
         //Confused by a hacker, the threshold is known (Rigger 5.0 p. 34); otherwise the gamemaster compares the hits with

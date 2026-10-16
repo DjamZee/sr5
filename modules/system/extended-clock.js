@@ -13,6 +13,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  isActiveGM
+} from "./card-helpers.js"
 
 export const EXTENDED_CLOCK_LEDGER = "sr5ExtendedClockLedger"
 
@@ -47,10 +50,6 @@ export function ledgerAfter(ledger, messageId, n, existingIds){
   })) if (!existingIds || existingIds.has(id)) next[id] = count
   next[messageId] = (Number(next[messageId]) || 0) + n
   return next
-}
-
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
 
 function ledger(){

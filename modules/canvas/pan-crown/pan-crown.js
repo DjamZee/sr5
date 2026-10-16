@@ -27,6 +27,9 @@ import {
 import {
   registerPanIcon
 } from "./pan-icons.js"
+import {
+  hostSideOf, seenFromHost
+} from "../../system/matrix-host-presence.js"
 
 // A token placeable, a TokenDocument, an Actor, or the id of a token of the canvas or of a world actor
 function resolveSubject(subject){
@@ -80,6 +83,21 @@ function distanceInMeters(a, b){
 
 function isHostActor(actor){
   return actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "host"
+}
+
+// S3 (SR5 p. 248): inside a host, a persona sees the inside only; from the grid, nothing inside a host. The system does
+// it only when no module answers sr5.panCrownVisibility (the module Matrice draws its own zones); the gamemaster sees all
+function hostVisibility(node, verdict, viewerActor, looker, crown){
+  if (!verdict?.visible || looker?.isGM || (globalThis.Hooks?.events?.["sr5.panCrownVisibility"]?.length ?? 0) > 0) return verdict
+  const ids = node.holderIds ?? []
+  if (looker?.ids?.some(id => ids.includes(id))) return verdict
+  const holder = idsOf(crown.actor).some(id => ids.includes(id)) ? crown.actor :
+    ids.map(id => canvas?.tokens?.get(id)?.actor ?? game.actors?.get(id)).find(Boolean)
+  if (!holder) return verdict
+  const side = hostSideOf(holder, uuid => globalThis.fromUuidSync?.(uuid) ?? null)
+  return seenFromHost(viewerActor?.system?.matrix?.currentHost || "", side) ? verdict : {
+    visible: false, reason: "host"
+  }
 }
 
 function holderActorOf(node, crown){
@@ -235,18 +253,18 @@ export function getGraph(subject, options = {
     // Lot 11: a module may hide it (sr5.panCrownVisibility), never show what the system hides
     node.visibility = applyVisibilityHooks(node, {
       actor: viewer?.actor ?? null, token: viewer?.token ?? null, isGM: looker.isGM, ids: looker.ids
-    }, nodeVisibility(node, looker, {
+    }, hostVisibility(node, nodeVisibility(node, looker, {
       distance: node.distance, isHost, tokenHidden
-    }), crownContext)
+    }), viewer?.actor, looker, crown), crownContext)
     // The observer's own marks on it, which she alone sees (SR5 p. 238)
     node.viewerMarks = viewerMarksOn(node, looker.ids)
     // What her Matrix Perceptions brought back that the crown draws: the monitor, the number of marks (lot 5)
     node.intel = intelFor(intelOf(viewer?.actor), node.uuid)
     if (players) node.hiddenFromPlayers = hiddenFromPlayers(players.map(p => applyVisibilityHooks(node, {
       actor: p.actor, token: p.token ?? null, isGM: false, ids: p.looker.ids
-    }, nodeVisibility(node, p.looker, {
+    }, hostVisibility(node, nodeVisibility(node, p.looker, {
       distance: distanceInMeters(p.token, nodeToken), isHost, tokenHidden
-    }), crownContext)))
+    }), p.actor, p.looker, crown), crownContext)))
   }
   return graph
 }

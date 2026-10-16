@@ -100,6 +100,7 @@ function preparedCharacter(base) {
       // What follows the items loop reads a full sheet: only the implants are under test here
     }
   }
+  define("reset", prepare)
   return {
     actor, eyes, prepare
   }
@@ -154,5 +155,40 @@ describe("the end of creation on a prepared character", () => {
     }, {
     }, "gm")
     expect(store[IMPLANT_REGISTER]["Actor.pc.Item.eyes"][PEAK_COST]).toBe(0.4)
+  })
+
+  it("does not queue a character whose register already holds its peaks (nothing is written)", async () => {
+    // Characters an earlier test left waiting are prepared again first
+    await hooks.updateSetting({
+      key: `sr5.${IMPLANT_REGISTER}`
+    })
+    store[IMPLANT_REGISTER]["Actor.pc.Item.eyes"] = {
+      [PEAK_COST]: 0.5
+    }
+    const {
+      actor, eyes, prepare
+    } = preparedCharacter(0.5)
+    const reset = vi.fn(prepare)
+    Object.defineProperty(actor, "reset", {
+      value: reset, configurable: true
+    })
+    delete actor.flags.sr5.creation
+    prepare()
+    const before = store[IMPLANT_REGISTER]
+    await hooks.updateActor(actor, {
+      flags: {
+        sr5: {
+          "-=creation": null
+        }
+      }
+    }, {
+    }, "gm")
+    expect(store[IMPLANT_REGISTER]).toBe(before)
+    expect(eyes.system.essenceCost.value).toBe(0.5)
+    // A later write of the register, for anything else, finds no character left waiting
+    await hooks.updateSetting({
+      key: `sr5.${IMPLANT_REGISTER}`
+    })
+    expect(reset).not.toHaveBeenCalled()
   })
 })

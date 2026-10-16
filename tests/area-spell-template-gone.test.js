@@ -8,7 +8,7 @@ vi.hoisted(() => {
 })
 
 import {
-  isAreaSpellTemplateGone
+  isAreaSpellTemplateGone, noteRemovedAreaTemplate, REMOVED_AREA_TEMPLATES
 } from "../modules/system/areaEffectScene.js"
 import {
   SR5_ActorHelper
@@ -78,7 +78,45 @@ describe("resistance to an area spell whose template is gone", () => {
     }, [scene()], messages())).toBe(false)
   })
 
+  const applyWithoutTemplate = async () => {
+    const warn = vi.fn()
+    globalThis.ui = {
+      notifications: {
+        warn, info: () => {}
+      }
+    }
+    globalThis.game.scenes = [scene()]
+    globalThis.game.messages = messages()
+    vi.spyOn(SR5_EntityHelpers, "getRealActorFromID").mockImplementation(() => ({
+      items: [], createEmbeddedDocuments: vi.fn()
+    }))
+    await SR5_ActorHelper.applyExternalEffect("a1", {
+      ...resistance(), owner: {
+        itemUuid: "Actor.m.Item.spell"
+      }, roll: {
+        hits: 1, netHits: 1
+      }
+    }, "customEffects")
+    return warn
+  }
+
+  //Noé, 16/10 (D6): a cast resisted from its card, no template ever placed, read "removed during the resistance"
+  it("says no template is placed when none was removed", async () => {
+    REMOVED_AREA_TEMPLATES.clear()
+    expect(await applyWithoutTemplate()).toHaveBeenCalledWith("SR5.WARN_AreaSpellNoTemplate")
+  })
+
+  it("says the template was removed once one of the cast was deleted", async () => {
+    REMOVED_AREA_TEMPLATES.clear()
+    noteRemovedAreaTemplate(template())
+    expect(await applyWithoutTemplate()).toHaveBeenCalledWith("SR5.WARN_AreaSpellTemplateGone")
+    REMOVED_AREA_TEMPLATES.clear()
+    noteRemovedAreaTemplate(template(undefined))
+    expect(await applyWithoutTemplate()).toHaveBeenCalledWith("SR5.WARN_AreaSpellTemplateGone")
+  })
+
   it("Apply the effect gives nothing once the template is gone", async () => {
+    noteRemovedAreaTemplate(template())
     const warn = vi.fn()
     const createEmbeddedDocuments = vi.fn()
     globalThis.ui = {

@@ -4,6 +4,13 @@
 // the active GM, who writes: on the target its sender owns at once, on any other only once the GM agrees, as nothing
 // on a card stands behind the request. And A5: the hook told once a matrix action is resolved, read only.
 
+import {
+  matrixMarkCap
+} from "./matrix-hooks.js"
+import {
+  instanceName
+} from "./pan-candidates.js"
+
 // SR5 p. 237: three marks at most on an icon, from one owner
 export const MAX_MARKS = 3
 // SR5 p. 233: the demigods deal matrix damage of DV 12, resisted normally
@@ -18,10 +25,10 @@ export const MATRIX_ACTION_RESOLVED_HOOK = "sr5.matrixActionResolved"
  * @param {Number} count   1 to 3; more is brought back to 3 (SR5 p. 237)
  * @return {Number|null}
  */
-export function markCount(count){
+export function markCount(count, cap = MAX_MARKS){
   const value = Number(count)
   if (!Number.isInteger(value) || value < 1) return null
-  return Math.min(value, MAX_MARKS)
+  return Math.min(value, cap)
 }
 
 /**
@@ -125,9 +132,13 @@ const activeGM = () => game.users?.activeGM ?? game.users?.find?.(u => u.isGM &&
  */
 export async function placeMarks(attacker, target, count, options = {
 }, helpers = null){
-  const marks = markCount(count)
+  if (!markCount(count)) return false
   const by = await actorOf(attacker), on = await markTarget(target)
-  if (!marks || !by || !on || !markable(on)) return false
+  if (!by || !on || !markable(on)) return false
+  //S4 C2: 3 by the book, unless a module's rule says otherwise
+  const marks = markCount(count, matrixMarkCap({
+    attacker: by, target: on.actor
+  }))
   const h = helpers ?? await systemHelpers()
   if (!isGM()) {
     if (!activeGM()) {
@@ -161,6 +172,8 @@ export async function converge(persona, {
 }, helpers = null){
   const actor = await actorOf(persona)
   if (!actor) return false
+  //S3: a persona inside a host is converged on by its host, and stays inside (SR5 p. 249, Adrore 16/10)
+  host ||= actor.system?.matrix?.currentHost || null
   const hostActor = host ? await actorOf(host) : null
   if (host && !hostActor) return false
   const h = helpers ?? await systemHelpers()
@@ -183,7 +196,7 @@ async function gmConverge(actor, hostActor){
   if (!isConnectedPersona(actor)) {
     await ChatMessage.create({
       content: `<p>${game.i18n.format("SR5.MatrixConvergenceNotConnected", {
-        name: foundry.utils.escapeHTML(String(actor.name ?? ""))
+        name: foundry.utils.escapeHTML(String(instanceName(actor)))
       })}</p>`,
       whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
     })
@@ -252,7 +265,7 @@ async function postConvergenceCard(actor, damage){
 async function whisperConvergence(actor, hostActor, plan, placed){
   const esc = s => foundry.utils.escapeHTML(String(s ?? ""))
   const lines = convergenceLines({
-    name: esc(actor.name), host: hostActor ? esc(hostActor.name) : null, plan, placed, sprite: actor.type === "actorSprite"
+    name: esc(instanceName(actor)), host: hostActor ? esc(instanceName(hostActor)) : null, plan, placed, sprite: actor.type === "actorSprite"
   }).map(([key, data]) => data ? game.i18n.format(key, data) : game.i18n.localize(key))
   await ChatMessage.create({
     content: lines.map(l => `<p>${l}</p>`).join(""),
@@ -361,7 +374,16 @@ export function announceMatrixAction(entry, call = (...args) => globalThis.Hooks
   }
 }
 
+// S3: being inside a host (matrix-host-presence.js), loaded when called
+const presence = () => import("./matrix-host-presence.js")
+
 export const SR5MatrixApi = {
   placeMarks: (attacker, target, count, options) => placeMarks(attacker, target, count, options),
   converge: (persona, options) => converge(persona, options),
+  /** Put a persona inside a host (SR5 p. 240): options {spendAction = true, force = false, chat = true} */
+  enterHost: async (persona, host, options) => (await presence()).enterHost(await actorOf(persona), await actorOf(host), options),
+  /** Take a persona out of its host: options {reason = "exit", spendAction, chat = true, warn = true} */
+  exitHost: async (persona, options) => (await presence()).exitHost(await actorOf(persona), options),
+  /** The host a persona is inside, or null */
+  currentHost: async persona => (await presence()).currentHostOf(await actorOf(persona)),
 }

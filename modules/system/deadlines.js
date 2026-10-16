@@ -13,6 +13,9 @@ import {
 import {
   ORDERS_FLAG, freshlyDue, deliverOrder
 } from "../interface/shop-orders.js"
+import {
+  escape, isActiveGM as isWriter, fmt, allActors, queuedCheck
+} from "./card-helpers.js"
 
 export const REVEAL_DEADLINES_SETTING = "sr5CalendarRevealDeadlines"
 const DAY = 86400
@@ -90,22 +93,6 @@ export function rentDebitState(rent, {
 }
 
 /* -------------------------------------------- */
-
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function allActors(){
-  const actors = new Set(game.actors)
-  for (const scene of game.scenes){
-    for (const token of scene.tokens){
-      if (!token.actorLink && token.actor) actors.add(token.actor)
-    }
-  }
-  return [...actors]
-}
-
-const fmt = (t) => game.time.calendar.format(t)
 
 // Stamps what has no date yet, counts the rent down, and returns the deadlines the clock has just passed
 async function collect(actor, now, startYear){
@@ -198,28 +185,9 @@ export async function checkDeadlines(){
   if (game.settings.get("sr5", REVEAL_DEADLINES_SETTING)) await revealToOwners(rows)
 }
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkDeadlines().catch(e => SR5_SystemHelpers.srLog(1, `Deadlines not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkDeadlines(), "Deadlines not checked")
 
 /* -------------------------------------------- */
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
 
 function rowText(r){
   if (r.kind === "addiction") return game.i18n.format("SR5.CALENDAR_DeadlineAddiction", {
@@ -302,7 +270,7 @@ async function rollWithdrawal(row){
   const index = Number(row.dataset.index)
   const addictions = foundry.utils.duplicate(actor?.system?.addictions ?? [])
   const a = addictions[index]
-  if (!a || a.name !== row.dataset.name) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
+  if (!a || a.name !== row.dataset.name) return void ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
   const pools = a.addiction?.type === "both" ? ["physiological", "psychological"] : [a.addiction?.type || "physiological"]
   // The deadline moves on once a withdrawal roll is in the chat, not when its window opens: a window closed
   // without rolling leaves the deadline where it is
@@ -372,7 +340,7 @@ async function payRent(row){
 async function revealRow(row){
   const actor = await fromUuid(row.dataset.actorUuid)
   const owners = actor ? playerOwners(actor) : []
-  if (!owners.length) return ui.notifications.warn(game.i18n.localize("SR5.CALENDAR_DeadlineNoPlayer"))
+  if (!owners.length) return void ui.notifications.warn(game.i18n.localize("SR5.CALENDAR_DeadlineNoPlayer"))
   await ChatMessage.create({
     content: `<div class="sr5-deadline-card"><h3>${game.i18n.localize("SR5.CALENDAR_DeadlineTitle")}</h3><p>${row.querySelector(".sr5-deadline-text")?.innerHTML ?? ""} — ${escape(row.querySelector(".sr5-deadline-due")?.textContent)}</p></div>`,
     whisper: [...owners, ...ChatMessage.getWhisperRecipients("GM").map(u => u.id)],

@@ -5,6 +5,12 @@ import {
   SR5_Toxins
 } from "../items/toxins.js"
 import {
+  HOST_CHANGED_HOOK, exitHostInPlace
+} from "../../system/matrix-host-presence.js"
+import {
+  FLICKER_DISCONNECTION, isFlickerDisconnected
+} from "../../system/flicker-disconnection.js"
+import {
   prototypeChanges, tokenFamily
 } from "../../system/token-defaults.js"
 import {
@@ -223,6 +229,8 @@ export class SR5Actor extends Actor {
     })
   }
 
+  // Returns the actor it creates, as Foundry's Actor.create does: a module that made a device got nothing back (the
+  // tab « CI » of matrice-sr5). A dialog closed without a choice (spirit, sprite) still creates nothing
   static async create(data, options) {
     if (!data.img) data.img = `systems/sr5/assets/img/actors/${data.type}.svg`
 
@@ -281,8 +289,7 @@ export class SR5Actor extends Actor {
           "type": spiritType
         }
         SR5_EntityHelpers.updateValue(data.system.force)
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorSprite": {
         const spriteDlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/createSprite.hbs", dialogData)
@@ -317,8 +324,7 @@ export class SR5Actor extends Actor {
           "level": parseInt(spriteLevel) || 0,
           "type": spriteType
         }
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorDevice":
       case "actorDrone":
@@ -337,10 +343,9 @@ export class SR5Actor extends Actor {
         const effects = data.effects.map(e => e.toObject())
         effects.push(initiativeEffect.toObject())
         foundry.utils.mergeObject(data, {
-          "effects": effects 
+          "effects": effects
         })
-        super.create(data, options)
-        break
+        return super.create(data, options)
       }
       case "actorGrunt":
       case "actorPc":
@@ -348,10 +353,9 @@ export class SR5Actor extends Actor {
         for (let baseItem of baseItems) {
           data.items.push(baseItem)
         }
-        super.create(data, options)
-        break
+        return super.create(data, options)
       default:
-        super.create(data, options)
+        return super.create(data, options)
     }
   }
 
@@ -1193,8 +1197,13 @@ export class SR5Actor extends Actor {
 
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
-  async rebootDeck() {
-    SR5_ActorHelper.dumpshockIfInVR(this)
+  async rebootDeck(_device = null, {
+    hostExitReason = "reboot", dumpshock = true
+  } = {
+  }) {
+    //A character a Flicker disconnected has had its dumpshock already: reconnecting reboots without a second one
+    //(Kill Code p. 74, flicker-disconnection.js)
+    if (dumpshock && !isFlickerDisconnected(this)) SR5_ActorHelper.dumpshockIfInVR(this)
     //SR5 p. 236: whoever had spotted its icons loses sight of them, and it starts again without what it had spotted
     //(couronne du PAN, lot 5)
     await requestForgetIntel({
@@ -1209,6 +1218,9 @@ export class SR5Actor extends Actor {
     //The deck keeps its configuration: attributes are assigned at its first start and only change by reconfiguring (SR5 p. 229)
     let actorData = foundry.utils.duplicate(this.system)
     actorData.matrix.overwatchScore = 0
+    //A reboot leaves the host the persona was in, back to its grid (S3, SR5 p. 240, 244)
+    const previousHost = actorData.matrix.currentHost || null
+    exitHostInPlace(actorData.matrix)
     //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
     if (SR5_CharacterUtility.isDepthActive(this)) {
       await SR5_MarkHelpers.clearPersonaMarks(this)
@@ -1268,10 +1280,12 @@ export class SR5Actor extends Actor {
     await this.update(dataToUpdate, {
       sr5OverwatchLower: "reboot"
     })
+    if (previousHost) Hooks.callAll(HOST_CHANGED_HOOK, this, null, previousHost, hostExitReason)
 
     //Delete effects from Deck. A reboot cuts the connection (SR5 p. 231, 250; Kill Code p. 74): every link lock goes
     //with it, permanent as its effect is, and so does its status
-    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i))).map(i => i.id)
+    const ended = this.items.filter(i => i.type === "itemEffect" && (i.system.durationType === "reboot" || isLinkLockEffect(i) ||
+      i.system.type === FLICKER_DISCONNECTION)).map(i => i.id)
     if (ended.length) await this.deleteEmbeddedDocuments("Item", ended)
     const lockStatuses = linkLockStatusIds(this)
     if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)

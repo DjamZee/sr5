@@ -44,7 +44,15 @@ export class sr5ActorDroneDataModel extends foundry.abstract.TypeDataModel {
     })
 
     return {
-      ...matrixPartialModel.defineSchema(),
+      matrix: new fields.SchemaField({
+        ...matrixPartialModel.matrixFields(),
+        // A drone with no rigger that serves as a device of the scenery (a camera of the Mégapack) may be slaved to a
+        // host or a master like an actorDevice (SR5 p. 234; Lucas#2058, S2): the uuid of that master, or empty. Read
+        // only while the drone has no rigger (pan-candidates.js isSceneryDevice): a rigger's drone keeps its rigger
+        panMaster: new fields.StringField({
+          initial: ''
+        }),
+      }),
       ...recoilPartialModel.defineSchema(),
       ...visionPartialModel.defineSchema(),
       ...itemsPropertiesPartialModel.defineSchema(),

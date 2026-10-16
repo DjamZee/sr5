@@ -29,6 +29,9 @@ import {
   SR5ShopCatalog
 } from './shop-catalog.js'
 import {
+  isShadowedMegapackPack
+} from '../system/megapack.js'
+import {
   SR5ShopVendor, SR5ShopVendorSource
 } from './shop-vendor.js'
 import {
@@ -116,7 +119,10 @@ export class SR5ShopWorldSource {
    */
   static async #read() {
     const raw = []
-    await Promise.all(game.packs.filter(p => p.documentName === 'Item').map(async pack => {
+    // A shadowed Megapack's packs are not read unless the gamemaster put them back: same items, same _id
+    const included = SR5ShopStock.includedPacks
+    const read = p => p.documentName === 'Item' && (!isShadowedMegapackPack(p) || included.includes(p.collection))
+    await Promise.all(game.packs.filter(read).map(async pack => {
       try {
         const index = await pack.getIndex({
           fields: ['system', 'effects', 'flags']
@@ -156,8 +162,11 @@ export class SR5ShopWorldSource {
     let system
     try {
       const Item = CONFIG.Item.documentClass
+      // Copies: the item seals the data it is given, and that data is the compendium's index, which a second
+      // reading (SR5ShopWorldSource.reset) merges into again; sealed, that reading failed for the whole pack
       system = new Item({
-        name: entry.name, type: entry.type, system: entry.system, effects: entry.effects ?? [],
+        name: entry.name, type: entry.type, system: foundry.utils.deepClone(entry.system),
+        effects: foundry.utils.deepClone(entry.effects ?? []),
       }).system
     } catch {
       // The stored data does not validate (Heritage (12) in the Megapack 2.0.12): the
@@ -1239,6 +1248,32 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     li.append(button)
     if (settings) settings.before(li)
     else menu.append(li)
+  }
+
+  /** The cart once a card's obtained lines are paid: each one comes off its line (item and grade), less its quantity. */
+  static cartAfterCash(cart, results) {
+    const left = cart.map(line => ({
+      ...line
+    }))
+    for (const r of (results ?? []).filter(r => r?.obtained)) {
+      const line = left.find(l => l.uuid === r.uuid && (l.grade ?? null) === (r.grade ?? null))
+      if (line) line.quantity = (Number(line.quantity) || 1) - Math.max(1, Math.floor(Number(r.quantity) || 1))
+    }
+    return left.filter(line => line.quantity > 0)
+  }
+
+  /**
+   * `updateChatMessage`: an availability card cashed (shop-retry.js cashCard writes its footer). The open window of its
+   * buyer drops the lines paid from the card, which it kept with the old balance until the next redraw: paid twice
+   * (Noé, 16/10, D7).
+   */
+  static onCardCashed(message, changes) {
+    const data = message?.flags?.sr5shop
+    if (!data?.buyerId || !String(changes?.content ?? '').includes('sr-shop-cashed')) return
+    const shop = SR5ShopWindow._instance
+    if (!shop?.rendered || SR5Shop.buyerFromKey(shop._buyerId)?.id !== data.buyerId) return
+    shop._cart = SR5ShopWindow.cartAfterCash(shop._cart, data.results)
+    shop.render()
   }
 
   /** A prototype flag switched on a sheet: the index entry follows, and an open shop redraws. */

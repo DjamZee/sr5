@@ -2,8 +2,23 @@ import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
 import {
-  resolveHostAttributes, hostTypeLayout, hostTypeOffsetLabel, untypedHostDefaults
+  resolveHostAttributes, hostTypeLayout, hostTypeOffsetLabel, untypedHostDefaults, lockedHostAttributes
 } from '../modules/entities/actors/host-type.js'
+
+// DjamZ, 17/10 : rien ne montrait que les attributs s'échangent ; la fiche met un cadenas sur ceux que le type fixe
+describe('the padlocked attributes of a typed host', () => {
+  it('a destination host: Data Processing is set by the type (KC p. 50)', () => {
+    expect(lockedHostAttributes('destination')).toEqual({
+      dataProcessing: true
+    })
+  })
+  it('a data host, or no type: nothing is locked', () => {
+    expect(lockedHostAttributes('data')).toEqual({
+    })
+    expect(lockedHostAttributes('')).toEqual({
+    })
+  })
+})
 
 vi.mock('../modules/socket.js', () => ({
   SR5_SocketHandler: {

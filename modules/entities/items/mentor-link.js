@@ -9,6 +9,8 @@ const VARIANT = /\[\s*(adepte|adept|magicien|magician)\s*\]/i
 const MENTOR_NAME = /\(([^)]+)\)/
 
 export const CONVERSION_FLAG = "mentorConversion"
+// Set by revertMentorConversion: the GM went back to the former quality, the world migration leaves it so
+export const REVERTED_FLAG = "mentorConversionReverted"
 
 // The few mentors whose drawback is not resisted with Charisma + Willpower (SR5 p. 325), by their name in either
 // language: Chaos and Oracle Willpower + Intuition, Peacemaker Charisma + Intuition (Street Grimoire p. 200-201)
@@ -148,6 +150,56 @@ export function planMentorConversion(items, qualityName){
   }
   return {
     create, link
+  }
+}
+
+// Plans the world migration of the former mentor qualities « Esprit mentor (X) [Magicien|Adepte] » (DjamZ, 16/10: the
+// quality is bought, the mentor item carries the effects). Each becomes the Mentor Spirit quality linked to a mentor
+// item: one of the same name already on the actor, else a copy of the Mégapack's (sourceNames: the names it offers).
+// A quality whose mentor has neither stays as it was and is listed in missing. A mystic adept gets the block of the
+// variant held (SR5 p. 324). Run again, the plan is empty: converted and linked qualities are skipped.
+//   create:  [{key, name, mysticPath}]   link: as planMentorConversion   missing: [{qualityId, name}]
+export function planMentorMigration(items, sourceNames, qualityName, magicType){
+  const mentors = (items || []).filter(i => i.type === "itemMentorSpirit")
+  const sources = new Set((sourceNames || []).map(n => String(n).trim().toLowerCase()))
+  const groups = new Map(), missing = []
+  for (const quality of (items || []).filter(isMentorQuality)){
+    if (quality.flags?.sr5?.[CONVERSION_FLAG] || quality.flags?.sr5?.[REVERTED_FLAG] || quality.system?.linkedMentor || !effectsOf(quality).length) continue
+    const name = (quality.name || "").match(MENTOR_NAME)?.[1]?.trim()
+    if (!name) continue
+    const key = name.toLowerCase()
+    if (!mentors.some(m => (m.name || "").trim().toLowerCase() === key) && !sources.has(key)){
+      missing.push({
+        qualityId: quality.id, name: quality.name
+      })
+      continue
+    }
+    if (!groups.has(key)) groups.set(key, {
+      name, qualities: []
+    })
+    groups.get(key).qualities.push(quality)
+  }
+  const create = [], link = []
+  for (const [key, group] of groups){
+    const existing = mentors.find(m => (m.name || "").trim().toLowerCase() === key)
+    if (!existing) create.push({
+      key, name: group.name, mysticPath: magicType === "mysticalAdept" ? commonPath(group.qualities) : ""
+    })
+    for (const quality of group.qualities) link.push({
+      qualityId: quality.id,
+      ...(existing ? {
+        mentorId: existing.id
+      } : {
+        mentorKey: key
+      }),
+      name: qualityName,
+      original: {
+        name: quality.name, customEffects: effectsOf(quality)
+      },
+    })
+  }
+  return {
+    create, link, missing
   }
 }
 

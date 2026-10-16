@@ -12,6 +12,12 @@ import {
 } from "../roll-helpers/miscellaneous.js"
 import SR5_RollDialog from "../roll-dialog.js"
 import {
+  matrixEffectiveMarks
+} from "../../system/matrix-hooks.js"
+import {
+  isFlickerDisconnected
+} from "../../system/flicker-disconnection.js"
+import {
   SR5_CharacterUtility
 } from "../../entities/actors/utilityActor.js"
 import {
@@ -207,6 +213,10 @@ export default async function matrixAction(rollData, rollKey, actor){
 // What every Matrix action checks and adds, its cost counted or offered
 async function finishMatrixAction(rollData, rollKey, actor){
   const matrixAction = actor.system.matrix.actions[rollKey]
+  //Kill Code p. 74: disconnected by a Flicker, the avatar is "incapable d'agir" until it vanishes or reconnects
+  if (isFlickerDisconnected(actor) && refuseByRule("matrix", "SR5.WARN_FlickerDisconnected", null, {
+    actor
+  })) return
   //Add public grid switch
   if (actor.system.matrix.userGrid === "public") rollData.dialogSwitch.publicGrid = true
     
@@ -329,9 +339,13 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       let marks = 0
       //A file aimed at counts its own marks, as any icon (SR5 p. 233: the mark is placed on the file itself)
       const file = fileAimedAt(rollData)
+      //S4 C3: the marks a module's rule counts, from those really carried
+      const counted = (target, real) => matrixEffectiveMarks({
+        viewer: actor, target, key: rollData.test?.typeSub ?? null, marks: real
+      })
       if (file) {
         const fileMark = (file.system.marks ?? []).find(m => m.ownerId === rollData.owner.speakerId)
-        return !((Number(fileMark?.value) || 0) < neededMarks && refuseMarks(actor, true))
+        return !(counted(file, Number(fileMark?.value) || 0) < neededMarks && refuseMarks(actor, true))
       }
       for (let item of t.actor.items){
         const mark = item.system.marks?.find(m => m.ownerId === rollData.owner.speakerId)
@@ -340,7 +354,7 @@ async function checkTargetMarks(rollData, matrixAction, actor){
       //An AI outside any device carries the marks on its persona (Data Trails p. 157)
       const personaMark = t.actor.system.matrix?.marks?.find(m => m.ownerId === rollData.owner.speakerId)
       if (personaMark?.value > marks) marks = personaMark.value
-      return !(marks < neededMarks && refuseMarks(actor))
+      return !(counted(t.actor, marks) < neededMarks && refuseMarks(actor))
     } else return true
   }
 }

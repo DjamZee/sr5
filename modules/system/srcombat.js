@@ -1,4 +1,7 @@
 import {
+  woundResolvePhaseStart
+} from "./wound-resolve.js"
+import {
   refuseByRule
 } from "./rule-locks.js"
 import {
@@ -198,6 +201,8 @@ export class SR5Combat extends Combat {
     })
     //The new initiative order is known only now: this is the real start of the round's first turn
     await SR5Combat.endOwnerPassEffects(combat, combat.combatant)
+    //Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): the test at the start of that phase
+    await woundResolvePhaseStart(combat).catch(e => console.error("SR5 | Deus vult", e))
   }
 
   // Foundry's setupTurns sorts with this and reads the current combatant in that order: re-sorting its result
@@ -459,6 +464,8 @@ export class SR5Combat extends Combat {
       turn: 0,
     })
     await this.rollAll()
+    //Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): the first phase, once the order is known
+    await woundResolvePhaseStart(this).catch(e => console.error("SR5 | Deus vult", e))
 
     return this
   }
@@ -1054,6 +1061,14 @@ export class SR5Combat extends Combat {
             ui.notifications.info(`${combatant.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.format("SR5.INFO_DurationFinished", {
               effect: item.name
             })}`)
+
+            //Kill Code p. 74: the avatar a Flicker left inert vanishes at last; the full reboot, no second dumpshock
+            if (itemData.type === "flickerDisconnection") {
+              const {
+                endFlickerDisconnection
+              } = await import("./flicker-disconnection.js")
+              await endFlickerDisconnection(actor)
+            }
 
             //Head case Attribute Boost (Stolen Souls p. 201): Stun damage equal to the hits once the boost ends.
             //Applied straight to the monitor: this is not an attack, so no knockdown check

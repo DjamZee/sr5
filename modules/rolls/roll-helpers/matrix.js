@@ -50,6 +50,9 @@ import {
   linkLockStatusIds,
   isLinkLockEffect
 } from "../../system/link-lock.js"
+import {
+  disconnectByFlicker
+} from "../../system/flicker-disconnection.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -207,8 +210,9 @@ export class SR5_MatrixHelpers {
       mark = withMarks ? await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id) : 0
 
     if (withMarks && attacker.type === "actorDevice"){
+      //An IC adds the marks of its host and of the host's other ICs (SR5 p. 249)
       if (attacker.system.matrix.deviceType === "ice"){
-        mark = await SR5_MarkHelpers.findMarkValue(markHolder, attacker.id)
+        mark = SR5_MarkHelpers.iceMarkValue(markHolder, attacker)
       }
     }
     cardData.damage.matrix.modifiers = {
@@ -373,6 +377,8 @@ export class SR5_MatrixHelpers {
       let rollData = SR5_PrepareRollTest.getBaseRollData(null, actor)
       rollData.test.type = "jackOutDefense"
       rollData.test.title = `${game.i18n.localize("SR5.MatrixActionJackOutResistance")} (${hits})`
+      //The lock's dice: the card bears the name of the icon that locked, not the hacker's (Noé, 16/10)
+      if (lock.system.ownerName && rollData.owner) rollData.owner.speakerActor = lock.system.ownerName
       rollData.dicePool.base = dicePool
       rollData.dicePool.value = dicePool
       rollData.previousMessage.hits = hits
@@ -408,7 +414,9 @@ export class SR5_MatrixHelpers {
 
     //rebootDeck spends no action: the jack out has already paid for its own. It deals the dumpshock
     //in VR, cold or hot sim, link lock or not (SR5 p. 231 and 244)
-    await actor.rebootDeck()
+    await actor.rebootDeck(null, {
+      hostExitReason: "jackOut"
+    })
   }
 
   //Jam Signals adds the hits to the Noise rating (SR5 p. 239). system.matrix.noise holds that rating as a
@@ -883,16 +891,15 @@ export class SR5_MatrixHelpers {
         let item = await fromUuid(cardData.target.itemUuid)
         //The device may have been deleted since the attack: warn, no Flicker effect
         if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
-        let existingMark = await SR5_MarkHelpers.findMarkValue(item.system, ice.id)
-        if (!target.system.matrix.isLinkLocked) 
-          await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
+        let existingMark = SR5_MarkHelpers.iceMarkValue(item.system, ice)
         //Kill Code p. 74: two marks disconnect, this hit's own counted while its button is still on the card, whatever
-        //the order of the clicks. The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        //the order of the clicks. It is no reboot: the dumpshock at once, the avatar left inert for [Device Rating]
+        //combat turns, then the full reboot (flicker-disconnection.js, Élise's ruling of 16/10)
         const pendingMark = cardData.chatCard?.buttons?.attackerPlaceMark ? (cardData.matrix?.mark ?? 0) : 0
         if (existingMark + pendingMark >= 2) {
-          let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
-          target.rebootDeck(deck_iceFlicker)
-        }
+          const deck = target.items.find((i) => i.type === "itemDevice" && i.system.isActive)
+          await disconnectByFlicker(ice, target, deck ?? item)
+        } else if (!target.system.matrix.isLinkLocked) await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         break
       }
       default:

@@ -25,6 +25,8 @@ env:
 
 jobs:
   release:
+    # Fork DjamZee/sr5 : ses releases sont faites à la main et annoncées par annonce-discord.yml.
+    if: github.repository_owner == 'shadowfoundry'
     runs-on: ubuntu-latest
     steps:
       # ── 1. Detect release type ──────────────────────────────────────────

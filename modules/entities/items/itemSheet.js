@@ -97,6 +97,9 @@ import {
 import {
   tooltipsToHelp, fillHelpBubble
 } from "../../interface/help-tooltips.js"
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "../../interface/actor-picker.js"
 
 // Item types that include a footer (condition monitors, price/availability)
 const ITEM_FOOTER_TYPES = new Set([
@@ -228,9 +231,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     else if (action === 'shopClear') await SR5ShopVendor.clearStock(actor, item)
     else if (action === 'shopCashbox') await SR5ShopVendor.createCashbox(actor, item)
     else if (action === 'shopClientAdd') {
-      const el = this.element
-      await SR5ShopVendor.setClient(item, el.querySelector('[data-shop-client-actor]')?.value,
-        el.querySelector('[data-shop-client-loyalty]')?.value)
+      // Several characters at once, at the same Loyalty
+      const loyalty = this.element.querySelector('[data-shop-client-loyalty]')?.value
+      for (const actorId of this.#shopClients?.values() ?? []) await SR5ShopVendor.setClient(item, actorId, loyalty)
+      this.#shopClients?.clear()
     } else if (action === 'shopClientRemove') await SR5ShopVendor.removeClient(item, target.dataset.actorId)
     this.render()
   }
@@ -332,6 +336,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
   _onClose(options) {
     super._onClose(options)
+    // The help bubble goes on mouseout, which never comes when the sheet closes under the pointer (16/10, P11)
+    this._hideHelpText()
     if (this._createItemHookId) {
       Hooks.off("createItem", this._createItemHookId)
       this._createItemHookId = null
@@ -721,6 +727,45 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     return context
   }
 
+  #drugPicker = null
+  #shopClients = null
+
+  // A GM shop's clients to add (shop-vendor.js): the world's characters not clients yet
+  #shopClientPicker(el, context) {
+    const box = el.querySelector('.sr5-shop-client-picker')
+    if (!box) return
+    this.#shopClients ??= new ActorPicker({
+      name: 'shopClient', multiple: true
+    })
+    box.addEventListener('change', ev => ev.stopPropagation())
+    const actors = (context.shop?.clientCandidates ?? []).map(c => game.actors?.get(c.id)).filter(Boolean)
+    this.#shopClients.render(box, {
+      entries: actorEntries(actors), folders: actorFolders()
+    })
+  }
+
+  #drugRecipients(el, context) {
+    const box = el.querySelector('.sr5-drug-recipients')
+    if (!box) return
+    this.#drugPicker ??= new ActorPicker({
+      name: 'system.preparedFor', noneLabel: game.i18n.localize('SR5.DrugPreparedForAnyone'),
+      onChange: values => this.document.update({
+        'system.preparedFor': values[0] ?? ''
+      })
+    })
+    // The item is the truth: an update from elsewhere shows at the next render
+    this.#drugPicker.clear()
+    if (this.document.system.preparedFor) this.#drugPicker.selected.add(this.document.system.preparedFor)
+    // Its own write, not the form's: the search typed must not submit the sheet
+    box.addEventListener('change', ev => ev.stopPropagation())
+    const actors = Object.keys(context.drugRecipients ?? {
+    }).map(id => game.actors?.get(id)).filter(Boolean)
+    this.#drugPicker.render(box, {
+      entries: actorEntries(actors), folders: actorFolders()
+    })
+    if (!this.isEditable) for (const input of box.querySelectorAll('input, select')) input.disabled = true
+  }
+
   _onRender(context, options) {
     super._onRender(context, options)
     const el = this.element
@@ -806,6 +851,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
         "system.rent.firstDebit": parseDateTimeInput(ev.currentTarget.value, calendarStartYear())
       })
     })
+
+    // Custom drug: whom it is made for, a searchable list by folder (actor-picker.js), written apart from the form
+    this.#drugRecipients(el, context)
+    this.#shopClientPicker(el, context)
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
     el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))

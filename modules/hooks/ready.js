@@ -6,11 +6,17 @@ import {
   runLegacyBiographyMigration
 } from "../migration-legacy-biography.js"
 import {
+  runMentorMigration
+} from "../entities/items/mentor-conversion.js"
+import {
   runRuleLocksMigration
 } from "../system/rule-locks.js"
 import {
   initBBHealing
 } from "../system/bb-healing.js"
+import {
+  initWoundResolve
+} from "../system/wound-resolve.js"
 import {
   SR5_CompendiumUtility
 } from "../entities/actors/utilityCompendium.js"
@@ -133,6 +139,8 @@ export function sr5HookReady() {
   initRadiation()
   // Bullets & Bandages p. 14-16: wounds of 5+ bleed by Combat Turn, the GM adds each box
   initBBHealing()
+  // Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): the test of Willpower at the start of the action phase
+  initWoundResolve()
   // Invisibility and Mask: the active GM keeps the thresholds and who has seen through (SR5 p. 294)
   initIllusions()
   // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
@@ -174,6 +182,10 @@ export function sr5HookReady() {
 
   // The v12 biography keys the database still holds: unset once per world
   runLegacyBiographyMigration().catch(err => console.error("SR5 | legacy biography migration failed", err))
+
+  // The former mentor qualities « Esprit mentor (X) [variant] » of the world actors: the quality linked to the mentor item
+  // of the Megapack (DjamZ, 16/10), at each load, idempotent
+  runMentorMigration().catch(err => console.error("SR5 | mentor migration failed", err))
 
   // The three settings that were rule locks, copied into the boxes of the rule locks menu once per world (B13);
   // a world no migration ever ran in is new, and starts with the book

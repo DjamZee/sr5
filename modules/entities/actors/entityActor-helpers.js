@@ -1,4 +1,7 @@
 import {
+  withoutShadowedMegapack
+} from "../../system/megapack.js"
+import {
   overwatchScoreShownTo
 } from "../../rolls/roll-helpers/overwatch-notice.js"
 import {
@@ -59,8 +62,8 @@ import {
   SR5_CalledShotHelpers 
 } from "../../rolls/roll-helpers/calledShot.js"
 import {
-  SR5_MarkHelpers 
-} from "../../rolls/roll-helpers/mark.js"
+  announceMarksChanged
+} from "../../system/matrix-hooks.js"
 import {
   SR5_PrepareRollTest 
 } from "../../rolls/roll-prepare.js"
@@ -86,7 +89,7 @@ import {
   entryValue, transferEntries, compareDefinitions, definitionsMatch, definitionPrint
 } from "./effect-definition.js"
 import {
-  isAreaSpellTemplateGone
+  isAreaSpellTemplateGone, areaSpellTemplateRemoved
 } from "../../system/areaEffectScene.js"
 import {
   carriedGear
@@ -94,6 +97,9 @@ import {
 import {
   syncDroneBox
 } from "../../system/slave-sync.js"
+import {
+  electricMatrixDamage
+} from "../../rolls/roll-helpers/electric-device.js"
 
 export class SR5_ActorHelper {
     
@@ -203,7 +209,7 @@ export class SR5_ActorHelper {
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
-        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = Math.floor(options.damage.value / 2)
+        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = electricMatrixDamage(options.damage.value)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
@@ -213,6 +219,8 @@ export class SR5_ActorHelper {
       case "actorAgent":
       case "actorSprite":
       case "actorDevice":
+        //An electric weapon: its matrix half alone, a device has no other monitor (SR5 p. 173, electric-device.js)
+        if (actor.type === "actorDevice" && options.damage.element === "electricity") options.damage.matrix.value = electricMatrixDamage(options.damage.value)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
@@ -294,8 +302,9 @@ export class SR5_ActorHelper {
     }
 
     //Special Element Damage
-    // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
-    if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
+    // A drone's or a device's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and
+    // Initiative penalty
+    if (options.damage.element === "electricity" && actor.type !== "actorDrone" && actor.type !== "actorDevice") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
     //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
     //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own
@@ -858,15 +867,20 @@ export class SR5_ActorHelper {
       let itemToClean = await fromUuid(m.uuid)
       //The persona of an AI outside any device carries its marks itself (Data Trails p. 157)
       if (itemToClean?.documentName === "Actor") {
+        const previous = (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId === actorId)
+          .reduce((sum, mark) => Math.max(sum, Number(mark.value) || 0), 0)
         await itemToClean.update({
           "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
         }, {
           sr5PersonaMarks: true
         })
+        //S4 C4: the modules hear the marks of a rebooted marker go
+        announceMarksChanged(itemToClean, actorId, 0, previous, "reboot")
       } else if (itemToClean) {
-        let cleanData = foundry.utils.duplicate(itemToClean.system)
+        let cleanData = foundry.utils.duplicate(itemToClean.system), previous = 0
         for (let i = 0; i < cleanData.marks.length; i++){
           if (cleanData.marks[i].ownerId === actorId) {
+            previous = Math.max(previous, Number(cleanData.marks[i].value) || 0)
             cleanData.marks.splice(i, 1)
             i--
           }
@@ -874,8 +888,7 @@ export class SR5_ActorHelper {
         await itemToClean.update({
           "system" : cleanData
         })
-        //For Host, keep slaved device marks synchro
-        if (itemToClean.parent.system.matrix.deviceType === "host") SR5_MarkHelpers.markSlavedDevice(itemToClean.parent.id)
+        announceMarksChanged(itemToClean, actorId, 0, previous, "reboot")
       } else {
         SR5_SystemHelpers.srLog(1, `No Item to Clean in deleteMarksOnActor()`)
       }
@@ -2424,7 +2437,7 @@ export class SR5_ActorHelper {
       }
     }
     const same = d => d.type === item.type && d.name === item.name
-    for (const pack of game.packs?.filter(p => p.documentName === "Item") ?? []) {
+    for (const pack of withoutShadowedMegapack(game.packs).filter(p => p.documentName === "Item")) {
       const entry = (await pack.getIndex({
         fields: ["type"]
       })).find(same)
@@ -2540,8 +2553,9 @@ export class SR5_ActorHelper {
   //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card
   static async applyExternalEffect(actorId, data, effectType, reviewed = null){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
+    //A template never placed (or removed before this client loaded) says so, not "removed"
     if (isAreaSpellTemplateGone(data)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+      ui.notifications.warn(game.i18n.localize(areaSpellTemplateRemoved(data) ? "SR5.WARN_AreaSpellTemplateGone" : "SR5.WARN_AreaSpellNoTemplate"))
       return false
     }
     //A spell nobody resists writes no net hits on its card: they are its hits (over its threshold, if any), not "?" or 0

@@ -68,6 +68,9 @@ import {
   registerManeuverSetting
 } from "../system/combat-maneuvers.js"
 import {
+  registerWoundResolveSetting
+} from "../system/wound-resolve.js"
+import {
   SR5
 } from "../config.js"
 import {
@@ -356,6 +359,9 @@ import {
 import {
   installRuleReminders
 } from "../system/rule-reminders.js"
+import {
+  spriteTypesApi
+} from "../entities/actors/sprite-types.js"
 
 export async function sr5HookInit() {
   SR5_SystemHelpers.registerSystemSettings()
@@ -400,6 +406,7 @@ export async function sr5HookInit() {
   registerHealLedger()
   registerTacnetSetting()
   registerManeuverSetting()
+  registerWoundResolveSetting()
   //Every visible system setting moves into the settings window, by tab (B10): keep this after the last registration
   registerSettingsWindow()
   //The grappling statuses exist only in a world that uses the grappling rules
@@ -454,6 +461,9 @@ export async function sr5HookInit() {
     tokenDefaults: SR5TokenDefaultsApi,
     // The shop's vendors for the modules: the Concepteur's NPC generator creates one from a template (lot 43)
     vendors: vendorsApi(),
+    // The sprite types for the modules: register a type of their own during init or setup (sprite-types.js).
+    // The Fading attribute has its hook, sr5.fadingResistance (fading-resistance.js)
+    spriteTypes: spriteTypesApi,
   }
 
   // Register DataModels

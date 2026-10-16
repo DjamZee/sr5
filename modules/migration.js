@@ -4,13 +4,16 @@ import {
 import {
   updateLedger
 } from "./system/gm-ledger.js"
+import {
+  MEGAPACK_IDS
+} from "./system/megapack.js"
 
 export default class Migration {
 
   // Modules whose compendiums are kept up to date at their source, for the current system: the migration
   // leaves them alone instead of unlocking and rewriting them in each world (Megapack: arbitrage de DjamZ,
-  // séance H, H19)
-  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", "megapack-sr5-foundry-vtt"]
+  // séance H, H19), in both its editions
+  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", ...MEGAPACK_IDS]
 
   static isMaintainedAtSource(pack) {
     return Migration.SOURCE_MAINTAINED_PACKAGES.includes(pack?.metadata?.packageName)
@@ -449,24 +452,6 @@ export default class Migration {
     }
 
     return updateData
-  }
-
-  /* -------------------------------------------- */
-
-
-  /**
-	 * Scrub an Actor's system data, removing all keys which are not explicitly defined in the system template
-	 * @param {Object} actorData    The data object for an Actor
-	 * @return {Object}             The scrubbed Actor data
-	 */
-  cleanActorData(actorData) {
-
-    // Scrub system data
-    const model = game.system.model.Actor[actorData.type]
-    actorData.system = foundry.utils.filterObject(actorData.system, model)
-
-    // Return the scrubbed data
-    return actorData
   }
 
   /* -------------------------------------------- */

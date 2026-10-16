@@ -330,6 +330,9 @@ export class SR5_PrepareRollTest {
       case "mentorDrawback":
         rollData = await SR5_GetRollData.mentorDrawback(rollData, actor, item)
         break
+      case "woundResolve":
+        rollData = await SR5_GetRollData.woundResolve(rollData, actor, chatData)
+        break
       case "ritual":
         // SR5 p. 298: a ritual open to a group starts with the circle card, the roll comes when the leader seals it
         if (!chatData?.ritualCircle && ritualAcceptsHelp(item.system)) return SR5_RitualCircle.open(actor, item)

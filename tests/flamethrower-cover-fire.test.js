@@ -21,9 +21,16 @@ beforeAll(() => {
 
 //Suppressive Fire (SR5 p. 179) fires 20 rounds; the flamethrower sweep two units (Gun H(e)aven 3 p. 3)
 describe("Flamethrower ammo needs", () => {
-  it("refuses suppressive fire with fewer than 20 units", () => {
-    expect(SR5_ConverterHelpers.missingAmmo("SF", 19)).toBe(true)
-    expect(SR5_ConverterHelpers.missingAmmo("SF", 20)).toBe(false)
+  //SR5 p. 181: fewer than 20 rounds narrow the zone by 1 m for every 2 missing, refused only once it is 0 m wide
+  it("narrows suppressive fire instead of refusing it", () => {
+    expect(SR5_ConverterHelpers.missingAmmo("SF", 19)).toBe(false)
+    expect(SR5_ConverterHelpers.missingAmmo("SF", 1)).toBe(false)
+    expect(SR5_ConverterHelpers.missingAmmo("SF", 0)).toBe(true)
+    expect(SR5_ConverterHelpers.suppressiveFireWidth(20)).toBe(10)
+    expect(SR5_ConverterHelpers.suppressiveFireWidth(13)).toBe(7)
+    expect(SR5_ConverterHelpers.suppressiveFireWidth(1)).toBe(1)
+    expect(SR5_ConverterHelpers.suppressiveFireWidth(0)).toBe(0)
+    expect(SR5_ConverterHelpers.suppressiveFireWidth(30)).toBe(10)
   })
   it("refuses the sweep with a single unit", () => {
     expect(SR5_ConverterHelpers.missingAmmo("FN", 1)).toBe(true)

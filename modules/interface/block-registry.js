@@ -152,7 +152,10 @@ export const BLOCK_REGISTRY = {
     partial: `${PARTIAL_ROOT}/left-tabs/matrixUser/noDevice.hbs`,           label: 'SR5.SheetConfig.Block.NoDevice',         size: BLOCK_SIZE.SINGLE 
   },
   matrixMaglockType:   {
-    partial: `${PARTIAL_ROOT}/left-tabs/matrixUser/maglockType.hbs`,        label: 'SR5.SheetConfig.Block.MaglockType',      size: BLOCK_SIZE.SINGLE 
+    partial: `${PARTIAL_ROOT}/left-tabs/matrixUser/maglockType.hbs`,        label: 'SR5.SheetConfig.Block.MaglockType',      size: BLOCK_SIZE.SINGLE
+  },
+  matrixHostSlaves:    {
+    partial: `${PARTIAL_ROOT}/left-tabs/matrixUser/hostSlaves.hbs`,         label: 'SR5.SheetConfig.Block.HostSlaves',       size: BLOCK_SIZE.SINGLE
   },
 
   // ---- Qualities sidebar (single) ----

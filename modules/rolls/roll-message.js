@@ -153,6 +153,18 @@ import {
 import {
   blueGooToExplode
 } from "../system/blue-goo.js"
+import {
+  designSourceOf
+} from "../system/ice-design.js"
+
+//The line a designed IC's block leaves once applied, as the book's IC it comes from writes it ("iceEffect" below)
+const DESIGN_EFFECT_DONE = {
+  iceAcid: "SR5.EffectReduceFirewallDone",
+  iceCatapult: "SR5.EffectReduceFirewallDone",
+  iceJammer: "SR5.EffectReduceAttackDone",
+  iceBinder: "SR5.EffectReduceDataProcessingDone",
+  iceMarker: "SR5.EffectReduceSleazeDone",
+}
 
 // The button a card stores under this key; the template buttons are flags of their own (removeTemplate)
 export function storedButton(cardData, key) {
@@ -720,7 +732,9 @@ export class SR5_RollMessage {
       case "attackerPlaceMark": {
         // Kill Code p. 45: a mark placed by Watchdog is remembered as such, it opens the interruption actions
         let isWatchdog = messageData.test.typeSub === "watchdog"
-        await SR5_MarkHelpers.markItem(actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
+        //An unlinked token is marked on its own actor: its token id reaches it, the actor id would mark the base actor,
+        //which every copy shares and no reboot of the token clears (S0, D4 of the in-game check of 16/10)
+        await SR5_MarkHelpers.markItem(actor.isToken ? actor.token.id : actor.id, messageData.previousMessage.actorId, messageData.matrix.mark, messageData.target.itemUuid, isWatchdog, messageId)
         // if defender is a drone and is slaved, add mark to master
         if (actor.type === "actorDrone" && actor.system.slaved){
           if (!game.user?.isGM) {
@@ -1063,8 +1077,19 @@ export class SR5_RollMessage {
         })
         SR5_RollMessage.updateChatButtonHelper(messageId, type)
         break
-      default:
+      default: {
+        //A designed IC's block: the effect of the book's IC it comes from, as that IC's own button applies it
+        //(system/ice-design.js)
+        const source = designSourceOf(type)
+        if (source) {
+          const effectData = foundry.utils.deepClone(messageData)
+          effectData.test.typeSub = source
+          SR5_MatrixHelpers.applyIceEffect(effectData, originalActionActor, actor)
+          SR5_RollMessage.updateChatButtonHelper(messageId, type)
+          break
+        }
         SR5_SystemHelpers.srLog(1, `Unknown '${type}' type in chatButtonAction`)
+      }
     }               
 
     //Attacker test : previous Actor or token is automatically selected
@@ -1349,7 +1374,18 @@ export class SR5_RollMessage {
         }))
         break
       }
-      default:
+      default: {
+        //A designed IC's block applied: said in the words of the book's IC it comes from, one line per block
+        const source = designSourceOf(buttonToUpdate)
+        if (source) {
+          hits = messageData.previousMessage.hits - messageData.roll.hits
+          const done = DESIGN_EFFECT_DONE[source]
+          endLabel = done ? game.i18n.format(done, {
+            hits
+          }) : game.i18n.localize("SR5.EffectApplied")
+          messageData.chatCard.buttons[`${buttonToUpdate}Done`] = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "", endLabel)
+        }
+      }
     }
 
     if (buttonToUpdate === "templateRemove") messageData.chatCard.templateRemove = false

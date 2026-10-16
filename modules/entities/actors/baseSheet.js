@@ -2,13 +2,19 @@ import {
   vintageWirelessRefused
 } from '../items/weaponTraits.js'
 import {
+  livingPersonaModes
+} from './technomancer-streams.js'
+import {
+  sceneCandidatesOf
+} from '../../interface/scene-actors.js'
+import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
   isCapReminder, ruleRemindersShown
 } from '../../system/rule-reminders.js'
 import {
-  boneSwitchRefused
+  boneSwitchRefused, bundleWirelessRefused
 } from '../../system/implant-essence.js'
 import {
   SR5_SystemHelpers,
@@ -309,7 +315,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     context.isEmbedded = true  // Items rendered on actor sheets are always embedded
     context.filters = this._filters || {
     }
-    context.lists = this.actor.system.lists
+    //A technomancer with Résonance dissonante may choose cold sim (Better Than Bad p. 145): a copy, the lists are shared
+    const lists = this.actor.system.lists
+    context.lists = lists ? {
+      ...lists, personaModes: livingPersonaModes(this.actor, lists) 
+    } : lists
     context.isPlay = this.isPlayMode
     // Read on the sheet, descriptions show their links (@UUID to a journal, the Library) enriched; the editor keeps
     // the raw text
@@ -445,6 +455,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     if (closeButton) header?.appendChild(closeButton)
 
     return frame
+  }
+
+  // The help bubble goes on mouseout, which never comes when the sheet closes under the pointer (Escape): it stayed
+  // over every window (16/10, Agathe#2507 P11)
+  _onClose(options) {
+    super._onClose(options)
+    this._hideHelpText()
   }
 
   _onRender(context, options) {
@@ -643,6 +660,11 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     on(".matrix-grid-hop", "click", event => {
       event.preventDefault()
       import("../../system/matrix-grid-hop.js").then(m => m.takeGridHop(this.actor))
+    })
+    // Enter / Exit Host, with no test (S3, SR5 p. 240)
+    on(".matrix-host-presence", "click", event => {
+      event.preventDefault()
+      import("../../system/matrix-host-presence.js").then(m => m.takeHostPresence(this.actor))
     })
     on(".sr-rollGrenade", "click", this._onRollGrenade.bind(this))
     // Summon Spirit
@@ -1586,6 +1608,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     }))
     //Vintage (Gun H(e)aven 3 p. 3): never wireless, so no switch and no action spent (the "ammo" rule lock family, B13 lot 2)
     if (target === "system.wirelessTurnedOn" && vintageWirelessRefused(realItem, actor)) return
+    //Lots d'augmentations (Chrome Flesh p. 96): the wireless of a lot is never cut (the "body" rule lock family)
+    if (target === "system.wirelessTurnedOn" && bundleWirelessRefused(realItem, actor, value)) return
     //Better Than Bad p. 141: under Blight no adept power, focus nor sustained spell is switched on (decisions of DjamZ;
     //the "magic" rule lock family, B13 lot 6)
     if (target === "system.isActive" && value && SR5_Toxins.blightSwitchRefused(actor, realItem)) return
@@ -2696,27 +2720,26 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
 
-    for (let a of game.actors){
-      if (a.type === "actorPc" || (a.type === "actorGrunt" && a.token?.actorLink)){
-        if (game.user.isGM) actorList[a.id] = a.name
-        else if (a.hasPlayerOwner) actorList[a.id] = a.name
-      }
-    }
-
-    if (canvas.scene && game.user.isGM){
-      for (let token of canvas.tokens.placeables) {
-        if (token.actor.isToken && (token.actor.type === "actorGrunt")) {
-          actorList[token.id] = token.name
-        }
-      }
-    }
+    //S1 (ticket 4 d'Adrore): the actors whose items join the PAN are those of the actor's scene, unlinked grunts included
+    //(each under its token's name, for the gamemaster only, as before); "show everyone" gives back the world's
+    const holder = c => c.actor.type === "actorPc" || (c.actor.type === "actorGrunt" && (c.onScene || c.actor.prototypeToken?.actorLink))
+    const allowed = c => game.user.isGM || (!c.actor.isToken && c.actor.hasPlayerOwner)
+    const listOf = showAll => Object.fromEntries(sceneCandidatesOf(actor, showAll).filter(c => holder(c) && allowed(c)).map(c => [c.ref, c.name]))
+    const actorListAll = listOf(true)
+    Object.assign(actorList, listOf(false))
 
     if (this.actor.isToken) baseActor = this.actor.token.id
+    //The actor itself is always offered, wherever it stands
+    if (!actorList[baseActor]) actorList[baseActor] = this.actor.isToken ? this.actor.token.name : this.actor.name
+    if (!actorListAll[baseActor]) actorListAll[baseActor] = actorList[baseActor]
 
     let dialogData = {
       actor: baseActor,
       list: list,
       actorList: actorList,
+      actorListScene: actorList,
+      actorListAll,
+      showAll: false,
     }
 
     const dlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/addItemToPan.hbs", dialogData)

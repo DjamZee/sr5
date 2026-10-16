@@ -7,6 +7,9 @@ import {
 import {
   SR5_EntityHelpers
 } from "../entities/helpers.js"
+import {
+  noteRemovedAreaTemplate
+} from "../system/areaEffectScene.js"
 
 export function sr5HookCanvasReady(data) {
   for (let token of data.tokens.placeables.filter(t => t.isOwner)){
@@ -45,6 +48,8 @@ export async function sr5HookDrawMeasuredTemplate(template) {
 }
 
 export async function sr5HookDeleteMeasuredTemplate(templateDocument) {
+  //On every client: the resistance may be applied on a player's
+  noteRemovedAreaTemplate(templateDocument)
   if (!game.users?.activeGM?.isSelf) return
   if (templateDocument.flags?.sr5?.jammerUuid) return SR5_Jammer.refreshScene(templateDocument.parent)
   await SR5_EffectArea.removeTemplateEffect(templateDocument)

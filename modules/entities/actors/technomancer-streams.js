@@ -213,6 +213,8 @@ export function machinistRccRatings(attributes){
 // Echo IRHM (Data Trails p. 63): jumps into a vehicle that has no rigger interface. Recognized by their name, like the
 // Aegis (aegis.js), or by a system effect of category specialCase
 const MACHINE_MIND = /possession de la machine|machine mind/i
+// Better Than Bad p. 145 (VO p. 161: « Resonant Discordance »)
+const RESONANT_DISSONANCE = /dissonance r[ée]sonante|resonant (dissonance|discordance)/i
 const HUMAN_MACHINE_INTERFACE = /\bIRHM\b|interface de r[ée]sonance homme.?machine|resonance man.?machine interface/i
 
 function echoHas(item, pattern, specialCase){
@@ -220,6 +222,30 @@ function echoHas(item, pattern, specialCase){
   if (pattern.test(item.name ?? "")) return true
   return Object.values(item.system?.systemEffects ?? {
   }).some(e => e?.category === "specialCase" && e.value === specialCase)
+}
+
+/**
+ * Écho Dissonance résonante (Better Than Bad p. 145): « Vous pouvez désormais entrer en RV cold-sim. […] vous conservez
+ * le bonus de +2 dés à toutes les actions matricielles. Si vous choisissez d'utiliser la RV hot-sim, vous bénéficiez
+ * également d'un bonus de +2 dés pour les tests impliquant les compétences de Résonance suivantes : Compilation,
+ * Décompilation et Filtrage de Formes complexes ». The VO (p. 161) reads « Compiling, Decompiling, and Threading complex
+ * forms »: the third is threading, the Software test (RESONANT_DISSONANCE_ACTIONS). By its name, or by the system effect
+ */
+export const RESONANT_DISSONANCE_ACTIONS = ["compileSprite", "decompileSprite", "threadComplexForm"]
+
+export function hasResonantDissonance(holder){
+  return itemsOf(holder).some(item => echoHas(item, RESONANT_DISSONANCE, "echoResonantDissonance"))
+}
+
+// The modes of the sheet's menu for a living persona: AR and hot sim, and cold sim once the echo opens it (« Vous pouvez
+// désormais entrer en RV cold-sim », Better Than Bad p. 145). lists: the system's lists (personaModes, deckModes)
+export function livingPersonaModes(holder, lists){
+  const modes = lists?.personaModes ?? {
+  }
+  if (!hasResonantDissonance(holder) || !lists?.deckModes?.coldsim) return modes
+  return {
+    ar: modes.ar, coldsim: lists.deckModes.coldsim, hotsim: modes.hotsim 
+  }
 }
 
 // The control rig rating the echo gives: one per time it was taken (its rank, else one item each), three at most

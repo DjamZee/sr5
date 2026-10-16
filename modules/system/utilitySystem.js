@@ -68,6 +68,9 @@ import {
   defaultBannerFolder
 } from "../interface/shop-vendor-templates.js"
 import {
+  activeMegapackId
+} from "./megapack.js"
+import {
   registerStarterKitSetting
 } from "./starter-kit.js"
 
@@ -115,6 +118,16 @@ export class SR5_SystemHelpers {
       config: false,
       type: Number,
       default: 0
+    })
+
+    // The former mentor qualities the world migration left as they were (mentor-conversion.js): "actorId.itemId",
+    // so that the GM is told of each one once
+    game.settings.register("sr5", "mentorMigrationWarned", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Array,
+      default: []
     })
 
     // Head case Nanite Volume moved out of Resonance: done once per world, whatever its migration version
@@ -417,6 +430,13 @@ export class SR5_SystemHelpers {
       scope: "world", config: false, default: [], type: Array,
     })
 
+    // Compendiums of a shadowed Megapack (both active: the one not read) put back on the shelves by the GM. They are
+    // left off by default and not read, so a change reads the shelves again on every client
+    game.settings.register("sr5", "sr5ShopIncludedPacks", {
+      scope: "world", config: false, default: [], type: Array,
+      onChange: () => import("../interface/shop-window.js").then(m => m.SR5ShopWorldSource.reset()),
+    })
+
     // Who may buy: player characters (as before), a folder, the actor's "Can shop" box, or folder or box
     game.settings.register("sr5", "sr5ShopBuyerMode", {
       scope: "world", config: false, default: "owned", type: String,
@@ -545,7 +565,7 @@ export class SR5_SystemHelpers {
     game.settings.register("sr5", "sr5ShopBannerFolder", {
       name: "SR5.SETTINGS_ShopBannerFolder_T",
       hint: "SR5.SETTINGS_ShopBannerFolder_D",
-      scope: "world", config: true, default: defaultBannerFolder(!!game.modules?.get("megapack-sr5-foundry-vtt")?.active), type: String,
+      scope: "world", config: true, default: defaultBannerFolder(activeMegapackId()), type: String,
       filePicker: "folder",
     })
 

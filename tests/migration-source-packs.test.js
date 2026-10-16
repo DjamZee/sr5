@@ -22,6 +22,7 @@ describe("compendiums left alone by the system migration", () => {
   it("sr5-compendiums and the Megapack are not migrated", () => {
     expect(Migration.isMaintainedAtSource(pack("sr5-compendiums"))).toBe(true)
     expect(Migration.isMaintainedAtSource(pack("megapack-sr5-foundry-vtt"))).toBe(true)
+    expect(Migration.isMaintainedAtSource(pack("megapack-sr5-lite"))).toBe(true)
   })
 
   it("a world compendium or another module's is migrated", () => {

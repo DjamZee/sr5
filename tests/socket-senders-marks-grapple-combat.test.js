@@ -308,29 +308,6 @@ describe('the markPanMaster socket', () => {
   })
 })
 
-describe('the markSlavedDevice socket', () => {
-  it('is refused from a player who does not own the host, accepted from the GM', async () => {
-    actor('host', {
-      matrix: {
-        deviceType: 'host'
-      }
-    })
-    const spy = vi.spyOn(SR5_MarkHelpers, 'markSlavedDevice').mockResolvedValue()
-    await SR5_MarkHelpers._socketMarkSlavedDevice({
-      data: {
-        targetActorID: 'host'
-      }
-    }, 'stranger')
-    expect(spy).not.toHaveBeenCalled()
-    await SR5_MarkHelpers._socketMarkSlavedDevice({
-      data: {
-        targetActorID: 'host'
-      }
-    }, 'gm')
-    expect(spy).toHaveBeenCalledTimes(1)
-  })
-})
-
 describe('the updateDeckMarkedItems socket', () => {
   let deck
   beforeEach(() => {

@@ -8,8 +8,11 @@ import {
   clinchCancelsReach, holdsTarget
 } from "../roll-helpers/grapple-rules.js"
 import {
-  trustedAttackCard
+  trustedAttackCard, vouch
 } from "../roll-helpers/attack-card.js"
+import {
+  isElectricHitOnDevice, isPlainHitOnDevice, deviceElectricResistanceData
+} from "../roll-helpers/electric-device.js"
 import {
   unarmedReachBonus
 } from "../../entities/items/weaponTraits.js"
@@ -34,9 +37,21 @@ export function defenderMovementModifier(actor, combat = globalThis.game?.combat
   return movementModifiers(meters).defense
 }
 
+//The resistance of a device hit by an electric weapon, from the attack card read again (attack-card.js); worked out
+//here, vouched for as the rigger's biofeedback (entityActor-helpers.js)
+async function electricHitOnDevice(actor, chatData){
+  const attack = await trustedAttackCard(chatData, actor)
+  if (!attack) return
+  return actor.rollTest("resistanceCard", null, vouch(deviceElectricResistanceData(attack)))
+}
+
 //Add info for Defense Roll
 export default async function defense(rollData, actor, chatData){
-  if (actor.type === "actorDevice" || actor.type === "actorSprite") return
+  //An electric weapon on a device (SR5 p. 172-173): no defense, its resistance comes at once (electric-device.js)
+  if (isElectricHitOnDevice(actor, chatData)) return void await electricHitOnDevice(actor, chatData)
+  //Any other hit on a device: no defense to roll, the gamemaster rules on it, and is told so (Lucas#2058, R3)
+  if (isPlainHitOnDevice(actor, chatData)) return void ui.notifications.info(game.i18n.localize("SR5.INFO_DeviceOnlyElectricity"))
+  if (actor.type === "actorSprite") return
   //SR5 p. 329: a Spell Shaping bubble leaves its occupant untouched, so there is no defense test to roll at all.
   //Checked here rather than inside the area template handler, which only runs for spells that have one
   if (SR5_SpellShapingHelpers.skips(actor, chatData)) return void SR5_SpellShapingHelpers.announceSpared(actor)
