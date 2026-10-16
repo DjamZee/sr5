@@ -237,6 +237,17 @@ export function hasResonantDissonance(holder){
   return itemsOf(holder).some(item => echoHas(item, RESONANT_DISSONANCE, "echoResonantDissonance"))
 }
 
+// The modes of the sheet's menu for a living persona: AR and hot sim, and cold sim once the echo opens it (« Vous pouvez
+// désormais entrer en RV cold-sim », Better Than Bad p. 145). lists: the system's lists (personaModes, deckModes)
+export function livingPersonaModes(holder, lists){
+  const modes = lists?.personaModes ?? {
+  }
+  if (!hasResonantDissonance(holder) || !lists?.deckModes?.coldsim) return modes
+  return {
+    ar: modes.ar, coldsim: lists.deckModes.coldsim, hotsim: modes.hotsim 
+  }
+}
+
 // The control rig rating the echo gives: one per time it was taken (its rank, else one item each), three at most
 export function machineMindRating(holder){
   let rating = 0
