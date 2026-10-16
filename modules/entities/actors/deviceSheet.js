@@ -2,7 +2,7 @@ import {
   ActorSheetSR5 
 } from "./baseSheet.js"
 import {
-  HOST_ATTRIBUTES, hostTypeLayout
+  HOST_ATTRIBUTES, hostTypeLayout, lockedHostAttributes
 } from "./host-type.js"
 import {
   hostMasterCandidates, hostNodesAllowed
@@ -55,6 +55,8 @@ export class SR5AppareilSheet extends ActorSheetSR5 {
     context.panMasterOptions = this._panMasterOptions(context.actor)
     context.iceHostOptions = this._iceHostOptions(context.actor)
     context.hostSlaves = this._hostSlaveData()
+    // The attributes a host's type sets: a padlock, no drag handle (matrixUser/attributes/*.hbs)
+    if (this.actor.system.matrix?.deviceType === "host") context.matrixAttributeLocks = lockedHostAttributes(this.actor.system.matrix.hostType)
 
     return context
   }

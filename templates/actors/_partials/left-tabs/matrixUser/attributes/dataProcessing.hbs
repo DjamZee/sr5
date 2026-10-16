@@ -5,7 +5,11 @@
     )}}
         <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_MatrixAttribute' key=(localize 'SR5.DataProcessing') }}"
         data-helpMessage="{{localize 'SR5.HELP_MatrixAttributeMsg'}}">
-            <div class="matrixAttributeBox draggableAttribute" draggable="true" data-dropMatrixAttribute="system.matrix.attributes.dataProcessing.base" data-droppedValue="{{system.matrix.attributes.dataProcessing.base}}">
+            {{#if (lookup matrixAttributeLocks "dataProcessing")}}
+<div class="matrixAttributeBox SR-MatrixAttributeLocked" data-dropMatrixAttribute="system.matrix.attributes.dataProcessing.base" data-droppedValue="{{system.matrix.attributes.dataProcessing.base}}" data-tooltip="{{localize 'SR5.HostTypeLockedAttribute'}}"><i class="fa-solid fa-lock SR-MatrixAttributeIcon"></i>
+{{else}}
+<div class="matrixAttributeBox draggableAttribute" draggable="true" data-dropMatrixAttribute="system.matrix.attributes.dataProcessing.base" data-droppedValue="{{system.matrix.attributes.dataProcessing.base}}" data-tooltip="{{localize 'SR5.MatrixAttributeSwapHint'}}"><i class="fa-solid fa-grip-vertical SR-MatrixAttributeIcon"></i>
+{{/if}}
                 {{#if_g system.matrix.attributes.dataProcessing.base 0}}
                     {{system.matrix.attributes.dataProcessing.base}}
                 {{/if_g}}

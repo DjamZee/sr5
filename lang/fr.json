@@ -2703,6 +2703,7 @@
 	"SR5.HostTypeDealt": "{type}, réparti par le type : indice {offset}",
 	"SR5.HostUntypedDealt": "Sans type, ordre par défaut (SR5 p. 248) : indice {offset} ; échangez deux attributs pour choisir le vôtre",
 	"SR5.HostTypeLockedAttribute": "Cet attribut est fixé par le type de serveur : il ne s'échange pas.",
+	"SR5.MatrixAttributeSwapHint": "Glissez une valeur sur une autre pour les échanger.",
 	"SR5.HELP_HostTypeMsg": "Kill Code p. 48-52. Le type remplace la collection habituelle (indice, +1, +2, +3) par la sienne ; un attribut qui tomberait à 0 passe à 1. Les attributs « au choix du MJ » se réarrangent en les échangeant sur la fiche. Un serveur imbriqué prend le type qu'il imite. « Aucun » garde la saisie manuelle.",
 	"SR5.IceType": "Type de CI",
 	"SR5.IncludeSpecializationBonus": "Inclure le bonus de spécialisation",

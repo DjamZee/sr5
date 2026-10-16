@@ -220,6 +220,39 @@
                 background-color: color-mix(in srgb, var(--sr-text-color-flash) 5%, transparent);
                 border: 1px solid var(--sr-text-color-flash);
             }
+
+            // The values a deck or a host swaps by drag and drop: a handle and the grab cursor; a value the host's
+            // type sets: a padlock (Kill Code p. 48-52)
+            &.draggableAttribute,
+            &.SR-MatrixAttributeLocked {
+                position: relative;
+            }
+            &.draggableAttribute {
+                cursor: grab;
+                &:active { cursor: grabbing; }
+                &:hover { border-color: var(--sr-text-color-flash); }
+            }
+            &.SR-MatrixAttributeLocked {
+                cursor: not-allowed;
+                border-style: dashed;
+            }
+            .SR-MatrixAttributeIcon {
+                position: absolute;
+                left: 2px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 8px;
+                opacity: 0.6;
+                pointer-events: none;
+            }
+        }
+
+        // Under the matrix attributes: the values swap by drag and drop
+        .SR-MatrixSwapHint {
+            font-size: 0.85em;
+            font-style: italic;
+            opacity: 0.75;
+            padding: 2px 4px 0;
         }
 
         .unfoldLight {
