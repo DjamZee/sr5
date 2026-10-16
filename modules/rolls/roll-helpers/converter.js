@@ -92,11 +92,19 @@ export class SR5_ConverterHelpers {
     return 0
   }
 
-  //Suppressive fire fires 20 rounds (SR5 p. 179) and the flamethrower sweep two units (Gun H(e)aven 3 p. 3): with fewer
-  //left the attack cannot be made. Other modes keep firing what is left.
+  //The flamethrower sweep needs two units (Gun H(e)aven 3 p. 3): with fewer left the attack cannot be made.
+  //Suppressive fire with fewer than 20 rounds narrows its zone instead (SR5 p. 181), refused once it is 0 m wide.
+  //Other modes keep firing what is left.
   static missingAmmo(mode, ammoLeft){
-    if (mode !== "SF" && mode !== "FN") return false
+    if (mode === "SF") return this.suppressiveFireWidth(ammoLeft) <= 0
+    if (mode !== "FN") return false
     return (ammoLeft ?? 0) < this.firingModeToBullet(mode)
+  }
+
+  //Width in metres of the suppressive fire zone (SR5 p. 181): 10 m, 1 m less for every 2 rounds missing out of 20
+  static suppressiveFireWidth(ammoLeft){
+    const missing = Math.max(0, 20 - (Number(ammoLeft) || 0))
+    return Math.max(0, 10 - Math.floor(missing / 2))
   }
 
   //Several targets for a flamethrower: the sweep (Gun H(e)aven 3 p. 3), whatever mode the weapon kept

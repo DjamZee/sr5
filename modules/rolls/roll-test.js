@@ -431,6 +431,10 @@ export class SR5_RollTest {
     if (missingAmmo && ruleLockBinds("ammo")) return refuse()
     if (!SR5Combat.hasActionsLeft(SR5_RollTest.actionsFighter(actor, dialogData), dialogData.combat.actions)) return true
     if (missingAmmo) refuse()
+    //Fewer than 20 rounds: the zone is narrower, the fire is not refused (SR5 p. 181)
+    else if (mode === "SF" && dialogData.test.typeSub === "rangedWeapon" && left < 20) ui.notifications.info(game.i18n.format("SR5.INFO_SuppressiveFireNarrowed", {
+      left, width: SR5_ConverterHelpers.suppressiveFireWidth(left)
+    }))
     return false
   }
 

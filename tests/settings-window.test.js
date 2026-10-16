@@ -67,6 +67,9 @@ import {
 import {
   registerTacnetSetting
 } from '../modules/system/tacnet.js'
+import {
+  registerCommcodeHooks
+} from '../modules/interface/commcode-traffic.js'
 
 import {
   SETTINGS_TABS, SETTINGS_TAGS, SETTINGS_CATALOG, MENU_CATALOG, SETTINGS_WINDOW_MENU,
@@ -149,6 +152,21 @@ function registerAll() {
     registerIllusionSetting()
     registerHealLedger()
     registerTacnetSetting()
+    // The commcode registers its settings in a hook "init" (the key cipher is a visible one), and its key
+    globalThis.CONST ??= {
+    }
+    globalThis.CONST.KEYBINDING_PRECEDENCE ??= {
+      NORMAL: 0
+    }
+    const hooks = globalThis.Hooks
+    globalThis.Hooks = {
+      ...hooks, on: () => {}, once: (name, fn) => name === 'init' && fn()
+    }
+    try {
+      registerCommcodeHooks()
+    } finally {
+      globalThis.Hooks = hooks
+    }
   } finally {
     globalThis.game.settings = previous.settings
     globalThis.game.keybindings = previous.keybindings

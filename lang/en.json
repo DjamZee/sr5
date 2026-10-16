@@ -6577,6 +6577,7 @@
 	"SR5.WARN_FanningOutOfRange": "Flamethrower fanning: every target must be within the weapon's range.",
 	"SR5.WARN_FanningTooFar": "Flamethrower fanning: each target must be within 4 m of another.",
 	"SR5.WARN_FiringModeAmmo": "This firing mode needs {needed} units of ammo, {left} left.",
+	"SR5.INFO_SuppressiveFireNarrowed": "Suppressive fire with {left} rounds: the suppression zone is only {width} m wide (1 m less for every 2 missing rounds, SR5 p. 179).",
 	"SR5.FuelUnits": "units",
 	"SR5.WeaponModeFN": "Fanning",
 	"SR5.WeaponModeFNShort": "FN",
