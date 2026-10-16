@@ -62,7 +62,7 @@ async function designedIceHit(cardData, design, {
   for (const source of hit.effects) {
     let label = DESIGN_EFFECT_LABELS[source]
     //Flicker (Kill Code p. 74): the link locked, then a disconnection at two marks
-    if (source === "iceFlicker") label = existingMark >= 1 ? "SR5.DeviceReboot" : "SR5.LinkLockConnection"
+    if (source === "iceFlicker") label = existingMark >= 1 ? "SR5.IceFlickerDisconnect" : "SR5.LinkLockConnection"
     buttons[designActionOf(source)] = SR5_RollMessage.generateChatButton("nonOpposedTest", designActionOf(source), game.i18n.localize(label))
   }
   if (hit.marks > 0) {
@@ -167,7 +167,8 @@ export default async function iceDefenseInfo(cardData, actorId){
         cardData.chatCard.buttons.attackerPlaceMark = SR5_RollMessage.generateChatButton("nonOpposedTest", "attackerPlaceMark", `${game.i18n.format('SR5.AttackerPlaceMarkTo', {
           key: cardData.matrix.mark, item: targetName, name: cardData.owner.speakerActor
         })}`)
-        if (!devicelessAI && existingMark >= 1) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.DeviceReboot"))
+        //Kill Code p. 74: the second mark disconnects (no reboot: flicker-disconnection.js)
+        if (!devicelessAI && existingMark >= 1) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.IceFlickerDisconnect"))
         break
       case "iceCrash":
         if (existingMark >= 1) cardData.chatCard.buttons.iceEffect = SR5_RollMessage.generateChatButton("nonOpposedTest", "iceEffect", game.i18n.localize("SR5.MatrixActionCrashProgram"))

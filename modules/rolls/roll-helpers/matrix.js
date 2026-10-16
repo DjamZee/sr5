@@ -50,6 +50,9 @@ import {
   linkLockStatusIds,
   isLinkLockEffect
 } from "../../system/link-lock.js"
+import {
+  disconnectByFlicker
+} from "../../system/flicker-disconnection.js"
 
 //A warning, and false: nothing was written, the card's button stays
 function warned(key) {
@@ -889,15 +892,14 @@ export class SR5_MatrixHelpers {
         //The device may have been deleted since the attack: warn, no Flicker effect
         if (!item?.system) return ui.notifications.warn(game.i18n.localize("SR5.WARN_TargetItemMissing"))
         let existingMark = SR5_MarkHelpers.iceMarkValue(item.system, ice)
-        if (!target.system.matrix.isLinkLocked) 
-          await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         //Kill Code p. 74: two marks disconnect, this hit's own counted while its button is still on the card, whatever
-        //the order of the clicks. The forced reboot deals the dumpshock in VR (rebootDeck, SR5 p. 244)
+        //the order of the clicks. It is no reboot: the dumpshock at once, the avatar left inert for [Device Rating]
+        //combat turns, then the full reboot (flicker-disconnection.js, Élise's ruling of 16/10)
         const pendingMark = cardData.chatCard?.buttons?.attackerPlaceMark ? (cardData.matrix?.mark ?? 0) : 0
         if (existingMark + pendingMark >= 2) {
-          let deck_iceFlicker = target.items.find((item) => item.type === "itemDevice" && item.system.isActive)
-          target.rebootDeck(deck_iceFlicker)
-        }
+          const deck = target.items.find((i) => i.type === "itemDevice" && i.system.isActive)
+          await disconnectByFlicker(ice, target, deck ?? item)
+        } else if (!target.system.matrix.isLinkLocked) await SR5_MatrixHelpers.applylinkLockEffect(ice, target)
         break
       }
       default:
