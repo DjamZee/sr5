@@ -32,6 +32,9 @@ const {
 const {
   infectWith
 } = await import('../modules/system/diseases.js')
+const {
+  ActorPicker
+} = await import('../modules/interface/actor-picker.js')
 
 let previousGet, previousFormat
 beforeEach(() => {
@@ -237,11 +240,20 @@ describe('infecting the selected tokens', () => {
       }
     }
     CONFIG.SR5 ??= SR5
+    // The characters offered are the entries of the dialog's list (actor-picker.js), drawn at its render
     let content = ''
+    const draw = vi.spyOn(ActorPicker.prototype, 'render').mockImplementation((_container, data) => {
+      content = data.entries.map(e => e.id).join(' ')
+    })
     foundry.applications.api = {
       ...previousApi, DialogV2: {
         prompt: async o => {
-          content = o.content
+          o.render?.(null, {
+            element: {
+              querySelector: () => ({
+              })
+            }
+          })
           return null
         }
       }
@@ -259,6 +271,7 @@ describe('infecting the selected tokens', () => {
         }
       }
     })
+    draw.mockRestore()
     return content
   }
 
