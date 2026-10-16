@@ -62,6 +62,9 @@ import {
   SR5_CalledShotHelpers 
 } from "../../rolls/roll-helpers/calledShot.js"
 import {
+  announceMarksChanged
+} from "../../system/matrix-hooks.js"
+import {
   SR5_PrepareRollTest 
 } from "../../rolls/roll-prepare.js"
 import {
@@ -864,15 +867,20 @@ export class SR5_ActorHelper {
       let itemToClean = await fromUuid(m.uuid)
       //The persona of an AI outside any device carries its marks itself (Data Trails p. 157)
       if (itemToClean?.documentName === "Actor") {
+        const previous = (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId === actorId)
+          .reduce((sum, mark) => Math.max(sum, Number(mark.value) || 0), 0)
         await itemToClean.update({
           "system.matrix.marks": (itemToClean._source.system.matrix.marks ?? []).filter(mark => mark.ownerId !== actorId)
         }, {
           sr5PersonaMarks: true
         })
+        //S4 C4: the modules hear the marks of a rebooted marker go
+        announceMarksChanged(itemToClean, actorId, 0, previous, "reboot")
       } else if (itemToClean) {
-        let cleanData = foundry.utils.duplicate(itemToClean.system)
+        let cleanData = foundry.utils.duplicate(itemToClean.system), previous = 0
         for (let i = 0; i < cleanData.marks.length; i++){
           if (cleanData.marks[i].ownerId === actorId) {
+            previous = Math.max(previous, Number(cleanData.marks[i].value) || 0)
             cleanData.marks.splice(i, 1)
             i--
           }
@@ -880,6 +888,7 @@ export class SR5_ActorHelper {
         await itemToClean.update({
           "system" : cleanData
         })
+        announceMarksChanged(itemToClean, actorId, 0, previous, "reboot")
       } else {
         SR5_SystemHelpers.srLog(1, `No Item to Clean in deleteMarksOnActor()`)
       }

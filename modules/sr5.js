@@ -46,6 +46,9 @@ import {
   registerIceHostHooks
 } from './system/ice-host.js'
 import {
+  registerOverwatchHook
+} from './system/matrix-hooks.js'
+import {
   registerInsectRaceHooks
 } from './entities/actors/insect-race-hooks.js'
 import {
@@ -307,6 +310,8 @@ registerBoneAugmentationGuard()
 registerAgilityZeroHooks()
 // An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
 registerIceHostHooks()
+// S4 C5: the modules hear an Overwatch Score change (sr5.overwatchChanged)
+registerOverwatchHook()
 registerInsectRaceHooks()
 // The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
 registerCyberlimbNotice()

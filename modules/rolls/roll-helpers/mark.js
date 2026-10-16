@@ -25,6 +25,9 @@ import {
 import {
   iceHostOf
 } from "../../system/ice-host.js"
+import {
+  announceMarksChanged, matrixMarkCap
+} from "../../system/matrix-hooks.js"
 
 //The same fighter, whether the card names its token or its actor (a token's actor shares the actor's id)
 const sameActor = (a, b) => !!a && !!b && (a === b || a.id === b.id)
@@ -104,20 +107,28 @@ export class SR5_MarkHelpers {
     //Lot 19: the copies of one IC launched in two hosts mark under the same id; the mark keeps the host of the copy
     //that placed it, so that each host's marks stay its own (Sleuther, Kill Code p. 74)
     const iceHost = iceMarkHost(attacker)
+    //S4 C2: 3 by the book (SR5 p. 237), unless a module's rule says otherwise
+    const cap = matrixMarkCap({
+      attacker, target: targetActor
+    })
+    let previous = 0, value = 0
     // If item is already marked, increase marks
     for (let m of itemToMark.marks){
       if (m.ownerId === realAttackerID && sameIceHost(m, iceHost)) {
+        previous = m.value
         m.value += mark
-        if (m.value > 3) m.value = 3
+        if (m.value > cap) m.value = cap
+        value = m.value
         if (isWatchdog) m.watchdog = true
         existingMark = true
       }
     }
     // Add new mark to item
     if (!existingMark){
+      value = Math.min(mark, cap)
       let newMark = {
         "ownerId": realAttackerID,
-        "value": mark,
+        "value": value,
         "ownerName": attacker.name,
         "watchdog": isWatchdog,
       }
@@ -127,6 +138,8 @@ export class SR5_MarkHelpers {
     await item.update({
       "system": itemToMark
     })
+    //S4 C4: the modules hear of it
+    announceMarksChanged(item, realAttackerID, value, previous, isWatchdog ? "watchdog" : "mark")
 
     //Update attacker deck with info
     if (!game.user?.isGM) {
@@ -163,14 +176,18 @@ export class SR5_MarkHelpers {
     const iceHost = iceMarkHost(attacker)
     let realAttackerID = (attacker.system.matrix.deviceType === "ice" && attacker.isToken) ? attacker.id : attackerID,
       marks = foundry.utils.duplicate(targetActor.system.matrix.marks || []),
-      existing = marks.find(m => m.ownerId === realAttackerID && sameIceHost(m, iceHost))
+      existing = marks.find(m => m.ownerId === realAttackerID && sameIceHost(m, iceHost)),
+      cap = matrixMarkCap({
+        attacker, target: targetActor
+      }),
+      previous = existing?.value ?? 0
 
     if (existing) {
-      existing.value = Math.min(existing.value + mark, 3)
+      existing.value = Math.min(existing.value + mark, cap)
       if (isWatchdog) existing.watchdog = true
     } else marks.push({
       "ownerId": realAttackerID,
-      "value": mark,
+      "value": Math.min(mark, cap),
       "ownerName": attacker.name,
       "watchdog": isWatchdog,
       ...(iceHost ? {
@@ -181,6 +198,8 @@ export class SR5_MarkHelpers {
     await targetActor.update({
       "system.matrix.marks": marks
     })
+    announceMarksChanged(targetActor, realAttackerID, marks.find(m => m.ownerId === realAttackerID && sameIceHost(m, iceHost))?.value ?? 0,
+      previous, isWatchdog ? "watchdog" : "mark")
 
     //Update attacker deck with info
     if (!game.user?.isGM) await SR5_SocketHandler.emitForGM("updateDeckMarkedItems", {
@@ -373,20 +392,24 @@ export class SR5_MarkHelpers {
       ownerDeck = owner.items.find(i => i.type === "itemDevice" && i.system.isActive),
       deckData = foundry.utils.duplicate(ownerDeck.system),
       itemMarked = await fromUuid(markedItem),
-      alreadyMarked = false
+      alreadyMarked = false,
+      //S4 C2: the record keeps what the icon may carry
+      cap = matrixMarkCap({
+        attacker: owner, target: itemMarked?.documentName === "Actor" ? itemMarked : itemMarked?.parent ?? null
+      })
 
     //If item is already marked, update value
     for (let m of deckData.markedItems){
       if (m.uuid === itemMarked.uuid) {
         m.value = exact ?? (m.value + mark)
-        if (m.value > 3) m.value = 3
+        if (m.value > cap) m.value = cap
         alreadyMarked = true
       }
     }
     if (!alreadyMarked){
       let newMark = {
         "uuid": itemMarked.uuid,
-        "value": Math.min(exact ?? mark, 3),
+        "value": Math.min(exact ?? mark, cap),
         "itemName": itemMarked.name,
         //A persona marked directly is its own owner
         'itemOwner': itemMarked.actor?.name ?? itemMarked.name,
@@ -515,9 +538,12 @@ export class SR5_MarkHelpers {
       itemData = foundry.utils.duplicate(item.system)
 
     //Iterate through marked item and remove the one from the same source
+    let previous = 0, value = 0
     for (let i = 0; i < itemData.marks.length; i++){
       if (itemData.marks[i].ownerId === cardData.owner.actorId) {
+        previous = itemData.marks[i].value
         itemData.marks[i].value -= 1
+        value = Math.max(0, itemData.marks[i].value)
         if (itemData.marks[i].value <= 0){
           itemData.marks.splice(i, 1)
           i--
@@ -527,6 +553,7 @@ export class SR5_MarkHelpers {
     await item.update({
       "system": itemData
     })
+    announceMarksChanged(item, cardData.owner.actorId, value, previous, "erase")
     //Delete mark from owner deck
     await SR5_ActorHelper.deleteMarkInfo(cardData.owner.actorId, cardData.previousMessage.itemUuid)
   }

@@ -10,6 +10,9 @@
 import {
   FILE_NODE_ACTIONS
 } from "../../system/matrix-files.js"
+import {
+  matrixEffectiveMarks
+} from "../../system/matrix-hooks.js"
 
 export const PAN_DEVICE_ACTIONS = [
   "matrixPerception", "hackOnTheFly", "bruteForce", "dataSpike", "snoop", "spoofCommand", "controlDevice",
@@ -267,7 +270,10 @@ export function menuEntries(node, graph, viewer, {
     key,
     ...actionState({
       neededMarks: actions[key]?.neededMarks,
-      marks: marksFor(key, node, graph),
+      //S4 C3: the marks a module's rule counts, from those really carried
+      marks: matrixEffectiveMarks({
+        viewer: actor, target: node, key, marks: marksFor(key, node, graph)
+      }),
       known: !!actions[key],
       hasAntenna: !!graph.viewer?.hasAntenna,
       canTry: canTry(key, actor),
