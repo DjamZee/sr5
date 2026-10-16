@@ -71,7 +71,7 @@
 				<select name="system.matrix.panMaster" data-dtype="String">
 					<option value="">{{localize 'SR5.DEVICE_PanMasterNone'}}</option>
 					{{#if panMasterOptions.unknown}}
-					<option value="{{panMasterOptions.unknown}}" selected>{{panMasterOptions.unknown}}</option>
+					<option value="{{panMasterOptions.unknown.value}}" selected>{{panMasterOptions.unknown.label}}</option>
 					{{/if}}
 					{{#if panMasterOptions.hosts.length}}
 					<optgroup label="{{localize 'SR5.DEVICE_PanMasterHosts'}}">
@@ -85,6 +85,13 @@
 					{{/if}}
 				</select>
 			</div>
+		</li>
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_ShowAllMasters'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_ShowAllMastersMsg'}}"
+		>
+			<div class="col-10">{{localize 'SR5.DEVICE_ShowAllMasters'}}</div>
+			<div class="col-2 SR-TextCenter"><input type="checkbox" data-sr5-show-all-masters {{checked panMasterOptions.showAll}}></div>
 		</li>
 		{{/if}}
 
@@ -108,12 +115,21 @@
 				<select name="system.matrix.hostUuid" data-dtype="String" {{#unless system.isGM}}disabled{{/unless}}>
 					<option value="">{{localize 'SR5.DEVICE_IceHostNone'}}</option>
 					{{#if iceHostOptions.unknown}}
-					<option value="{{iceHostOptions.unknown}}" selected>{{iceHostOptions.unknown}}</option>
+					<option value="{{iceHostOptions.unknown.value}}" selected>{{iceHostOptions.unknown.label}}</option>
 					{{/if}}
 					{{selectOptions iceHostOptions.hosts selected=system.matrix.hostUuid valueAttr="value" labelAttr="label"}}
 				</select>
 			</div>
 		</li>
+		{{#if system.isGM}}
+		<li class="grid"
+		  data-helpTitle="{{localize 'SR5.DEVICE_ShowAllMasters'}}"
+		  data-helpMessage="{{localize 'SR5.HELP_ShowAllMastersMsg'}}"
+		>
+			<div class="col-10">{{localize 'SR5.DEVICE_ShowAllMasters'}}</div>
+			<div class="col-2 SR-TextCenter"><input type="checkbox" data-sr5-show-all-masters {{checked iceHostOptions.showAll}}></div>
+		</li>
+		{{/if}}
 		{{/if}}
 		{{/ife}}
 

@@ -2,6 +2,9 @@ import {
   vintageWirelessRefused
 } from '../items/weaponTraits.js'
 import {
+  sceneCandidatesOf
+} from '../../interface/scene-actors.js'
+import {
   SR5_Toxins
 } from '../items/toxins.js'
 import {
@@ -2698,27 +2701,26 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
       }
     }
 
-    for (let a of game.actors){
-      if (a.type === "actorPc" || (a.type === "actorGrunt" && a.token?.actorLink)){
-        if (game.user.isGM) actorList[a.id] = a.name
-        else if (a.hasPlayerOwner) actorList[a.id] = a.name
-      }
-    }
-
-    if (canvas.scene && game.user.isGM){
-      for (let token of canvas.tokens.placeables) {
-        if (token.actor.isToken && (token.actor.type === "actorGrunt")) {
-          actorList[token.id] = token.name
-        }
-      }
-    }
+    //S1 (ticket 4 d'Adrore): the actors whose items join the PAN are those of the actor's scene, unlinked grunts included
+    //(each under its token's name, for the gamemaster only, as before); "show everyone" gives back the world's
+    const holder = c => c.actor.type === "actorPc" || (c.actor.type === "actorGrunt" && (c.onScene || c.actor.prototypeToken?.actorLink))
+    const allowed = c => game.user.isGM || (!c.actor.isToken && c.actor.hasPlayerOwner)
+    const listOf = showAll => Object.fromEntries(sceneCandidatesOf(actor, showAll).filter(c => holder(c) && allowed(c)).map(c => [c.ref, c.name]))
+    const actorListAll = listOf(true)
+    Object.assign(actorList, listOf(false))
 
     if (this.actor.isToken) baseActor = this.actor.token.id
+    //The actor itself is always offered, wherever it stands
+    if (!actorList[baseActor]) actorList[baseActor] = this.actor.isToken ? this.actor.token.name : this.actor.name
+    if (!actorListAll[baseActor]) actorListAll[baseActor] = actorList[baseActor]
 
     let dialogData = {
       actor: baseActor,
       list: list,
       actorList: actorList,
+      actorListScene: actorList,
+      actorListAll,
+      showAll: false,
     }
 
     const dlg = await foundry.applications.handlebars.renderTemplate("systems/sr5/templates/interface/addItemToPan.hbs", dialogData)
