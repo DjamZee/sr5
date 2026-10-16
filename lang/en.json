@@ -2722,6 +2722,7 @@
 	"SR5.INFO_DVLimitByCalledShot": "DV limit to {value} by called shot",
 	"SR5.INFO_CalledShotEffectsResisted": "Damage fully resisted: no called shot effect applies",
 	"SR5.INFO_ElectricityChangeDamage": "Stun damage are converted to Physical by electrictiy.",
+	"SR5.INFO_DeviceOnlyElectricity": "Only electricity damage reaches a device (SR5 p. 172-173): the GM rules on the others.",
 	"SR5.INFO_FireDamageIncrease": "is on fire ! DV increase by 1 for a total of {fire}",
 	"SR5.INFO_ForbiddenItemType": "This type of item is not supported by this type of character.",
 	"SR5.INFO_FullDefenseEnd": "end of full defense",

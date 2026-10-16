@@ -97,6 +97,9 @@ import {
 import {
   syncDroneBox
 } from "../../system/slave-sync.js"
+import {
+  electricMatrixDamage
+} from "../../rolls/roll-helpers/electric-device.js"
 
 export class SR5_ActorHelper {
     
@@ -206,7 +209,7 @@ export class SR5_ActorHelper {
           }
         }
         // Drones short out (matrix damage); vehicles take the damage without side effect (SR5 p. 173)
-        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = Math.floor(options.damage.value / 2)
+        if (options.damage.element === "electricity" && actorData.type !== "vehicle") options.damage.matrix.value = electricMatrixDamage(options.damage.value)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
@@ -216,6 +219,8 @@ export class SR5_ActorHelper {
       case "actorAgent":
       case "actorSprite":
       case "actorDevice":
+        //An electric weapon: its matrix half alone, a device has no other monitor (SR5 p. 173, electric-device.js)
+        if (actor.type === "actorDevice" && options.damage.element === "electricity") options.damage.matrix.value = electricMatrixDamage(options.damage.value)
         if (options.damage.matrix.value > 0) {
           actorData.conditionMonitors.matrix.actual.base += options.damage.matrix.value
           SR5_EntityHelpers.updateValue(actorData.conditionMonitors.matrix.actual, 0)
@@ -297,8 +302,9 @@ export class SR5_ActorHelper {
     }
 
     //Special Element Damage
-    // A drone's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and Initiative penalty
-    if (options.damage.element === "electricity" && actor.type !== "actorDrone") await SR5_ActorHelper.electricityDamageEffect(actorId)
+    // A drone's or a device's side effect from electricity is the matrix damage above (SR5 p. 173), not the dice and
+    // Initiative penalty
+    if (options.damage.element === "electricity" && actor.type !== "actorDrone" && actor.type !== "actorDevice") await SR5_ActorHelper.electricityDamageEffect(actorId)
     if (options.damage.element === "anticoagulant" && actor.type !== "actorDrone") await SR5_ActorHelper.anticoagulantDamageEffect(actorId)
     //The acid of a spell evaporates once the spell ends (SR5 p. 172): spells and preparations say "magical", never "spell";
     //a weapon focus is a weapon. The burn the acid deals each turn (srcombat.js) never lays a new acid of its own
