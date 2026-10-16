@@ -52,19 +52,8 @@
       <label>{{localize 'SR5.FACTION_Faction'}}</label>
       <select name="mvFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
     </div>
-    {{!-- Search and sort: the list grows with every NPC (relecture djamz.13, P1-36) --}}
-    <div class="sr-faction-pick-tools">
-      <input type="search" class="sr-faction-pick-search" placeholder="{{localize 'SR5.FACTION_PickSearch'}}" aria-label="{{localize 'SR5.FACTION_PickSearch'}}">
-      <select class="sr-faction-pick-sort" aria-label="{{localize 'SR5.FACTION_PickSort'}}">
-        <option value="players">{{localize 'SR5.FACTION_PickSortPlayers'}}</option>
-        <option value="name">{{localize 'SR5.FACTION_PickSortName'}}</option>
-        <option value="checked">{{localize 'SR5.FACTION_PickSortChecked'}}</option>
-      </select>
-      <span class="sr-faction-pick-count"></span>
-    </div>
-    <div class="sr-faction-row sr-faction-pick">
-      {{#each characters}}<label class="checkbox" data-name="{{name}}" data-player="{{#if isPlayer}}1{{else}}0{{/if}}"><input type="checkbox" name="mvActor" value="{{id}}"> {{#if isPlayer}}<i class="fas fa-user" data-tooltip="{{localize 'SR5.FACTION_PickPlayer'}}"></i> {{/if}}{{name}}</label>{{/each}}
-    </div>
+    {{!-- Search, folders and kind: the list grows with every NPC (relecture djamz.13, P1-36; actor-picker.js) --}}
+    <div class="sr-faction-picker" data-picker="mvActor"></div>
     <div class="form-group">
       <label>{{localize 'SR5.FACTION_Reason'}}</label>
       <select name="reason">{{#each reasons}}<option value="{{key}}">{{localize label}} ({{value}})</option>{{/each}}</select>
@@ -87,12 +76,17 @@
     <legend>{{localize 'SR5.FACTION_Spending'}}</legend>
     <div class="sr-faction-row">
       <select name="spFaction">{{#each factions}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
-      <select name="spActor">{{#each characters}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
       <select name="spKind">{{#each spends}}<option value="{{key}}">{{localize label}} ({{value}})</option>{{/each}}</select>
     </div>
-    <div class="form-group">
-      <label>{{localize 'SR5.FACTION_ContactToRaise'}}</label>
-      <select name="spContact"><option value="">—</option>{{#each contacts}}<option value="{{uuid}}">{{label}}</option>{{/each}}</select>
+    <div class="sr-faction-pickers">
+      <div class="sr-faction-picker-box">
+        <span class="sr-faction-picker-label">{{localize 'SR5.FACTION_SpendActor'}}</span>
+        <div class="sr-faction-picker" data-picker="spActor"></div>
+      </div>
+      <div class="sr-faction-picker-box">
+        <span class="sr-faction-picker-label">{{localize 'SR5.FACTION_ContactToRaise'}}</span>
+        <div class="sr-faction-picker" data-picker="spContact"></div>
+      </div>
     </div>
     <button type="button" data-action="spend"><i class="fas fa-coins"></i> {{localize 'SR5.FACTION_Spend'}}</button>
   </fieldset>

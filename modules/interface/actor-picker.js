@@ -19,10 +19,13 @@ export const actorKind = ({
 }) => type === "actorPc" ? (hasPlayerOwner ? "pc" : "npc") : type === "actorGrunt" ? "grunt" : "other"
 
 const byName = (a, b) => a.name.localeCompare(b.name)
+// Up to this many entries, the folders open unfolded
+const SMALL_LIST = 20
 
 /**
  * The ids shown for a search and a kind; the chosen and the always shown ones stay in whatever the filter says.
- * @param {Array<{id, name, kind}>} entries
+ * The search reads the name, or the entry's own search text when it has one (a contact: its name and its owner's).
+ * @param {Array<{id, name, kind, search?}>} entries
  * @param {{query?: string, kind?: string, keep?: Iterable<string>}} filter
  * @returns {Set<string>}
  */
@@ -34,7 +37,7 @@ export function visibleIds(entries, {
   const kept = new Set(keep)
   const shown = new Set()
   for (const entry of entries){
-    const key = foldKey(entry.name)
+    const key = foldKey(entry.search ?? entry.name)
     if (kept.has(entry.id) || ((!kind || entry.kind === kind) && words.every(w => key.includes(w)))) shown.add(entry.id)
   }
   return shown
@@ -100,13 +103,17 @@ export class ActorPicker {
    * @param {string} options.name          the input name, read back by values()
    * @param {boolean} [options.multiple]   checkboxes, or a single choice
    * @param {string} [options.noneLabel]   a single choice: the label of « none »
+   * @param {string} [options.markIcon]    the icon of the marked entries
+   * @param {Function} [options.onChange]  called with values() when the choice changes
    */
   constructor({
-    name, multiple = false, noneLabel = ""
+    name, multiple = false, noneLabel = "", markIcon = "fa-masks-theater", onChange = null
   }){
+    this.onChange = onChange
     this.name = name
     this.multiple = multiple
     this.noneLabel = noneLabel
+    this.markIcon = markIcon
     this.query = ""
     this.kind = ""
     this.selected = new Set()
@@ -200,6 +207,7 @@ export class ActorPicker {
       input.addEventListener("change", () => {
         this.selected.clear()
         refresh()
+        this.onChange?.(this.values())
       })
     }
 
@@ -219,7 +227,7 @@ export class ActorPicker {
       if (marks.has(entry.id)){
         row.classList.add("marked")
         row.appendChild(el("i", {
-          class: "fas fa-masks-theater sr-ap-mark", "data-tooltip": marks.get(entry.id)
+          class: `fas ${this.markIcon} sr-ap-mark`, "data-tooltip": marks.get(entry.id)
         }))
       }
       input.addEventListener("change", () => {
@@ -227,6 +235,7 @@ export class ActorPicker {
         if (input.checked) this.selected.add(entry.id)
         else this.selected.delete(entry.id)
         refresh()
+        this.onChange?.(this.values())
       })
       inputs.set(entry.id, {
         row, input
@@ -293,7 +302,8 @@ export class ActorPicker {
         visibleIn.set(key, n)
         box.hidden = n === 0
         count.textContent = filtering ? `${n} / ${node.count}` : `${node.count}`
-        const open = filtering || this.opened.has(key)
+        // A short list opens unfolded: a click folds it, as a click unfolds a long one
+        const open = filtering || (entries.length <= SMALL_LIST) !== this.opened.has(key)
         box.classList.toggle("open", open)
         box.querySelector(":scope > .sr-ap-folder-head > .sr-ap-folder-icon").className =
           `fas ${open ? "fa-folder-open" : "fa-folder"} sr-ap-folder-icon`
@@ -315,6 +325,7 @@ export class ActorPicker {
         remove.addEventListener("click", () => {
           this.selected.delete(id)
           refresh()
+          this.onChange?.(this.values())
         })
       }
       chosen.hidden = !this.selected.size

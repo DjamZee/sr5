@@ -72,6 +72,16 @@ describe('the search of the actor picker', () => {
       kind: 'pc', query: 'zoe'
     })]).toEqual(['d'])
   })
+  it('reads the search text of an entry when it has one', () => {
+    const contacts = [{
+      id: 'k', name: 'Fixer', search: 'Fixer Adepte martial'
+    }, {
+      id: 'l', name: 'Docteur', search: 'Docteur Zoé'
+    }]
+    expect([...visibleIds(contacts, {
+      query: 'zoe'
+    })]).toEqual(['l'])
+  })
   it('keeps the chosen actors whatever the filter says', () => {
     expect([...visibleIds(entries, {
       query: 'goule', kind: 'grunt', keep: ['b']

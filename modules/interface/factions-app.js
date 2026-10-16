@@ -9,6 +9,10 @@ import {
   worldTimeToComponents, calendarStartYear
 } from "../system/calendar.js"
 
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "./actor-picker.js"
+
 const newId = () => foundry.utils.randomID()
 
 /**
@@ -47,6 +51,28 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   static PARTS = {
     body: {
       template: "systems/sr5/templates/interface/factions.hbs", scrollable: [""]
+    }
+  }
+
+  #mvActors = new ActorPicker({
+    name: "mvActor", multiple: true
+  })
+  #spActor = new ActorPicker({
+    name: "spActor", onChange: () => {
+      // A contact of another character cannot be raised by this one (p. 159)
+      const owner = fromUuidSync(this.#spContact.value())?.parent?.id
+      if (owner && owner !== this.#spActor.value()) this.#spContact.clear()
+      this.#renderContacts()
+    }
+  })
+  #spContact = new ActorPicker({
+    name: "spContact", noneLabel: "—"
+  })
+
+  // The lists by the name of their field (tests/factions-spend-guard.test.js sets their choice)
+  get pickers(){
+    return {
+      mvActor: this.#mvActors, spActor: this.#spActor, spContact: this.#spContact
     }
   }
 
@@ -99,9 +125,6 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
         }
       }).filter(s => log.some(e => e.factionId === f.id && e.actorId === s.id)),
     }))
-    context.characters = pcs.map(pc => ({
-      id: pc.id, name: pc.name, isPlayer: pc.hasPlayerOwner
-    }))
     context.contacts = contacts
     context.reasons = Object.entries(FACTION_REASONS).map(([key, value]) => ({
       key, value, label: `SR5.FACTION_Reason_${key}`
@@ -119,6 +142,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   _onRender(context, options){
     super._onRender?.(context, options)
+    this.#pickers()
     // A gamemaster who is not the active one reads, but cannot act: every control is off
     if (!SR5FactionRegistry.canWrite){
       // The content only: the header's close button stays usable (relecture djamz.13, R1)
@@ -132,56 +156,42 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     reason?.addEventListener("change", () => {
       delta.value = FACTION_REASONS[reason.value] ?? 0
     })
-    this.#pickTools()
   }
 
   /**
-   * The characters of a movement: searched and sorted in place, so the boxes already ticked stay ticked
-   * (relecture djamz.13, P1-36). The players' characters first by default: the NPCs come after them.
+   * The characters of a movement, the one who spends and the contact raised: searchable lists by folder, kept
+   * across renders (actor-picker.js; relecture djamz.13, P1-36). The contacts hang under their owner, and only the
+   * spender's are offered once a spender is chosen.
    */
-  #pickTools(){
-    const list = this.element.querySelector(".sr-faction-pick")
-    const search = this.element.querySelector(".sr-faction-pick-search")
-    const sort = this.element.querySelector(".sr-faction-pick-sort")
-    const count = this.element.querySelector(".sr-faction-pick-count")
-    if (!list || !search || !sort) return
-    const labels = [...list.querySelectorAll("label[data-name]")]
-    const collator = new Intl.Collator(game.i18n.lang, {
-      sensitivity: "base", numeric: true
+  #pickers(){
+    const pcs = SR5FactionsApp.characters
+    const people = actorEntries(pcs)
+    const folders = actorFolders()
+    this.#mvActors.render(this.element.querySelector("[data-picker=mvActor]"), {
+      entries: people, folders
     })
-    const fold = text => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
-    const apply = () => {
-      const query = fold(search.value.trim())
-      const ticked = label => label.querySelector("input")?.checked ? 1 : 0
-      const rank = {
-        players: label => -Number(label.dataset.player), checked: label => -ticked(label), name: () => 0
-      }[sort.value] ?? (() => 0)
-      labels.sort((a, b) => rank(a) - rank(b) || collator.compare(a.dataset.name, b.dataset.name))
-      for (const label of labels) {
-        label.hidden = !!query && !fold(label.dataset.name).includes(query)
-        list.appendChild(label)
-      }
-      counter()
-    }
-    const counter = () => {
-      if (count) count.textContent = game.i18n.format("SR5.FACTION_PickCount", {
-        shown: labels.filter(l => !l.hidden).length, total: labels.length,
-        picked: labels.filter(l => l.querySelector("input")?.checked).length,
-      })
-    }
-    search.addEventListener("input", apply)
-    sort.addEventListener("change", apply)
-    // A box ticked does not move under the pointer: only the count follows
-    list.addEventListener("change", counter)
-    apply()
+    this.#spActor.render(this.element.querySelector("[data-picker=spActor]"), {
+      entries: people, folders
+    })
+    this.#renderContacts()
+  }
+
+  #renderContacts(){
+    const spender = this.#spActor.value()
+    const owners = SR5FactionsApp.characters.filter(pc => !spender || pc.id === spender)
+    this.#spContact.render(this.element.querySelector("[data-picker=spContact]"), {
+      entries: owners.flatMap(pc => pc.items.filter(i => i.type === "itemContact").map(c => ({
+        id: c.uuid, name: c.name, img: c.img, folderId: pc.id, search: `${c.name} ${pc.name}`
+      }))),
+      folders: owners.map(pc => ({
+        id: pc.id, name: pc.name, parentId: null
+      })),
+    })
+    if (!SR5FactionRegistry.canWrite) for (const el of this.element.querySelectorAll("[data-picker=spContact] input, [data-picker=spContact] select")) el.disabled = true
   }
 
   #value(name){
     return this.element.querySelector(`[name="${name}"]`)?.value ?? ""
-  }
-
-  #checked(name){
-    return [...this.element.querySelectorAll(`[name="${name}"]:checked`)].map(el => el.value)
   }
 
   static async #createFaction(){
@@ -310,7 +320,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   static async #addMovement(){
     if (SR5FactionRegistry.refuse()) return
     const factionId = this.#value("mvFaction")
-    const actors = this.#checked("mvActor")
+    const actors = this.#mvActors.values()
     const reason = this.#value("reason") || "custom"
     let delta = Number(this.#value("delta")) || 0
     const days = Number(this.#value("days")) || 0
@@ -334,6 +344,9 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
         }
       }
     })
+    // As before the lists: the boxes are unticked once the movement is written
+    this.#mvActors.clear()
+    this.render()
   }
 
   static async #applyPending(){
@@ -355,7 +368,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
   static async #spend(){
     if (SR5FactionRegistry.refuse()) return
     const factionId = this.#value("spFaction")
-    const actorId = this.#value("spActor")
+    const actorId = this.#spActor.value()
     const kind = this.#value("spKind")
     const cost = FACTION_SPENDS[kind]
     const actor = game.actors.get(actorId)
@@ -371,7 +384,7 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     }
     switch (kind){
       case "contactInfluence": {
-        const uuid = this.#value("spContact")
+        const uuid = this.#spContact.value()
         const contact = uuid ? await fromUuid(uuid) : null
         if (!contact || contact.parent?.id !== actorId || !faction.contacts?.includes(uuid)){
           return ui.notifications.warn(game.i18n.localize("SR5.FACTION_ContactNotInFaction"))
