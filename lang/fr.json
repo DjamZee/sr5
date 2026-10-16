@@ -395,6 +395,8 @@
 	"SR5.SETTINGS_ShopMarketOpen_T": "Boutique : le marché est ouvert aux joueurs et aux joueuses",
 	"SR5.SETTINGS_ShopVendorTest_D": "Par défaut, un objet en rayon est déjà trouvé et s'achète sans test (SR5 p. 420 : le test sert à trouver). Coché, le test et la pastille reviennent sur le stock.",
 	"SR5.SETTINGS_ShopVendorTest_T": "Boutique : test de Disponibilité aussi chez un vendeur",
+	"SR5.SETTINGS_SpiritDefaultImages_D": "Un esprit créé, invoqué ou pris dans un compendium reçoit le portrait et le jeton de son type, à la taille de sa Puissance : petit (1 à 3), moyen (4 à 6), grand (7 à 9), colossal (10 et plus). Ils suivent les changements de type et de Puissance. Une image choisie par le meneur de jeu n'est jamais remplacée. Un type personnalisé prend les images de son type de base. Coché par défaut.",
+	"SR5.SETTINGS_SpiritDefaultImages_T": "Esprits : images par défaut",
 	"SR5.SETTINGS_SpiritDrainAttribute_D": "Le livre fait résister les créatures et les esprits au Drain d'un sort inné « en utilisant Intuition ou Charisme », à la discrétion du meneur de jeu (SR5 p. 403). Le système ajoute l'attribut choisi à la Volonté, comme l'attribut de tradition d'un magicien (Shadow Spells p. 19) : c'est une lecture, le livre ne nomme pas la Volonté. Vaut pour les fiches d'esprit seulement. Charisme par défaut.",
 	"SR5.SETTINGS_SpiritDrainAttribute_T": "Esprits : attribut de résistance au Drain d'un sort inné",
 	"SR5.SharedVisionShare": "Partager la vision",
