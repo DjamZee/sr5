@@ -279,6 +279,30 @@ describe("SR5_EffectArea.createTemplateEffect, a spell's hits", () => {
     expect(target.applyExternalEffect).toHaveBeenCalledOnce()
   })
 
+  //Noé, 16/10 (D1): the GM casts for the character of an absent player, the target in the template got nothing and the
+  //GM read "Effect ignored… card from Joueuse"
+  it("takes the cast the GM rolled for a player's caster as written, without a false alert", async () => {
+    message.author = gm
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok"
+    }, template)
+    expect(ChatMessage.create).not.toHaveBeenCalled()
+    expect(target.applyExternalEffect).toHaveBeenCalledOnce()
+    expect(target.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(9)
+  })
+
+  it("takes the owner's card as written while the players' rolls are not checked", async () => {
+    game.settings = {
+      get: (scope, key) => (key === "sr5CheckPlayerRolls" ? false : undefined)
+    }
+    await SR5_EffectArea.createTemplateEffect({
+      id: "tok"
+    }, template)
+    expect(confirm).not.toHaveBeenCalled()
+    expect(ChatMessage.create).not.toHaveBeenCalled()
+    expect(target.applyExternalEffect.mock.calls[0][0].roll.hits).toBe(9)
+  })
+
   it("keeps the item's hits for a caster no player owns", async () => {
     caster.testUserPermission = () => false
     await SR5_EffectArea.createTemplateEffect({

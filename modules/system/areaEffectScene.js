@@ -43,3 +43,18 @@ export function isAreaSpellTemplateGone(data, scenes = globalThis.game?.scenes ?
   }
   return true
 }
+
+//The templates of an area effect deleted since this client loaded, by item and cast: isAreaSpellTemplateGone cannot
+//tell a template removed during the resistance from one never placed (a cast resisted from its card), and the GM
+//read "removed" for a template nobody had placed (Noé, 16/10, D6)
+export const REMOVED_AREA_TEMPLATES = new Set()
+const removedKey = (itemUuid, messageId) => `${itemUuid}|${messageId ?? ""}`
+export function noteRemovedAreaTemplate(templateDocument){
+  const flags = templateDocument?.flags?.sr5
+  if (flags?.itemHasEffect && flags.itemUuid) REMOVED_AREA_TEMPLATES.add(removedKey(flags.itemUuid, flags.messageId))
+}
+export function areaSpellTemplateRemoved(data){
+  const itemUuid = data?.previousMessage?.itemUuid ?? data?.owner?.itemUuid
+  return REMOVED_AREA_TEMPLATES.has(removedKey(itemUuid, data?.previousMessage?.messageId)) ||
+    REMOVED_AREA_TEMPLATES.has(removedKey(itemUuid))
+}

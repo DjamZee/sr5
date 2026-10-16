@@ -88,6 +88,9 @@ export default async function resistanceInfo(cardData, actorId){
   //Calcul damage value
   cardData.damage.value = cardData.damage.base - cardData.roll.hits
 
+  // SR5 p. 231: dumpshock also disorients the character, whatever the damage resisted (resisted to nothing included)
+  if (cardData.test.typeSub === "dumpshock") await SR5_ActorHelper.dumpshockEffect(actorId)
+
   //If no Damage, return
   if (cardData.damage.value <= 0) return cardData.chatCard.buttons.actionEnd = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest","",game.i18n.localize("SR5.NoDamage"))
     
@@ -128,9 +131,6 @@ export default async function resistanceInfo(cardData, actorId){
       else return cardData.chatCard.buttons.damage = SR5_RollMessage.generateChatButton("nonOpposedTest", "damage",`${game.i18n.localize("SR5.ApplyDamage")} ${cardData.damage.splittedOne}${game.i18n.localize('SR5.DamageTypeStunShort')}`)
     }
   }
-
-  // SR5 p. 231: dumpshock also disorients the character, whatever the damage resisted
-  if (cardData.test.typeSub === "dumpshock") await SR5_ActorHelper.dumpshockEffect(actorId)
 
   //Electromancer (Forbidden Arcana p. 35): once the damage is resisted, a combat spell that hurts takes (caster's excess
   //hits / 2, rounded up) off the target's Initiative. Excess hits: over the resistance for a direct spell, over the

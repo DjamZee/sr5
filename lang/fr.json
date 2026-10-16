@@ -6560,6 +6560,7 @@
 	"SR5.WARN_ActiveDefenseNoSkill": "{actor} n'a pas la compétence {skill} : cette défense active lui est fermée.",
 	"SR5.WARN_NotEnoughInitiative": "{actor} n'a pas assez d'initiative ({initiative}) pour une action d'interruption qui en coûte {cost}.",
 	"SR5.WARN_AreaSpellTemplateGone": "Le gabarit de ce sort de zone a été retiré pendant la résistance : l'effet n'est pas appliqué.",
+	"SR5.WARN_AreaSpellNoTemplate": "Aucun gabarit de ce sort de zone n'est posé : l'effet n'est pas appliqué. Posez le gabarit du sort pour l'appliquer.",
 	"SR5.WARN_NoTemplateForBlast": "Le gabarit de ce tir a été retiré : impossible de mesurer la distance au souffle. Replacez-le ou réglez les dommages à la main.",
 	"SR5.WARN_NoTemplateInScene": "Pas de gabarit dans la scène !",
 	"SR5.WARN_ScatterCardTooOld": "Cette carte date d'avant le suivi des gabarits : elle ne sait pas lequel est le sien. Lancez la déviation à la main et déplacez le gabarit vous-même.",

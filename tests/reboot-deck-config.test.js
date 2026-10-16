@@ -478,6 +478,42 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
       expect(render.mock.calls.map(c => [c[0].previousMessage.itemUuid, c[0].previousMessage.hits])).toEqual([['lock1', 3], ['lock2', 3]])
     })
 
+    // Noé, 16/10: the card of the locks' dice bore the hacker's name (Nightwire), not the one of the icon that locked
+    it("names each resistance card after the icon that locked, not the hacker", async () => {
+      hacker.items.find(i => i.id === 'lock1').system.ownerName = 'Clignoteuse'
+      vi.spyOn(SR5_PrepareRollTest, 'getBaseRollData').mockImplementation(() => ({
+        test: {
+        }, dicePool: {
+        }, previousMessage: {
+        }, owner: {
+          speakerActor: 'Nightwire'
+        }
+      }))
+      vi.spyOn(SR5_RollTest, 'rollDice').mockResolvedValue({
+      })
+      vi.spyOn(SR5_RollTest, 'addInfoToCard').mockResolvedValue()
+      const render = vi.spyOn(SR5_RollTest, 'renderRollCard').mockResolvedValue()
+      vi.spyOn(SR5_MiscellaneousHelpers, 'cardOf').mockReturnValue({
+        byGM: true, roller: hacker, data: {
+          test: {
+            typeSub: 'jackOut'
+          }, roll: {
+            hits: 3
+          }
+        }
+      })
+      await SR5_MatrixHelpers.rollJackOut({
+        owner: {
+          actorId: 'hacker', messageId: 'card'
+        }, roll: {
+          hits: 3
+        }, previousMessage: {
+        }
+      })
+      //A lock written before ownerName keeps the hacker's
+      expect(render.mock.calls.map(c => c[0].owner.speakerActor)).toEqual(['Clignoteuse', 'Nightwire'])
+    })
+
     // Security pass (Petra): the GM never believes the hits a player's Jack Out card claims
     describe("a player's card", () => {
       let render

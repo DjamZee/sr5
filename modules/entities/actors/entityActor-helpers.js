@@ -89,7 +89,7 @@ import {
   entryValue, transferEntries, compareDefinitions, definitionsMatch, definitionPrint
 } from "./effect-definition.js"
 import {
-  isAreaSpellTemplateGone
+  isAreaSpellTemplateGone, areaSpellTemplateRemoved
 } from "../../system/areaEffectScene.js"
 import {
   carriedGear
@@ -2549,8 +2549,9 @@ export class SR5_ActorHelper {
   //`reviewed`: a definitionReview the GM's caller already showed (its own checkEffectCard), never read from a card
   static async applyExternalEffect(actorId, data, effectType, reviewed = null){
     //An area spell whose template was deleted during the resistance: nothing would lift the effect
+    //A template never placed (or removed before this client loaded) says so, not "removed"
     if (isAreaSpellTemplateGone(data)) {
-      ui.notifications.warn(game.i18n.localize("SR5.WARN_AreaSpellTemplateGone"))
+      ui.notifications.warn(game.i18n.localize(areaSpellTemplateRemoved(data) ? "SR5.WARN_AreaSpellTemplateGone" : "SR5.WARN_AreaSpellNoTemplate"))
       return false
     }
     //A spell nobody resists writes no net hits on its card: they are its hits (over its threshold, if any), not "?" or 0
