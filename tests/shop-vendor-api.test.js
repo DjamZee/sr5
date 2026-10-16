@@ -33,3 +33,67 @@ describe('game.sr5.vendors (lot 43)', () => {
     spy.mockRestore()
   })
 })
+
+// game.sr5.vendors.open (après djamz.13): the Landing Page's deck opens a vendor's shop
+describe('game.sr5.vendors.open', () => {
+  const shop = isOpen => ({
+    id: 'st1', type: 'itemStorage', system: {
+      type: 'shop', shop: {
+        isOpen
+      }
+    }
+  })
+  const setup = (storage, isGM) => {
+    const actor = {
+      uuid: 'Actor.v1', items: new Map([[storage.id, storage]])
+    }
+    globalThis.fromUuidSync = uuid => uuid === actor.uuid ? actor : null
+    globalThis.game = {
+      user: {
+        isGM
+      }
+    }
+    const spy = vi.spyOn(SR5ShopVendor, 'openShop').mockResolvedValue('window')
+    return {
+      actor, spy
+    }
+  }
+
+  it('opens an open shop to a player, in the shop own window', async () => {
+    const storage = shop(true)
+    const {
+      actor, spy
+    } = setup(storage, false)
+    expect(await vendorsApi().open('Actor.v1', 'st1')).toBe('window')
+    expect(spy).toHaveBeenCalledWith(actor, storage)
+    spy.mockRestore()
+  })
+
+  it('refuses a closed shop to a player, opens it to the gamemaster', async () => {
+    let {
+      spy
+    } = setup(shop(false), false)
+    expect(await vendorsApi().open('Actor.v1', 'st1')).toBeNull()
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore();
+    ({
+      spy
+    } = setup(shop(false), true))
+    expect(await vendorsApi().open('Actor.v1', 'st1')).toBe('window')
+    spy.mockRestore()
+  })
+
+  it('gives null for an unknown vendor or a storage that is no shop', async () => {
+    const {
+      spy
+    } = setup({
+      id: 'st1', type: 'itemStorage', system: {
+        type: 'bag'
+      }
+    }, true)
+    expect(await vendorsApi().open('Actor.gone', 'st1')).toBeNull()
+    expect(await vendorsApi().open('Actor.v1', 'st1')).toBeNull()
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore()
+  })
+})
