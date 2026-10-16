@@ -22,6 +22,9 @@ import {
 import {
   designedMarks
 } from "../../system/ice-design.js"
+import {
+  iceHostOf
+} from "../../system/ice-host.js"
 
 //The same fighter, whether the card names its token or its actor (a token's actor shares the actor's id)
 const sameActor = (a, b) => !!a && !!b && (a === b || a.id === b.id)
@@ -41,6 +44,18 @@ export function iceMarkHost(attacker){
 /** Whether a mark is the one this marker adds to: an IC's of the same host, or any mark with no host for the others */
 export function sameIceHost(mark, iceHost){
   return (mark?.hostUuid || null) === (iceHost || null)
+}
+
+/** D2 (in-game check of 16/10), SR5 p. 249: "Les CI dans un serveur et le serveur lui-même partagent leurs marks".
+ *  The marks an IC counts on an icon: its own (lot 19: those of its copy in this host), those of the other ICs of its
+ *  host (they carry the host's uuid), and those of the host itself (hostIds: its instance's id), at most 3 */
+export function sharedIceMarks(marks, {
+  iceId, ownHost = null, hostUuid = null, hostIds = []
+}) {
+  const total = (marks ?? []).filter(m => (m.ownerId === iceId && sameIceHost(m, ownHost)) ||
+    (hostUuid && m.hostUuid === hostUuid) || hostIds.includes(m.ownerId))
+    .reduce((sum, m) => sum + (Number(m.value) || 0), 0)
+  return Math.min(total, 3)
 }
 
 /** Kill Code p. 45: Initiative cost of the actions a Watchdog mark can turn into an Interruption action.
@@ -413,6 +428,18 @@ export class SR5_MarkHelpers {
       }
       return 0
     } else return 0
+  }
+
+  /** The marks an IC has on an icon, with those of its host and of the host's other ICs (SR5 p. 249, sharedIceMarks)
+   * @param {Object} holder - The system of the marked item, or the matrix data of a persona
+   * @param {Object} ice - The IC actor
+   */
+  static iceMarkValue(holder, ice){
+    const host = iceHostOf(ice),
+      hostIds = host ? [host.isToken ? host.token?.id : host.id].filter(Boolean) : []
+    return sharedIceMarks(holder?.marks, {
+      iceId: ice?.id, ownHost: iceMarkHost(ice), hostUuid: host ? ice.system.matrix.hostUuid : null, hostIds
+    })
   }
 
   /** Kill Code p. 45: tell whether an owner holds a Watchdog mark on one of the actor's items
