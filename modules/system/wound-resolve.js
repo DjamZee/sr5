@@ -75,14 +75,31 @@ async function onUpdateCombat(combat, changes, options){
   await updateLedger(WOUND_RESOLVE_LEDGER, ledger => ledgerWithFighters(ledger, fighters.map(a => ({
     uuid: a.uuid, boxes: woundBoxes(a.system)
   })), combat.id))
-  const actor = combat.combatant?.actor
+  //A new round still holds the old order: its first phase starts once the initiative is rolled again, where
+  //srcombat.js calls woundResolvePhaseStart itself (as it ends the pass effects there)
+  if ("round" in changes || options?.turnEvents === false) return
+  await woundResolvePhaseStart(combat)
+}
+
+/**
+ * The start of the current combatant's action phase: the card of the test, once per combatant and per initiative pass
+ * (a turn index moved by a new initiative score is no new phase).
+ */
+export async function woundResolvePhaseStart(combat){
+  if (!isWriter() || !combat?.started) return
+  const combatant = combat.combatant
+  const actor = combatant?.actor
   if (!actor?.uuid || !hasWoundResolve(actor.items)) return
+  const phaseKey = `${combat.round}.${combat.initiativePass ?? 0}.${combatant.id}`
   let threshold = null
   await updateLedger(WOUND_RESOLVE_LEDGER, ledger => {
+    if (ledger[actor.uuid]?.combatId === combat.id && ledger[actor.uuid]?.phase === phaseKey) return null
     const phase = atPhaseStart(ledger[actor.uuid], woundBoxes(actor.system), combat.id)
     threshold = phase.threshold
     return {
-      ...ledger, [actor.uuid]: phase.entry
+      ...ledger, [actor.uuid]: {
+        ...phase.entry, phase: phaseKey
+      }
     }
   })
   if (threshold === null) return
