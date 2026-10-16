@@ -14,6 +14,9 @@ import {
 import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  escape, isActiveGM, gmIds, fmt
+} from "./card-helpers.js"
 
 export const INFECTION_LEDGER = "sr5InfectionLedger"
 export const COMA = 86400
@@ -93,10 +96,6 @@ export function essenceBaseForOne(essence){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 function activeGMOrWarn(){
   if (isActiveGM()) return true
   ui.notifications.warn(game.i18n.localize("SR5.INFECTION_ActiveGMOnly"))
@@ -129,13 +128,6 @@ async function writeLedger(mutate){
     mutate(ledger.victims)
     return ledger
   })
-}
-
-const fmt = (t) => game.time.calendar.format(t)
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
 }
 
 /* The sheet ----------------------------------- */

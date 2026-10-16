@@ -20,6 +20,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM as isWriter
+} from "./card-helpers.js"
 
 export function underFireRules(){
   try {
@@ -35,10 +38,6 @@ export function advancedMedkitRules(){
   } catch {
     return false
   }
-}
-
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
 
 export function bbLedger(){
@@ -121,10 +120,6 @@ async function onUpdateCombat(combat, changes, options){
     return after.ledger
   })
   if (due.length) await postBleedCard(due.map(uuid => actors.get(uuid)))
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
 }
 
 async function postBleedCard(actors){

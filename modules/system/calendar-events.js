@@ -6,11 +6,11 @@ import {
   worldTimeToComponents, daysInMonth
 } from "./calendar.js"
 import {
-  SR5_SystemHelpers
-} from "./utilitySystem.js"
-import {
   updateLedger
 } from "./gm-ledger.js"
+import {
+  isActiveGM as isWriter, queuedCheck
+} from "./card-helpers.js"
 
 export const CALENDAR_EVENTS_SETTING = "sr5CalendarEvents"
 export const EVENT_VISIBILITY = ["gm", "all"]
@@ -100,10 +100,6 @@ export function changeCalendarEvents(change){
   })
 }
 
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 function escape(text){
   return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "").replace(/[&<>"']/g, ch => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
@@ -136,22 +132,7 @@ export async function checkCalendarEvents(){
   for (const event of due) await postReminder(event)
 }
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkCalendarEvents().catch(e => SR5_SystemHelpers.srLog(1, `Calendar events not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkCalendarEvents(), "Calendar events not checked")
 
 export function registerCalendarEventSettings(onChange){
   game.settings.register("sr5", CALENDAR_EVENTS_SETTING, {

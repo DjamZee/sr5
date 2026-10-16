@@ -18,6 +18,9 @@ import {
 import {
   refuseByRule
 } from "./rule-locks.js"
+import {
+  escape, isActiveGM, gmIds, fmt, queuedCheck
+} from "./card-helpers.js"
 
 export const CFD_LEDGER = "sr5CfdLedger"
 
@@ -177,10 +180,6 @@ export function scrubHours(state, ticks){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
 function warnNotActiveGM(){
   ui.notifications.warn(game.i18n.localize("SR5.CFD_ActiveGMOnly"))
 }
@@ -217,13 +216,7 @@ async function writeLedger(mutate){
   })
 }
 
-const fmt = (t) => game.time.calendar.format(t)
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
 const naniteOf = (actor) => Number(actor?.system?.specialAttributes?.nanite?.augmented?.value) || 0
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
 
 async function rollPool(dicePool, limit){
   if (dicePool <= 0) return {
@@ -638,22 +631,7 @@ export function activateCfdListeners(html, message){
 
 /* -------------------------------------------- */
 
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkCfd().catch(e => SR5_SystemHelpers.srLog(1, `CFD treatment not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
+const queueCheck = queuedCheck(() => checkCfd(), "CFD treatment not checked")
 
 export function initCfdTreatment(){
   Hooks.on("updateWorldTime", () => {

@@ -136,11 +136,11 @@ export const registerHandlebarsHelpers = function () {
   Handlebars.registerHelper("findTranslation", function (table, key) {
     if (!table) {
       SR5_SystemHelpers.srLog(0, `No translation table provided`)
-      return game.i18n.localize(SR5.HBS_ErrorNoTableGiven)
+      return game.i18n.localize("SR5.HBS_ErrorNoTableGiven")
     }
     if (!SR5[table]) {
       SR5_SystemHelpers.srLog(0, `Translation table '${table}' does not exist`)
-      return game.i18n.localize(SR5.HBS_ErrorUnknownTable)
+      return game.i18n.localize("SR5.HBS_ErrorUnknownTable")
     }
     if (Array.isArray(key)) {
       key = key[0]

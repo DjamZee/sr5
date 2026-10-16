@@ -19,6 +19,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM, gmIds
+} from "./card-helpers.js"
 
 export const STRAINS = ["lockdown", "darkTerrors"]
 
@@ -148,15 +151,6 @@ export function naniteBaseAfterLoss(base, value, loss){
 /* Foundry                                      */
 /* -------------------------------------------- */
 
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
-
-const gmIds = () => ChatMessage.getWhisperRecipients("GM").map(u => u.id)
 const ownerIds = (actor) => game.users.filter(u => !u.isGM && actor.testUserPermission(u, "OWNER")).map(u => u.id)
 const isFull = (monitor) => !!monitor && num(monitor.value) > 0 && num(monitor.actual?.value) >= num(monitor.value)
 

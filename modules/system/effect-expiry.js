@@ -10,6 +10,9 @@ import {
 import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
+import {
+  escape, isActiveGM as isWriter, fmt, allActors, queuedCheck
+} from "./card-helpers.js"
 
 export const TIMED_DURATIONS = {
   minute: 60,
@@ -69,24 +72,12 @@ export function sortExpiries(effects, now, startYear){
 }
 
 // Every actor of the world, those of unlinked tokens included (their effects live in the token)
-function allActors(){
-  const actors = new Set(game.actors)
-  for (const scene of game.scenes){
-    for (const token of scene.tokens){
-      if (!token.actorLink && token.actor) actors.add(token.actor)
-    }
-  }
-  return [...actors]
-}
 
 function timedEffectsOf(actor){
   return actor.items.filter(i => i.type === "itemEffect" && isTimedEffect(i.system))
 }
 
 // One writer: the active GM
-function isWriter(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
 
 export async function checkEffectExpiries(){
   if (!isWriter()) return
@@ -111,30 +102,10 @@ export async function checkEffectExpiries(){
 }
 
 // The clock can move several times in a row (combat turns, clicks): one check at a time, one more after it
-let checking = null
-let again = false
-function queueCheck(){
-  if (checking){
-    again = true
-    return checking
-  }
-  checking = (async () => {
-    do {
-      again = false
-      await checkEffectExpiries().catch(e => SR5_SystemHelpers.srLog(1, `Effect expiries not checked: ${e}`))
-    } while (again)
-    checking = null
-  })()
-  return checking
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
-}
+const queueCheck = queuedCheck(() => checkEffectExpiries(), "Effect expiries not checked")
 
 async function postExpiryCard(rows){
-  const fmt = (t) => game.time.calendar.format(t)
-  const list = rows.map(r => `<li class="sr5-expiry-row" data-effect-uuid="${r.effect.uuid}">
+    const list = rows.map(r => `<li class="sr5-expiry-row" data-effect-uuid="${r.effect.uuid}">
       <span class="sr5-expiry-name"><strong>${escape(r.actor.name)}</strong> : ${escape(r.effect.name)}</span>
       <span class="sr5-expiry-end">${fmt(r.end)}</span>
       <button type="button" data-sr5-expiry="remove">${game.i18n.localize("SR5.CALENDAR_ExpiryRemove")}</button>

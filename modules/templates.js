@@ -35,7 +35,6 @@ export const preloadHandlebarsTemplates = async function () {
 
     // Dynamic layout templates (SR6-style block system)
     "systems/sr5/templates/actors/_partials/content.hbs",
-    "systems/sr5/templates/actors/_partials/nav.hbs",
 
     // Sheet config dialog
     "systems/sr5/templates/interface/sheet-config.hbs",
@@ -51,30 +50,8 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/header/controls/actorDrone.hbs",
 
     // Actor sheet - Headers - Navigation hub
-    "systems/sr5/templates/actors/_partials/header/nav/actorPC.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorDevice.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorDrone.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorGrunt.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorSpirit.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorSprite.hbs",
-    "systems/sr5/templates/actors/_partials/header/nav/actorAgent.hbs",
 
     // Actor sheet - Headers - Navigation parts
-    "systems/sr5/templates/actors/_partials/header/navParts/coreInfos.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/augmentation.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/biography.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/combat.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/derived.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/gear.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/magic.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/magicUser.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/matrix.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/matrixUser.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/modification.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/qualities.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/skills.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/social.hbs",
-    "systems/sr5/templates/actors/_partials/header/navParts/technomancer.hbs",
 		
     // Actor sheet - Footers
     "systems/sr5/templates/actors/_partials/footer/footer.hbs",
@@ -188,7 +165,6 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/files.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/matrixActions.hbs",
     "systems/sr5/templates/actors/_partials/right-tabs/matrix/spritePowers.hbs",
-    "systems/sr5/templates/actors/_partials/right-tabs/matrix/description.hbs",
 
 
     //Right Tab - Technomancer partials
@@ -314,15 +290,9 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/blocks/weapon/weapon-summary.hbs",
 
     // Item sheet headers (legacy)
-    "systems/sr5/templates/items/_partial/header/header.hbs",
-    "systems/sr5/templates/items/_partial/header/header-simple.hbs",
-    "systems/sr5/templates/items/_partial/header/header-noIcon.hbs",
-    "systems/sr5/templates/items/_partial/header/header-noEffect.hbs",
 
     // Item sheet footers
     "systems/sr5/templates/items/_partial/footer/footer.hbs",
-    "systems/sr5/templates/items/_partial/footer/footer-drone.hbs",
-    "systems/sr5/templates/items/_partial/footer/footer-simple.hbs",
 		
     // Item sheet effect tab
     "systems/sr5/templates/items/_partial/effect/effect.hbs",
@@ -373,7 +343,6 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/summary/ritual-summary.hbs",
 				
     // Item sheet block editable
-    "systems/sr5/templates/items/_partial/editable/_common/description-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/descriptionGameEffect-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/actionType-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/capacity-edit.hbs",

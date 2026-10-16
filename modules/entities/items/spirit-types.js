@@ -443,18 +443,4 @@ export class SR5_SpiritTypes {
     const baseType = SR5_SpiritTypes.baseType(type)
     return baseType === "homunculus" || baseType === "watcher"
   }
-
-  // -------------------------------------------------------------------------
-  //  Power list
-  // -------------------------------------------------------------------------
-
-  /**
-	 * Every spirit power key the system knows. Used to fill the pickers on the
-	 * type's sheet.
-	 * @returns {object} key -> translation key
-	 */
-  static allPowers() {
-    return SR5.AllSpiritPowers ?? {
-    }
-  }
 }

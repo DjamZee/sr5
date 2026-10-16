@@ -13,6 +13,9 @@ import {
 import {
   tacnetLevel, tacnetMembers, tacnetCapacity, ledgerAfterJoin, ledgerAfterLeave, ledgerTrimmed, tacnetBonus, tacnetOffer
 } from "../rolls/roll-helpers/tacnet.js"
+import {
+  isActiveGM
+} from "./card-helpers.js"
 
 export const TACNET_LEDGER = "sr5TacnetLedger"
 export const TACNET_COMBAT_FLAG = "tacnetCombatSkill"
@@ -39,10 +42,6 @@ function ledger(){
     return {
     }
   }
-}
-
-function isActiveGM(){
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
 }
 
 // An actor of a targeted token, by the uuid its rolls will carry (an unlinked token has its own)

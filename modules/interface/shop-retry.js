@@ -31,6 +31,9 @@ import {
 import {
   updateLedger
 } from '../system/gm-ledger.js'
+import {
+  isActiveGM as isWriter
+} from "../system/card-helpers.js"
 
 export const RETRY_LEDGER = 'sr5ShopRetryLedger'
 const HOUR = 3600
@@ -115,10 +118,6 @@ export function vendorRefusal(shop, availability, byGM = false) {
 /* -------------------------------------------- */
 /*  The gamemaster's ledger                     */
 /* -------------------------------------------- */
-
-function isWriter() {
-  return game.user.isGM && game.users.activeGM?.id === game.user.id
-}
 
 export function retryLedger() {
   try {

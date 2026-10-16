@@ -2752,7 +2752,7 @@ export class SR5_CharacterUtility extends Actor {
     if (actorData.offRoadMode) {
       if (actorData.isSecondaryPropulsionActivate) {
         handlingMode = attributes.secondaryPropulsionHandlingOffRoad.augmented.value
-        handlingName = game.i18n.localize('SR5.VehicleStat_SecondaryHandlingORShort')
+        handlingName = game.i18n.localize('SR5.VehicleStat_SPHandlingORShort')
       } else {
         handlingMode = attributes.handlingOffRoad.augmented.value
         handlingName = game.i18n.localize('SR5.VehicleStat_HandlingORShort')
