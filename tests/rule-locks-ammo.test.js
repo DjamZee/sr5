@@ -125,9 +125,9 @@ describe('suppressive fire with too few rounds (roll-test, SR5 p. 181)', () => {
     expect(emits).toEqual([])
   })
 
-  it('the "ammo" family checked: the dialog stays open, as before', async () => {
+  it('the "ammo" family checked: the dialog stays open, as before, said as an empty magazine (C3 of Lucas#2058)', async () => {
     expect(SR5_RollTest.rollClickRefused(runner(), dialog())).toBe(true)
-    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_FiringModeAmmo')
+    expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.WARN_SuppressiveFireEmpty')
     await flush()
     expect(emits).toEqual([])
   })
@@ -141,7 +141,7 @@ describe('suppressive fire with too few rounds (roll-test, SR5 p. 181)', () => {
     await flush()
     expect(emits).toHaveLength(1)
     expect(emits[0][1]).toMatchObject({
-      family: 'ammo', key: 'SR5.WARN_FiringModeAmmo', actor: 'Dodger', data: {
+      family: 'ammo', key: 'SR5.WARN_SuppressiveFireEmpty', actor: 'Dodger', data: {
         needed: 20, left: 0
       }
     })

@@ -423,7 +423,8 @@ export class SR5_RollTest {
     }
     const mode = dialogData.combat.firingMode.selected, left = dialogData.combat.ammo.value ?? 0
     const missingAmmo = dialogData.test.typeSub === "rangedWeapon" && SR5_ConverterHelpers.missingAmmo(mode, left)
-    const refuse = () => refuseByRule("ammo", "SR5.WARN_FiringModeAmmo", {
+    //Suppressive fire is refused on an empty magazine only (SR5 p. 181): it does not ask for 20 rounds (Lucas#2058, C3)
+    const refuse = () => refuseByRule("ammo", mode === "SF" ? "SR5.WARN_SuppressiveFireEmpty" : "SR5.WARN_FiringModeAmmo", {
       needed: SR5_ConverterHelpers.firingModeToBullet(mode), left
     }, {
       actor

@@ -6624,6 +6624,7 @@
 	"SR5.WARN_FanningOutOfRange": "Tir d’aspersion au lance-flammes : toutes les cibles doivent être à portée de l’arme.",
 	"SR5.WARN_FanningTooFar": "Tir d’aspersion au lance-flammes : chaque cible doit être à 4 m au plus d’une autre (un peu moins de 3 cases).",
 	"SR5.WARN_FiringModeAmmo": "Ce mode de tir demande {needed} unités de munitions, il en reste {left}.",
+	"SR5.WARN_SuppressiveFireEmpty": "Tir de couverture : le chargeur est vide (il faut au moins une balle ; sous 20, la zone rétrécit, SR5 p. 181).",
 	"SR5.INFO_SuppressiveFireNarrowed": "Tir de couverture avec {left} balles : la zone de suppression ne fait plus que {width} m de large (1 m de moins par tranche de 2 balles manquantes, SR5 p. 181).",
 	"SR5.FuelUnits": "unités",
 	"SR5.WeaponModeFN": "Tir d’aspersion",
