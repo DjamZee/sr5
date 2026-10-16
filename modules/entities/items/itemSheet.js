@@ -231,9 +231,10 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
     else if (action === 'shopClear') await SR5ShopVendor.clearStock(actor, item)
     else if (action === 'shopCashbox') await SR5ShopVendor.createCashbox(actor, item)
     else if (action === 'shopClientAdd') {
-      const el = this.element
-      await SR5ShopVendor.setClient(item, el.querySelector('[data-shop-client-actor]')?.value,
-        el.querySelector('[data-shop-client-loyalty]')?.value)
+      // Several characters at once, at the same Loyalty
+      const loyalty = this.element.querySelector('[data-shop-client-loyalty]')?.value
+      for (const actorId of this.#shopClients?.values() ?? []) await SR5ShopVendor.setClient(item, actorId, loyalty)
+      this.#shopClients?.clear()
     } else if (action === 'shopClientRemove') await SR5ShopVendor.removeClient(item, target.dataset.actorId)
     this.render()
   }
@@ -727,6 +728,21 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
   }
 
   #drugPicker = null
+  #shopClients = null
+
+  // A GM shop's clients to add (shop-vendor.js): the world's characters not clients yet
+  #shopClientPicker(el, context) {
+    const box = el.querySelector('.sr5-shop-client-picker')
+    if (!box) return
+    this.#shopClients ??= new ActorPicker({
+      name: 'shopClient', multiple: true
+    })
+    box.addEventListener('change', ev => ev.stopPropagation())
+    const actors = (context.shop?.clientCandidates ?? []).map(c => game.actors?.get(c.id)).filter(Boolean)
+    this.#shopClients.render(box, {
+      entries: actorEntries(actors), folders: actorFolders()
+    })
+  }
 
   #drugRecipients(el, context) {
     const box = el.querySelector('.sr5-drug-recipients')
@@ -838,6 +854,7 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
     // Custom drug: whom it is made for, a searchable list by folder (actor-picker.js), written apart from the form
     this.#drugRecipients(el, context)
+    this.#shopClientPicker(el, context)
 
     // Pathogen: the active GM infects the tokens he selected or targeted (system/diseases.js)
     el.querySelector('.sr5-pathogen-infect')?.addEventListener('click', () => infectWith(this.document))
