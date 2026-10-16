@@ -120,6 +120,16 @@ export class SR5_SystemHelpers {
       default: 0
     })
 
+    // The former mentor qualities the world migration left as they were (mentor-conversion.js): "actorId.itemId",
+    // so that the GM is told of each one once
+    game.settings.register("sr5", "mentorMigrationWarned", {
+      name: "SR5.TEXT_TBD",
+      scope: "world",
+      config: false,
+      type: Array,
+      default: []
+    })
+
     // Head case Nanite Volume moved out of Resonance: done once per world, whatever its migration version
     game.settings.register("sr5", "migrationHeadcaseNanite", {
       name: "SR5.TEXT_TBD",
