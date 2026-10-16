@@ -15,6 +15,9 @@ import {
 import {
   SR5BarterApp
 } from "./barter-app.js"
+import {
+  ActorPicker, actorEntries, actorFolders
+} from "./actor-picker.js"
 
 const newId = () => foundry.utils.randomID()
 const DAY = 86400
@@ -61,6 +64,13 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
   }
 
   #selected = null
+  // The new con's artists and target: searchable lists by folder, kept across renders (actor-picker.js)
+  #artists = new ActorPicker({
+    name: "newArtist", multiple: true
+  })
+  #target = new ActorPicker({
+    name: "newTarget"
+  })
 
   static open(conId){
     if (!game.user.isGM) return ui.notifications.warn(game.i18n.localize("SR5.CON_OnlyGM"))
@@ -86,9 +96,6 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
     const con = this.current
     const name = id => game.actors.get(id)?.name ?? "?"
     context.canWrite = SR5ConRegistry.canWrite
-    context.people = SR5ConApp.people.map(a => ({
-      id: a.id, name: a.name, pc: a.type === "actorPc"
-    }))
     context.cons = cons.map(c => ({
       id: c.id, name: c.name, status: c.status, statusLabel: `SR5.CON_Status_${c.status}`, active: c.id === con?.id,
       kindLabel: `SR5.CON_Kind_${c.kind}`
@@ -170,6 +177,22 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
 
   _onRender(context, options){
     super._onRender?.(context, options)
+    // The con shown: its artists and target marked, and always in the lists
+    const con = this.current
+    const marks = new Map()
+    const inCon = con ? game.i18n.format("SR5.ACTOR_PICKER_InCon", {
+      name: con.name
+    }) : ""
+    for (const id of [...(con?.artistIds ?? []), con?.targetId].filter(Boolean)) marks.set(id, inCon)
+    const people = actorEntries(SR5ConApp.people)
+    const folders = actorFolders()
+    this.#artists.render(this.element.querySelector("[data-picker=artists]"), {
+      entries: people.filter(e => e.type === "actorPc"), folders, marks
+    })
+    this.#target.noneLabel = game.i18n.localize("SR5.CON_TargetTargeted")
+    this.#target.render(this.element.querySelector("[data-picker=target]"), {
+      entries: people, folders, marks
+    })
     if (!SR5ConRegistry.canWrite){
       // The content only: the header's close button stays usable (relecture djamz.13, R1)
       const content = this.element.querySelector(".window-content") ?? this.element
@@ -221,11 +244,11 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
     const name = this.#value("newName").trim()
     if (!name) return ui.notifications.info(game.i18n.localize("SR5.CON_NeedName"))
     const kind = this.#value("newKind") === "short" ? "short" : "long"
-    const artistIds = [...this.element.querySelectorAll("[name=newArtist]:checked")].map(el => el.value)
+    const artistIds = this.#artists.values()
     if (!artistIds.length) return ui.notifications.info(game.i18n.localize("SR5.CON_NeedArtist"))
     // The target: an actor of the world, or the targeted token's
     const targeted = [...(game.user.targets ?? [])][0]?.actor
-    const targetId = this.#value("newTarget") || targeted?.id || null
+    const targetId = this.#target.value() || targeted?.id || null
     const id = newId()
     await SR5ConRegistry.update(d => d.cons.push({
       id, name, kind, artistIds, targetId, targetName: targetId ? (game.actors.get(targetId)?.name ?? targeted?.name ?? "") : "",
@@ -234,6 +257,9 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
       }, matrixDegree: "moderate", status: "preparing", steps: [], start: game.time.worldTime,
     }))
     this.#selected = id
+    this.#artists.clear()
+    this.#target.clear()
+    this.render()
   }
 
   static #selectCon(event, target){

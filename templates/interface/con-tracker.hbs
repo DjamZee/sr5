@@ -151,14 +151,18 @@
         <option value="long">{{localize 'SR5.CON_Kind_long'}}</option>
         <option value="short">{{localize 'SR5.CON_Kind_short'}}</option>
       </select>
-      <select name="newTarget">
-        <option value="">{{localize 'SR5.CON_TargetTargeted'}}</option>
-        {{#each people}}<option value="{{id}}">{{name}}</option>{{/each}}
-      </select>
+    </div>
+    <div class="sr-con-pickers">
+      <div class="sr-con-picker-box">
+        <span class="sr-con-picker-label"><i class="fas fa-user-secret"></i> {{localize 'SR5.CON_Artists'}}</span>
+        <div class="sr-con-picker" data-picker="artists"></div>
+      </div>
+      <div class="sr-con-picker-box">
+        <span class="sr-con-picker-label"><i class="fas fa-crosshairs"></i> {{localize 'SR5.CON_Target'}}</span>
+        <div class="sr-con-picker" data-picker="target"></div>
+      </div>
     </div>
     <div class="sr-con-step-row">
-      <span>{{localize 'SR5.CON_Artists'}} :</span>
-      {{#each people}}{{#if pc}}<label class="checkbox"><input type="checkbox" name="newArtist" value="{{id}}"> {{name}}</label>{{/if}}{{/each}}
       <button type="button" data-action="createCon"><i class="fas fa-masks-theater"></i> {{localize 'SR5.CON_Create'}}</button>
     </div>
   </fieldset>
