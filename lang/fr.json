@@ -4509,15 +4509,10 @@
 	"SR5.MentorConversionGMOnly": "Seul le MJ peut convertir les esprits mentors.",
 	"SR5.MentorConversionNothing": "Rien à convertir.",
 	"SR5.MentorConversionLine": "<strong>{actor}</strong> — mentors créés : {created} ; réutilisés : {reused} ; qualités liées : {qualities}",
-
 	"SR5.MentorMigrationTitle": "Esprits mentors : qualité et objet mentor",
-
 	"SR5.MentorMigrationConverted": "Ces personnages portaient une ancienne qualité « Esprit mentor (X) » : elle devient la qualité « Esprit mentor », reliée à l’objet mentor du Mégapack, qui porte désormais les effets. La macro « Annuler la conversion » des Outils du MJ revient en arrière.",
-
 	"SR5.MentorMigrationLeft": "Laissés tels quels (pas de Mégapack actif, ou pas d’objet mentor de ce nom) : leur qualité garde ses effets et fonctionne comme avant.",
-
 	"SR5.MentorMigrationLine": "<strong>{actor}</strong> — mentor : {mentors}",
-
 	"SR5.MentorMigrationMissing": "<strong>{actor}</strong> — {quality}",
 	"SR5.AutoPowersTitle": "Activer les pouvoirs automatiques",
 	"SR5.AutoPowersScope": "Quels acteurs traiter ?",
