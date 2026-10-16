@@ -135,6 +135,26 @@ describe('marking one instance of a generic host', () => {
       uuid: a.items[0].uuid, value: 2
     })])
   })
+  it('D4: an AI outside any device, as an unlinked token, is marked on its own persona, not on its base actor', async () => {
+    const persona = (id) => documentWith({
+      id: 'ai', uuid: `Scene.s.Token.${id}.Actor.ai`, name: 'IA', isToken: true, token: {
+        id
+      }, items: [], system: {
+        activeSpecialAttribute: 'depth', matrix: {
+          marks: []
+        }
+      }
+    })
+    const token = persona('tai'), base = persona('base')
+    actors.tai = token
+    actors.ai = base
+    globalThis.fromUuid = vi.fn(async uuid => uuid === token.uuid ? token : null)
+    await SR5_MarkHelpers.markItem('tai', 'hacker', 1)
+    expect(token.system.matrix.marks).toEqual([expect.objectContaining({
+      ownerId: 'hacker', value: 1
+    })])
+    expect(base.update).not.toHaveBeenCalled()
+  })
   it('sends nothing to copy the marks onto other tokens', async () => {
     game.user = {
       isGM: false, id: 'p'
