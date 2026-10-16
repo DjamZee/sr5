@@ -26,6 +26,10 @@ function idsOf(actor){
   return [actor?.isToken ? actor.token?.id : actor?.id].filter(Boolean)
 }
 
+import {
+  isSceneryDevice
+} from "./pan-candidates.js"
+
 const PERSONA_TYPES = ["actorPc", "actorGrunt"]
 const CREATED_TYPES = ["actorDrone", "actorAgent", "actorSprite"]
 
@@ -55,11 +59,13 @@ export function ownerOf(target, {
   }
   if (CREATED_TYPES.includes(target.type)) {
     const creatorId = target.system?.creatorId || null
-    return {
+    // A drone with no creator slaved as a device of the scenery (a camera, Lucas#2058 S2): its master's owner, below
+    const decor = !creatorId && isSceneryDevice(target) && !!target.system?.matrix?.panMaster
+    if (!decor) return {
       ...none, ids: creatorId ? [creatorId] : null, creatorId
     }
   }
-  if (target.type !== "actorDevice") return none
+  if (!isSceneryDevice(target)) return none
   if (isHostActor(target)) return {
     ...none, ids: [], host: target
   }

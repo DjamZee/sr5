@@ -16,6 +16,10 @@ export const HOST_EXIT_REASONS = ["exit", "reboot", "jackOut"]
 // SR5 p. 233: the convergence at 40
 export const CONVERGENCE_SCORE = 40
 
+import {
+  isSceneryDevice
+} from "./pan-candidates.js"
+
 const isHost = actor => actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "host"
 
 /** The ids an actor answers to in marks: its token's for an unlinked token, else its own (matrix-ownership.js) */
@@ -114,7 +118,7 @@ export function hostSideOf(actor, resolve = () => null){
   if (matrix.currentHost) return {
     side: "inside", host: matrix.currentHost
   }
-  if (actor?.type === "actorDevice" && matrix.panMaster) {
+  if (isSceneryDevice(actor) && matrix.panMaster) {
     let master = null
     try {
       master = resolve(matrix.panMaster)
