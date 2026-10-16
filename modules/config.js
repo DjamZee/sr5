@@ -3839,7 +3839,7 @@ SR5.effectTypes = {
   signalJammed              : "SR5.EffectSignalJammed",
   linkLock                  : "SR5.EffectLinkLockedConnection",
   flickerDisconnection      : "SR5.EffectFlickerDisconnected",
-  itemComplexForm          : "TYPES.Item.itemComplexForm",
+  itemComplexForm           : "TYPES.Item.itemComplexForm",
   itemSpell                 : "TYPES.Item.itemSpell",
   itemAdeptPower            : "TYPES.Item.itemAdeptPower",
   itemPreparation           : "TYPES.Item.itemPreparation",
