@@ -859,6 +859,17 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // DjamZ's pictures of spirits, by type and size tier (spirit-default-image.js): on by default (his ruling, 14/10).
+    // Off, a new spirit keeps the system's icon; pictures already given stay
+    game.settings.register("sr5", "sr5SpiritDefaultImages", {
+      name: "SR5.SETTINGS_SpiritDefaultImages_T",
+      hint: "SR5.SETTINGS_SpiritDefaultImages_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean,
+    })
+
     // SR5 p. 301 gives a homunculus the Structure of its material as Body, and no Armor: off by default.
     // On, it also gets the Armor of that material (SR5 p. 198). Read while the actors are prepared, hence the reload.
     game.settings.register("sr5", "sr5HomunculusMaterialArmor", {

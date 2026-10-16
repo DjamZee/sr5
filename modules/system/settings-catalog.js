@@ -91,6 +91,8 @@ export const SETTINGS_CATALOG = {
   // Magic
   sr5ReagentSystem: ["magic", "book"],
   sr5SpiritDrainAttribute: ["magic"],
+  // No tag: pictures, not a rule (DjamZ's own, 14/10)
+  sr5SpiritDefaultImages: ["magic"],
   mentorMask: ["magic", "book"],
   spiritLeash: ["magic", "book"],
   sr5HomunculusMaterialArmor: ["magic", "house"],
