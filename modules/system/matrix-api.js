@@ -7,6 +7,9 @@
 import {
   matrixMarkCap
 } from "./matrix-hooks.js"
+import {
+  instanceName
+} from "./pan-candidates.js"
 
 // SR5 p. 237: three marks at most on an icon, from one owner
 export const MAX_MARKS = 3
@@ -193,7 +196,7 @@ async function gmConverge(actor, hostActor){
   if (!isConnectedPersona(actor)) {
     await ChatMessage.create({
       content: `<p>${game.i18n.format("SR5.MatrixConvergenceNotConnected", {
-        name: foundry.utils.escapeHTML(String(actor.name ?? ""))
+        name: foundry.utils.escapeHTML(String(instanceName(actor)))
       })}</p>`,
       whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
     })
@@ -262,7 +265,7 @@ async function postConvergenceCard(actor, damage){
 async function whisperConvergence(actor, hostActor, plan, placed){
   const esc = s => foundry.utils.escapeHTML(String(s ?? ""))
   const lines = convergenceLines({
-    name: esc(actor.name), host: hostActor ? esc(hostActor.name) : null, plan, placed, sprite: actor.type === "actorSprite"
+    name: esc(instanceName(actor)), host: hostActor ? esc(instanceName(hostActor)) : null, plan, placed, sprite: actor.type === "actorSprite"
   }).map(([key, data]) => data ? game.i18n.format(key, data) : game.i18n.localize(key))
   await ChatMessage.create({
     content: lines.map(l => `<p>${l}</p>`).join(""),

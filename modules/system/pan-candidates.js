@@ -9,6 +9,12 @@ export const isHostActor = actor => isDevice(actor) && actor.system?.matrix?.dev
 export const isIceActor = actor => isDevice(actor) && actor.system?.matrix?.deviceType === "ice"
 
 /**
+ * The name an icon is told by: its token's for an unlinked token (« Serveur — Siège »), so that two instances of one
+ * generic actor on the table are told apart in the cards (Lucas#2058, C1); the actor's otherwise
+ */
+export const instanceName = actor => (actor?.isToken ? (actor.token?.name || actor.name) : actor?.name) ?? ""
+
+/**
  * A device of the scenery, which a host or a master may take as a slave (field system.matrix.panMaster, SR5 p. 234): an
  * actorDevice, or a drone with no rigger (the cameras of the Mégapack are drones; Lucas#2058, S2). A drone that has a
  * rigger is the rigger's: it goes up to the rigger's console, never to a host, whatever its panMaster says.

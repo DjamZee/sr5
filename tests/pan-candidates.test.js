@@ -167,6 +167,24 @@ describe('two instances of one generic host as masters of each other', () => {
   })
 })
 
+// Lucas#2058, C1: with two instances of one generic host on the table, the cards named the actor, not the instance
+describe('the name an icon is told by', () => {
+  it('an unlinked token: its token\'s name; a world actor: its own', async () => {
+    const {
+      instanceName
+    } = await import('../modules/system/pan-candidates.js')
+    expect(instanceName({
+      isToken: true, name: 'Serveur générique (indice 3)', token: {
+        name: 'Serveur — Siège'
+      }
+    })).toBe('Serveur — Siège')
+    expect(instanceName({
+      isToken: false, name: 'Serveur générique (indice 3)'
+    })).toBe('Serveur générique (indice 3)')
+    expect(instanceName(null)).toBe('')
+  })
+})
+
 // Lucas#2058, S2: the cameras of the Mégapack are drones with no rigger, which no host could take
 describe('a drone with no rigger is a device of the scenery', () => {
   const drone = (id, rigger = '', panMaster = '') => ({
