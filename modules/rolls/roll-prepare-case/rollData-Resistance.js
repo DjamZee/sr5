@@ -34,6 +34,12 @@ import {
 import {
   outsideBlast
 } from "../roll-helpers/explosives.js"
+import {
+  SR5_PrepareRollHelper
+} from "../roll-prepare-helpers.js"
+import {
+  deviceElectricPool
+} from "../roll-helpers/electric-device.js"
 
 /**
  * Run & Gun RG5 (RG p. 124-125): the armor went into the attack test as a penalty, so it stays out of this one.
@@ -236,6 +242,14 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
       if (rollType === "resistanceToxin") return abortWithInfo(`${game.i18n.localize("SR5.INFO_ImmunityToToxin")}`)
       if (chatData.damage.type === "stun") return abortWithInfo(`${game.i18n.localize("SR5.INFO_ImmunityToStunDamage")}`)
       rollData = await handleDroneDamage(rollData, actorData, chatData)
+      break
+    //Electricity alone reaches a device, as matrix damage (SR5 p. 172-173, electric-device.js)
+    case "actorDevice":
+      if (chatData.damage.element !== "electricity") return abortWithInfo(game.i18n.localize("SR5.INFO_DeviceOnlyElectricity"))
+      rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamage")} ${game.i18n.localize(SR5.damageTypes.physical)} (${rollData.damage.base})`
+      rollData.damage.type = "physical"
+      rollData.dicePool.composition = deviceElectricPool(actor, game.i18n.localize("SR5.DeviceRating"))
+      rollData.dicePool.base = SR5_PrepareRollHelper.getBaseDicepool(rollData)
       break
     case "actorSpirit":
       if (rollType === "resistanceToxin") return abortWithInfo(`${game.i18n.localize("SR5.INFO_ImmunityToToxin")}`)

@@ -2712,6 +2712,7 @@
 	"SR5.INFO_DVLimitByCalledShot": "VD limitée à {value} par l'Attaque ciblée",
 	"SR5.INFO_CalledShotEffectsResisted": "Dommages entièrement résistés : aucun effet de l'Attaque ciblée ne s'applique",
 	"SR5.INFO_ElectricityChangeDamage": "Les dommages Etourdissant sont convertis en Physique par l'électricité.",
+	"SR5.INFO_DeviceOnlyElectricity": "Seuls les dommages électriques atteignent un appareil (SR5 p. 172-173) : le MJ arbitre les autres.",
 	"SR5.INFO_FireDamageIncrease": "est en feu ! La VD augmente de 1 pour un total de {fire}",
 	"SR5.INFO_ForbiddenItemType": "Ce type d'objet n'est pas supporté par ce type de personnage.",
 	"SR5.INFO_FullDefenseEnd": "fin de la défense totale",
