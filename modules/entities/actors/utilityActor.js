@@ -2,6 +2,9 @@ import {
   bbPenaltyReduction
 } from "../../system/bb-healing.js"
 import {
+  woundResolveHolds
+} from "../../system/wound-resolve.js"
+import {
   calledShotSkillsOf, calledShotEffectValue, isMartialArtsModifierTarget
 } from "../../rolls/roll-helpers/calledShotSkills.js"
 import {
@@ -867,6 +870,8 @@ export class SR5_CharacterUtility extends Actor {
             actorData.penalties[key].actual.base = -Math.floor((actorData.conditionMonitors[key].actual.value - actorData.penalties[key].boxReduction.value) / actorData.penalties[key].step.value)
             if (actorData.specialProperties.doublePenalties) actorData.penalties[key].actual.base = actorData.penalties[key].actual.base * 2
             if (actorData.penalties[key].actual.base > 0) actorData.penalties[key].actual.base = 0
+            //Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): « ignore tous les modificateurs de blessure »
+            if (woundResolveHolds(actor)) actorData.penalties[key].actual.base = 0
           }
           break
         case "matrix":

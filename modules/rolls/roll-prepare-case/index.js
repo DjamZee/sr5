@@ -59,6 +59,9 @@ export {
   default as mentorDrawback
 } from "./rollData-MentorDrawback.js"
 export {
+  default as woundResolve
+} from "./rollData-WoundResolve.js"
+export {
   default as escapeEngulf
 } from "./rollData-EscapeEngulf.js"
 export {
