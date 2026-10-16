@@ -34,6 +34,9 @@ import {
   sr5HookRenderMacroConfig,
 } from './hooks/render-ui.js'
 import {
+  sr5HookMarkForeignWindow
+} from './hooks/window-scope.js'
+import {
   sr5HookCreateToken, sr5HookUpdateToken, sr5HookPreDeleteToken, sr5HookDeleteToken 
 } from './hooks/token.js'
 import {
@@ -197,6 +200,8 @@ Hooks.on('hotbarDrop', sr5HookHotbarDrop)
 Hooks.on('renderPlayers', sr5HookRenderPlayers)
 Hooks.on('renderChatMessageHTML', sr5HookRenderChatMessageHTML)
 Hooks.on('renderFolderConfig', sr5HookRenderFolderConfig)
+Hooks.on('renderApplicationV2', sr5HookMarkForeignWindow)
+Hooks.on('renderApplication', sr5HookMarkForeignWindow)
 Hooks.on('renderDialog', sr5HookRenderDialog)
 Hooks.on('renderDialogV2', sr5HookRenderDialogV2)
 Hooks.on('renderSettingsConfig', sr5HookRenderSettingsConfig)

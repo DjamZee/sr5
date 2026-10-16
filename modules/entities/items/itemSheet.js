@@ -332,6 +332,8 @@ export class SR5ItemSheet extends foundry.applications.api.HandlebarsApplication
 
   _onClose(options) {
     super._onClose(options)
+    // The help bubble goes on mouseout, which never comes when the sheet closes under the pointer (16/10, P11)
+    this._hideHelpText()
     if (this._createItemHookId) {
       Hooks.off("createItem", this._createItemHookId)
       this._createItemHookId = null

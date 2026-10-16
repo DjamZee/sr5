@@ -10,7 +10,9 @@
 // Lot 36b: the windows without the sr-application class take the theme's window dress (window.less, a long
 // :not() chain with !important): an id that no element carries (#srw-raise) lifts their selector above it, as :is()
 // counts its heaviest argument
-@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, #srw-raise";
+// 16/10 (DjamZ: « passe tout sur le modèle Concepteur »): Foundry's settings, the system's and the module list too;
+// and a module's window that asks for the dress with the class sr-skin-window (DjamZ's modules: sfx-sr5…)
+@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, .sr-skin-window, #settings-config, #sr5-settings-config, #module-management, #srw-raise";
 
 .application:is(@{srw-skinned}),
 .application:is(@{srw-skinned-plain}) {
@@ -151,6 +153,47 @@
   }
 }
 
+// 16/10: the settings windows and the module list keep, from the theme's dress (window.less), a paper side column and
+// a red band of tabs; the Concepteur's ground and panel instead. An icon button keeps its icon face.
+.application.sr-skin-window:is(.sr-skin-window, #srw-raise) > .window-content {
+  padding: 0.6rem 0.75rem;
+}
+.application:is(#settings-config, #sr5-settings-config, #module-management, .sr-skin-window, #srw-raise) {
+  > .window-content aside {
+    background: var(--srw-panel) !important;
+    background-image: none !important;
+    border-right: 1px solid var(--srw-border) !important;
+    color: var(--srw-text);
+  }
+  // The footer without the sheets' decorated band (window.less puts it with !important)
+  > .window-content > :is(footer, .form-footer) {
+    background: transparent !important;
+    background-image: none !important;
+    border-top: 1px solid var(--srw-border);
+    padding: 8px !important;
+  }
+  // The module list's filter bar (module-management.less) and the tabs
+  > .window-content > search {
+    background: var(--srw-panel);
+    border-top: 1px solid var(--srw-border);
+    border-bottom: 1px solid var(--srw-border);
+  }
+  > .window-content nav.tabs:not(.vertical) {
+    background: transparent;
+    border-top: 1px solid var(--srw-border);
+    border-bottom: 1px solid var(--srw-border);
+    [data-tab] { color: var(--srw-text); opacity: 1; }
+    [data-tab].active { color: var(--srw-sel-text); border-bottom-color: var(--srw-sel-border); }
+  }
+  > .window-content nav.tabs.vertical [data-tab] {
+    border-left: 3px solid transparent;
+    &.active { border-left-color: var(--srw-sel-border); }
+  }
+}
+.application:is(@{srw-skinned}, @{srw-skinned-plain}) > .window-content button:is(.icon, [class*="fa-"]):not(:has(*)):empty {
+  font-family: var(--font-awesome) !important;
+}
+
 // Relecture djamz.13, R1: the windows whose content is one long column scroll as a whole when the window is smaller
 // than it (the core gives .window-content overflow: hidden). The windows with scrolling panes of their own (shop,
 // commcode, compendium browser, broker) keep theirs.
@@ -167,4 +210,34 @@
 &.theme-dark .application:is(@{srw-skinned-plain}):not(.theme-light),
 .application:is(@{srw-skinned-plain}).theme-dark {
   .srw-tokens-dark();
+}
+
+// A module's window (sr-foreign-window, window-scope.js) keeps its own content, ground and colours: only its title
+// bar takes the Concepteur's, as the system's windows (16/10, Agathe#2507 P1). Nothing here is !important, so a module
+// that draws its own title bar (its rules come in the later "modules" layer) keeps it.
+.application.sr-foreign-window,
+.window-app.sr-foreign-window {
+  .srw-tokens();
+
+  // The theme's red scroll bars (body *) give way to the Concepteur's
+  &, * { scrollbar-color: var(--srw-border-strong) transparent; }
+
+  > .window-header {
+    background: var(--srw-header-bg);
+    color: var(--srw-header-text);
+    border-bottom: 1px solid var(--srw-frame);
+
+    .window-title {
+      color: var(--srw-header-text);
+      font-family: var(--srw-font-head);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-shadow: none;
+    }
+    .window-icon { color: var(--srw-essence); }
+    .header-control {
+      color: var(--srw-header-text);
+      &:hover { color: var(--srw-essence); }
+    }
+  }
 }

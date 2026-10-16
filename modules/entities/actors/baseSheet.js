@@ -447,6 +447,13 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return frame
   }
 
+  // The help bubble goes on mouseout, which never comes when the sheet closes under the pointer (Escape): it stayed
+  // over every window (16/10, Agathe#2507 P11)
+  _onClose(options) {
+    super._onClose(options)
+    this._hideHelpText()
+  }
+
   _onRender(context, options) {
     super._onRender(context, options)
     const element = this.element
