@@ -83,10 +83,14 @@ export function folderTree(entries, folders){
   return tree
 }
 
-// The entries and the folders of Foundry actors, in the shape the pure functions read
-export function actorEntries(actors){
+// The entries and the folders of Foundry actors, in the shape the pure functions read; key "uuid" for a list that
+// also holds token actors
+export function actorEntries(actors, {
+  key = "id"
+} = {
+}){
   return [...actors].map(a => ({
-    id: a.id, name: a.name, img: a.img, type: a.type, kind: actorKind(a), folderId: a.folder?.id ?? null
+    id: a[key], name: a.name, img: a.img, type: a.type, kind: actorKind(a), folderId: a.folder?.id ?? null
   }))
 }
 
