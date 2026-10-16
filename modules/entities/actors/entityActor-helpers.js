@@ -883,8 +883,6 @@ export class SR5_ActorHelper {
         await itemToClean.update({
           "system" : cleanData
         })
-        //For Host, keep slaved device marks synchro
-        if (itemToClean.parent.system.matrix.deviceType === "host") SR5_MarkHelpers.markSlavedDevice(itemToClean.parent.id)
       } else {
         SR5_SystemHelpers.srLog(1, `No Item to Clean in deleteMarksOnActor()`)
       }

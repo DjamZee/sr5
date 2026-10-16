@@ -129,16 +129,12 @@ export class SR5_MarkHelpers {
           messageId,
         })
       }
-      if (!onFile && targetActor.system.matrix.deviceType === "host"){
-        await SR5_SocketHandler.emitForGM("markSlavedDevice", {
-          targetActorID: targetActorID
-        })
-      }
-    } else {  
+    } else {
       await SR5_MarkHelpers.updateDeckMarkedItems(realAttackerID, item.uuid, mark)
       if (itemToMark.isSlavedToPan) await SR5_MarkHelpers.markPanMaster(itemToMark, realAttackerID, mark)
-      if (!onFile && targetActor.system.matrix.deviceType === "host") await SR5_MarkHelpers.markSlavedDevice(targetActorID)
     }
+    //S0 (ticket 4): a host is marked on its own instance only. Two unlinked tokens of one generic host, one per
+    //scene, are two hosts: their marks are no longer copied from one to the other (markSlavedDevice is gone)
   }
 
   /** Put a mark on the persona of an AI outside any device (Data Trails p. 157), kept in its own matrix data
@@ -355,33 +351,6 @@ export class SR5_MarkHelpers {
     return true
   }
 
-  //Mark slaved device: for host, update all unlinked token with same marks
-  static async markSlavedDevice(targetActorID){
-    let targetActor = await SR5_EntityHelpers.getRealActorFromID(targetActorID),
-      item = targetActor.items.find(i => i.type === "itemDevice" && i.system.isActive)
-
-    for (let token of canvas?.tokens?.placeables ?? []){
-      if (token.actor.id === targetActorID) {
-        let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
-        let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
-        tokenDeckData.marks = item.system.marks
-        await tokenDeck.update({
-          "system": tokenDeckData
-        })
-      }
-    }
-  }
-
-  //Socket for marking slaved device: only from a GM or the owner of the host, the one who could mark
-  //its device in the first place
-  static async _socketMarkSlavedDevice(message, senderId) {
-    const sender = game.users.get(senderId),
-      host = SR5_EntityHelpers.getRealActorFromID(message?.data?.targetActorID)
-    if (!sender || !host || host.system?.matrix?.deviceType !== "host" || !ownsTarget(sender, host)) return refuse("markSlavedDevice", senderId, message?.data)
-    await SR5_MarkHelpers.markSlavedDevice(message.data.targetActorID)
-    return true
-  }
-
   //Add mark info to attacker deck. exact, when given, is the value the record takes (what the marked
   //icon carries), instead of adding mark to it
   static async updateDeckMarkedItems(ownerID, markedItem, mark, exact = null){
@@ -412,20 +381,6 @@ export class SR5_MarkHelpers {
     await ownerDeck.update({
       "system": deckData
     })
-
-    //For host, update all unlinked token with same marked items
-    if (owner.system.matrix.deviceType === "host"){
-      for (let token of canvas?.tokens?.placeables ?? []){
-        if (token.actor.id === ownerID) {
-          let tokenDeck = token.actor.items.find(i => i.type === "itemDevice" && i.system.isActive)
-          let tokenDeckData = foundry.utils.duplicate(tokenDeck.system)
-          tokenDeckData.markedItems = deckData.markedItems
-          await tokenDeck.update({
-            "system": tokenDeckData
-          })
-        }
-      }
-    }
   }
 
   //Socket for updating marks items on other actors;

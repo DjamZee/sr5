@@ -366,11 +366,13 @@ export function isHostActor(actor){
 }
 
 // What a master answers to in the field panMaster of a device of the scenery: the uuid of a host (the world actor's,
-// which the sheet's selector offers), or the uuid of the master item of a PAN
+// which the sheet's selector offers), or the uuid of the master item of a PAN. An unlinked token answers to its own
+// uuids only: two instances of one generic host, one per scene, never share their slaves (S0, ticket 4)
 export function panMasterKeysOf(actor, device){
   const keys = []
-  if (isHostActor(actor)) keys.push(actor.uuid, `Actor.${actor.id}`)
-  if (device) keys.push(device.uuid, `Actor.${actor?.id}.Item.${device.id ?? device._id}`)
+  const world = !actor?.isToken
+  if (isHostActor(actor)) keys.push(actor.uuid, world ? `Actor.${actor.id}` : null)
+  if (device) keys.push(device.uuid, world ? `Actor.${actor?.id}.Item.${device.id ?? device._id}` : null)
   return keys.filter(Boolean)
 }
 
