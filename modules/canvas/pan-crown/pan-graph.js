@@ -75,6 +75,11 @@ export function realIdOf(actor){
   return actor?.isToken ? actor.token?.id : actor?.id
 }
 
+// The name shown for an actor: its token's for an unlinked token, so two copies of one host on the table are told apart
+export function displayNameOf(actor){
+  return (actor?.isToken ? actor.token?.name : null) || actor?.name
+}
+
 // Every id an actor answers to: a mark or a link may carry either
 export function idsOf(actor){
   return [actor?.id, actor?.isToken ? actor.token?.id : undefined].filter(Boolean)
@@ -155,7 +160,7 @@ export function buildPanGraph(actor, {
 }){
   const graph = {
     owner: {
-      id: realIdOf(actor), actorId: actor?.id ?? null, name: actor?.name ?? "", type: actor?.type ?? ""
+      id: realIdOf(actor), actorId: actor?.id ?? null, name: displayNameOf(actor) ?? "", type: actor?.type ?? ""
     },
     master: null,
     nodes: [],
@@ -451,7 +456,7 @@ function nodeOf(item, kind, holder, mode, silentFrom, drone = null, panOwner = n
     uuid: item.uuid,
     kind,
     // A base device is named "Appareil" in every actor: the name on hover is the actor's, the camera or the host
-    name: (item.system?.type === "baseDevice" ? holder?.name : null) ?? item.name ?? "",
+    name: (item.system?.type === "baseDevice" ? displayNameOf(holder) : null) ?? item.name ?? "",
     itemType: item.type,
     subType: item.system?.type ?? "",
     // The generic icon of its category (lot 2)
