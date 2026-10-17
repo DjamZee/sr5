@@ -325,7 +325,7 @@ export class SR5_UtilityItem extends Actor {
     //Capacity
     if (item.capacity.multiplier == "rating") valueMultiplier = item.itemRating
     if (item.capacity.multiplier) {
-      let modifierSource = `${game.i18n.localize(SR5.valueMultipliers[item.capacity.propertyMultiplier])} ${game.i18n.localize('SR5.Multiplier')}`
+      let modifierSource = game.i18n.localize(SR5.valueMultipliers[item.capacity.multiplier])
       SR5_EntityHelpers.updateModifier(item.capacity, modifierSource, "multiplier", valueMultiplier, true, false)
     }
     SR5_EntityHelpers.updateValue(item.capacity, 0)
@@ -333,7 +333,7 @@ export class SR5_UtilityItem extends Actor {
     //Capacity taken
     if (item.capacityTaken.multiplier == "rating") valueTakenMultiplier = item.itemRating
     if (item.capacityTaken.multiplier) {
-      let modifierSource = `${game.i18n.localize(SR5.valueMultipliers[item.capacityTaken.propertyMultiplier])} ${game.i18n.localize('SR5.Multiplier')}`
+      let modifierSource = game.i18n.localize(SR5.valueMultipliers[item.capacityTaken.multiplier])
       SR5_EntityHelpers.updateModifier(item.capacityTaken, modifierSource, "multiplier", valueTakenMultiplier, true, false)
     }
     SR5_EntityHelpers.updateValue(item.capacityTaken, 0)
