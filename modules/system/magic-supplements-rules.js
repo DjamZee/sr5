@@ -25,10 +25,10 @@ export function elementalAttunementDue(actor) {
 }
 
 /* -------------------------------------------- */
-// Transmutation (Aetherologie p. 39): "les implants non-deltaware sont automatiquement rejetés lors de la
-// transformation, causant des dégâts physiques équivalents à (coût total en Essence des implants × 10, arrondi à
-// l'inférieur). Le personnage ne récupère pas l'Essence perdue". Deltaware "purement interne" stays: the system does not
-// know which deltaware is external, the GM unticks it
+// Transmutation (Aetherologie p. 39), the rule of Transformation (Run Faster p. 75), the Mégapack's object: "les implants
+// non-deltaware sont automatiquement rejetés lors de la transformation, causant des dégâts physiques équivalents à (coût
+// total en Essence des implants × 10, arrondi à l'inférieur). Le personnage ne récupère pas l'Essence perdue". Deltaware
+// "purement interne" stays: the system does not know which deltaware is external, the GM removes that one by hand
 
 export function isTransmutation(item) {
   return item?.type === "itemPower" && hasSpiritPower(item, "transmutation")
