@@ -2547,6 +2547,9 @@ export class SR5_ActorHelper {
       },
       content: SR5_ActorHelper.definitionHtml(review, data.roll),
       rejectClose: false,
+      // Above every window, the expanded chat included: opened behind it, the GM thought the button did nothing
+      // (relecture djamz.14, C4)
+      modal: true,
     }))
   }
 
