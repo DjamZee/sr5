@@ -325,6 +325,7 @@ SR5.movements = {
   treadWater                : "SR5.Floating",
   holdBreath                : "SR5.HoldingBreath",
   fly                       : "SR5.Flying",
+  hotDrop                   : "SR5.MovementHotDrop",
 }
 
 // Skill Groups

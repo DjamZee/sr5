@@ -1,0 +1,9 @@
+<li class="grid">
+    <div class="col-8">{{localize 'SR5.NotSizeAdapted'}}{{localize 'SR5.Colons'}}</div>
+    <div class="col-4 SR-TextRight"><input type="checkbox" data-dtype="Boolean" name="system.notSizeAdapted" {{checked system.notSizeAdapted}} /></div>
+</li>
+{{#if system.notSizeAdapted}}
+<li class="grid">
+    <div class="col-12 SR-GreyColor SR-TextSmall">{{localize 'SR5.NotSizeAdaptedHint'}}</div>
+</li>
+{{/if}}

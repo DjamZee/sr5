@@ -154,6 +154,9 @@ import {
 import {
   iceDefenseType, iceDesignOf
 } from "../../system/ice-design.js"
+import {
+  hotDropGear, HOT_DROP_DISTANCES
+} from "../../system/hot-drop.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -2079,6 +2082,18 @@ export class SR5_CharacterUtility extends Actor {
           break
         case "walk":
           SR5_EntityHelpers.updateModifier(movements[key].movement, game.i18n.localize('SR5.Agility'), "linkedAttribute", attributes.agility.augmented.value * movements[key].multiplier.value)
+          break
+        case "hotDrop":
+          //Hot-Drop (Street Lethal p. 58-59): « Utilisez Chute Libre pour manœuvrer », Free Fall being a Body skill
+          //that can default (SR5 p. 135, -1 untrained: SR5 p. 130); the row shows only on the actor carrying one, its
+          //height of 50 m telling the sheet so
+          if (hotDropGear(actor.items)) {
+            const freeFall = skills.freeFall?.rating?.value ?? 0
+            movements[key].movement.base = HOT_DROP_DISTANCES.up
+            SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
+            if (freeFall > 0) SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.SkillFreeFall'), "skillRating", freeFall)
+            else SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Defaulting'), "skillRating", -1)
+          }
           break
         default:
           SR5_SystemHelpers.srLog(1, `Unknown movement '${key}' in 'updateMovements()'`)

@@ -81,7 +81,11 @@ export class characterMovementsPartialModel extends foundry.abstract.TypeDataMod
           ...movementSchema("physicalLimit") 
         }),
         fly: new fields.SchemaField({
-          ...movementSchema("physicalLimit") 
+          ...movementSchema("physicalLimit")
+        }),
+        // Vulcan Systems « Hot-Drop » jetpack (Street Lethal p. 57-59), shown only to the actor carrying one
+        hotDrop: new fields.SchemaField({
+          ...movementSchema("physicalLimit")
         }),
       }),
       // The movement boxes ticked on the sheet (roll-helpers/situational.js, situationalMovement): item id and effect key

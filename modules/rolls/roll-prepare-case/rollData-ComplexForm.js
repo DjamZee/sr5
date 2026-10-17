@@ -53,6 +53,8 @@ export default function complexForm(rollData, actor, item){
     if (e.value === "sre_ResonanceSpike") rollData.test.typeSub = "resonanceSpike"
     if (e.value === "sre_Derezz") rollData.test.typeSub = "derezz"
     if (e.value === "sre_Redundancy") rollData.test.typeSub = "redundancy"
+    //Coriolis (Chrome Flesh p. 27): « un test étendu de Logiciel + Résonance [Niveau] (5, 24 heures) »
+    if (e.value === "sre_Coriolis") coriolisExtendedTest(rollData)
   }
 
   //Add public grid switch
@@ -61,5 +63,16 @@ export default function complexForm(rollData, actor, item){
   //Check if an effect is transferable
   rollData = SR5_PrepareRollHelper.addTransferableEffect(rollData, item)
 
+  return rollData
+}
+
+/** Coriolis (Chrome Flesh p. 27): the threading opens as an extended test, threshold 5, one roll every 24 hours. */
+export function coriolisExtendedTest(rollData){
+  rollData.test.typeSub = "coriolis"
+  rollData.threshold.value = 5
+  rollData.test.isExtended = true
+  rollData.test.extended.interval = "hour"
+  rollData.test.extended.multiplier = 24
+  rollData.dialogSwitch.extended = true
   return rollData
 }
