@@ -2193,7 +2193,7 @@
 	"SR5.Floating": "Flotter",
 	"SR5.Flying": "Voler",
 	"SR5.MovementHotDrop": "Hot-Drop",
-	"SR5.MovementHotDropDistances": "50 m ↑ · 75 m ↗ · 100 m ↓",
+	"SR5.MovementHotDropDistances": "↑50 ↗75 ↓100 m",
 	"SR5.MovementHotDropHint": "Street Lethal p. 58-59 : un saut de 50 m en hauteur ou de 75 m en arc vers l’avant, ou une descente sans danger sur 100 m. Chute libre pour manœuvrer ; le livre ne donne pas de seuil, le MJ le fixe. Chaque saut use une des 20 utilisations du réservoir (les charges de l’objet).",
 	"SR5.HotDropEffect": "Hot-Drop : saut propulsé (Street Lethal p. 57)",
 	"SR5.HotDropUsesLeft": "{name} : {count} utilisation(s) restante(s)",

@@ -2193,7 +2193,7 @@
 	"SR5.Floating": "Float",
 	"SR5.Flying": "Fly",
 	"SR5.MovementHotDrop": "Hot-Drop",
-	"SR5.MovementHotDropDistances": "50 m ↑ · 75 m ↗ · 100 m ↓",
+	"SR5.MovementHotDropDistances": "↑50 ↗75 ↓100 m",
 	"SR5.MovementHotDropHint": "Street Lethal p. 58-59: a 50 m jump upward or a 75 m arc forward, or a safe descent over 100 m. Free Fall to maneuver; the book gives no threshold, the gamemaster sets it. Each jump spends one of the tank’s 20 uses (the item’s charges).",
 	"SR5.HotDropEffect": "Hot-Drop: powered jump (Street Lethal p. 57)",
 	"SR5.HotDropUsesLeft": "{name}: {count} use(s) left",
