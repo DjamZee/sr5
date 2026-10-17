@@ -12,7 +12,7 @@ import {
   markRowDoneInMessage, cardFromGM
 } from "./card-rows.js"
 import {
-  escape, isActiveGM, gmIds, playerOwners
+  escape, isActiveGM, gmIds, playerOwners, allActors
 } from "./card-helpers.js"
 
 /* -------------------------------------------- */
@@ -70,12 +70,27 @@ export function activateAttunementCardListeners(html, message){
 }
 
 /* -------------------------------------------- */
-// Transmutation: the power switched on, the GM sees the implants the new form rejects and the damage, and applies them
+// Transmutation: the power switched on, the GM sees the implants the new form rejects and the damage, and applies them.
+// The sheet's switch writes the item through an update of the whole actor (baseSheet.js, _editItemValue), where no
+// updateItem hook runs: the active GM keeps whether each actor's Transmutation was on, and deals the card when it goes on
 
-async function onUpdateItem(item, changes){
-  if (!isActiveGM() || changes?.system?.isActive !== true || !isTransmutation(item)) return
-  const actor = item.parent
-  if (!actor) return
+const transmuted = new Map()
+const transmutationOn = actor => listOf(actor?.items).some(i => isTransmutation(i) && i.system?.isActive)
+const listOf = items => items ? [...(items.contents ?? items)] : []
+
+function rememberTransmutation(actor){
+  if (actor?.uuid && listOf(actor.items).some(isTransmutation)) transmuted.set(actor.uuid, transmutationOn(actor))
+}
+
+async function checkTransmutation(actor){
+  if (!isActiveGM() || !actor?.uuid) return
+  const before = transmuted.get(actor.uuid) ?? false
+  const now = transmutationOn(actor)
+  transmuted.set(actor.uuid, now)
+  if (now && !before) await postTransmutationCard(actor)
+}
+
+async function postTransmutationCard(actor){
   const implants = transmutationImplants(actor.items)
   if (!implants.some(i => i.rejected)) return
   const rows = implants.map(i => `<li>${escape(i.name)} (${i.essence}) : ${game.i18n.localize(i.rejected ? "SR5.TransmutationRejected" : "SR5.TransmutationKept")}</li>`).join("")
@@ -111,7 +126,25 @@ async function applyTransmutation(actor){
     rejectClose: false,
   })
   if (!ok) return false
-  await actor.deleteEmbeddedDocuments("Item", rejected.map(i => i.id))
+  //One by one, each hole written before the next removal: essence-hole.js reads the actor's hole at each deleteItem,
+  //and two removals at once kept only one of them (measured: 1.6 kept of 1.7)
+  for (const implant of rejected) {
+    const item = actor.items.get(implant.id)
+    if (!item) continue
+    const written = new Promise(resolve => {
+      const hook = Hooks.on("updateActor", (a, changes) => {
+        if (a.uuid === actor.uuid && foundry.utils.hasProperty(changes, "system.essence.holeAmount")) done()
+      })
+      const timer = setTimeout(() => done(), 2000)
+      function done(){
+        Hooks.off("updateActor", hook)
+        clearTimeout(timer)
+        resolve()
+      }
+    })
+    await item.delete()
+    await written
+  }
   if (damage > 0){
     const {
       SR5_PrepareRollTest
@@ -153,9 +186,14 @@ export function initMagicSupplements(){
   Hooks.on("updateCombat", (combat, changes, options) => {
     onUpdateCombat(combat, changes, options).catch(e => SR5_SystemHelpers.srLog(1, `Elemental Attunement not dealt: ${e}`))
   })
-  Hooks.on("updateItem", (item, changes) => {
-    onUpdateItem(item, changes).catch(e => SR5_SystemHelpers.srLog(1, `Transmutation not dealt: ${e}`))
+  if (isActiveGM()) for (const actor of allActors()) rememberTransmutation(actor)
+  for (const hook of ["updateItem", "createItem"]) Hooks.on(hook, (item) => {
+    checkTransmutation(item.parent).catch(e => SR5_SystemHelpers.srLog(1, `Transmutation not dealt: ${e}`))
   })
+  Hooks.on("updateActor", (actor) => {
+    checkTransmutation(actor).catch(e => SR5_SystemHelpers.srLog(1, `Transmutation not dealt: ${e}`))
+  })
+  Hooks.on("createToken", (token) => isActiveGM() && rememberTransmutation(token.actor))
   Hooks.on("deleteItem", (item) => {
     onDeleteItem(item).catch(e => SR5_SystemHelpers.srLog(1, `Petrification not lifted: ${e}`))
   })
