@@ -2586,7 +2586,7 @@ export class SR5_ActorHelper {
     if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return false
     //Pétrification (Street Grimoire p. 117-118): won, the subject is turned to stone only if the Force is at least its Body
     const petrify = isPetrification(item) && Number(data.roll?.netHits) > 0
-    const subjectBody = Number(actor.system.attributes?.body?.augmented?.value) || 0
+    const subjectBody = petrify ? Number(actor.system?.attributes?.body?.augmented?.value) || 0 : 0
     if (petrify && !petrifies(data.magic?.force, subjectBody)) {
       ui.notifications.warn(game.i18n.format("SR5.WARN_PetrificationForce", {
         name: actor.name, force: Number(data.magic?.force) || 0, body: subjectBody
