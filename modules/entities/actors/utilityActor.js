@@ -1860,6 +1860,10 @@ export class SR5_CharacterUtility extends Actor {
             case "body":
               m.value = actorData.attributes.body.augmented.value
               break
+            //A fixed value put on the target by a spell: Pétrification's barrier armor (magic-supplements-rules.js)
+            case "value":
+              m.value = Number(m.details.value) || 0
+              break
           }
         }
       }
