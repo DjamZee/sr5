@@ -71,6 +71,8 @@ export default async function matrixActionInfo(cardData, actorId){
     if (raised === undefined && cardData.test.typeSub !== "matrixSearch") cardData.test.title += emulateTitle(cardData)
     //Emulating for a legal action raises nothing (Data Trails p. 157): the player ticks it in the dialog
     let cost = cardData.matrix.emulateLegal ? 0 : cardData.edge?.hasUsedPushTheLimit ? cardData.roll.hits : cardData.matrix.emulateRating
+    //House rule, a world setting (DjamZ's ruling of 2026-10-18): half of it, rounded up; off, the book's full value
+    if (game.settings.get("sr5", "sr5EmulateOverwatchHalf") === true) cost = Math.ceil(cost / 2)
     if (raised === undefined || (cardData.edge.hasUsedPushTheLimit && cost !== raised)) {
       cardData.roll.emulateRaised = cost
       if (cost !== (raised || 0)) await raiseOverwatchScore(cost - (raised || 0), actor)
