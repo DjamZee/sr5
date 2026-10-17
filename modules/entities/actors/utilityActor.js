@@ -1036,10 +1036,11 @@ export class SR5_CharacterUtility extends Actor {
       if (freedByMastery.has(i.id)) continue
       if (i.system.isActive && i.type === itemType && !i.system.freeSustain) SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${i.name}`, i.type, -sustainedMod)
 
-      //Except if concentration is active.
-      if (i.system.isActive && i.type === itemType &&
+      //Except if concentration is active (only with a rating: a complex form of Level 0 is not covered by a rating of 0)
+      const concentration = actor.system.specialProperties.concentration.value
+      if (i.system.isActive && i.type === itemType && concentration > 0 &&
 				!i.system.freeSustain && !actor.system[concentrationType].concentration &&
-				(i.system.force <= actor.system.specialProperties.concentration.value || i.system.level <= actor.system.specialProperties.concentration.value)) {
+				(i.system.force <= concentration || i.system.level <= concentration)) {
         SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${game.i18n.localize('SR5.QualityTypePositive')}`, "concentration", sustainedMod)
         actor.system[concentrationType].concentration = true
         i.system.freeSustain = true
