@@ -195,6 +195,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     return this.document.name
   }
 
+  /**
+   * The picture is sent back only when it was changed on the sheet: the one it showed, unchanged, would undo a change
+   * made elsewhere since it was drawn (default pictures of the spirits, seen by Clémence on 17/10)
+   */
+  _processFormData(event, form, formData) {
+    const data = super._processFormData(event, form, formData)
+    if (this._renderedImg !== undefined && data.img === this._renderedImg) delete data.img
+    return data
+  }
+
   /** @override — reopen at the size last chosen for this sheet type (sheet-size.js) */
   _initializeApplicationOptions(options) {
     return sheetSizeOptions(this.constructor, super._initializeApplicationOptions(options))
@@ -295,6 +305,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options)
+    // The picture the sheet shows (img[data-edit]), compared at the next submission (_processFormData)
+    this._renderedImg = this.actor._source.img
     const actorData = this.actor.toObject(false)
     // Copy runtime-computed properties that aren't schema fields onto the plain object
     // so templates can access them via {{system.lists}} and {{system.isGM}}
@@ -1724,7 +1736,8 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
             // Reset the threshold
             alreadyTaken.addiction.threshold = drugAddictionThreshold(item.system)
           }
-          else {
+          // A drug without addiction (Cryo) gets no entry, unless its doses are counted (Soothsayer, Chrome Flesh p. 186)
+          else if (item.system.addiction?.rating > 0 || DRUG_DAMAGE[drugType?.value]?.intake?.lessPerDose) {
             // Generate and populate the drug addiction
             addiction = SR5_CharacterUtility.generateDrugAddiction(item)
             actorData.addictions = actorData.addictions.concat(addiction)

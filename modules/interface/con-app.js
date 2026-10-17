@@ -36,7 +36,8 @@ export class SR5ConApp extends foundry.applications.api.HandlebarsApplicationMix
     id: "sr5-con-tracker",
     classes: ["sr5", "sr-application", "sr-con"],
     position: {
-      width: 720, height: 760
+      // Fitted to its content: at a fixed 760 px, a large empty area stayed under the form (relecture djamz.14, C5)
+      width: 720, height: "auto"
     },
     window: {
       title: "SR5.CON_Title", icon: "fas fa-masks-theater", resizable: true

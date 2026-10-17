@@ -519,3 +519,24 @@ describe('pan graph: devices of the scenery (lot 7, SR5 p. 234)', () => {
     expect(g.master).toBe(door.items[0].uuid)
   })
 })
+
+describe('pan graph: the name of a copy of a host (relecture djamz.14, C1)', () => {
+  it('names an unlinked token by its own name, not its actor', () => {
+    const base = item('itemDevice', {
+      type: 'baseDevice', deviceRating: 3
+    })
+    const host = actor([base], {
+    }, {
+      id: 'host', name: 'Serveur générique', type: 'actorDevice'
+    })
+    host.isToken = true
+    host.token = {
+      id: 'tok', name: 'Serveur — Siège'
+    }
+    const g = buildPanGraph(host, {
+      resolve: resolver(base)
+    })
+    expect(g.owner.name).toBe('Serveur — Siège')
+    for (const node of g.nodes.filter(x => x.uuid === base.uuid)) expect(node.name).toBe('Serveur — Siège')
+  })
+})
