@@ -109,6 +109,9 @@ import {
   sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory, sr5HookCompendiumDocumentChanged
 } from './hooks/compendium.js'
 import {
+  sr5HookRenderJournalDirectory
+} from './hooks/journal.js'
+import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
 } from './interface/scene-indicators.js'
 import {
@@ -259,6 +262,7 @@ Hooks.on('createActiveEffect', sr5HookCreateActiveEffect)
 Hooks.on('deleteActiveEffect', sr5HookDeleteActiveEffect)
 Hooks.on('renderCompendium', sr5HookRenderCompendium)
 Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
+Hooks.on('renderJournalDirectory', sr5HookRenderJournalDirectory)
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'createActor', 'updateActor', 'deleteActor']) {
   Hooks.on(hook, sr5HookCompendiumDocumentChanged)
 }
