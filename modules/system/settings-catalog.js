@@ -106,6 +106,7 @@ export const SETTINGS_CATALOG = {
   // The key cipher of the commcode messages and files, a house rule of DjamZ (lot 39)
   sr5CommcodeCipher: ["matrix", "house"],
   sr5DevicelessAILogicDefense: ["matrix"],
+  sr5EmulateOverwatchHalf: ["matrix", "house"],
   sr5WifiRequiresDNI: ["matrix"],
   // Rigging
   sr5Rigger5Actions: ["rigging", "book"],

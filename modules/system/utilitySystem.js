@@ -842,6 +842,17 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // Data Trails p. 159: an illegal Emulate adds its rating to the Overwatch Score (its hits when Edge pushes the
+    // limit). House rule (DjamZ's ruling of 2026-10-18): half of it, rounded up. Off by default, as the book has it
+    game.settings.register("sr5", "sr5EmulateOverwatchHalf", {
+      name: "SR5.SETTINGS_EmulateOverwatchHalf_T",
+      hint: "SR5.SETTINGS_EmulateOverwatchHalf_D",
+      scope: "world",
+      config: true,
+      default: false,
+      type: Boolean,
+    })
+
     // SR5 p. 403: critters and spirits resist the Drain of an innate spell with Intuition or Charisma, at the GM's
     // discretion; added to Willpower as a tradition attribute is (Shadow Spells p. 19), a reading: the book does not
     // name Willpower. Spirit sheets only. Charisma by default (DjamZ's ruling, 2026-10-06). Read while the actors are prepared

@@ -4472,6 +4472,8 @@
 	"SR5.SETTINGS_DevicelessAILogicDefense_Intuition": "Intuition",
 	"SR5.SETTINGS_DevicelessAILogicDefense_T": "IA hors appareil : attribut qui remplace la Logique en défense et en résistance",
 	"SR5.SETTINGS_DevicelessAILogicDefense_Willpower": "Volonté",
+	"SR5.SETTINGS_EmulateOverwatchHalf_D": "Au livre, une émulation illégale ajoute son indice au Score de Surveillance de l'IA, ou ses succès quand la Chance sert à repousser les limites (Data Trails p. 159). Coché, elle n'en ajoute que la moitié, arrondie au supérieur. Décoché : la règle du livre.",
+	"SR5.SETTINGS_EmulateOverwatchHalf_T": "Émulation des IA : moitié de l'indice au Score de Surveillance (Règle Maison)",
 	"SR5.SETTINGS_HomunculusMaterialArmor_T": "Homoncule : Blindage du matériau en Armure",
 	"SR5.SETTINGS_HomunculusMaterialArmor_D": "Le livre (SR5 p. 301) donne à l'homoncule la Structure de son matériau comme Constitution, et aucune Armure. Coché, il reçoit aussi en Armure le Blindage de ce matériau (table des barrières, SR5 p. 198).",
 	"SR5.SETTINGS_AugmentationCap_T": "Plafond des augmentations",

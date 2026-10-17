@@ -4472,6 +4472,8 @@
 	"SR5.SETTINGS_DevicelessAILogicDefense_Intuition": "Intuition",
 	"SR5.SETTINGS_DevicelessAILogicDefense_T": "AI outside a device: attribute replacing Logic in defense and resistance",
 	"SR5.SETTINGS_DevicelessAILogicDefense_Willpower": "Willpower",
+	"SR5.SETTINGS_EmulateOverwatchHalf_D": "By the book, an illegal Emulate adds its rating to the AI's Overwatch Score, or its hits when Edge pushes the limit (Data Trails p. 159). Checked, it adds half of that, rounded up. Unchecked: the book's rule.",
+	"SR5.SETTINGS_EmulateOverwatchHalf_T": "AI Emulate: half the rating to the Overwatch Score (house rule)",
 	"SR5.SETTINGS_HomunculusMaterialArmor_T": "Homunculus: material Armor as Armor",
 	"SR5.SETTINGS_HomunculusMaterialArmor_D": "The book (SR5 p. 301) gives a homunculus the Structure of its material as Body, and no Armor. Checked, it also gets the Armor of that material (Barrier Ratings table, SR5 p. 198).",
 	"SR5.SETTINGS_AugmentationCap_T": "Augmentation cap",
