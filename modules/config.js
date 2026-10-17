@@ -4311,6 +4311,7 @@ SR5.modifiersTypes = {
   addSecurity				  : "SR5.LifestyleSecurity",
   CustomCyberlimb			  : "SR5.AugmentationCyberlimbs",
   factory					  : "SR5.VehicleModFactory",
+  sizeMismatch				  : "SR5.NotSizeAdapted",
   swarm					  : "SR5.SwarmValue",
   adeptPower				  : "SR5.AdeptPower",
   ammunitionType 			  : "SR5.AmmunitionType",
