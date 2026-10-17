@@ -73,6 +73,50 @@ async function removeImplant(flags) {
   return actor.updates
 }
 
+/** A character whose implants are all removed by one deletion (each deleteItem fired before the actor's update). */
+async function removeTogether(costs, kept = []) {
+  const actor = Object.assign(new Actor(), {
+    documentName: "Actor", uuid: "Actor.batch", flags: {
+    }, system: {
+      essence: {
+        base: 6, holeAmount: 0, holeBase: 0
+      }
+    }, updates: [],
+  })
+  actor.update = async data => {
+    actor.updates.push(data)
+    actor.system.essence.holeAmount = data["system.essence.holeAmount"]
+    actor.system.essence.holeBase = data["system.essence.holeBase"]
+  }
+  const implant = (id, value) => ({
+    type: "itemAugmentation", id, uuid: `Actor.batch.Item.${id}`, parent: actor, system: {
+      type: "cyberware", isAccessory: false, reversibleEssence: false, essenceCost: {
+        value
+      }
+    },
+  })
+  actor.items = kept.map((value, i) => implant(`keep${i}`, value))
+  const gone = costs.map((value, i) => implant(`gone${i}`, value))
+  await Promise.all(gone.map(item => onDelete(item)))
+  return actor
+}
+
+describe("several implants removed by one deletion (SR5 p. 53)", () => {
+  it("two implants at once: each one counted, 1 + 0.7 = 1.7, in one update", async () => {
+    const actor = await removeTogether([1, 0.7], [0.5])
+    expect(actor.system.essence.holeAmount).toBe(1.7)
+    expect(actor.system.essence.holeBase).toBe(0.5)
+    expect(actor.updates).toHaveLength(1)
+  })
+
+  it("a later removal adds to the hole the batch wrote", async () => {
+    const actor = await removeTogether([1, 0.6], [0.2])
+    const last = actor.items.pop()
+    await onDelete(last)
+    expect(actor.system.essence.holeAmount).toBe(1.8)
+  })
+})
+
 describe("C0: no Essence hole for a character in creation", () => {
   it("off creation, removing an implant opens the hole", async () => {
     expect(await removeImplant({

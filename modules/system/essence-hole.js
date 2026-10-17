@@ -77,6 +77,42 @@ export function removedCost(item, entry, actor, compute) {
   return Math.max(Number(entry?.[PEAK_COST]) || 0, registeredCost(item, entry, actor, compute))
 }
 
+/**
+ * Removals of one actor gathered into one batch: a single deleteEmbeddedDocuments that takes several implants fires
+ * one deleteItem per implant before the actor's update lands, and each one alone would read the hole the others had
+ * not written yet (two implants, one hole: 1.6 instead of 1.7, Ambre's measure). The batch closes once the hooks of
+ * that deletion have run; it waits for the actor's previous batch, so it reads the hole that one wrote.
+ * @param {string} key the actor's uuid
+ * @param {*} entry what the hook read of the removed item
+ * @param {(entries: Array) => Promise} process works the batch out, once
+ * @param {Function} [defer] when the batch closes (a promise executor)
+ * @returns {Promise} settled once the batch holding `entry` is worked out
+ */
+export function batchRemoval(key, entry, process, defer = resolve => setTimeout(resolve, 0)) {
+  let batch = OPEN_BATCHES.get(key)
+  if (!batch) {
+    batch = {
+      entries: []
+    }
+    OPEN_BATCHES.set(key, batch)
+    const collected = new Promise(defer).then(() => {
+      OPEN_BATCHES.delete(key)
+      return batch.entries
+    })
+    const previous = QUEUES.get(key) ?? Promise.resolve()
+    batch.done = Promise.all([collected, previous]).then(([entries]) => process(entries))
+    const settled = batch.done.catch(() => {})
+    QUEUES.set(key, settled)
+    settled.then(() => {
+      if (QUEUES.get(key) === settled) QUEUES.delete(key)
+    })
+  }
+  batch.entries.push(entry)
+  return batch.done
+}
+const OPEN_BATCHES = new Map()
+const QUEUES = new Map()
+
 /** The deleteItem hook: an implant removed from a character. */
 async function onImplantDeleted(item) {
   if (item?.type !== "itemAugmentation" || !(item.parent instanceof Actor)) return
@@ -88,20 +124,34 @@ async function onImplantDeleted(item) {
   // At creation, the world's or the character's own (lot C0), an implant taken off leaves no hole
   if (creationModeFor(actor)) return
   if (!actor.system?.essence) return
-  // Never the deleted document's marks: a player's write the GM has not put back yet would open no hole
-  // (Apollinaire's review)
-  const marks = await vouchedMarks(item, register)
-  if (!leavesHole(item, marks)) return
-  const removed = {
-    type: item.type, system: {
-      type: item.system?.type, isAccessory: false, transhumanGift: item.system?.transhumanGift,
-      essenceCost: {
-        value: removedCost(item, register[item.uuid], actor)
+  return batchRemoval(actor.uuid, {
+    item, register
+  }, entries => applyRemovals(actor, entries))
+}
+
+/** The hole every implant of one batch leaves, each one counted (SR5 p. 53, Chrome Flesh p. 74). */
+async function applyRemovals(actor, entries) {
+  const removed = []
+  for (const {
+    item, register
+  } of entries) {
+    // Never the deleted document's marks: a player's write the GM has not put back yet would open no hole
+    // (Apollinaire's review)
+    const marks = await vouchedMarks(item, register)
+    if (!leavesHole(item, marks)) continue
+    removed.push({
+      type: item.type, system: {
+        type: item.system?.type, isAccessory: false, transhumanGift: item.system?.transhumanGift,
+        essenceCost: {
+          value: removedCost(item, register[item.uuid], actor)
+        }
       }
-    }
+    })
   }
-  const others = actor.items.filter(i => i.id !== item.id)
-  const next = holeAfterRemoval(actor.system.essence, implantsEssenceLost([...others, removed]), implantsEssenceLost(others),
+  if (!removed.length || !actor.system?.essence) return
+  const gone = new Set(entries.map(e => e.item.id))
+  const others = actor.items.filter(i => !gone.has(i.id))
+  const next = holeAfterRemoval(actor.system.essence, implantsEssenceLost([...others, ...removed]), implantsEssenceLost(others),
     essenceSettingOn(ESSENCE_HOLE_SETTING))
   await actor.update({
     "system.essence.holeAmount": next.holeAmount, "system.essence.holeBase": next.holeBase
