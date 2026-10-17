@@ -92,6 +92,9 @@ import {
   isAreaSpellTemplateGone, areaSpellTemplateRemoved
 } from "../../system/areaEffectScene.js"
 import {
+  isPetrification, petrifies, petrificationArmor, PETRIFICATION_ARMOR_TARGET
+} from "../../system/magic-supplements-rules.js"
+import {
   carriedGear
 } from "../../system/vehicle-factory.js"
 import {
@@ -2584,6 +2587,16 @@ export class SR5_ActorHelper {
       }
     }
     if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return false
+    //Pétrification (Street Grimoire p. 117-118): won, the subject is turned to stone only if the Force is at least its Body
+    const petrify = isPetrification(item) && Number(data.roll?.netHits) > 0
+    const subjectBody = petrify ? Number(actor.system?.attributes?.body?.augmented?.value) || 0 : 0
+    if (petrify && !petrifies(data.magic?.force, subjectBody)) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_PetrificationForce", {
+        name: actor.name, force: Number(data.magic?.force) || 0, body: subjectBody
+      }))
+      return false
+    }
+    const petrified = []
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {
@@ -2606,6 +2619,8 @@ export class SR5_ActorHelper {
         //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
         //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
         if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
+        //The barrier armor of the petrified subject: its Body + the net hits
+        if (petrify && e.target === PETRIFICATION_ARMOR_TARGET) value = petrificationArmor(subjectBody, data.roll.netHits)
 
         //Handle heal effect
         if (e.target.includes("removeDamage")){
@@ -2719,6 +2734,7 @@ export class SR5_ActorHelper {
         //a spell was the same item)
         const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
         if (effect) posed = true
+        if (effect && petrify) petrified.push(effect.id)
         if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
         //Asked of the GM once for all the effects of this card, below: he spends the card once
         else if (!game.user?.isGM) toLink.push(effect.uuid)
@@ -2765,6 +2781,21 @@ export class SR5_ActorHelper {
       //The card it was applied from: the GM reads it again (security pass, Olympe)
       messageId: data.owner.messageId,
     })
+    //Turned to stone: "n'est pas conscient" while the spell lasts. Its own origin, never cleared by healing
+    //(clearDamageKnockout); it goes with the spell's effects (magic-supplements.js)
+    if (petrified.length) await actor.createEmbeddedDocuments("ActiveEffect", [{
+      name: game.i18n.localize("SR5.Petrified"),
+      origin: "petrification",
+      img: "systems/sr5/assets/img/status/StatusUnconsciousOn.svg",
+      statuses: ["unconscious"],
+      flags: {
+        sr5: {
+          petrification: {
+            effectIds: petrified
+          }
+        }
+      },
+    }])
     //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
     //card keeps its Apply button
     //An entry declined while another was posed: the card is spent (the declined damage is lost, the GM's own choice)

@@ -13,7 +13,7 @@ import {
 
 const read = path => readFileSync(path, "utf8")
 const KEYS = ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator",
-  "electromancer", "guru", "rapidFireCaster"]
+  "electromancer", "guru", "rapidFireCaster", "elementalAttunement"]
 
 describe("Magical masteries: wiring (Forbidden Arcana p. 30-41)", () => {
   it("lists every mastery in SR5.magicMasteries, labelled in French and English", () => {

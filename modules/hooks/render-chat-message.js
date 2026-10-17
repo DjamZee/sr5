@@ -58,6 +58,9 @@ import {
 import {
   activateWoundResolveListeners
 } from "../system/wound-resolve.js"
+import {
+  activateAttunementCardListeners, activateTransmutationCardListeners
+} from "../system/magic-supplements.js"
 
 /**
  * A card posted by the system or a module, as opposed to a line typed in the chat (/w): flags of its own,
@@ -121,6 +124,9 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
   if (message.flags?.sr5?.drugClock) activateDrugCardListeners(html, message)
   // Wounds that bleed (Bullets & Bandages p. 14): the GM adds the box
   if (message.flags?.sr5?.bbBleed) activateBleedCardListeners(html, message)
+  // Harmonie élémentaire (Better Than Bad p. 145) and Transmutation (Aetherologie p. 39): the GM applies
+  if (message.flags?.sr5?.elementalAttunement) activateAttunementCardListeners(html, message)
+  if (message.flags?.sr5?.transmutation) activateTransmutationCardListeners(html, message)
   // Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): the owner rolls the test the GM's card asks for
   if (message.flags?.sr5?.woundResolve) activateWoundResolveListeners(html, message)
   // Extended tests and healing (SR5 p. 50, 207-208): the GM moves the clock on by the time spent

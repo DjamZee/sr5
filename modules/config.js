@@ -2239,6 +2239,8 @@ SR5.magicMasteries = {
   electromancer            : "SR5.MagicMasteryElectromancer",
   guru                     : "SR5.MagicMasteryGuru",
   rapidFireCaster          : "SR5.MagicMasteryRapidFireCaster",
+  // Better Than Bad p. 145: the Drain of Corps élémentaire becomes 1 box per Combat Turn (magic-supplements.js)
+  elementalAttunement      : "SR5.MagicMasteryElementalAttunement",
 }
 
 //-----------------------------------//
@@ -3749,6 +3751,8 @@ SR5.AllSpiritPowers = {
   stealth                    : "SR5.SpiritPowerStealth",
   storm                      : "SR5.SpiritPowerStorm",
   toughness                  : "SR5.SpiritPowerToughness",
+  // Aetherologie p. 39: the implants the new form rejects (magic-supplements.js)
+  transmutation              : "SR5.SpiritPowerTransmutation",
 }
 
 //-----------------------------------//

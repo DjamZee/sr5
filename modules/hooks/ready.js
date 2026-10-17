@@ -18,6 +18,9 @@ import {
   initWoundResolve
 } from "../system/wound-resolve.js"
 import {
+  initMagicSupplements
+} from "../system/magic-supplements.js"
+import {
   SR5_CompendiumUtility
 } from "../entities/actors/utilityCompendium.js"
 import {
@@ -141,6 +144,8 @@ export function sr5HookReady() {
   initBBHealing()
   // Deus vult ! / Mon pays (Manuel de l'assassin p. 14-15): the test of Willpower at the start of the action phase
   initWoundResolve()
+  // Harmonie élémentaire, Transmutation, Pétrification (Better Than Bad p. 145, Aetherologie p. 39, Street Grimoire p. 117)
+  initMagicSupplements()
   // Invisibility and Mask: the active GM keeps the thresholds and who has seen through (SR5 p. 294)
   initIllusions()
   // RP-Tac: a lowered Device Rating trims the roster (Run & Gun p. 119)
