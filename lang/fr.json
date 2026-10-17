@@ -1295,6 +1295,8 @@
 	"SR5.BrowserRollTable": "Table aléatoire",
 	"SR5.BrowserScene": "Scène",
 	"SR5.CompendiumBrowser": "Navigateur de compendiums",
+	"SR5.Manual": "Manuel",
+	"SR5.ManualMissing": "Le compendium du manuel (sr5.manuel) n'est pas installé.",
 	"SR5.CompendiumDraw": "Tirer au hasard",
 	"SR5.CompendiumDrawBrowserHint": "Tire au hasard parmi tout ce que les filtres laissent voir, toutes pages comprises.",
 	"SR5.CompendiumDrawCount": "Nombre de tirages",
