@@ -47,6 +47,11 @@ export class sr5ItemGearDataModel extends foundry.abstract.TypeDataModel {
       isIntangible: new fields.BooleanField({
         initial: false
       }),
+      // Not made for its holder's size: -2 dice (SR5 p. 423), lifted for a troll with Doigts délicats (The Complete
+      // Trog p. 179). Unticked, the lifestyle paid for the fitted gear (SR5 p. 423)
+      notSizeAdapted: new fields.BooleanField({
+        initial: false
+      }),
       charge: new fields.NumberField({
         initial: 0
       }),

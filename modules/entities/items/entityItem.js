@@ -346,7 +346,7 @@ export class SR5Item extends Item {
           if (Object.keys(itemData.itemEffects).length) SR5_UtilityItem.applyItemEffects(item)
           SR5_UtilityItem._handleArmorValue(itemData)
         }
-        if (itemData.canRollTest) SR5_UtilityItem.generateTestDicepool(itemData)
+        if (itemData.canRollTest) SR5_UtilityItem.generateTestDicepool(itemData, this.actor)
         SR5_UtilityItem._handleItemCapacity(itemData)
         SR5_UtilityItem._handleItemPrice(itemData)
         SR5_UtilityItem._handleItemAvailability(itemData)

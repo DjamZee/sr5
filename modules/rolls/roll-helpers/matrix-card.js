@@ -194,6 +194,7 @@ export function complexFormSubType(item, fallback = "") {
     if (e.value === "sre_ResonanceSpike") typeSub = "resonanceSpike"
     if (e.value === "sre_Derezz") typeSub = "derezz"
     if (e.value === "sre_Redundancy") typeSub = "redundancy"
+    if (e.value === "sre_Coriolis") typeSub = "coriolis"
   }
   return typeSub
 }

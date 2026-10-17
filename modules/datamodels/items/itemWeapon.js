@@ -85,6 +85,11 @@ export class sr5ItemWeaponDataModel extends foundry.abstract.TypeDataModel {
       aerodynamic: new fields.BooleanField({
         initial: false
       }),
+      // Not made for its holder's size: -2 dice (SR5 p. 423), lifted for a troll with Doigts délicats (The Complete
+      // Trog p. 179). Unticked, the lifestyle paid for the fitted weapon (SR5 p. 423)
+      notSizeAdapted: new fields.BooleanField({
+        initial: false
+      }),
       firingMode: new fields.SchemaField({
         singleShot: new fields.BooleanField({
           initial: false

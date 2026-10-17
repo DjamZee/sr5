@@ -360,6 +360,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/_common/magicDuration-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/accessoryChoice-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/_common/testRoll-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/_common/notSizeAdapted-edit.hbs",
 
     //Adept power
     "systems/sr5/templates/items/_partial/editable/adeptPower/powerPointCost-edit.hbs",
