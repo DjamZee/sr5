@@ -61,6 +61,7 @@ export async function takeOwnerAction(actor, key){
   }]
   if (!SR5Combat.hasActionsLeft(actor, actions)) return false
   if (game.combat) await SR5Combat.changeActionInCombat(speakerId, actions)
+  // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
   const escape = text => foundry.utils?.escapeHTML?.(String(text)) ?? String(text).replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)};`)
   await ChatMessage.create({
     speaker: ChatMessage.getSpeaker({

@@ -116,6 +116,7 @@ export class SR5Conceal {
 
   //Perception or Palming (SR5 p. 422); Intuition [Mental], or in a pat-down Agility [Physical]
   static async askSearch(observer, mode, targetName) {
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     const skills = observer.system.skills ?? {
     }
@@ -189,6 +190,7 @@ export class SR5Conceal {
     }
 
     const hidden = concealedItems(target)
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     const observerName = SR5Pickpocket.tokenOf(request.observerId)?.name ?? observer.name
     const targetName = SR5Pickpocket.tokenOf(request.targetId)?.name ?? target.name
@@ -261,6 +263,7 @@ export class SR5Conceal {
   static resultTable(rows, {
     observerName, targetName, mode, skill, attribute, limit
   }) {
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     const t = key => escape(game.i18n.localize(key))
     const head = escape(game.i18n.format(mode === "patDown" ? "SR5.ConcealSearchRequestPatDown" : "SR5.ConcealSearchRequestSpot", {

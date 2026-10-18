@@ -8,6 +8,9 @@ import {
   getCalendarEvents, changeCalendarEvents, visibleEvents, eventsInMonth, monthGrid, upsertEvent, removeEvent,
   registerCalendarEventSettings, initCalendarEvents
 } from "../system/calendar-events.js"
+import {
+  escape
+} from "../system/card-helpers.js"
 
 export const CLOCK_ID = "sr5-calendar-clock"
 export const CLOCK_VIEW_SETTING = "sr5CalendarClockView"
@@ -73,12 +76,6 @@ export function parseJournalLink(value){
 
 function names(list){
   return list.map(v => game.i18n.localize(v.name))
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
-  })[ch])
 }
 
 function viewMode(){

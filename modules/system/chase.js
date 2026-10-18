@@ -51,6 +51,7 @@ const EMPTY = () => ({
   },
 })
 
+// Not card-helpers' isActiveGM (N2): false here, instead of an error, before the world has its users (init)
 const isActiveGM = () => !!game.user?.isActiveGM
 
 export function advancedDriving() {

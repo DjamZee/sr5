@@ -51,6 +51,7 @@ export async function applyManaShift(cardData, messageId){
     ui.notifications.warn(game.i18n.localize("SR5.ManaShiftNoScene"))
     return false
   }
+  // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
   const escape = text => foundry.utils.escapeHTML?.(text) ?? text
   const confirmed = await foundry.applications.api.DialogV2.confirm({
     window: {

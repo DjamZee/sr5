@@ -17,8 +17,10 @@ import {
 import {
   chargeOutcome, typeRange, baseRating, detonatorFails, DIRECTIONAL_ANGLE, MATERIAL_THRESHOLDS, VEHICLE_THRESHOLDS,
 } from "../rolls/roll-helpers/explosives.js"
+import {
+  isActiveGM
+} from "./card-helpers.js"
 
-const isActiveGM = () => game.user.isGM && game.users.activeGM?.id === game.user.id
 const esc = text => foundry.utils.escapeHTML(String(text ?? ""))
 
 /** What the window asks, read from its form, within what the item allows */

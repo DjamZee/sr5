@@ -20,6 +20,7 @@ import {
   monitorFull, ejectionOver, droneWrecked
 } from "./rigging-rules.js"
 
+// Not card-helpers' isActiveGM (N2): false here, instead of an error, before the world has its users (init)
 function isActiveGM() {
   return !!game.user?.isGM && game.users?.activeGM?.id === game.user.id
 }

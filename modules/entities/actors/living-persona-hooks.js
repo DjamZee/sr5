@@ -8,6 +8,7 @@ import {
 
 const pending = new Set()
 
+// Not card-helpers' isActiveGM (N2): false here, instead of an error, before the world has its users (init)
 function isActiveGM(){
   return !!game.users?.activeGM?.isSelf
 }

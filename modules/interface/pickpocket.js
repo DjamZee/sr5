@@ -116,6 +116,7 @@ export class SR5Pickpocket {
 
   //The thief's side when he plants: he always chooses, it is his own object, and how many of a pile
   static async askPlant(thief, targetDocument) {
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     const items = pickableItems(thief)
     if (!items.length) return ui.notifications.warn(game.i18n.localize("SR5.WARN_PickpocketNothingToPlant"))
@@ -170,6 +171,7 @@ export class SR5Pickpocket {
       })
     }
 
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     const thiefChooses = game.settings.get("sr5", "sr5PickpocketThiefChooses")
     let choice = ""
@@ -226,6 +228,7 @@ export class SR5Pickpocket {
     const mode = messageData.various.pickpocketMode ?? "take"
     const giver = mode === "plant" ? thief : target
 
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     //Taking, the thief chooses only when the world lets him: otherwise a choice on his card is his own writing
     const thiefMayChoose = mode === "plant" || game.settings.get("sr5", "sr5PickpocketThiefChooses")

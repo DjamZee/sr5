@@ -94,6 +94,7 @@ export class SR5SharedVision {
     if (!actor) return
     const users = game.users.filter(u => !u.isGM)
     if (!users.length) return ui.notifications.info(game.i18n.localize("SR5.SharedVisionNoPlayer"))
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     //What the boxes show: only what the owner changes in them is written, someone who left meanwhile stays out
     const before = getSharedViewers(tokenDocument)
@@ -276,6 +277,7 @@ export class SR5SharedVision {
       if (sceneIndicators) sceneIndicators.before(indicator)
       else playersActive.append(indicator)
     }
+    // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
     const escape = foundry.utils.escapeHTML
     indicator.innerHTML = `<label>${escape(game.i18n.localize("SR5.SharedVisionSeeingThrough"))}</label>` + tokens.map(t => `
       <div class="sr5-shared-vision-row flexrow">

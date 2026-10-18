@@ -31,6 +31,7 @@ import {
 } from "../config.js"
 
 //Every GM runs the templates' hooks: the one the game designates alone asks and warns
+// Not card-helpers' isActiveGM (N2): false here, instead of an error, before the world has its users (init)
 function isActiveGM(){
   return !!game.user?.isGM && game.users?.activeGM?.id === game.user.id
 }
