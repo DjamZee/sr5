@@ -15,7 +15,7 @@ const FRAME_CLASSES = new Set(["app", "window-app", "application", "themed", "mi
 
 // The classes Foundry's windows put on themselves while open (Foundry 13.351, client/applications)
 const CORE_STATE_CLASSES = new Set(["expanded", "collapsing", "collapsed", "active", "deleting", "locked", "editable",
-  "readonly", "dragging", "vertical", "horizontal", "top", "sm", "md", "lg", "large", "min"])
+  "readonly", "dragging", "vertical", "horizontal", "top", "sm", "md", "lg", "large", "min", "paused"])
 
 let coreClasses = null
 
@@ -61,6 +61,9 @@ export function isForeignWindow(app, element, core = getCoreApplicationClasses()
   const classes = [...element.classList]
   if (classes.some(isSystemClass) || isSystemClass(element.id ?? "")) return false
   if (element.classList.contains("sidebar-popout")) return false
+  // A tab of the sidebar (Actors, Items, Chat…), Foundry's or the system's subclass of it: Foundry gives it the class
+  // "<tab>-sidebar" at opening, outside its DEFAULT_OPTIONS, which marked every tab after each render (DjamZ, 19/10)
+  if (element.classList.contains("sidebar-tab")) return false
   try { if (element.matches(SKINNED_MODULE_WINDOWS)) return false } catch { /* :has() unsupported */ }
   if (!core.has(app?.constructor)) return true
   // The classes asked for at opening and the element's (a module may add its own after the render, Simple Quest's
