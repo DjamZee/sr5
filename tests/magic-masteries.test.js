@@ -10,6 +10,9 @@ import {
 import {
   SR5
 } from "../modules/config.js"
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 const read = path => readFileSync(path, "utf8")
 const KEYS = ["archivist", "arcaneBodyguard", "conjuringSpecialist", "deathSower", "illusionist", "mageHunter", "masterManipulator",
@@ -36,11 +39,11 @@ describe("Magical masteries: wiring (Forbidden Arcana p. 30-41)", () => {
     const model = read("modules/datamodels/actors/partial/magic.js")
     for (const key of KEYS) expect(model).toContain(`"${key}"`)
     expect(model).toMatch(/masteries: new fields\.SchemaField/)
-    expect(read("modules/entities/actors/utilityActor.js")).toMatch(/Reset magical masteries/)
+    expect(utilityActorSource()).toMatch(/Reset magical masteries/)
   })
 
   it("doubles the spell defense pool for the Arcane Bodyguard", () => {
-    expect(read("modules/entities/actors/utilityActor.js")).toMatch(/arcaneBodyguard > 0[\s\S]{0,200}updateModifier\(magic\.counterSpellPool/)
+    expect(utilityActorSource()).toMatch(/arcaneBodyguard > 0[\s\S]{0,200}updateModifier\(magic\.counterSpellPool/)
   })
 })
 
@@ -113,7 +116,7 @@ describe("Illusionist and Master Manipulator (p. 37, 38)", () => {
     }).size).toBe(0)
   })
   it("is wired in the sustaining penalty", () => {
-    expect(read("modules/entities/actors/utilityActor.js")).toMatch(/masteryFreeSustainedSpells\(/)
+    expect(utilityActorSource()).toMatch(/masteryFreeSustainedSpells\(/)
   })
 })
 

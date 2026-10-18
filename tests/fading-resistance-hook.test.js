@@ -2,11 +2,11 @@ import {
   describe, it, expect, vi
 } from 'vitest'
 import {
-  readFileSync
-} from 'fs'
-import {
   fadingResistanceAttribute, FADING_RESISTANCE_HOOK, DEFAULT_FADING_ATTRIBUTE
 } from '../modules/entities/actors/fading-resistance.js'
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 // The Fading attribute (SR5 p. 254: Resonance + Willpower) through the hook sr5.fadingResistance
 // (lot « crochets techno » for the module technomancers-plus-sr5).
@@ -63,7 +63,7 @@ describe('sr5.fadingResistance', () => {
     err.mockRestore()
   })
   it('the living persona reads it for its Fading pool', () => {
-    const src = readFileSync(new URL('../modules/entities/actors/utilityActor.js', import.meta.url), 'utf8')
+    const src = utilityActorSource()
     expect(src).toContain('const fadingAttribute = fadingResistanceAttribute(actor, personaKey)')
     expect(src).toContain('attributes[fadingAttribute].augmented.value')
   })

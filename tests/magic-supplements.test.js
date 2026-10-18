@@ -11,6 +11,9 @@ import {
 import {
   SR5
 } from "../modules/config.js"
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 const read = path => readFileSync(path, "utf8")
 const fr = JSON.parse(read("lang/fr.json"))
@@ -134,7 +137,7 @@ describe("Pétrification (Street Grimoire p. 117)", () => {
     expect(helpers).toContain('origin: "petrification"')
     expect(PETRIFICATION_ARMOR_TARGET).toBe("system.specialProperties.hardenedArmors.normalWeapon")
     //A transferred hardened armor keeps its value (it read 0 before)
-    expect(read("modules/entities/actors/utilityActor.js")).toMatch(/case "value":\s*\n\s*m\.value = Number\(m\.details\.value\) \|\| 0/)
+    expect(utilityActorSource()).toMatch(/case "value":\s*\n\s*m\.value = Number\(m\.details\.value\) \|\| 0/)
   })
 })
 
