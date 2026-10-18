@@ -38,9 +38,16 @@ export function onRenderNativeEffectConfig(app, element) {
   const root = element instanceof HTMLElement ? element : element?.[0]
   const content = root?.querySelector?.(".window-content") ?? root
   if (!content || content.querySelector(".sr5-native-effect-banner")) return
+  // Its own class, not Foundry's ".notification" (made for the toasts): in the window's flex column it shrank, and its
+  // third line ran under the effect's icon; pale text on orange besides (vérification djamz.16, B1)
   const banner = document.createElement("p")
-  banner.className = "notification warning sr5-native-effect-banner"
-  banner.textContent = game.i18n.localize("SR5.NativeEffectIgnoredBanner")
+  banner.className = "sr5-native-effect-banner"
+  banner.setAttribute("role", "alert")
+  const icon = document.createElement("i")
+  icon.className = "fa-solid fa-triangle-exclamation"
+  const text = document.createElement("span")
+  text.textContent = game.i18n.localize("SR5.NativeEffectIgnoredBanner")
+  banner.append(icon, text)
   content.prepend(banner)
 }
 
