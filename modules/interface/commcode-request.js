@@ -10,12 +10,11 @@ import {
   directoryOf, withContact
 } from "../system/commcode-rules.js"
 import {
-  escape, gmIds
+  escape, gmIds, isActiveGM
 } from "../system/card-helpers.js"
 
 export const COMMCODE_REQUEST_FLAG = "commcodeRequest"
 
-const isActiveGM = () => game.user.isGM && game.users.activeGM?.id === game.user.id
 
 /** The answer a request carries: "accepted", "refused", or "" while it waits */
 export function requestAnswerOf(message){
