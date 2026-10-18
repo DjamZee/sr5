@@ -1,9 +1,6 @@
 import {
   describe, it, expect, vi, beforeEach
 } from 'vitest'
-import {
-  readFileSync
-} from 'node:fs'
 
 // config.js writes into CONFIG at import time, and the sheets build on Foundry's classes
 vi.hoisted(() => {
@@ -23,6 +20,9 @@ import {
 import {
   intakeDamageOf, dosesTaken
 } from '../modules/entities/items/drug-damage.js'
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 // A Roll that behaves like Foundry's: a second evaluate() throws (Pixie Dust rolled the same die twice, M7 D2)
 beforeEach(() => {
@@ -41,7 +41,7 @@ beforeEach(() => {
 })
 
 // Every drug key the switch knows, read off the source: a key added later is tested without touching this file
-const source = readFileSync(new URL('../modules/entities/actors/utilityActor.js', import.meta.url), 'utf8')
+const source = utilityActorSource()
 const body = source.slice(source.indexOf('static async handleDrugShots('))
 const keys = [...body.slice(0, body.indexOf('Unknown \'')).matchAll(/^\s*case "([^"]+)":/gm)].map(m => m[1])
 

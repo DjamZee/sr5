@@ -14,6 +14,9 @@ import {
 import {
   SR5_CompendiumUtility
 } from '../modules/entities/actors/utilityCompendium.js'
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 // The sprite types are a registry (lot « crochets techno » for the module technomancers-plus-sr5):
 // the book's seven keep their values, a module adds its own without touching the system.
@@ -145,7 +148,7 @@ describe('the powers a registered type names', () => {
 })
 
 describe('the character utility reads the registry, no switch left', () => {
-  const src = readFileSync(new URL('../modules/entities/actors/utilityActor.js', import.meta.url), 'utf8')
+  const src = utilityActorSource()
   it('skills, matrix modifiers and initiative dice', () => {
     const skills = src.slice(src.indexOf('static generateSpriteSkills'), src.indexOf('static generateSpriteSkills') + 900)
     expect(skills).toContain('spriteSkills(actorData.type)')

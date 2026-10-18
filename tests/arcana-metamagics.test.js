@@ -10,6 +10,9 @@ import {
 import {
   drainFloor, maskedDrain
 } from "../modules/entities/items/mentor-spirits.js"
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 describe("Harmonious Defense (Forbidden Arcana p. 45)", () => {
   it("gives Willpower + Magic + initiate grade spell defense dice", () => {
@@ -18,7 +21,7 @@ describe("Harmonious Defense (Forbidden Arcana p. 45)", () => {
   })
 
   it("is added to the spell defense pool when the metamagic is active", () => {
-    const code = readFileSync("modules/entities/actors/utilityActor.js", "utf8")
+    const code = utilityActorSource()
     expect(code).toMatch(/metamagics\.harmoniousDefense\) SR5_EntityHelpers\.updateModifier\(magic\.counterSpellPool/)
   })
 })

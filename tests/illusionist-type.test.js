@@ -7,6 +7,9 @@ import {
 import {
   masteryFreeSustainedSpells, illusionistLevelsByType
 } from "../modules/entities/items/magic-masteries.js"
+import {
+  utilityActorSource
+} from './fixtures/utility-actor-source.js'
 
 // Review M2: Illusionist (Forbidden Arcana p. 37) frees only Illusions of the type chosen with each level
 describe("Illusionist spell type", () => {
@@ -59,6 +62,6 @@ describe("Illusionist spell type", () => {
   it("is chosen on the quality and read by the sustaining code", () => {
     expect(readFileSync("modules/datamodels/items/itemQuality.js", "utf8")).toMatch(/masteryOption: new fields\.StringField/)
     expect(readFileSync("templates/items/blocks/quality/quality-stat.hbs", "utf8")).toContain('name="system.masteryOption"')
-    expect(readFileSync("modules/entities/actors/utilityActor.js", "utf8")).toContain("illusionistByType: illusionistLevelsByType(actor.items)")
+    expect(utilityActorSource()).toContain("illusionistByType: illusionistLevelsByType(actor.items)")
   })
 })
