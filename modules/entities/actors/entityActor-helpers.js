@@ -8,7 +8,7 @@ import {
   tactileSensorsOn
 } from "../../system/vehicle-mods.js"
 import {
-  SR5
+  SR5, VEHICLE_TOKEN_SIZES
 } from "../../config.js"
 import {
   SR5_Toxins
@@ -1200,6 +1200,13 @@ export class SR5_ActorHelper {
         "system.controlMode": itemData.controlMode,
         "items": baseItems,
       })
+      // A car on one square looked like a toy: the item's own token size, or its category's. The GM's drone
+      // token (token-defaults.js), laid on after in _preCreate, still wins
+      const size = SR5_ActorHelper.vehicleTokenSize(itemData)
+      if (size) sideKickData = foundry.utils.mergeObject(sideKickData, {
+        "prototypeToken.width": size.width,
+        "prototypeToken.height": size.height,
+      })
     }
 
     // A storage put down carries what was inside it: the gear leaves the
@@ -1386,6 +1393,23 @@ export class SR5_ActorHelper {
   static wirelessSwitchActionType(turningOn, requiresDNI, hasDNI){
     if (!turningOn) return "free"
     return (!requiresDNI || hasDNI) ? "free" : "simple"
+  }
+
+  /**
+   * The token size of a vehicle or drone deployed from its item: the item's own (system.sideKickPrototypeToken: the
+   * size its token had when last recalled, or the size a module gives a token drawn to scale, as the Mégapack does),
+   * or else the size of its category (VEHICLE_TOKEN_SIZES, config.js); null when neither is known.
+   * The actorDrone schema has no sideKickPrototypeToken, so _preCreate never sees the item's token: its size is laid
+   * on here, or a car recalled and deployed again fell back to one square
+   * @param {object} itemData the itemVehicle's system data
+   * @return {{width: number, height: number}|null}
+   */
+  static vehicleTokenSize(itemData){
+    const own = itemData?.sideKickPrototypeToken
+    const [width, height] = (own?.width > 0 && own?.height > 0) ? [own.width, own.height] : VEHICLE_TOKEN_SIZES[itemData?.category] ?? []
+    return width ? {
+      width, height
+    } : null
   }
 
   /**

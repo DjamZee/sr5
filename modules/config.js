@@ -2838,6 +2838,28 @@ SR5.vehicleCategories = {
   lta                       : "SR5.LTAFull",
 }
 
+// The token of a deployed vehicle or drone whose item gives no size of its own, by category, in squares of 1.5 m:
+// [width, height], the length upright (arbitrage de DjamZ, 18/10 : « oui » ; drones on one square). A token drawn to
+// scale carries its own size on the item (system.sideKickPrototypeToken), which wins. A category missing here keeps
+// the system's square. Outside SR5, whose tables are translation keys sorted at startup (vehicleTokenSize)
+export const VEHICLE_TOKEN_SIZES = {
+  microdrone                : [1, 1],
+  minidrone                 : [1, 1],
+  smallDrone                : [1, 1],
+  mediumDrone               : [1, 1],
+  largeDrone                : [1, 1],
+  hugeDrone                 : [1, 1],
+  bike                      : [1, 2],
+  car                       : [2, 3],
+  truck                     : [2, 4],
+  boat                      : [2, 4],
+  submarine                 : [2, 3],
+  vectorThrustCraft         : [3, 3],
+  fixedWingAircraft         : [3, 3],
+  rotorCraft                : [3, 3],
+  lta                       : [3, 4],
+}
+
 // Weapon Mount : Size
 SR5.WeaponMountSize = {
   light                   : "SR5.VEHICLE_WeaponMountSize_L",
