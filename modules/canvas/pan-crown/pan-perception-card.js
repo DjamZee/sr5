@@ -377,6 +377,7 @@ export async function choosePerceptionInfo(data, messageId){
   const budget = cardBudget(data)
   const hasTarget = hasTargetOn(data)
   const target = hasTarget ? perceptionTargetOf(data) : null
+  // Not card-helpers' escape: this one writes "null" / "undefined" where it shows "" (N2, tests/n2-escape-equality.test.js)
   const esc = foundry.utils.escapeHTML
   const groups = new Map()
   for (const entry of PERCEPTION_ENTRIES){
@@ -497,6 +498,7 @@ async function perceptionCard(messageId){
 async function gmAnswers({
   observer, target, choices, typed, sender, confirm
 }){
+  // Not card-helpers' escape: this one writes "null" / "undefined" where it shows "" (N2, tests/n2-escape-equality.test.js)
   const esc = foundry.utils.escapeHTML
   const facts = target?.facts ?? {
   }
@@ -611,6 +613,7 @@ export async function answerPerception(request, sender){
 
 /** The private message to the observer: her owners and the gamemasters read it, nobody else */
 async function whisperAnswers(observer, target, answers){
+  // Not card-helpers' escape: this one writes "null" / "undefined" where it shows "" (N2, tests/n2-escape-equality.test.js)
   const esc = foundry.utils.escapeHTML
   const users = (game.users ?? []).filter(u => u.isGM || observer.testUserPermission(u, "OWNER")).map(u => u.id)
   const items = answers.map(answer => `<li><span class="sr5-card-label">${esc(entryLabel(answer))}</span><span class="sr5-card-value">${esc(answerText(answer))}</span></li>`)

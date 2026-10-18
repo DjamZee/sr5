@@ -325,6 +325,7 @@ export async function askPanRevealTo(node){
   if (!game.user?.isGM) return
   const candidates = revealCandidates()
   const current = new Set(node?.revealedTo ?? [])
+  // Not card-helpers' escape: this one writes "null" / "undefined" where it shows "" (N2, tests/n2-escape-equality.test.js)
   const esc = s => foundry.utils.escapeHTML?.(String(s)) ?? String(s)
   const content = candidates.length ? `<p>${esc(game.i18n.format("SR5.PanCrownRevealToIntro", {
     name: node?.name ?? ""
