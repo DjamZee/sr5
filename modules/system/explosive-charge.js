@@ -18,10 +18,8 @@ import {
   chargeOutcome, typeRange, baseRating, detonatorFails, DIRECTIONAL_ANGLE, MATERIAL_THRESHOLDS, VEHICLE_THRESHOLDS,
 } from "../rolls/roll-helpers/explosives.js"
 import {
-  isActiveGM
+  isActiveGM, escape as esc
 } from "./card-helpers.js"
-
-const esc = text => foundry.utils.escapeHTML(String(text ?? ""))
 
 /** What the window asks, read from its form, within what the item allows */
 export function chargeRequest(form, item) {
