@@ -20,10 +20,10 @@ const {
 // astrale » sur ses jetons non liés, qui n'ont pas la vision. Elle ne s'affiche plus que là où la vision est active.
 
 const astral = {
-  origin: 'astralVision'
-}, other = {
-  origin: 'initiativeMode'
-}
+    origin: 'astralVision'
+  }, other = {
+    origin: 'initiativeMode'
+  }
 
 beforeAll(() => {
   Object.defineProperty(globalThis.Actor.prototype, 'temporaryEffects', {

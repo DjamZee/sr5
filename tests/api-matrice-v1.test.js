@@ -229,10 +229,10 @@ describe('A2: the scene of a host has no distance (SR5 p. 236)', () => {
 
 describe('A3: the direct connection, attacker by attacker (SR5 p. 234)', () => {
   const deckerA = {
-    id: 'A'
-  }, deckerB = {
-    id: 'B'
-  }
+      id: 'A'
+    }, deckerB = {
+      id: 'B'
+    }
   const camera = {
     id: 'cam'
   }

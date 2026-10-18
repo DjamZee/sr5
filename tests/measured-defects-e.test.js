@@ -177,8 +177,8 @@ function boneDensityActor(){
     base: 0, value: 0, dicePool: 0, modifiers
   })
   const specialDamage = {
-  }, armorSpecial = {
-  }
+    }, armorSpecial = {
+    }
   for (let element of Object.keys(SR5.specialDamageTypes)){
     specialDamage[element] = pool()
     armorSpecial[element] = pool()

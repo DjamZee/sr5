@@ -424,14 +424,15 @@ describe('a vendor buying back (SR5 p. 421, no search for a buyer)', () => {
     const accepting = SR5ShopVendor.accept({
       messageId: 'm0'
     }, player.id)
-    await tick()
-    await tick()
-    // Another request goes through the queue while the dialog is open: it is not held up
+    // The dialog is open (a fixed pause could end before it opens on a loaded machine)
+    await vi.waitFor(() => expect(answer).toBeTypeOf('function'))
+    // Another request goes through the queue while the dialog is open: it is not held up (a held up request never
+    // answers; the margin only leaves a loaded machine its time, under the 5 s a test is given)
     const other = await Promise.race([
       SR5ShopVendor.offer(offerFor([{
         itemId: 'gun', quantity: 1
       }]), player.id).then(() => 'answered'),
-      new Promise(resolve => setTimeout(() => resolve('held up'), 500)),
+      new Promise(resolve => setTimeout(() => resolve('held up'), 4000)),
     ])
     expect(other).toBe('answered')
     answer({

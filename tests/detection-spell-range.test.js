@@ -1,25 +1,23 @@
 import {
-  describe, it, expect, beforeAll
+  describe, it, expect
 } from 'vitest'
 
 // Detection spell range (SR5 p. 287): Force × caster's Magic metres, × 10 when extended.
 // The range used to be computed in the actor's first pass on items, before the caster's
 // Magic was known (magic.augmented.value still 0): a detection spell showed Force metres.
 
-let SR5Actor
-beforeAll(async () => {
-  globalThis.CONFIG ??= {
-  }
-  globalThis.game ??= {
-  }
-  globalThis.game.i18n ??= {
-    localize: (k) => k, format: (k) => k 
-  }
-  ;({
-    SR5Actor 
-  } = await import('../modules/entities/actors/entityActor.js'))
-// The actor pulls in most of the system: under the full parallel suite, more than the 5 s a hook is given
-}, 60000)
+globalThis.CONFIG ??= {
+}
+globalThis.game ??= {
+}
+globalThis.game.i18n ??= {
+  localize: (k) => k, format: (k) => k
+}
+// The actor pulls in most of the system: under the full parallel suite, more than the 5 s a hook is given. Loaded at
+// the file's top level, where no hook or test time limit applies
+const {
+  SR5Actor
+} = await import('../modules/entities/actors/entityActor.js')
 
 function spell({
   force, category = "detection", range = "los", extended = false 

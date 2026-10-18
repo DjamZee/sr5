@@ -22,10 +22,10 @@ describe("createTemplateEffect for one token and one template", () => {
       running--
     })
     const token = {
-      id: "t1"
-    }, template = {
-      id: "m1"
-    }
+        id: "t1"
+      }, template = {
+        id: "m1"
+      }
     await Promise.all([SR5_EffectArea.createTemplateEffect(token, template), SR5_EffectArea.createTemplateEffect(token, template)])
     expect(overlap).toBe(false)
     expect(order).toEqual(["t1.m1", "t1.m1"])

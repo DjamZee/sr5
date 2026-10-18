@@ -41,10 +41,10 @@ describe('controllerOf', () => {
 
 describe('syncsHere', () => {
   const gm = {
-    id: 'gm'
-  }, player = {
-    id: 'p'
-  }
+      id: 'gm'
+    }, player = {
+      id: 'p'
+    }
   it('the active gamemaster alone copies, whoever made the change', () => {
     expect(syncsHere({
       activeGM: gm
