@@ -147,8 +147,9 @@ describe("a test request applied by two cards at once", () => {
     }, anchor)
     expect(listeners).toHaveLength(2)
 
-    listeners.forEach(fn => fn())
-    for (let i = 0; i < 100; i++) await tick()
+    // Both clicks at once, then each card's whole work awaited (100 fixed ticks could end before it on a loaded machine)
+    await Promise.all(listeners.map(fn => fn()))
+    await vi.dynamicImportSettled()
     expect(store[RADIATION_LEDGER].exposures.e1.testsDone).toBe(1)
     expect(chats).toHaveLength(1)
   })
@@ -171,8 +172,8 @@ describe("a test request applied by two cards at once", () => {
     }, anchor)
     expect(listeners).toHaveLength(2)
 
-    listeners.forEach(fn => fn())
-    for (let i = 0; i < 100; i++) await tick()
+    await Promise.all(listeners.map(fn => fn()))
+    await vi.dynamicImportSettled()
     expect(store[DISEASE_LEDGER].infections.i1.testsDone).toBe(1)
     expect(chats).toHaveLength(1)
   })

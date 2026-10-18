@@ -2510,7 +2510,8 @@ export class SR5_ActorHelper {
 
   //One effect entry, as the GM reads it: its target, its kind, its value when it is known
   static describeEntry(e, roll, rating){
-    const label = game.i18n.localize(SR5_EntityHelpers.getLabelByKey(e.target) ?? e.target)
+    //An unknown target gives an empty label: its key is shown rather than nothing before the colon
+    const label = game.i18n.localize(SR5_EntityHelpers.getLabelByKey(e.target) || e.target)
     const kind = game.i18n.localize(SR5.customEffectsTypes?.[e.type] ?? e.type)
     const times = e.multiplier !== 1 ? ` × ${e.multiplier}` : ""
     const fixed = String(e.type).startsWith("value") ? ` ${e.value}` : ""

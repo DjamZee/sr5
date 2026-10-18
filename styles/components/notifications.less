@@ -2,6 +2,30 @@
 /* Foundry renders .notification with semantic sub-classes: .info, .warning, .error, .success
    We keep the semantic level colors intact (they convey meaning) but apply SR5 font. */
 
+/* Warning at the top of Foundry's own effect window (native-effect-warning.js): never shrunk by the window's flex
+   column, dark text on solid amber whatever the theme (contrast about 12:1) */
+.application .sr5-native-effect-banner {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f5c242;
+  color: #1b1300;
+  border: 1px solid #8a5a00;
+  border-radius: 4px;
+  font-family: var(--sr-font-body);
+  font-size: var(--sr-font-size-small);
+  line-height: 1.4;
+  text-shadow: none;
+
+  i {
+    flex: none;
+    margin-top: 0.2em;
+  }
+}
+
 #notifications {
   .notification {
     font-family: var(--sr-font-body);

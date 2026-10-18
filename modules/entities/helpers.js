@@ -471,6 +471,14 @@ export class SR5_EntityHelpers {
       //The Petrification spell's barrier armor: the "sheet-defined effect" window showed ": Net hits = 1" without it
       newKey = key.slice(40)
       return game.i18n.localize(SR5.hardenedArmorTypes[newKey] ?? "SR5.HardenedArmor")
+    } else if (/^\w+\.(removeDamage|addDamage)$/.test(key)){
+      //Heal and unresisted damage, named as the item sheet names them: the "sheet-defined effect" window of Heal showed
+      //": Hits = 3" without it (vérification djamz.16, B2)
+      const [monitor, action] = key.split(".")
+      const name = game.i18n.localize(SR5.conditionMonitorTypes?.[monitor] ?? monitor)
+      const what = action === "removeDamage" ? game.i18n.localize("SR5.Heal") :
+        `${game.i18n.localize("SR5.Damage")} ${game.i18n.localize("SR5.NotResisted")}`
+      return `${name} [${what}]`
     } else {
       switch (key){
         case "system.conditionMonitors.stun.actual":
