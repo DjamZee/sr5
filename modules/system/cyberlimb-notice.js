@@ -35,6 +35,7 @@ export function limbEnhancementHolders(actors){
   return found
 }
 
+// Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
 const escape = text => foundry.utils.escapeHTML?.(String(text)) ?? String(text)
 
 export function noticeContent(holders){

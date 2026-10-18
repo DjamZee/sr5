@@ -236,6 +236,7 @@ async function postDeadlineCard(rows){
   })
 }
 
+// Not card-helpers' playerOwners (N2): an error here, instead of an empty list, when there is no actor
 function playerOwners(actor){
   return game.users.filter(u => !u.isGM && actor.testUserPermission(u, "OWNER")).map(u => u.id)
 }

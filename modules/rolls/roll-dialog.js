@@ -145,7 +145,6 @@ export default class SR5_RollDialog {
       let limitModifier = 0
       for (let key of Object.values(this.dialogData.limit.modifiers)){
         limitModifier += key.value
-        //if (key === "reagents") modifiedLimit = value;
       }
       modifiedLimit += limitModifier
       if (this.dialogData.limit.replace !== undefined) modifiedLimit = this.dialogData.limit.replace
@@ -1909,7 +1908,6 @@ export default class SR5_RollDialog {
           label = game.i18n.localize(SR5.dicePoolModTypes[modifierName])
           dialogData.combat.choke.defense = SR5_PrepareRollHelper.chokeSettingsOnDefense(dialogData.combat.choke.selected, dialogData.target.range)
           dialogData.combat.choke.damageModify = SR5_PrepareRollHelper.chokeSettingsOnDamage(selectValue, dialogData.target.range)
-          //if (dialogData.damage.value) dialogData.damage.value -= ;
           let chokeLimitModify = SR5_PrepareRollHelper.chokeSettingsOnLimit(selectValue, dialogData.target.range)
           dialogData.combat.choke.defense = SR5_PrepareRollHelper.chokeSettingsOnDefense(selectValue, dialogData.target.range)
           inputValue = chokeLimitModify

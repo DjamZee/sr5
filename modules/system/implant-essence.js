@@ -18,6 +18,9 @@ import {
 import {
   refuseByRule, ruleLockActive
 } from "./rule-locks.js"
+import {
+  escape
+} from "./card-helpers.js"
 
 /** The `systemEffects` values a quality carries for this. */
 export const IMPLANT_ESSENCE_EFFECTS = {
@@ -520,7 +523,6 @@ export async function screenRejectedImplants(actor, incoming, {
     refused: [], confirmed: false
   }
   if (isGM) {
-    const escape = text => foundry.utils.escapeHTML?.(text ?? "") ?? text
     const paragraph = (key, list, data) => list.length ? `<p>${game.i18n.format(key, {
       actor: escape(actor?.name), names: list.map(r => escape(r.data.name)).join(", "), ...data
     })}</p>` : ""

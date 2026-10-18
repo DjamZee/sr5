@@ -593,7 +593,6 @@ export async function sr5HookInit() {
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Scene, "SR5", SR5SceneConfig, {
     makeDefault: true
   })
-  //foundry.applications.apps.DocumentSheetConfig.unregisterSheet("core", foundry.applications.sheets.MeasuredTemplateConfig);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.MeasuredTemplateDocument, "SR5", SR5MeasuredTemplateConfig, {
     makeDefault: true
   })

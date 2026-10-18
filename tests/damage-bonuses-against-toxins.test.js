@@ -35,10 +35,10 @@ const pool = (modifiers = []) => ({
 // Body 4, Willpower 3; the physical damage resistance holds what the item effects left on it
 function actorWith(modifiers, items = []){
   const specialDamage = {
-  }, armorSpecial = {
-  }, toxin = {
-  }, armorToxin = {
-  }
+    }, armorSpecial = {
+    }, toxin = {
+    }, armorToxin = {
+    }
   for (let element of Object.keys(SR5.specialDamageTypes)){
     specialDamage[element] = pool()
     armorSpecial[element] = pool()

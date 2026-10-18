@@ -55,6 +55,7 @@ export function renderSceneIndicators() {
     backgroundCountTooltip += ` — ${s.name} (${Math.ceil((s.expires - now) / 3600)} h)`
   }
 
+  // Not card-helpers' escape (N2): null and undefined show here as "null" and "undefined", not as an empty text
   const escape = foundry.utils.escapeHTML
   indicators.innerHTML = `
     <div id="sr5-scene-noise" class="${noise ? "active" : ""}" data-tooltip="${escape(game.i18n.localize("SR5.SceneNoiseRating"))}">

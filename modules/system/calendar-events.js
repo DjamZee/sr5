@@ -9,7 +9,7 @@ import {
   updateLedger
 } from "./gm-ledger.js"
 import {
-  isActiveGM as isWriter, queuedCheck
+  escape, isActiveGM as isWriter, queuedCheck
 } from "./card-helpers.js"
 
 export const CALENDAR_EVENTS_SETTING = "sr5CalendarEvents"
@@ -98,12 +98,6 @@ export function changeCalendarEvents(change){
     const next = await change(validEvents(events))
     return next ? validEvents(next) : null
   })
-}
-
-function escape(text){
-  return foundry.utils.escapeHTML?.(String(text ?? "")) ?? String(text ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
-  })[ch])
 }
 
 async function postReminder(event){

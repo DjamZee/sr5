@@ -172,7 +172,6 @@ export class SR5Combat extends Combat {
   }
 
   static async handleNextRound(combatId){
-    //SR5_SystemHelpers.srLog(3, "New combat round");
     const combat = game.combats?.get(combatId)
     if (!combat) return
     //SR5 p. 164: a character runs until the end of the Combat Turn

@@ -28,9 +28,9 @@ const pool = () => ({
 
 function agent(creatorData) {
   const attributes = {
-  }, skills = {
-  }, matrixAttributes = {
-  }
+    }, skills = {
+    }, matrixAttributes = {
+    }
   for (const key of Object.keys(SR5.characterAttributes)) attributes[key] = {
     augmented: {
       value: 0

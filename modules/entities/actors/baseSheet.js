@@ -1810,7 +1810,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
             //The stat above is the only one rolled: a second call rolled the random durations again
             if (!itemData.interact) {
-              console.log("drug : " + item.name)
               itemData.onUse.duration = `${itemData.handleShot.duration} ${game.i18n.localize(unitKey(SR5.extendedIntervals[itemData.handleShot.durationType], itemData.handleShot.duration))}`
               itemData.onUse.contrecoup = ""
 
@@ -1910,7 +1909,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
                   }
                   break
                 default:
-                  console.log(interactionTotal)
                   //Chrome Flesh p. 197, 14+: 10P at once, "résistés uniquement avec la Constitution" (drug-damage.js)
                   await ui.notifications.info(`${game.i18n.format("SR5.DrugInteraction")}${game.i18n.format("SR5.Colons")} ${drugs.join(", ")}`)
                   drugDamages.push({
@@ -2354,7 +2352,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   //Handle controler choice of a drone / Vehicle
   async _onChooseControler(_event){
-    //let worldActors = await Array.from(game.actors);
     let controlerList = {
     }
     for (let a of game.actors){

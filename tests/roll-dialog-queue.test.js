@@ -1,5 +1,5 @@
 import {
-  describe, it, expect, vi, beforeEach
+  describe, it, expect, vi, beforeEach, afterEach
 } from "vitest"
 
 vi.hoisted(() => {
@@ -92,13 +92,18 @@ describe("M5 D3 : une fenêtre de jet à la fois", () => {
 // de fermer sa fenêtre ; la seconde fenêtre de la file, rendue sous le même id pendant ce temps, ne s'ouvrait jamais
 // et ne répondait jamais : tous les jets suivants du client restaient bloqués, sans message, jusqu'au rechargement.
 describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
+  // Faux minuteurs : les sondages de la file (pas de 10 à 50 ms) avancent sur l'horloge du test, pas sur celle d'une
+  // machine chargée
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
   it("la seconde attend que la première ait quitté le registre de Foundry", async () => {
     const instances = new Map()
     foundry.applications.instances = instances
     const first = SR5_RollTest.generateRollDialog(dialogData())
     const second = SR5_RollTest.generateRollDialog(dialogData())
-    await tick()
-    await tick()
+    await vi.advanceTimersByTimeAsync(0)
+    await vi.advanceTimersByTimeAsync(0)
     expect(foundry.applications.api.DialogV2.wait).toHaveBeenCalledTimes(1)
     // La première fenêtre est à l'écran
     instances.set("jet", {
@@ -106,11 +111,11 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
     // Clic sur « Lancer » : la promesse répond, la fenêtre est encore là
     waits[0](null)
     await first
-    await new Promise(r => setTimeout(r, 120))
+    await vi.advanceTimersByTimeAsync(120)
     expect(foundry.applications.api.DialogV2.wait).toHaveBeenCalledTimes(1)
     // La fenêtre fermée, la seconde s'ouvre
     instances.delete("jet")
-    await new Promise(r => setTimeout(r, 120))
+    await vi.advanceTimersByTimeAsync(120)
     expect(foundry.applications.api.DialogV2.wait).toHaveBeenCalledTimes(2)
     waits[1](null)
     await second
@@ -122,20 +127,26 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
     foundry.applications.instances = new Map([["jet", {
     }]])
     const started = Date.now()
-    await SR5_RollTest.rollWindowClosed({
+    let elapsed = null
+    const closed = SR5_RollTest.rollWindowClosed({
       step: 10, max: 60
-    })
-    expect(Date.now() - started).toBeGreaterThanOrEqual(55)
+    }).then(() => elapsed = Date.now() - started)
+    await vi.advanceTimersByTimeAsync(100)
+    await closed
+    expect(elapsed).toBeGreaterThanOrEqual(55)
   })
 
   it("un tour resté en attente sans fenêtre à l'écran ne retient pas les jets suivants", async () => {
     foundry.applications.instances = new Map()
     const never = new Promise(() => {})
     const started = Date.now()
-    await SR5_RollTest.queueSettled(never, {
+    let elapsed = null
+    const settled = SR5_RollTest.queueSettled(never, {
       step: 10, quiet: 60
-    })
-    expect(Date.now() - started).toBeGreaterThanOrEqual(55)
+    }).then(() => elapsed = Date.now() - started)
+    await vi.advanceTimersByTimeAsync(100)
+    await settled
+    expect(elapsed).toBeGreaterThanOrEqual(55)
   })
 
   it("un tour dont la fenêtre est ouverte garde la file", async () => {
@@ -147,7 +158,7 @@ describe("lot 17b : la file des fenêtres de jet ne se bloque plus", () => {
     const waiting = SR5_RollTest.queueSettled(pending, {
       step: 10, quiet: 30
     }).then(() => passed = true)
-    await new Promise(r => setTimeout(r, 100))
+    await vi.advanceTimersByTimeAsync(100)
     expect(passed).toBe(false)
     release()
     await waiting

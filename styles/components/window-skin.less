@@ -215,8 +215,10 @@
 // A module's window (sr-foreign-window, window-scope.js) keeps its own content, ground and colours: only its title
 // bar takes the Concepteur's, as the system's windows (16/10, Agathe#2507 P1). Nothing here is !important, so a module
 // that draws its own title bar (its rules come in the later "modules" layer) keeps it.
-.application.sr-foreign-window,
-.window-app.sr-foreign-window {
+// 19/10: with the setting « Habiller les fenêtres des modules au thème SR5 » only (sr-dress-modules, module-dress.less):
+// unchecked, the window keeps Foundry's own title bar too
+&.sr-dress-modules .application.sr-foreign-window,
+&.sr-dress-modules .window-app.sr-foreign-window {
   .srw-tokens();
 
   // The theme's red scroll bars (body *) give way to the Concepteur's

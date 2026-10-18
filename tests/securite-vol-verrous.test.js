@@ -18,10 +18,10 @@ const {
 // Security pass, pickpocket and locks (Hilde, 06/10)
 describe('a thief card the player wiped after the theft (replay)', () => {
   const gm = {
-    isGM: true
-  }, player = {
-    isGM: false
-  }
+      isGM: true
+    }, player = {
+      isGM: false
+    }
   const perception = (author, thiefId) => ({
     author, flags: {
       sr5data: {

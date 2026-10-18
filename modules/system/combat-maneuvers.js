@@ -29,17 +29,21 @@ import {
   isTacticsKnowledge
 } from "../rolls/roll-helpers/tacnet.js"
 import {
+  escape as esc
+} from "./card-helpers.js"
+import {
   tacnetOf, tacnetTacticsBonus
 } from "./tacnet.js"
 import {
   rollKinds
 } from "../rolls/roll-helpers/indirect.js"
+import {
+  isActiveGM
+} from "./card-helpers.js"
 
 export const MANEUVER_LEDGER = "sr5ManeuverLedger"
 const DEFENSE_TYPES = ["defense", "defenseSimple", "martialArtDefense", "grappleClinchDefense", "rammingDefense"]
 
-const isActiveGM = () => game.user.isGM && game.users.activeGM?.id === game.user.id
-const esc = text => foundry.utils.escapeHTML(String(text ?? ""))
 const t = (key, data) => data ? game.i18n.format(key, data) : game.i18n.localize(key)
 const label = key => t(`SR5.MANEUVER_${key}`)
 

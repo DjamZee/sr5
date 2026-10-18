@@ -43,7 +43,11 @@ const {
 // B13, lot 0 (PLAN-AUTOMATISATION-LEGERE.md, § 2): the shared function and its settings, no site wired yet
 
 let store, notes
-const flush = () => new Promise(resolve => setTimeout(resolve, 30))
+// Waits for the dynamic imports the code under test starts (not a fixed delay, which a loaded machine can outlast)
+const flush = async () => {
+  await vi.dynamicImportSettled()
+  await new Promise(resolve => setTimeout(resolve, 0))
+}
 
 beforeEach(() => {
   resetWhispers()

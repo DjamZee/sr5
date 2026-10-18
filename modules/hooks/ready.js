@@ -86,6 +86,9 @@ import {
 import {
   initStarterKit
 } from "../system/starter-kit.js"
+import {
+  applyModuleDress
+} from "./window-scope.js"
 
 export function sr5HookReady() {
   // Register the GM-authored spirit types, so that they are offered wherever
@@ -109,6 +112,8 @@ export function sr5HookReady() {
   const chosenStyle = game.settings.get("sr5", "sr5ChooseStyle") ?? "SR5"
   const themeClass = chosenStyle === "SR6" ? "sr-theme-sr6" : "sr-theme-sr5"
   document.body.classList.add(themeClass)
+  // The modules' windows in the SR5 dress, unless the world turned it off
+  applyModuleDress()
 
   // Compendium choices for the base items settings
   SR5_CompendiumUtility.refreshCompendiumChoices()
@@ -168,7 +173,6 @@ export function sr5HookReady() {
   //Each button of it checks the right of the user itself. No canvas (a window with no size), no HUD.
   if (canvas?.hud) canvas.hud.token = new SR5TokenHud()
 
-  //game.settings.set("sr5", "systemMigrationVersion", "0.0.1");
   // Determine whether a system migration is required and feasible
   if ( !game.user.isGM ) return
   const {

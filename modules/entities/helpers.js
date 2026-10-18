@@ -307,6 +307,7 @@ export class SR5_EntityHelpers {
 
   //Get the id of the player controlling an actor
   static getUserOwner(actor){
+    // Not card-helpers' playerOwners (N2): active players only, owners by name only (not by default ownership)
     const playerOwners = Object.entries(actor.ownership).filter(([id, level]) => (!game.users.get(id)?.isGM && game.users.get(id)?.active) && level === 3).map(([id, _level])=> id)
     if(playerOwners.length > 0) {
       return game.users.get(playerOwners[0])

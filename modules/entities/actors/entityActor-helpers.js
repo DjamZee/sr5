@@ -3080,6 +3080,7 @@ export class SR5_ActorHelper {
     const damageType = toxin.damageType || ""
     const effects = Object.entries(toxin.effect ?? {
     }).filter(([, on]) => on).map(([key]) => game.i18n.localize(SR5.toxinEffects[key] ?? key)).join(", ")
+    // Not card-helpers' escape: this one writes "null" / "undefined" where it shows "" (N2, tests/n2-escape-equality.test.js)
     const esc = foundry.utils.escapeHTML
     const notes = verdict.mismatch ? `<p><strong>${game.i18n.format("SR5.ToxinCardMismatch", {
       hits: esc(String(data.roll?.hits ?? "?"))
