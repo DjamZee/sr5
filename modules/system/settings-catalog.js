@@ -91,6 +91,8 @@ export const SETTINGS_CATALOG = {
   // Magic
   sr5ReagentSystem: ["magic", "book"],
   sr5SpiritDrainAttribute: ["magic"],
+  // No tag: pictures, not a rule (DjamZ's own, 14/10)
+  sr5SpiritDefaultImages: ["magic"],
   mentorMask: ["magic", "book"],
   spiritLeash: ["magic", "book"],
   sr5HomunculusMaterialArmor: ["magic", "house"],
@@ -104,6 +106,7 @@ export const SETTINGS_CATALOG = {
   // The key cipher of the commcode messages and files, a house rule of DjamZ (lot 39)
   sr5CommcodeCipher: ["matrix", "house"],
   sr5DevicelessAILogicDefense: ["matrix"],
+  sr5EmulateOverwatchHalf: ["matrix", "house"],
   sr5WifiRequiresDNI: ["matrix"],
   // Rigging
   sr5Rigger5Actions: ["rigging", "book"],

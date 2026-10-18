@@ -154,6 +154,9 @@ import {
 import {
   iceDefenseType, iceDesignOf
 } from "../../system/ice-design.js"
+import {
+  hotDropGear, HOT_DROP_DISTANCES
+} from "../../system/hot-drop.js"
 
 
 export class SR5_CharacterUtility extends Actor {
@@ -1033,10 +1036,11 @@ export class SR5_CharacterUtility extends Actor {
       if (freedByMastery.has(i.id)) continue
       if (i.system.isActive && i.type === itemType && !i.system.freeSustain) SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${i.name}`, i.type, -sustainedMod)
 
-      //Except if concentration is active.
-      if (i.system.isActive && i.type === itemType &&
+      //Except if concentration is active (only with a rating: a complex form of Level 0 is not covered by a rating of 0)
+      const concentration = actor.system.specialProperties.concentration.value
+      if (i.system.isActive && i.type === itemType && concentration > 0 &&
 				!i.system.freeSustain && !actor.system[concentrationType].concentration &&
-				(i.system.force <= actor.system.specialProperties.concentration.value || i.system.level <= actor.system.specialProperties.concentration.value)) {
+				(i.system.force <= concentration || i.system.level <= concentration)) {
         SR5_EntityHelpers.updateModifier(actor.system.penalties[concentrationType].actual, `${game.i18n.localize('SR5.QualityTypePositive')}`, "concentration", sustainedMod)
         actor.system[concentrationType].concentration = true
         i.system.freeSustain = true
@@ -1860,6 +1864,10 @@ export class SR5_CharacterUtility extends Actor {
             case "body":
               m.value = actorData.attributes.body.augmented.value
               break
+            //A fixed value put on the target by a spell: Pétrification's barrier armor (magic-supplements-rules.js)
+            case "value":
+              m.value = Number(m.details.value) || 0
+              break
           }
         }
       }
@@ -2079,6 +2087,18 @@ export class SR5_CharacterUtility extends Actor {
           break
         case "walk":
           SR5_EntityHelpers.updateModifier(movements[key].movement, game.i18n.localize('SR5.Agility'), "linkedAttribute", attributes.agility.augmented.value * movements[key].multiplier.value)
+          break
+        case "hotDrop":
+          //Hot-Drop (Street Lethal p. 58-59): « Utilisez Chute Libre pour manœuvrer », Free Fall being a Body skill
+          //that can default (SR5 p. 135, -1 untrained: SR5 p. 130); the row shows only on the actor carrying one, its
+          //height of 50 m telling the sheet so
+          if (hotDropGear(actor.items)) {
+            const freeFall = skills.freeFall?.rating?.value ?? 0
+            movements[key].movement.base = HOT_DROP_DISTANCES.up
+            SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Body'), "linkedAttribute", attributes.body.augmented.value)
+            if (freeFall > 0) SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.SkillFreeFall'), "skillRating", freeFall)
+            else SR5_EntityHelpers.updateModifier(movements[key].test, game.i18n.localize('SR5.Defaulting'), "skillRating", -1)
+          }
           break
         default:
           SR5_SystemHelpers.srLog(1, `Unknown movement '${key}' in 'updateMovements()'`)

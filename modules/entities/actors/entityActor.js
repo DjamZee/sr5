@@ -977,6 +977,8 @@ export class SR5Actor extends Actor {
 
         case "itemVehicleMod":
           i.prepareData()
+          // A mod carried by an imported character or grunt has no vehicle attributes to read: ignored there
+          if (actor.type !== "actorDrone") break
           iData.weaponChoices = SR5_UtilityItem._generateWeaponMountWeaponList(iData, this)
           if (iData.mountedWeapon){ 
             let weapon = this.items.find(w => w.id === iData.mountedWeapon)

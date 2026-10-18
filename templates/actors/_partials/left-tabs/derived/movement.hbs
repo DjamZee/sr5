@@ -8,6 +8,7 @@
 	  	</li>
 		{{#if (or (eq actor.type 'actorSpirit') system.skills.flight.rating.value)}}
 		{{#each system.movements}}
+		{{#if (ne @key 'hotDrop')}}
 
 		  		<li class="grid">
 					<div class="col-7"><p>{{findTranslation 'movements' @key}}</p></div>
@@ -49,10 +50,11 @@
 					</div>
 		  		</li>
 
+		{{/if}}
 	  	{{/each}}
 		{{else}}
 	  	{{#each system.movements}}
-		  {{#if (ne @key 'fly')}}
+		  {{#if (and (ne @key 'fly') (ne @key 'hotDrop'))}}
 		  		<li class="grid">
 					<div class="col-7"><p>{{findTranslation 'movements' @key}}</p></div>
 					<div class="col-3">
@@ -95,6 +97,23 @@
 		{{/if}}
 	  	{{/each}}
 		{{/if}}
+		{{#with system.movements.hotDrop}}
+		{{#if movement.value}}
+		<!-- Vulcan Systems « Hot-Drop » jetpack, Street Lethal p. 57-59 -->
+		<li class="grid">
+			<div class="col-7"><p>{{localize 'SR5.MovementHotDrop'}}</p></div>
+			<div class="col-3"><p class="SR-TextCenterOverflow" title="{{localize 'SR5.MovementHotDropHint'}}">{{localize 'SR5.MovementHotDropDistances'}}</p></div>
+			<div class="col-2">
+				<p class="SR-TextCenter roll-logo sr-roll" data-rolltype= "movement" data-rollkey="hotDrop"
+				data-helpTitle="{{localize 'SR5.HELP_Movements' key=(localize 'SR5.MovementHotDrop')}}"
+				data-helpMessage="{{localize 'SR5.MovementHotDropHint'}}"
+				data-helpDetails="system.movements.hotDrop.test"
+				>
+				{{test.dicePool}}</p>
+			</div>
+		</li>
+		{{/if}}
+		{{/with}}
 		{{#each @root.movementBoxes as |box|}}
 		<!-- Dark Terrors p. 180: a situational effect on a movement rate counts while its box is ticked -->
 		<li class="grid">

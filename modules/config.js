@@ -325,6 +325,7 @@ SR5.movements = {
   treadWater                : "SR5.Floating",
   holdBreath                : "SR5.HoldingBreath",
   fly                       : "SR5.Flying",
+  hotDrop                   : "SR5.MovementHotDrop",
 }
 
 // Skill Groups
@@ -2238,6 +2239,8 @@ SR5.magicMasteries = {
   electromancer            : "SR5.MagicMasteryElectromancer",
   guru                     : "SR5.MagicMasteryGuru",
   rapidFireCaster          : "SR5.MagicMasteryRapidFireCaster",
+  // Better Than Bad p. 145: the Drain of Corps élémentaire becomes 1 box per Combat Turn (magic-supplements.js)
+  elementalAttunement      : "SR5.MagicMasteryElementalAttunement",
 }
 
 //-----------------------------------//
@@ -2833,6 +2836,28 @@ SR5.vehicleCategories = {
   submarine                 : "SR5.SubmarineFull",  
   car                       : "SR5.CarFull",
   lta                       : "SR5.LTAFull",
+}
+
+// The token of a deployed vehicle or drone whose item gives no size of its own, by category, in squares of 1.5 m:
+// [width, height], the length upright (arbitrage de DjamZ, 18/10 : « oui » ; drones on one square). A token drawn to
+// scale carries its own size on the item (system.sideKickPrototypeToken), which wins. A category missing here keeps
+// the system's square. Outside SR5, whose tables are translation keys sorted at startup (vehicleTokenSize)
+export const VEHICLE_TOKEN_SIZES = {
+  microdrone                : [1, 1],
+  minidrone                 : [1, 1],
+  smallDrone                : [1, 1],
+  mediumDrone               : [1, 1],
+  largeDrone                : [1, 1],
+  hugeDrone                 : [1, 1],
+  bike                      : [1, 2],
+  car                       : [2, 3],
+  truck                     : [2, 4],
+  boat                      : [2, 4],
+  submarine                 : [2, 3],
+  vectorThrustCraft         : [3, 3],
+  fixedWingAircraft         : [3, 3],
+  rotorCraft                : [3, 3],
+  lta                       : [3, 4],
 }
 
 // Weapon Mount : Size
@@ -3748,6 +3773,8 @@ SR5.AllSpiritPowers = {
   stealth                    : "SR5.SpiritPowerStealth",
   storm                      : "SR5.SpiritPowerStorm",
   toughness                  : "SR5.SpiritPowerToughness",
+  // Aetherologie p. 39: the implants the new form rejects (magic-supplements.js)
+  transmutation              : "SR5.SpiritPowerTransmutation",
 }
 
 //-----------------------------------//
@@ -4310,6 +4337,7 @@ SR5.modifiersTypes = {
   addSecurity				  : "SR5.LifestyleSecurity",
   CustomCyberlimb			  : "SR5.AugmentationCyberlimbs",
   factory					  : "SR5.VehicleModFactory",
+  sizeMismatch				  : "SR5.NotSizeAdapted",
   swarm					  : "SR5.SwarmValue",
   adeptPower				  : "SR5.AdeptPower",
   ammunitionType 			  : "SR5.AmmunitionType",

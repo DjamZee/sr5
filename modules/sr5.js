@@ -94,6 +94,9 @@ import {
   onCreationHeaderControls, stripCreationOnCreate
 } from './system/creation-actor.js'
 import {
+  spiritImageOnCreate, spiritImageOnTokens, spiritImageOnUpdate
+} from './entities/actors/spirit-default-image.js'
+import {
   sr5HookPreUpdateItem, sr5HookCreateItem, sr5HookUpdateItem, sr5HookDeleteItem
 } from './hooks/item.js'
 import {
@@ -105,6 +108,9 @@ import {
 import {
   sr5HookRenderCompendium, sr5HookRenderCompendiumDirectory, sr5HookCompendiumDocumentChanged
 } from './hooks/compendium.js'
+import {
+  sr5HookRenderJournalDirectory
+} from './hooks/journal.js'
 import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
 } from './interface/scene-indicators.js'
@@ -256,6 +262,7 @@ Hooks.on('createActiveEffect', sr5HookCreateActiveEffect)
 Hooks.on('deleteActiveEffect', sr5HookDeleteActiveEffect)
 Hooks.on('renderCompendium', sr5HookRenderCompendium)
 Hooks.on('renderCompendiumDirectory', sr5HookRenderCompendiumDirectory)
+Hooks.on('renderJournalDirectory', sr5HookRenderJournalDirectory)
 for (const hook of ['createItem', 'updateItem', 'deleteItem', 'createActor', 'updateActor', 'deleteActor']) {
   Hooks.on(hook, sr5HookCompendiumDocumentChanged)
 }
@@ -280,6 +287,10 @@ Hooks.on('getHeaderControlsDocumentSheetV2', SR5ShopStock.onHeaderControls)
 // A character in creation (lot C0): the gamemaster's switch, refused to a player
 Hooks.on('getHeaderControlsDocumentSheetV2', onCreationHeaderControls)
 Hooks.on('preCreateActor', stripCreationOnCreate)
+// DjamZ's pictures of spirits by type and size tier, never over the gamemaster's own (spirit-default-image.js)
+Hooks.on('preCreateActor', spiritImageOnCreate)
+Hooks.on('preUpdateActor', spiritImageOnUpdate)
+Hooks.on('updateActor', spiritImageOnTokens)
 Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaCreation)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)

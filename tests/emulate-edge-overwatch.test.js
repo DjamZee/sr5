@@ -232,3 +232,46 @@ describe('Emulate and Edge (Data Trails p. 159, SR5 p. 57)', () => {
     expect(raise).toHaveBeenCalledTimes(2)
   })
 })
+
+// House rule sr5EmulateOverwatchHalf (DjamZ's ruling of 2026-10-18): half of what the book adds, rounded up
+describe('Emulate, half to the Overwatch Score (house rule)', () => {
+  let get
+  beforeEach(() => {
+    get = game.settings.get
+    game.settings.get = (_ns, key) => key === 'sr5EmulateOverwatchHalf' ? true : 'publicroll'
+  })
+  const restore = () => { game.settings.get = get }
+
+  it('rating 3 raises the score by 2', async () => {
+    try {
+      await emulateCard([5, 2, 3, 1])
+      expect(raise.mock.calls).toEqual([[2, 'a1']])
+    } finally { restore() }
+  })
+
+  it('Push the limit before the roll: half the hits, rounded up', async () => {
+    try {
+      await emulateCard([5, 5, 5, 5, 5, 5, 5, 2], true)
+      expect(raise).toHaveBeenCalledWith(4, 'a1')
+    } finally { restore() }
+  })
+
+  it('Push the limit after the roll swaps half the rating for half the hits', async () => {
+    try {
+      const message = await emulateCard([5, 5, 3, 1])
+      faces = [5, 6, 2]
+      await SR5_RollTest.pushTheLimit(message, actor)
+      expect(updatedCard.roll.hits).toBe(4)
+      expect(raise.mock.calls).toEqual([[2, 'a1']])
+      expect(updatedCard.roll.emulateRaised).toBe(2)
+    } finally { restore() }
+  })
+
+  it('setting off: the book, rating 3 raises it by 3', async () => {
+    game.settings.get = (_ns, key) => key === 'sr5EmulateOverwatchHalf' ? false : 'publicroll'
+    try {
+      await emulateCard([5, 2, 3, 1])
+      expect(raise.mock.calls).toEqual([[3, 'a1']])
+    } finally { restore() }
+  })
+})

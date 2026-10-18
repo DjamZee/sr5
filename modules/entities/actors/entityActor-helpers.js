@@ -8,7 +8,7 @@ import {
   tactileSensorsOn
 } from "../../system/vehicle-mods.js"
 import {
-  SR5
+  SR5, VEHICLE_TOKEN_SIZES
 } from "../../config.js"
 import {
   SR5_Toxins
@@ -91,6 +91,9 @@ import {
 import {
   isAreaSpellTemplateGone, areaSpellTemplateRemoved
 } from "../../system/areaEffectScene.js"
+import {
+  isPetrification, petrifies, petrificationArmor, PETRIFICATION_ARMOR_TARGET
+} from "../../system/magic-supplements-rules.js"
 import {
   carriedGear
 } from "../../system/vehicle-factory.js"
@@ -1197,6 +1200,13 @@ export class SR5_ActorHelper {
         "system.controlMode": itemData.controlMode,
         "items": baseItems,
       })
+      // A car on one square looked like a toy: the item's own token size, or its category's. The GM's drone
+      // token (token-defaults.js), laid on after in _preCreate, still wins
+      const size = SR5_ActorHelper.vehicleTokenSize(itemData)
+      if (size) sideKickData = foundry.utils.mergeObject(sideKickData, {
+        "prototypeToken.width": size.width,
+        "prototypeToken.height": size.height,
+      })
     }
 
     // A storage put down carries what was inside it: the gear leaves the
@@ -1383,6 +1393,23 @@ export class SR5_ActorHelper {
   static wirelessSwitchActionType(turningOn, requiresDNI, hasDNI){
     if (!turningOn) return "free"
     return (!requiresDNI || hasDNI) ? "free" : "simple"
+  }
+
+  /**
+   * The token size of a vehicle or drone deployed from its item: the item's own (system.sideKickPrototypeToken: the
+   * size its token had when last recalled, or the size a module gives a token drawn to scale, as the Mégapack does),
+   * or else the size of its category (VEHICLE_TOKEN_SIZES, config.js); null when neither is known.
+   * The actorDrone schema has no sideKickPrototypeToken, so _preCreate never sees the item's token: its size is laid
+   * on here, or a car recalled and deployed again fell back to one square
+   * @param {object} itemData the itemVehicle's system data
+   * @return {{width: number, height: number}|null}
+   */
+  static vehicleTokenSize(itemData){
+    const own = itemData?.sideKickPrototypeToken
+    const [width, height] = (own?.width > 0 && own?.height > 0) ? [own.width, own.height] : VEHICLE_TOKEN_SIZES[itemData?.category] ?? []
+    return width ? {
+      width, height
+    } : null
   }
 
   /**
@@ -2547,6 +2574,9 @@ export class SR5_ActorHelper {
       },
       content: SR5_ActorHelper.definitionHtml(review, data.roll),
       rejectClose: false,
+      // Above every window, the expanded chat included: opened behind it, the GM thought the button did nothing
+      // (relecture djamz.14, C4)
+      modal: true,
     }))
   }
 
@@ -2581,6 +2611,16 @@ export class SR5_ActorHelper {
       }
     }
     if (review && !review.shown && !(await SR5_ActorHelper.confirmDefinition(review, data))) return false
+    //Pétrification (Street Grimoire p. 117-118): won, the subject is turned to stone only if the Force is at least its Body
+    const petrify = isPetrification(item) && Number(data.roll?.netHits) > 0
+    const subjectBody = petrify ? Number(actor.system?.attributes?.body?.augmented?.value) || 0 : 0
+    if (petrify && !petrifies(data.magic?.force, subjectBody)) {
+      ui.notifications.warn(game.i18n.format("SR5.WARN_PetrificationForce", {
+        name: actor.name, force: Number(data.magic?.force) || 0, body: subjectBody
+      }))
+      return false
+    }
+    const petrified = []
     // Head case Attribute Boost (Stolen Souls p. 201): lasts a number of combat turns equal to the hits,
     // then the head case takes as many boxes of Stun damage (applied when the effect expires, see SR5Combat.manageTurnEnd)
     let isNaniteBoost = Object.values(itemData.systemEffects || {
@@ -2603,6 +2643,8 @@ export class SR5_ActorHelper {
         //An area spell resisted totally gets its effect at 0 (test-ResistanceResult), only to mark the token as
         //having resisted inside the template: a fixed value or the resistor's hits must not apply the spell
         if (data.test?.type === "spellResistance" && data.roll.netHits <= 0) value = 0
+        //The barrier armor of the petrified subject: its Body + the net hits
+        if (petrify && e.target === PETRIFICATION_ARMOR_TARGET) value = petrificationArmor(subjectBody, data.roll.netHits)
 
         //Handle heal effect
         if (e.target.includes("removeDamage")){
@@ -2716,6 +2758,7 @@ export class SR5_ActorHelper {
         //a spell was the same item)
         const [effect] = await actor.createEmbeddedDocuments("Item", [itemEffect]) ?? []
         if (effect) posed = true
+        if (effect && petrify) petrified.push(effect.id)
         if (!effect) SR5_SystemHelpers.srLog(1, `applyExternalEffect: no effect created on ${actor.name}`)
         //Asked of the GM once for all the effects of this card, below: he spends the card once
         else if (!game.user?.isGM) toLink.push(effect.uuid)
@@ -2762,6 +2805,21 @@ export class SR5_ActorHelper {
       //The card it was applied from: the GM reads it again (security pass, Olympe)
       messageId: data.owner.messageId,
     })
+    //Turned to stone: "n'est pas conscient" while the spell lasts. Its own origin, never cleared by healing
+    //(clearDamageKnockout); it goes with the spell's effects (magic-supplements.js)
+    if (petrified.length) await actor.createEmbeddedDocuments("ActiveEffect", [{
+      name: game.i18n.localize("SR5.Petrified"),
+      origin: "petrification",
+      img: "systems/sr5/assets/img/status/StatusUnconsciousOn.svg",
+      statuses: ["unconscious"],
+      flags: {
+        sr5: {
+          petrification: {
+            effectIds: petrified
+          }
+        }
+      },
+    }])
     //Whether the effect was applied: refused (a card counted again and rejected, the GM said no, damage declined), the
     //card keeps its Apply button
     //An entry declined while another was posed: the card is spent (the declined damage is lost, the GM's own choice)
