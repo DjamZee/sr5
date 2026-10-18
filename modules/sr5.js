@@ -46,6 +46,9 @@ import {
   registerAgilityZeroHooks
 } from './system/agility-zero.js'
 import {
+  registerNativeEffectWarningHooks
+} from './system/native-effect-warning.js'
+import {
   registerIceHostHooks
 } from './system/ice-host.js'
 import {
@@ -324,6 +327,8 @@ registerPreparationRegisterHooks()
 registerBoneAugmentationGuard()
 // Agility brought to 0: the "immobilized" status follows it (séance H, H8)
 registerAgilityZeroHooks()
+// Foundry's own active effects are ignored by the system: the user who writes one is told (decision of DjamZ, 19/10)
+registerNativeEffectWarningHooks()
 // An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
 registerIceHostHooks()
 // S4 C5: the modules hear an Overwatch Score change (sr5.overwatchChanged)
