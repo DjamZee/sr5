@@ -46,7 +46,11 @@ const {
 // the active GM from a player's browser, a notification when the site runs in the GM's own browser)
 
 let settings, emits, dialogResult, rendered
-const flush = () => new Promise(resolve => setTimeout(resolve, 30))
+// Waits for the dynamic imports the code under test starts (not a fixed delay, which a loaded machine can outlast)
+const flush = async () => {
+  await vi.dynamicImportSettled()
+  await new Promise(resolve => setTimeout(resolve, 0))
+}
 const lift = (boxes = {
   objects: false
 }) => {
