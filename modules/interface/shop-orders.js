@@ -779,9 +779,9 @@ async function confirmCancel(actor, id, requester) {
     shortDebit ? game.i18n.format('SR5.ShopOrderCancelDebitGone', {
       paid: (Number(own.paid) || 0).toLocaleString(), left: left.toLocaleString()
     }) : vendor ?
-    game.i18n.format('SR5.ShopOrderCancelVendor', {
-      vendor: esc(vendor.label)
-    }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')
+      game.i18n.format('SR5.ShopOrderCancelVendor', {
+        vendor: esc(vendor.label)
+      }) : game.i18n.localize('SR5.ShopOrderCancelNoVendor')
   const ok = await foundry.applications.api.DialogV2.confirm({
     window: {
       title: game.i18n.localize('SR5.ShopOrderCancelTitle')

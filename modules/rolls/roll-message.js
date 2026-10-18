@@ -1397,7 +1397,6 @@ export class SR5_RollMessage {
     //Remove Edge action & Edit succes so it can't be used after action end
     if (buttonToUpdate !== "templateRemove" && buttonToUpdate !== "templatePlace"){
       messageData.edge.canUseEdge = false
-      //messageData.chatCard.canEditResult = false;
     }
 
     await SR5_RollMessage.updateRollCardHelper(message.id, messageData)

@@ -124,7 +124,6 @@ export class SR5_MatrixHelpers {
     }
     let newItem = foundry.utils.duplicate(targetItem)
 
-    //targetActor.takeDamage(cardData);
     //A Monad of the original strain takes matrix damage on its nanite swarm, as an AI on its device (Dark Terrors p. 88)
     let swarm = !!targetItem.id && originalStrainDevice(targetActor)?.id === targetItem.id
     if (!swarm && (targetItem.system.type === "livingPersona" || targetItem.system.type === "headcase")){

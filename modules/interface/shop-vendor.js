@@ -931,7 +931,7 @@ export class SR5ShopVendor {
           hours: orderHours(SR5Shop.searchHours({
             ...line, total: line.baseTotal ?? line.total
           }, messageId, senderId, card),
-            line.extra ? terms : null),
+          line.extra ? terms : null),
           express: !!line.extra, extra: line.extra, now: game.time.worldTime,
           // Shown on the sheet only: the money follows the GM's ledger, not this
           vendor: {

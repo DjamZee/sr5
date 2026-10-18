@@ -326,8 +326,8 @@ export class SR5ShopAvailability {
     // shop: options.searcherPool is SR5ShopVendor.searcherOf, the pool the window announces
     const searcher = contact ? SR5ShopAvailability.contactPool(contact) :
       options.searcherPool ? options.searcherPool :
-      options.searcherContact ? SR5ShopAvailability.contactPool(options.searcherContact) :
-        SR5ShopAvailability.buyerPool(options.searcher ?? actor)
+        options.searcherContact ? SR5ShopAvailability.contactPool(options.searcherContact) :
+          SR5ShopAvailability.buyerPool(options.searcher ?? actor)
 
     const bonusDice = SR5ShopAvailability.surchargeDice(surcharge)
     // null when the field was left empty; an imposed 0 stays 0 dice

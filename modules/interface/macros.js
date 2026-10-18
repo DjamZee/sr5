@@ -140,9 +140,7 @@ const pickedFile = new FilePicker({
 
         let compendium = game.world.packs.find((p) => p.name == fileName);
 
-        if (compendium){
-            console.log("ca existe déjà");
-        } else {
+        if (!compendium){
             await CompendiumCollection.createCompendium({
                 type : "Item", 
                 label : fileName, 
