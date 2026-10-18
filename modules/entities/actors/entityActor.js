@@ -791,7 +791,6 @@ export class SR5Actor extends Actor {
           break
 
         case "itemSpirit":
-          //i.prepareData();
           if (iData.isBounded) actor.system.magic.boundedSpirit.current ++
           if (iData.isActive) SR5_CharacterUtility._actorModifPossession(i, actor)
           //Forbidden Arcana p. 50: each necro spirit under control lowers the mage's Magic by 1

@@ -742,8 +742,6 @@ export class SR5_RollTest {
   }
 
   static async renderRollCard(cardData) {
-    //Add button to edit result for GM
-    //if (game.user.isGM) cardData.chatCard.canEditResult = true;
 
     const templateData = cardData
     const template = `systems/sr5/templates/rolls/roll-card.hbs`

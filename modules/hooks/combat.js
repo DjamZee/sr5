@@ -11,8 +11,6 @@ import {
   SR5_GrappleHelpers
 } from "../rolls/roll-helpers/grapple.js"
 export function sr5HookCanvasInit() {
-  // Extend Diagonal Measurement
-  //SquareGrid.prototype.measureDistances = measureDistances;
 }
 
 export function sr5HookDeleteCombatCumulativeDefense(combat) {

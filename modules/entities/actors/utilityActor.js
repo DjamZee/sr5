@@ -628,7 +628,6 @@ export class SR5_CharacterUtility extends Actor {
       // Reset Matrix Actions
       if (actorData.matrix.actions) {
         for (let key of Object.keys(SR5.matrixRolledActions)) {
-          //console.log('Reset Matrix Actions : ', key, JSON.stringify(actorData.matrix.actions[key]))
           actorData.matrix.actions[key].test.base = 0
           actorData.matrix.actions[key].test.dicePool = 0
           actorData.matrix.actions[key].test.modifiers = []
@@ -2275,8 +2274,6 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     this.applyPenalty("condition", initPhy, actor)
-    //this.applyPenalty("matrix", initPhy, actor);
-    //this.applyPenalty("magic", initPhy, actor);
     SR5_EntityHelpers.updateValue(initPhy, 0)
     SR5_EntityHelpers.updateValue(initPhy.dice, 0, 5)
     initPhy.dice.value = Math.floor(initPhy.dice.value)
@@ -2323,8 +2320,6 @@ export class SR5_CharacterUtility extends Actor {
       SR5_EntityHelpers.updateModifier(initAst.dice, game.i18n.localize('SR5.AstralProjection'), "astralPlane", 3)
     }
     this.applyPenalty("condition", initAst, actor)
-    //this.applyPenalty("matrix", initAst, actor);
-    //this.applyPenalty("magic", initAst, actor);
     SR5_EntityHelpers.updateValue(initAst, 0)
     SR5_EntityHelpers.updateValue(initAst.dice, 0, 5)
     initAst.dice.value = Math.floor(initAst.dice.value)
@@ -2398,8 +2393,6 @@ export class SR5_CharacterUtility extends Actor {
     }
 
     if (actorData.matrix.userMode !== "ar" || this.isDepthActive(actor)) this.applyPenalty("condition", initMat, actor)
-    //this.applyPenalty("matrix", initMat, actor);
-    //this.applyPenalty("magic", initMat, actor);
     SR5_EntityHelpers.updateValue(initMat, 0)
     SR5_EntityHelpers.updateValue(initMat.dice, 0, 5)
     initMat.dice.value = Math.floor(initMat.dice.value)

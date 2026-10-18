@@ -2352,7 +2352,6 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
 
   //Handle controler choice of a drone / Vehicle
   async _onChooseControler(_event){
-    //let worldActors = await Array.from(game.actors);
     let controlerList = {
     }
     for (let a of game.actors){

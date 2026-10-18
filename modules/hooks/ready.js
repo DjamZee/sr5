@@ -168,7 +168,6 @@ export function sr5HookReady() {
   //Each button of it checks the right of the user itself. No canvas (a window with no size), no HUD.
   if (canvas?.hud) canvas.hud.token = new SR5TokenHud()
 
-  //game.settings.set("sr5", "systemMigrationVersion", "0.0.1");
   // Determine whether a system migration is required and feasible
   if ( !game.user.isGM ) return
   const {
