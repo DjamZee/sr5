@@ -1,0 +1,132 @@
+// The SR5 dress of the modules' windows (DjamZ, 19/10: « le thème SR5 par défaut pour toutes les fenêtres des
+// modules », above all « des marges intérieures »). A module's window is marked sr-foreign-window (window-scope.js);
+// with the world setting « Habiller les fenêtres des modules au thème SR5 » (checked by default) the body carries
+// sr-dress-modules, and the window takes the Concepteur's colours (commons/window-tokens.less).
+// How it stays safe: it mostly redefines Foundry's own theme variables (--background, --button-*, --input-*…), which
+// the core rules and most modules read; nothing is !important but the inner margin, so whatever a module styles itself
+// (its rules come in the later "modules" layer) wins. No size, no display, no position: the layouts stay the module's.
+// The windows that keep their own look (Matrice, Topologie, any that breaks) carry sr-dress-off (DRESS_EXCLUDED,
+// window-scope.js) and keep only the title bar (window-skin.less).
+
+@srd-window: ~".application.sr-foreign-window:not(.sr-dress-off), .window-app.sr-foreign-window:not(.sr-dress-off)";
+
+&.sr-dress-modules {
+  :is(@{srd-window}) {
+    .srw-tokens();
+
+    // Foundry's theme variables, read by the core rules of the window and of what it holds
+    --background: var(--srw-bg);
+    --color-scheme: light;
+    --color-text-emphatic: var(--srw-heading);
+    --color-text-primary: var(--srw-text);
+    --color-text-secondary: var(--srw-muted);
+    --color-text-subtle: var(--srw-muted);
+    --color-text-dark-primary: var(--srw-text);
+    --color-text-dark-secondary: var(--srw-muted);
+    --color-text-selection: var(--srw-sel-text);
+    --color-text-selection-bg: var(--srw-sel-bg);
+    --color-border: var(--srw-frame);
+    --color-tabs-border: var(--srw-border);
+    --color-fieldset-border: var(--srw-border);
+    --color-form-label: var(--srw-text);
+    --color-form-label-hover: var(--srw-sel-text);
+    --color-form-hint: var(--srw-muted);
+    --color-form-hint-hover: var(--srw-text);
+    --color-shadow-primary: transparent;
+    --table-background-color: transparent;
+    --table-header-bg-color: var(--srw-panel);
+    --table-header-border-color: var(--srw-border);
+    --table-header-text-color: var(--srw-heading);
+    --table-row-color-even: var(--srw-grid-line);
+    --table-row-color-odd: transparent;
+    --table-row-color-highlight: var(--srw-sel-bg);
+    color-scheme: var(--color-scheme);
+    border-color: var(--srw-frame);
+
+    > .window-content {
+      background-color: var(--srw-bg);
+      color: var(--srw-text);
+      font-family: var(--srw-font-body);
+      // « Les textes collés au cadre » (DjamZ): the core gives 1rem (V2) or 8px (V1), many modules take it to 0
+      padding: 0.6rem 0.75rem !important;
+    }
+
+    // The fields: Foundry's variables, set on the element as the core does
+    :is(input, select, textarea) {
+      --input-background-color: var(--srw-field);
+      --input-border-color: var(--srw-border-strong);
+      --input-text-color: var(--srw-text);
+      --input-placeholder-color: var(--srw-muted);
+      --input-focus-outline-color: var(--srw-focus);
+    }
+    :is(input, select, textarea):focus { --input-text-color: var(--srw-text); }
+    :is(input, select, textarea):disabled {
+      --input-background-color: var(--srw-disabled-bg);
+      --input-text-color: var(--srw-muted);
+    }
+    select option, select optgroup { color: var(--srw-text); background-color: var(--srw-panel); }
+    :is(input[type="checkbox"], input[type="radio"]) {
+      --checkbox-checked-color: var(--srw-accent);
+      // The core draws the box as an icon of this colour: the field colour hid an empty box on the ground
+      --checkbox-background-color: var(--srw-border-strong);
+      --checkbox-checkmark-color: var(--srw-on-accent);
+      --checkbox-disabled-color: var(--srw-track);
+    }
+
+    // The buttons
+    :is(button, a.button, kbd) {
+      --button-background-color: var(--srw-field);
+      --button-border-color: var(--srw-border-strong);
+      --button-text-color: var(--srw-text);
+      --button-focus-outline-color: var(--srw-focus);
+      --button-hover-background-color: var(--srw-sel-bg);
+      --button-hover-border-color: var(--srw-sel-border);
+      --button-hover-text-color: var(--srw-sel-text);
+    }
+    :is(button, a.button)[disabled] {
+      --button-background-color: var(--srw-disabled-bg);
+      --button-border-color: var(--srw-border);
+      --button-text-color: var(--srw-muted);
+      --button-hover-background-color: var(--srw-disabled-bg);
+      --button-hover-border-color: var(--srw-border);
+      --button-hover-text-color: var(--srw-muted);
+    }
+    > .window-content button:not(.header-control, .icon, [class*="fa-"]) { font-family: var(--srw-font-body); }
+    // The title bar's controls stay on the dark bar (window-skin.less), in light as in dark
+    > .window-header :is(button, a.button) {
+      --button-background-color: transparent;
+      --button-border-color: transparent;
+      --button-text-color: var(--srw-header-text);
+      --button-hover-background-color: transparent;
+      --button-hover-border-color: transparent;
+      --button-hover-text-color: var(--srw-essence);
+    }
+
+    // The tabs: the active one underlined in the selection colour
+    nav.tabs [data-tab] { color: var(--srw-muted); text-shadow: none; }
+    nav.tabs [data-tab]:hover { color: var(--srw-text); }
+    nav.tabs [data-tab].active { color: var(--srw-sel-text); }
+    nav.tabs:not(.vertical) [data-tab].active { border-bottom-color: var(--srw-sel-border); }
+
+    // Headings, boxes, links, code
+    :is(h1, h2, h3, h4) { color: var(--srw-heading); border-color: var(--srw-border); text-shadow: none; }
+    fieldset { border-color: var(--srw-border); }
+    fieldset > legend { color: var(--srw-heading); }
+    hr { border-color: var(--srw-border); }
+    a:not([class]) { color: var(--srw-sel-border); }
+    code { --color-code-bg: var(--srw-panel); --color-code-border: var(--srw-border); }
+  }
+
+  // The V1 windows: the compatibility layer paints a parchment and its dark text on the content
+  .window-app.sr-foreign-window:not(.sr-dress-off) > .window-content {
+    background: var(--srw-bg);
+  }
+
+  // The dark set under Foundry's dark theme, unless the window itself is light
+  &.theme-dark :is(@{srd-window}):not(.theme-light),
+  .themed.theme-dark :is(@{srd-window}):not(.theme-light),
+  :is(@{srd-window}).theme-dark {
+    .srw-tokens-dark();
+    --color-scheme: dark;
+  }
+}

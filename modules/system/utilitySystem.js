@@ -2,6 +2,9 @@ import {
   SR5ShopConfig
 } from "../interface/shop-config.js"
 import {
+  DRESS_SETTING, applyModuleDress
+} from "../hooks/window-scope.js"
+import {
   SR5RuleLocksConfig
 } from "../interface/rule-locks-config.js"
 import {
@@ -608,6 +611,18 @@ export class SR5_SystemHelpers {
       default: true,
       type: Boolean,
       requiresReload: true
+    })
+
+    // The SR5 dress of the modules' windows (DjamZ, 19/10): checked by default; unchecked, they keep Foundry's look.
+    // A body class, so it changes at once, without a reload (window-scope.js, module-dress.less)
+    game.settings.register("sr5", DRESS_SETTING, {
+      name: "SR5.SETTINGS_DressModuleWindows_T",
+      hint: "SR5.SETTINGS_DressModuleWindows_D",
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean,
+      onChange: value => applyModuleDress(value)
     })
 
     // Matrix Grid Rules
