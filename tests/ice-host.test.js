@@ -51,10 +51,10 @@ describe('An IC uses the matrix attributes of its host (SR5 p. 249)', () => {
 
   it('finds the host from hostUuid, a host only, nothing without hostUuid', () => {
     const h7 = host("Actor.h7", {
-      attack: 7
-    }), device = host("Actor.d", {
-      attack: 3
-    }, "device")
+        attack: 7
+      }), device = host("Actor.d", {
+        attack: 3
+      }, "device")
     vi.stubGlobal("fromUuidSync", uuid => ({
       "Actor.h7": h7, "Actor.d": device
     })[uuid] ?? null)
@@ -73,14 +73,14 @@ describe('An IC uses the matrix attributes of its host (SR5 p. 249)', () => {
 
   it('lists the ICs of a host', () => {
     const h7 = host("Actor.h7", {
-    }), a = ice("Actor.h7"), b = ice("Actor.h3"), c = ice("Actor.h7", "device")
+      }), a = ice("Actor.h7"), b = ice("Actor.h3"), c = ice("Actor.h7", "device")
     expect(icesOfHost(h7, [a, b, c, null])).toEqual([a])
     expect(icesOfHost(null, [a])).toEqual([])
   })
 
   it('finds the copies of an IC on the unlinked tokens of the scenes too (review 36)', () => {
     const h7 = host("Actor.h7", {
-    }), base = ice("Actor.h7"), copy = ice("Actor.h7"), linked = ice("Actor.h7")
+      }), base = ice("Actor.h7"), copy = ice("Actor.h7"), linked = ice("Actor.h7")
     const actors = Object.assign([base], {
       get: id => id === "base" ? base : id === "pc" ? {
         type: "actorPc", system: {

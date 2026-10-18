@@ -25,12 +25,12 @@ const {
 } = await import('../modules/rolls/roll-helpers/matrix-card.js')
 
 const player = {
-  id: 'p', name: 'Clo', isGM: false
-}, stranger = {
-  id: 's', name: 'Zed', isGM: false
-}, gm = {
-  id: 'g', name: 'MJ', isGM: true
-}
+    id: 'p', name: 'Clo', isGM: false
+  }, stranger = {
+    id: 's', name: 'Zed', isGM: false
+  }, gm = {
+    id: 'g', name: 'MJ', isGM: true
+  }
 const hacker = {
   id: 'h', uuid: 'Actor.h', name: 'Jean Bob', testUserPermission: user => user?.id === 'p', system: {
     specialAttributes: {

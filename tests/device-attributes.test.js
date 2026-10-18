@@ -31,8 +31,8 @@ const pool = () => ({
 
 function device(deviceType, rating = 4) {
   const attributes = {
-  }, actions = {
-  }
+    }, actions = {
+    }
   for (const key of Object.keys(SR5.matrixAttributes)) attributes[key] = value(rating)
   for (const key of Object.keys(SR5.matrixActions)) actions[key] = {
     defense: pool()

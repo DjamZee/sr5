@@ -350,10 +350,10 @@ describe('A5: the hook after a matrix action resolved (sr5.matrixActionResolved)
 
   it('carries the actor, the action, the target, the hits, the net hits and the marks', () => {
     const actor = {
-      name: 'Decker'
-    }, target = {
-      name: 'Caméra'
-    }
+        name: 'Decker'
+      }, target = {
+        name: 'Caméra'
+      }
     expect(matrixActionPayload({
       actor, card: card(), target, successes: 5, netHits: 2, marksPlaced: 2
     })).toMatchObject({
