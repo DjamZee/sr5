@@ -4884,6 +4884,8 @@
 	"SR5.SETTINGS_FlightSkill_D": "Add the Flight skill to player character sheets, in the Athletics skill group.",
 	"SR5.SETTINGS_FlightSkill_T": "Flight skill for characters",
 	"SR5.SETTINGS_HelpActive_D": "Display the contextual help window in the interface.",
+	"SR5.SETTINGS_DressModuleWindows_T": "Dress the modules' windows in the SR5 theme",
+	"SR5.SETTINGS_DressModuleWindows_D": "Checked (default): the modules' windows (Dice So Nice, Levels, Monk's, content modules…) take the SR5 theme's colours and title bar, with inner margins. Unchecked: they keep Foundry's look. What a module draws itself does not change; the Matrice and Topologie windows keep their own.",
 	"SR5.SETTINGS_RuleReminders_T": "Rule reminders",
 	"SR5.SETTINGS_RuleReminders_D": "Checked (default): chat cards, roll windows and the help bubble refer to the books' pages, and the help bubble recalls the augmentation caps that take nothing off. Unchecked: these references and reminders are gone; the rules apply all the same. Item descriptions are left as they are.",
 	"SR5.SETTINGS_HelpActive_T": "Show Help Window",

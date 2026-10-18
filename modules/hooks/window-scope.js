@@ -11,7 +11,7 @@ const SKINNED_MODULE_WINDOWS = ".monks-enhanced-journal, .gm-notes, :has(.totm-m
 
 // The classes a window of Foundry carries by itself, whatever its class asks for
 const FRAME_CLASSES = new Set(["app", "window-app", "application", "themed", "minimized", "maximized", "minimizing",
-  "maximizing", "dialog", "sheet", "form", "sr-skin-dialog", FOREIGN_WINDOW_CLASS])
+  "maximizing", "dialog", "sheet", "form", "sr-skin-dialog", FOREIGN_WINDOW_CLASS, "sr-dress-off"])
 
 // The classes Foundry's windows put on themselves while open (Foundry 13.351, client/applications)
 const CORE_STATE_CLASSES = new Set(["expanded", "collapsing", "collapsed", "active", "deleting", "locked", "editable",
@@ -49,7 +49,10 @@ function defaultClasses(app) {
   return out
 }
 
-const isSystemClass = c => /^sr/i.test(c)
+// The marks this file puts begin with "sr" too: read as the system's, they unmarked a module's window at its second
+// render (19/10)
+const OWN_MARKS = new Set([FOREIGN_WINDOW_CLASS, "sr-dress-off"])
+const isSystemClass = c => /^sr/i.test(c) && !OWN_MARKS.has(c)
 
 /**
  * Whether a window belongs to a module: its class is not one of Foundry's, or it is one of Foundry's (a DialogV2) to
@@ -81,9 +84,45 @@ export function windowElement(x) {
   return x?.jquery ? x[0] : x
 }
 
-/** Render hook (V1 and V2): marks a module's window so the theme leaves it alone */
+// The SR5 dress of the modules' windows (DjamZ, 19/10, module-dress.less): a world setting, checked by default, puts
+// DRESS_BODY_CLASS on the body; a module's window then takes the Concepteur's colours and inner margins.
+export const DRESS_SETTING = "sr5DressModuleWindows"
+export const DRESS_BODY_CLASS = "sr-dress-modules"
+export const DRESS_OFF_CLASS = "sr-dress-off"
+
+// The modules' windows that keep their own look, by a class or selector their window carries. Matrice and Topologie
+// draw their own (DjamZ, 16/10); add here any window the dress breaks, with the reason.
+export const DRESS_EXCLUDED = [
+  ".matrice-sr5", // Matrice: its consoles and dark dialogs (DjamZ, 16/10)
+  ".topologie-sr5", // Topologie: its own window (DjamZ, 16/10)
+]
+
+/** Whether a module's window keeps its own look (DRESS_EXCLUDED) */
+export function isDressExcluded(element) {
+  return DRESS_EXCLUDED.some(selector => {
+    try { return element.matches(selector) || !!element.querySelector(selector) } catch { return false }
+  })
+}
+
+/** Whether the world dresses the modules' windows (the default) */
+export function modulesDressed() {
+  try {
+    return game.settings.get("sr5", DRESS_SETTING) !== false
+  } catch {
+    return true
+  }
+}
+
+/** Puts the dress on or off for the whole page (at ready, and when the setting changes) */
+export function applyModuleDress(enabled = modulesDressed()) {
+  globalThis.document?.body?.classList.toggle(DRESS_BODY_CLASS, !!enabled)
+}
+
+/** Render hook (V1 and V2): marks a module's window so the theme leaves it alone, or dresses it (module-dress.less) */
 export function sr5HookMarkForeignWindow(app, html) {
   const element = windowElement(app?.element) ?? windowElement(html)
   if (!element?.classList) return
-  element.classList.toggle(FOREIGN_WINDOW_CLASS, isForeignWindow(app, element))
+  const foreign = isForeignWindow(app, element)
+  element.classList.toggle(FOREIGN_WINDOW_CLASS, foreign)
+  element.classList.toggle(DRESS_OFF_CLASS, foreign && isDressExcluded(element))
 }
