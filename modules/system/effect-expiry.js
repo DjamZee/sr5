@@ -105,7 +105,7 @@ export async function checkEffectExpiries(){
 const queueCheck = queuedCheck(() => checkEffectExpiries(), "Effect expiries not checked")
 
 async function postExpiryCard(rows){
-    const list = rows.map(r => `<li class="sr5-expiry-row" data-effect-uuid="${r.effect.uuid}">
+  const list = rows.map(r => `<li class="sr5-expiry-row" data-effect-uuid="${r.effect.uuid}">
       <span class="sr5-expiry-name"><strong>${escape(r.actor.name)}</strong> : ${escape(r.effect.name)}</span>
       <span class="sr5-expiry-end">${fmt(r.end)}</span>
       <button type="button" data-sr5-expiry="remove">${game.i18n.localize("SR5.CALENDAR_ExpiryRemove")}</button>

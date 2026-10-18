@@ -152,7 +152,7 @@ export async function checkDrugs(){
 const queueCheck = queuedCheck(() => checkDrugs(), "Drugs not checked")
 
 async function postDrugCard(rows){
-    const over = r => r.part ? `SR5.CALENDAR_DrugCrashPartOver_${r.part}` : (r.phase === "rise" ? "SR5.CALENDAR_DrugRiseOver" : "SR5.CALENDAR_DrugCrashOver")
+  const over = r => r.part ? `SR5.CALENDAR_DrugCrashPartOver_${r.part}` : (r.phase === "rise" ? "SR5.CALENDAR_DrugRiseOver" : "SR5.CALENDAR_DrugCrashOver")
   const button = r => r.part ? "SR5.CALENDAR_DrugEndCrashPart" : (r.phase === "rise" ? "SR5.CALENDAR_DrugStartCrash" : "SR5.CALENDAR_DrugEndCrash")
   const list = rows.map(r => `<li class="sr5-drug-row" data-item-uuid="${r.item.uuid}" data-phase="${r.phase}"${r.part ? ` data-part="${r.part}"` : ""}>
       <span><strong>${escape(r.actor.name)}</strong> : ${escape(r.item.name)} — ${game.i18n.localize(over(r))}</span>
