@@ -793,7 +793,6 @@ export class SR5_RollTest {
 
   //Add support for the Dice So Nice module
   static async showDiceSoNice(roll, rollMode) {
-    console.log(roll)
     if (game.modules.get("dice-so-nice") && game.modules.get("dice-so-nice").active) {
       let whisper = null
       let blind = false
