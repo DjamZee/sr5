@@ -79,6 +79,10 @@ const saleCard = (author, lines) => {
   return message
 }
 
+// Loaded once at the level of the file, under no time limit: the first test paid the transform of the shop's whole
+// code and went past 5 s on a loaded machine (Lucie, 19/10). Each browser still evaluates its own copy below
+await import('../modules/interface/shop-fence.js')
+
 // One browser: its own copy of the system's code, as each client loads it
 async function browser() {
   vi.resetModules()
