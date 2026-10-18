@@ -8,9 +8,11 @@ import {
 import {
   refuseByRule, ruleLockActive
 } from "../system/rule-locks.js"
+import {
+  escape
+} from "../system/card-helpers.js"
 
 const t = key => game.i18n.localize(key)
-const escape = s => foundry.utils.escapeHTML?.(String(s ?? "")) ?? String(s ?? "")
 const LABELS = {
   attributes: SR5.characterAttributes, bases: SR5.drugDesignerBases, blocks: SR5.drugDesignerBlocks,
   traits: SR5.drugDesignerQualities, vectors: SR5.propagationVectors,

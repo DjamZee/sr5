@@ -11,6 +11,9 @@
 import {
   SR5CompendiumBrowser
 } from "./compendium-browser.js"
+import {
+  escape
+} from "../system/card-helpers.js"
 
 /** At most this many draws in one go: a slip of the keyboard is not a thousand cards' worth of loot. */
 export const MAX_DRAWS = 100
@@ -150,7 +153,6 @@ export async function sr5PromptDraw({
     ui.notifications.warn(game.i18n.localize("SR5.CompendiumDrawEmpty"))
     return null
   }
-  const escape = text => foundry.utils.escapeHTML(String(text ?? ""))
   const count = await foundry.applications.api.DialogV2.prompt({
     window: {
       title: game.i18n.localize("SR5.CompendiumDraw"), icon: "fa-solid fa-dice"
