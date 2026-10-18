@@ -466,6 +466,10 @@ export class SR5_EntityHelpers {
     } else if (key.includes("system.initiatives")){
       newKey = key.slice(19)
       return `${game.i18n.localize(SR5.characterInitiatives[newKey])}`
+    } else if (key.startsWith("system.specialProperties.hardenedArmors.")){
+      //The Petrification spell's barrier armor: the "sheet-defined effect" window showed ": Net hits = 1" without it
+      newKey = key.slice(40)
+      return game.i18n.localize(SR5.hardenedArmorTypes[newKey] ?? "SR5.HardenedArmor")
     } else {
       switch (key){
         case "system.conditionMonitors.stun.actual":
