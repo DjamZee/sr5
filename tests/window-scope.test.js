@@ -101,6 +101,21 @@ describe('windows the theme dresses (P1, 16/10)', () => {
     expect(isForeignWindow(app(GMNote), el(['app', 'window-app', 'gm-notes']), core)).toBe(false)
   })
 
+  it('never marks a tab of the sidebar, nor the pause (DjamZ, 19/10)', () => {
+    class ActorDirectory extends ApplicationV2 { static DEFAULT_OPTIONS = {
+      classes: ['tab', 'sidebar-tab', 'directory', 'flexcol']
+    } }
+    class SR5ItemDirectory extends ActorDirectory {}
+    const tabs = getCoreApplicationClasses([{
+      sidebar: {
+        ActorDirectory
+      }
+    }])
+    expect(isForeignWindow(app(ActorDirectory, ['tab', 'sidebar-tab', 'directory', 'flexcol', 'actors-sidebar']), el(['tab', 'sidebar-tab', 'directory', 'flexcol', 'actors-sidebar', 'active']), tabs)).toBe(false)
+    expect(isForeignWindow(app(SR5ItemDirectory, ['tab', 'sidebar-tab', 'items-sidebar']), el(['tab', 'sidebar-tab', 'items-sidebar']), tabs)).toBe(false)
+    expect(isForeignWindow(app(ApplicationV2, []), el(['paused']), core)).toBe(false)
+  })
+
   it('the render hook puts and takes the mark', () => {
     class Foreign extends ApplicationV2 {}
     const e = el(['application', 'gg'])
