@@ -4,6 +4,17 @@
 		<li class="grid SR-LigneEnTete">
 			<div class="col-12 SR-TextUppercase">{{localize 'SR5.Essence'}}</div>
 		</li>
+		{{!-- A grunt's profile prints its Essence (SR5 p. 381): typed here, the implants on the sheet lower it further --}}
+		{{#if (eq actor.type 'actorGrunt')}}
+		<li class="grid">
+			<div class="col-10">{{localize 'SR5.EssenceProfile'}}</div>
+			<div class="col-2 SR-TextRight"
+			  data-helpTitle="{{localize 'SR5.EssenceProfile'}}"
+			  data-helpMessage="{{localize 'SR5.HELP_EssenceProfileMsg'}}">
+				<input type="text" data-dtype="Number" class="input" name="system.essence.base" value="{{system.essence.base}}" onfocus="this.select()">
+			</div>
+		</li>
+		{{/if}}
 		<li class="grid">
 			<div class="col-10">{{localize 'SR5.EssenceRemaining'}}</div>
 			{{#if system.specialProperties.essenceDrain}}
