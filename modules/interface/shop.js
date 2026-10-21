@@ -53,8 +53,8 @@ import {
  *
  * A purchase is two documents: the gear itself, and an `itemNuyen` transaction
  * of type `loss` that the actor's nuyen total already knows how to subtract
- * (see `helpers.js`, where a modifier whose type ends in `_loss` is removed
- * from the value). Nothing writes `system.nuyen.value` directly.
+ * (see `utilityActor.js` updateNuyens, where a modifier whose type ends in `_loss`
+ * is taken off the value). Nothing writes `system.nuyen.value` directly.
  */
 export class SR5Shop {
 
@@ -131,10 +131,11 @@ export class SR5Shop {
   /**
    * What the character can actually spend.
    *
-   * `system.nuyen.value` is the sum of every transaction, expenses included, so
-   * it is not a balance. The sheet reads its total as gains minus losses (see
-   * `money.hbs`, helpers `gainModifiersSum` / `lossModifiersSum`) and so do we,
-   * otherwise a purchase would look affordable on a spent-out character.
+   * Gains minus losses, read from the transactions as the sheet does (see
+   * `money.hbs`, helpers `gainModifiersSum` / `lossModifiersSum`), so that a
+   * purchase never looks affordable on a spent-out character. `system.nuyen.value`
+   * holds the same balance since djamz.16 (updateNuyens); before, it summed the
+   * expenses with the gains.
    */
   static balance(actor) {
     const modifiers = actor?.system.nuyen?.modifiers ?? []

@@ -749,8 +749,14 @@ export class SR5_CharacterUtility extends Actor {
 
   }
 
+  //The balance, as the sheet and the shop read it: gains minus losses. A loss is written positive on its transaction
+  //(entityActor.js, itemNuyen), so the plain sum of updateValue added the expenses to the gains (1,000 earned and 1,425
+  //spent read 2,425, anomalies de la boutique, djamz.16). Whatever reads system.nuyen.value now gets the balance
   static updateNuyens(actor) {
-    SR5_EntityHelpers.updateValue(actor.system.nuyen)
+    const nuyen = actor.system.nuyen
+    SR5_EntityHelpers.updateValue(nuyen)
+    //updateValue counted each loss as a gain: it is taken off twice
+    nuyen.value = SR5_EntityHelpers.roundDecimal(nuyen.value - 2 * (SR5_EntityHelpers.modifiersOnlyNegativesSum(nuyen.modifiers) || 0), 2)
   }
 
   static updateKarmas(actor) {

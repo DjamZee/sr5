@@ -47,7 +47,7 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
-  vendorPriceFor, purchaseFundsVerdict, confirmFundsWarning
+  vendorPriceFor, vendorRefusalFor, shelfPrice, purchaseFundsVerdict, confirmFundsWarning
 } from '../system/house-rule-hooks.js'
 import {
   lineWaits, deliveryDelayed
@@ -382,6 +382,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     }
     // [{uuid, grade, name, img, quantity}]
     this._cart = []
+    // A payment on its way to the till: the Pay button waits for its answer (#onCheckoutCart)
+    this._checkingOut = false
     this._contactId = null
     this._surcharge = 0
     this._overridePool = null
@@ -557,6 +559,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         sub: entry.sub ?? SR5ShopCatalog.subOf(entry),
         notForSale: SR5ShopStock.isNotForSale(entry),
         ...described,
+        // At a vendor's, the price a module of house rules asks (sr5.vendorPrice), the book's struck through beside it
+        ...SR5ShopWindow.#askedOnShelf(entry, described, grade, buyer, vendorSource),
         essence: essenceFor(entry, described.essence, grade),
       }
     })
@@ -739,7 +743,12 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.cartLeft = free ? null : SR5ShopWindow.#nuyen(balance - cartTotal)
     context.cartEssence = cartEssence ? formatNumber(Math.round(cartEssence * 100) / 100) : null
     context.cartDelay = cartDelay ? SR5ShopAvailability.formatDelay(cartDelay) : null
-    context.canCheckout = buyer !== null && cart.length > 0
+    // A vendor a module of house rules says will not sell to this buyer (sr5.vendorRefusal): told, no checkout
+    const refusal = vendorSource && buyer && !equip ? vendorRefusalFor({
+      vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer
+    }) : null
+    context.vendorRefusal = refusal?.refuse ? refusal.reason || game.i18n.localize('SR5.ShopVendorRefusesBuyer') : ''
+    context.canCheckout = buyer !== null && cart.length > 0 && !refusal?.refuse && !this._checkingOut
     context.creationMode = creationMode
     context.creationLimits = limits
     context.creationLimitsLabel = limits ? SR5ShopWindow.#limitsLabel(limits) : ''
@@ -866,6 +875,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       price: onVehicle ? SR5ShopWindow.#onVehiclePrice(entry) : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
         multiplier: SR5ShopCatalog.weaponPriceMultiplier(entry)
       }) : SR5ShopWindow.#nuyen(row.price),
+      // The book's price, struck through, when a module of house rules asks another (sr5.vendorPrice)
+      bookPrice: !onVehicle && !onWeapon && row.bookPrice !== undefined ? SR5ShopWindow.#nuyen(row.bookPrice) : '',
+      priceNotes: row.priceNotes ?? '',
       onVehicle,
       onWeapon,
       tooExpensive: !free && !onVehicle && !onWeapon && row.price > budget,
@@ -877,6 +889,25 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
       dim: (!forSale && !onVehicle && !onWeapon) || !!blocked,
     }
+  }
+
+  /**
+   * A shelf's row at a vendor's, priced as the cart will price one piece: the book's price for the buyer (dealer
+   * included), then sr5.vendorPrice. Only when a module changes it does the row take its price, and keep the book's
+   * to strike through; without one, nothing (the row shows the book's price, as before).
+   */
+  static #askedOnShelf(entry, described, grade, buyer, vendorSource) {
+    if (!buyer || !vendorSource || !(described?.price > 0)) return {
+    }
+    const book = dealerPrice(described.price, entry, buyer.items)
+    const asked = vendorPriceFor({
+      vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer, quantity: 1,
+      item: {
+        type: entry.type, name: entry.name, system: entry.system, grade: grade ?? null, uuid: entry.uuid
+      },
+      price: book,
+    })
+    return shelfPrice(book, asked)
   }
 
   static #nuyen(value) {
@@ -1148,38 +1179,46 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this.render()
   }
 
-  static async #onCheckoutCart() {
-    if (this._source?.vendor) {
-      // Short on the accounts at a vendor's: the till runs on the gamemaster's browser, so a module's warning is
-      // confirmed here, by the buyer, before the request leaves (sr5.purchaseFunds); the till asks the funds again
-      const funds = this._cartFunds
-      if (funds?.short && !this._equipMode) {
-        const verdict = purchaseFundsVerdict({
-          buyer: funds.buyer, total: funds.total, balance: funds.balance, vendor: funds.vendor, storage: funds.storage
+  static async #onCheckoutCart(event, target) {
+    // One payment at a time: the cart is emptied only once the till answers, and a second click meanwhile was queued
+    // behind the first sale with the same cart, so 1 × AK-98 in the cart was sold twice (anomalies de la boutique, djamz.16)
+    if (this._checkingOut) return
+    this._checkingOut = true
+    if (target) target.disabled = true
+    try {
+      if (this._source?.vendor) {
+        // Short on the accounts at a vendor's: the till runs on the gamemaster's browser, so a module's warning is
+        // confirmed here, by the buyer, before the request leaves (sr5.purchaseFunds); the till asks the funds again
+        const funds = this._cartFunds
+        if (funds?.short && !this._equipMode) {
+          const verdict = purchaseFundsVerdict({
+            buyer: funds.buyer, total: funds.total, balance: funds.balance, vendor: funds.vendor, storage: funds.storage
+          })
+          if (verdict.allow && !(await confirmFundsWarning(verdict.warning))) return
+        }
+        const sent = await SR5ShopVendor.purchase({
+          vendorUuid: this._source.actorUuid,
+          storageId: this._source.storageId,
+          buyerId: this._buyerId,
+          payWith: this._payWith,
+          equip: this._equipMode,
+          lines: this._cart.map(line => ({
+            uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
+          })),
         })
-        if (verdict.allow && !(await confirmFundsWarning(verdict.warning))) return
+        if (sent) this._cart = []
+        return
       }
-      const sent = await SR5ShopVendor.purchase({
-        vendorUuid: this._source.actorUuid,
-        storageId: this._source.storageId,
-        buyerId: this._buyerId,
-        payWith: this._payWith,
-        equip: this._equipMode,
-        lines: this._cart.map(line => ({
-          uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
-        })),
+      const bought = await SR5Shop.checkout(SR5Shop.buyerFromKey(this._buyerId), this._cart.map(line => ({
+        uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
+      })), {
+        equip: this._equipMode, creation: this.#creationForced(SR5Shop.buyerFromKey(this._buyerId))
       })
-      if (sent) this._cart = []
+      if (bought) this._cart = []
+    } finally {
+      this._checkingOut = false
       this.render()
-      return
     }
-    const bought = await SR5Shop.checkout(SR5Shop.buyerFromKey(this._buyerId), this._cart.map(line => ({
-      uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
-    })), {
-      equip: this._equipMode, creation: this.#creationForced(SR5Shop.buyerFromKey(this._buyerId))
-    })
-    if (bought) this._cart = []
-    this.render()
   }
 
   #searchingContact() {

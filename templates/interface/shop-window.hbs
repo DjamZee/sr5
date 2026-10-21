@@ -45,6 +45,7 @@
           <b>{{vendor.label}}</b>
           <small>{{vendor.name}}{{#if vendor.marginLabel}} · {{localize 'SR5.ShopVendorMarginShort' value=vendor.marginLabel}}{{/if}}</small>
           {{#if vendor.closed}}<small class="sr-shop-blocked"><i class="fas fa-door-closed"></i> {{localize 'SR5.ShopVendorClosedHint'}}</small>{{/if}}
+          {{#if vendorRefusal}}<small class="sr-shop-blocked sr-shop-refusal"><i class="fas fa-hand"></i> {{vendorRefusal}}</small>{{/if}}
         </div>
         {{#if vendor.infoBroker}}
         {{!-- Lot 37a: data for sale (Cutting Aces p. 148-149) --}}
@@ -120,7 +121,7 @@
           </select>
           {{else}}—{{/if}}
         </div>
-        <div class="sr-shop-price {{#if this.tooExpensive}}too-expensive{{/if}}">{{this.price}}</div>
+        <div class="sr-shop-price {{#if this.tooExpensive}}too-expensive{{/if}}" {{#if this.priceNotes}}title="{{this.priceNotes}}"{{/if}}>{{#if this.bookPrice}}<s class="sr-shop-price-book" aria-label="{{localize 'SR5.ShopBookPrice'}}">{{this.bookPrice}}</s> {{/if}}{{this.price}}</div>
         <div class="sr-shop-row-buy">
           {{#if this.canBuy}}
           <input type="number" min="1" value="1" data-row-qty aria-label="{{localize 'SR5.Quantity'}}">
@@ -216,6 +217,7 @@
         <b>{{localize 'SR5.ShopTotal'}}</b><b>{{cartTotal}}</b>
       </div>
       {{#if cartBlocked}}<small class="sr-shop-blocked"><i class="fas fa-triangle-exclamation"></i> {{localize 'SR5.ShopCartBlocked'}}</small>{{/if}}
+      {{#if vendorRefusal}}<small class="sr-shop-blocked"><i class="fas fa-hand"></i> {{vendorRefusal}}</small>{{/if}}
       <small class="muted">
         {{#if cartLeft}}{{localize 'SR5.ShopLeftAfter' value=cartLeft}}{{/if}}
         {{#if cartDelay}} · {{localize 'SR5.ShopLongestDelay' value=cartDelay}}{{/if}}
