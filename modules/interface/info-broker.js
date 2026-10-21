@@ -11,7 +11,7 @@ import {
   updateLedger
 } from "../system/gm-ledger.js"
 import {
-  INFO_TYPES, infoType, priceRangeLabel, startingQuote, quoteInRange, RELIABILITY, nextStatus, sortRequests, forOwner,
+  INFO_TYPES, infoType, priceRangeLabel, formatNuyen, startingQuote, quoteInRange, RELIABILITY, nextStatus, sortRequests, forOwner,
   fileName, cleanRequest, requestTurn, requestSteps
 } from "../system/info-broker-rules.js"
 import {
@@ -30,7 +30,7 @@ const {
 
 export const INFO_BROKER_LEDGER = "sr5InfoBrokerLedger"
 const L = (key, data) => data ? game.i18n.format(key, data) : game.i18n.localize(key)
-const nuyen = n => `${Number(n || 0).toLocaleString("fr-FR")} ¥`
+const nuyen = n => formatNuyen(n)
 
 export function brokerLedger(){
   try {

@@ -59,8 +59,13 @@ export function infoType(key) {
   return INFO_TYPES.find(t => t.key === key) ?? null
 }
 
-/** « 500–2 500 ¥ », « 2 000+ ¥ »: the price range as the book prints it. */
-export function priceRangeLabel(type, format = n => n.toLocaleString('fr-FR')) {
+/** A sum in nuyens in the table's language: « 2 500 ¥ » in French, "2,500 ¥" in English. */
+export function formatNuyen(n, lang = globalThis.game?.i18n?.lang) {
+  return `${Number(n || 0).toLocaleString(lang)} ¥`
+}
+
+/** « 500–2 500 ¥ », « 2 000+ ¥ »: the price range as the book prints it, in the table's language. */
+export function priceRangeLabel(type, format = n => n.toLocaleString(globalThis.game?.i18n?.lang)) {
   if (!type) return ''
   return type.max === null ? `${format(type.min)}+ ¥` : `${format(type.min)}–${format(type.max)} ¥`
 }

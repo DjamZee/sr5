@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  INFO_TYPES, infoType, priceRangeLabel, startingQuote, quoteInRange, nextStatus, sortRequests, forOwner, fileName,
+  INFO_TYPES, infoType, priceRangeLabel, formatNuyen, startingQuote, quoteInRange, nextStatus, sortRequests, forOwner, fileName,
   cleanRequest, requestTurn, requestSteps
 } from '../modules/system/info-broker-rules.js'
 
@@ -46,6 +46,21 @@ describe('the price list of p. 149', () => {
     const plain = n => String(n)
     expect(priceRangeLabel(infoType('address'), plain)).toBe('200–750 ¥')
     expect(priceRangeLabel(infoType('blackmail'), plain)).toBe('2000+ ¥')
+  })
+
+  it('prints the nuyens in the table\'s language, not always in French', () => {
+    expect(formatNuyen(2500, 'en')).toBe('2,500 ¥')
+    expect(formatNuyen(2500, 'fr')).toMatch(/^2\s500 ¥$/u)
+    expect(formatNuyen(undefined, 'en')).toBe('0 ¥')
+    globalThis.game ??= {
+    }
+    const i18n = globalThis.game.i18n
+    globalThis.game.i18n = {
+      ...i18n, lang: 'en'
+    }
+    expect(formatNuyen(750)).toBe('750 ¥')
+    expect(priceRangeLabel(infoType('accessCodes'))).toBe('500–2,500 ¥')
+    globalThis.game.i18n = i18n
   })
 
   it('starts the quote at the low end and tells a price out of range', () => {
