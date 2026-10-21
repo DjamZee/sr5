@@ -2364,7 +2364,7 @@ export class SR5_ActorHelper {
         title: "SR5.UnresistedDamageConfirmTitle"
       },
       content: `<p>${game.i18n.format("SR5.UnresistedDamageConfirm", {
-        item: item.name, actor: actor.name, value, monitor: game.i18n.localize(SR5.conditionMonitorTypes?.[key] ?? key)
+        item: item.name, actor: actor.name, value, monitor: game.i18n.localize(SR5_EntityHelpers.effectMonitorLabel(key))
       })}</p>`,
       rejectClose: false,
     })
