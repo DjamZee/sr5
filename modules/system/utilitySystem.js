@@ -857,6 +857,20 @@ export class SR5_SystemHelpers {
       requiresReload: true
     })
 
+    // SR5 p. 233, Kill Code p. 35: the grid converges at an Overwatch Score of 40; another threshold is the gamemaster's
+    // house rule (pack 5 of DjamZ, § 3). Wanted by GOD lowers it by 10 (Data Trails p. 53: 30 instead of 40)
+    game.settings.register("sr5", "sr5ConvergenceThreshold", {
+      name: "SR5.SETTINGS_ConvergenceThreshold_T",
+      hint: "SR5.SETTINGS_ConvergenceThreshold_D",
+      scope: "world",
+      config: true,
+      default: 40,
+      type: Number,
+      range: {
+        min: 1, max: 200, step: 1
+      },
+    })
+
     // Data Trails p. 159: an illegal Emulate adds its rating to the Overwatch Score (its hits when Edge pushes the
     // limit). House rule (DjamZ's ruling of 2026-10-18): half of it, rounded up. Off by default, as the book has it
     game.settings.register("sr5", "sr5EmulateOverwatchHalf", {
