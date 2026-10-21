@@ -15,7 +15,8 @@ const {
   SR5_RitualCircle
 } = await import('../modules/rolls/roll-helpers/ritualCircle.js')
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+// Line endings of the checkout follow the machine (CRLF on Windows): compare in LF
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8').replace(/\r\n/g, '\n')
 
 // Relecture du 21/10 (Apolline), D9: the touches left over
 describe('relecture du 21/10, D9', () => {
