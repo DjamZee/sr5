@@ -23,7 +23,8 @@
   > .window-content {
     // The theme's light text on dark red: the window's own colours instead
     :is(p, label, span, li, dt, dd, td, small, strong, b, em, div) { text-shadow: none; }
-    label { color: var(--srw-text); }
+    // dt too: Foundry paints it light (dl dt), for its dark theme; in the light dress it vanished (pack 5, manual 3.6.4)
+    :is(label, dt) { color: var(--srw-text); }
     :is(.hint, .notes, .muted) { color: var(--srw-muted); }
 
     // The headings: the Concepteur's display face in capitals

@@ -1,9 +1,11 @@
 // Charte des cartes de discussion écrites en JS (lot 7, séance de DjamZ du 09/10)
 // Une carte = un bandeau de titre (comme les cartes de jet), un corps aéré, des lignes séparées,
 // des boutons aux couleurs des autres boutons de carte. La famille ne change que le liseré du bandeau.
+// Pack 5 (manuel 4.4.1) : la carte du cercle de rituel rejoint la charte ; ses boutons gardaient le style générique,
+// sarcelle sur rouge terne, peu lisible.
 // Les cartes du chat restent blanches dans les deux thèmes (roll-message.less) : texte sombre partout.
 
-@sr5-card-roots: ~".sr5-deadline-card, .sr5-expiry-card, .sr5-drug-card, .sr5-drug-design-card, .sr5-disease-card, .sr5-infection-card, .sr5-hunger-card, .sr5-radiation-card, .sr5-bb-card, .sr5-cfd-card, .sr5-perception-message, .sr5-monad-card, .sr5-defrag-card, .sr5-ai-dissipation-card";
+@sr5-card-roots: ~".sr5-deadline-card, .sr5-expiry-card, .sr5-drug-card, .sr5-drug-design-card, .sr5-disease-card, .sr5-infection-card, .sr5-hunger-card, .sr5-radiation-card, .sr5-bb-card, .sr5-cfd-card, .sr5-perception-message, .sr5-monad-card, .sr5-defrag-card, .sr5-ai-dissipation-card, .sr5-ritual-circle";
 
 .chat-message .message-content {
   // Familles : calendrier, santé, matrice ; les autres gardent le rouge du système

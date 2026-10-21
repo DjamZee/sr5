@@ -105,6 +105,8 @@ export class SR5SharedVision {
           name: tokenDocument.name
         })
       },
+      // Without a width, DialogV2.wait stretches to the hint's line, across the whole screen (pack 5, manual 8.3.5)
+      position: { width: 440 },
       content: `<p>${escape(game.i18n.localize("SR5.SharedVisionShareHint"))}</p><div class="sr5-shared-vision-users">${rows}</div>`,
       buttons: [
         {
