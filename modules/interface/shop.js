@@ -676,7 +676,7 @@ export class SR5Shop {
       creation, hole: essenceSettingOn(ESSENCE_HOLE_SETTING) ? actor.system.essence.hole : 0,
       // A module may adjust each line's cost (sr5.essenceCostFor): a house rule of the world, never the system's
       costFor: (line, cost) => essenceCostFor(actor, line, cost, {
-        creation
+        creation, context: "shop"
       }),
     })
     if (essence > 0 || essence >= current) return true

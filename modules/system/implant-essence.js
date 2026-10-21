@@ -175,25 +175,33 @@ export function implantEssence(gradedCost, effects, gradeMultiplier = 1) {
  * The hook through which a module adjusts the Essence an implant line costs when the shop checks a purchase
  * (essenceAllows): the system counts the book's cost; a world whose house rule changes it (the character creator's
  * Essence at half price for a non-Awakened, Règles Maison 7) tells the till so in a module, never in the system.
- * Called with `{actor, item, cost, creation}`: `item` a copy of the line `{type, name, system, grade, quantity}`,
- * `cost` the Essence of the whole line (quantity included). A subscriber sets `cost`; a value that is not a finite
- * number ≥ 0, or a subscriber that throws, leaves the book's. Without a module, no subscriber: the book's cost.
+ * Called with `{actor, item, cost, creation, context}`: `item` a copy of the line `{type, name, system, grade,
+ * quantity}`, `cost` the Essence of the whole line (quantity included). A subscriber sets `cost`; a value that is not a
+ * finite number ≥ 0, or a subscriber that throws, leaves the book's. Without a module, no subscriber: the book's cost.
+ * `context` says who asks: "shop" (the till and the cart) or "sheet" (what an implant on the sheet takes,
+ * utilityItem.js _handleAugmentation; `item` then also carries the implant's `uuid`, `flags` and `_stats`). The sheet
+ * asks too so that a house rule counts once, the same everywhere: the sheet, the till and the peak (implant-register.js).
  */
 export const ESSENCE_COST_HOOK = "sr5.essenceCostFor"
 
 /** The cost of a line once the subscribers of sr5.essenceCostFor have had their say. */
 export function essenceCostFor(actor, line, cost, {
-  creation = false, call = (hook, data) => globalThis.Hooks?.callAll(hook, data)
+  creation = false, context = "shop", call = (hook, data) => globalThis.Hooks?.callAll(hook, data)
 } = {
 }) {
   let item
   try {
     item = structuredClone(line)
   } catch {
-    item = JSON.parse(JSON.stringify(line ?? null))
+    try {
+      item = JSON.parse(JSON.stringify(line ?? null))
+    } catch (error) {
+      console.error(`SR5 | ${ESSENCE_COST_HOOK}: the line could not be copied, the book's cost kept`, error)
+      return cost
+    }
   }
   const data = {
-    actor, item, cost, creation
+    actor, item, cost, creation, context
   }
   try {
     call(ESSENCE_COST_HOOK, data)

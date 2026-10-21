@@ -8,7 +8,7 @@ import {
   SR5_SystemHelpers
 } from "../../system/utilitySystem.js"
 import {
-  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING, takesBoneDamage
+  implantEssenceEffects, roundImplantEssence, essenceSettingOn, AUGMENTATION_BUNDLE_SETTING, takesBoneDamage, essenceCostFor
 } from "../../system/implant-essence.js"
 import {
   SR5_EntityHelpers 
@@ -58,6 +58,27 @@ import {
 import {
   sizeMismatchModifier, holderMetatype
 } from "../../system/size-mismatch.js"
+
+/**
+ * The implant on a sheet as a line of sr5.essenceCostFor (context "sheet"): what a subscriber reads of it, copied from
+ * the prepared data (a data model is not copied whole, it holds its parent).
+ */
+export function sheetLine(itemData, item) {
+  const cost = itemData.essenceCost ?? {
+  }
+  return {
+    type: "itemAugmentation", name: item?.name ?? "", uuid: item?.uuid ?? null, grade: itemData.grade, quantity: 1,
+    flags: item?.flags ?? {
+    }, _stats: item?._stats ?? {
+    },
+    system: {
+      type: itemData.type, grade: itemData.grade, itemRating: itemData.itemRating, isAccessory: !!itemData.isAccessory,
+      reversibleEssence: !!itemData.reversibleEssence, essenceCost: {
+        base: cost.base, multiplier: cost.multiplier, value: cost.value
+      }
+    }
+  }
+}
 
 // The implants whose unknown grade the gamemaster was told of, once each per session
 const unknownGradesTold = new Set()
@@ -1321,7 +1342,12 @@ export class SR5_UtilityItem extends Actor {
   }
 
   ////////////////////// AUGMENTATIONS ///////////////////////
-  static _handleAugmentation(itemData, actor) {
+  /**
+   * @param {object} itemData the implant's system data, prepared here
+   * @param {Actor} [actor] the body it is installed in
+   * @param {Item} [item] the implant itself, read by the subscribers of sr5.essenceCostFor (sheetLine)
+   */
+  static _handleAugmentation(itemData, actor, item) {
     let modifierSource, essenceMultiplier, deviceRating, availabilityModifier, priceMultiplier
 
     if (itemData.category === "cyberlimbs"){
@@ -1377,6 +1403,12 @@ export class SR5_UtilityItem extends Actor {
     this._handleItemPrice(itemData)
     this._handleItemAvailability(itemData)
     this._handleItemEssenceCost(itemData)
+    // A module's house rule may change what the implant takes from this body (sr5.essenceCostFor, context "sheet"):
+    // the hook the till asks too, so the sheet, the shop and the peak (implant-register.js) count the same cost. Asked
+    // before the final rounding; an accessory takes no Essence (entityActor.js). Without a subscriber, the book's
+    if (actor && !itemData.isAccessory) itemData.essenceCost.value = essenceCostFor(actor, sheetLine(itemData, item), itemData.essenceCost.value, {
+      context: "sheet"
+    })
     if (actor || bodyEffects.roundDownTenth || bodyEffects.multipliers.length) itemData.essenceCost.value = roundImplantEssence(itemData.essenceCost.value, bodyEffects)
   }
 
