@@ -15,7 +15,7 @@ const {
   SR5_CharacterUtility
 } = await import('../modules/entities/actors/utilityActor.js')
 const {
-  gruntProfileEssence, gruntEssenceFromForm
+  gruntProfileEssence, gruntEssenceFromForm, gruntEssenceMax, knowsEssenceExpansion, ESSENCE_DRAIN_MAX
 } = await import('../modules/system/grunt-profile-essence.js')
 
 // A grunt's profile prints its Essence (SR5 p. 381): without implants on the sheet, it stayed at 6 (Philippine#6139, 16/10)
@@ -121,5 +121,93 @@ describe("Essence of a grunt's profile, bounded", () => {
     const pc = actor("actorPc", 5)
     SR5_CharacterUtility.updateEssence(pc)
     expect(pc.system.essence.value).toBe(5)
+  })
+})
+
+// Relecture du 21/10, D7 (rule read by Élise): Essence Drain doubles the maximum Essence (Dark Terrors p. 169: « un vampire
+// ayant une Essence maximale de 12 »), +1 per grade of Initiation with the metamagic Essence Expansion
+describe("Essence of a grunt with Essence Drain", () => {
+  const grunt = (base, {
+    drain = true, items = [], grade = 0, key = false
+  } = {
+  }) => ({
+    type: "actorGrunt", items,
+    system: {
+      specialProperties: {
+        essenceDrain: drain
+      },
+      magic: {
+        initiationGrade: grade, metamagics: {
+          essenceExpansion: key
+        }
+      },
+      essence: {
+        base, value: 0, holeAmount: 0, holeBase: 0, modifiers: []
+      },
+    },
+  })
+  const expansion = name => ({
+    type: "itemMetamagic", name
+  })
+
+  it("is bounded at 6 without it, at 12 with it", () => {
+    expect(ESSENCE_DRAIN_MAX).toBe(12)
+    expect(gruntEssenceMax(grunt(6, {
+      drain: false
+    }))).toBe(6)
+    expect(gruntEssenceMax(grunt(6))).toBe(12)
+    expect(gruntEssenceMax(null)).toBe(6)
+  })
+  it("adds a grade of Initiation each with Essence Expansion, known by its key or its name, FR or VO", () => {
+    expect(gruntEssenceMax(grunt(6, {
+      grade: 3
+    }))).toBe(12)
+    expect(gruntEssenceMax(grunt(6, {
+      grade: 3, key: true
+    }))).toBe(15)
+    expect(gruntEssenceMax(grunt(6, {
+      grade: 2, items: [expansion("Expansion d’Essence")]
+    }))).toBe(14)
+    expect(knowsEssenceExpansion(grunt(6, {
+      items: [expansion("Essence Expansion")]
+    }))).toBe(true)
+    expect(knowsEssenceExpansion(grunt(6, {
+      items: [expansion("Centrage")]
+    }))).toBe(false)
+    // Without Essence Drain, the metamagic changes nothing
+    expect(gruntEssenceMax(grunt(6, {
+      drain: false, grade: 3, key: true
+    }))).toBe(6)
+  })
+  it("shows the Essence a drain raised above 6, and still bounds it", () => {
+    const vampire = grunt(7)
+    SR5_CharacterUtility.updateEssence(vampire)
+    expect(vampire.system.essence.value).toBe(7)
+    const glutton = grunt(13)
+    SR5_CharacterUtility.updateEssence(glutton)
+    expect(glutton.system.essence.value).toBe(12)
+    const human = grunt(7, {
+      drain: false
+    })
+    SR5_CharacterUtility.updateEssence(human)
+    expect(human.system.essence.value).toBe(6)
+  })
+  it("reads the typed field with the actor's bound", () => {
+    const form = {
+      elements: {
+        "system.essence.base": {
+          value: "9,5"
+        }
+      }
+    }
+    expect(gruntEssenceFromForm(form, {
+      "system.essence.base": 0
+    }, 6, 12)["system.essence.base"]).toBe(9.5)
+    expect(gruntEssenceFromForm(form, {
+      "system.essence.base": 0
+    }, 6)["system.essence.base"]).toBe(6)
+    expect(gruntProfileEssence("15", 6, 12)).toBe(12)
+    expect(readFileSync(new URL("../modules/entities/actors/gruntSheet.js", import.meta.url), "utf8"))
+      .toMatch(/gruntEssenceFromForm\(form, data, [^)]*gruntEssenceMax\(this\.document\)\)/)
   })
 })

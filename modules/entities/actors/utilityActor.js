@@ -11,7 +11,7 @@ import {
   transhumanGift, currentEssenceHole
 } from "../../system/implant-essence.js"
 import {
-  gruntProfileEssence
+  gruntProfileEssence, gruntEssenceMax
 } from "../../system/grunt-profile-essence.js"
 import {
   SR5_SystemHelpers 
@@ -1005,8 +1005,9 @@ export class SR5_CharacterUtility extends Actor {
   // Generate Essence
   static updateEssence(actor) {
     const essence = actor.system.essence
-    // A grunt's profile Essence (SR5 p. 381) between 0 and 6, whatever wrote it: an import, an older sheet (grunt-profile-essence.js)
-    if (actor.type === "actorGrunt") essence.base = gruntProfileEssence(essence.base)
+    // A grunt's profile Essence (SR5 p. 381) between 0 and 6, whatever wrote it: an import, an older sheet; 12 and more
+    // with Essence Drain (Dark Terrors p. 169, grunt-profile-essence.js)
+    if (actor.type === "actorGrunt") essence.base = gruntProfileEssence(essence.base, undefined, gruntEssenceMax(actor))
     // Typed as the implants are, so the Magic and Resonance lost with the Essence count them (updateSpecialAttributes)
     // Prototype de transhumain (Chrome Flesh p. 57): its bioware costs no Essence, up to its point
     // KEEP IN STEP with essenceAdjustment() (implant-essence.js), which mentorMagic() reads earlier
