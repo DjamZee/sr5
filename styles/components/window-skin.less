@@ -12,7 +12,8 @@
 // counts its heaviest argument
 // 16/10 (DjamZ: « passe tout sur le modèle Concepteur »): Foundry's settings, the system's and the module list too;
 // and a module's window that asks for the dress with the class sr-skin-window (DjamZ's modules: sfx-sr5…)
-@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, .sr-skin-window, #settings-config, #sr5-settings-config, #module-management, #srw-raise";
+// Pack 5 (DjamZ, 21/10): the roll table sheet and its result dialog stayed on the white paper under the Nuit theme
+@srw-skinned-plain: ~".sr-combat-maneuver, .sr-explosive-charge, .sr-skin-dialog, .sr-skin-window, #settings-config, #sr5-settings-config, #module-management, .roll-table-sheet, .table-result-config, #srw-raise";
 
 .application:is(@{srw-skinned}),
 .application:is(@{srw-skinned-plain}) {
@@ -86,6 +87,8 @@
     // The tabs
     nav.tabs, .sheet-tabs {
       border-color: var(--srw-border);
+      // The theme's red band (window.less) under the Concepteur's tabs: the roll table sheet showed it (pack 5)
+      background: transparent !important;
       > :is(a, .item) {
         .srw-tab();
         padding: 0.2rem 0.6rem;
