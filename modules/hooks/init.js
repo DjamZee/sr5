@@ -163,6 +163,9 @@ import {
   SR5FactionsApp
 } from "../interface/factions-app.js"
 import {
+  factionRegistryApi
+} from "../interface/faction-registry.js"
+import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
@@ -444,6 +447,8 @@ export async function sr5HookInit() {
     dealership: SR5DealershipWindow,
     // The factions window (lot 10), for the modules: topologie-sr5 opens it by game.sr5.factions.open() (lot 16b)
     factions: SR5FactionsApp,
+    // The factions registry for the modules: reads are copies, update() is the active GM's (topologie-sr5, lot 1-bis)
+    factionRegistry: factionRegistryApi(),
     // The shop against the till, item by item: should answer no difference
     shopAudit: () => SR5ShopWorldSource.audit(),
     // GM macro: old-style Mentor Spirit qualities -> quality linked to a mentor item (SR5 p. 76), and back

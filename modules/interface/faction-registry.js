@@ -126,3 +126,27 @@ export class SR5FactionRegistry {
     }
   }
 }
+
+/**
+ * The registry for the modules (game.sr5.factionRegistry; topologie-sr5 creates a faction and affiliates
+ * a member through it). Every read gives a copy, so a module never edits the setting's cache; update()
+ * stays the active gamemaster's alone, in the registry's turn (gm-ledger.js).
+ */
+export const factionRegistryApi = () => {
+  const copy = value => foundry.utils.deepClone(value ?? null)
+  return Object.freeze({
+    get data(){
+      return copy(SR5FactionRegistry.data)
+    },
+    get canWrite(){
+      return SR5FactionRegistry.canWrite
+    },
+    faction: id => copy(SR5FactionRegistry.faction(id)),
+    factionOfActor: actorId => copy(SR5FactionRegistry.factionOfActor(actorId)),
+    factionOfContact: uuid => copy(SR5FactionRegistry.factionOfContact(uuid)),
+    score: (factionId, actorId) => SR5FactionRegistry.score(factionId, actorId),
+    standing: actorId => SR5FactionRegistry.standing(actorId),
+    attitudeFor: (actorId, targetActor) => SR5FactionRegistry.attitudeFor(actorId, targetActor),
+    update: mutate => SR5FactionRegistry.update(mutate),
+  })
+}
