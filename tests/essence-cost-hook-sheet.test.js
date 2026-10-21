@@ -106,7 +106,7 @@ describe("the sheet without a subscriber (non-regression)", () => {
       const none = onSheet(make(), items)
       subscribe()
       const silent = onSheet(make(), items)
-      subscribe(data => (data.cost = data.cost))
+      subscribe(data => (data.cost = Number(data.cost)))
       const idle = onSheet(make(), items)
       expect([label, silent, idle]).toEqual([label, none, none])
     }
