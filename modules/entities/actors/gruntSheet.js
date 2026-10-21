@@ -16,6 +16,9 @@ import {
 import {
   SHEET_ACTIONS_WITHOUT_TEST
 } from "../../system/matrix-ownership.js"
+import {
+  gruntEssenceFromForm
+} from "../../system/grunt-profile-essence.js"
 
 /**
  * An Actor sheet for grunt type actors in the Shadowrun 5 system.
@@ -50,6 +53,12 @@ export class SR5GruntSheet extends ActorSheetSR5 {
       root: true,
       scrollable: [".sr-panel"],
     },
+  }
+
+  /** The profile's Essence kept between 0 and 6, "4,5" read and an emptied field back to 6 (grunt-profile-essence.js) */
+  _processFormData(event, form, formData) {
+    const data = super._processFormData(event, form, formData)
+    return gruntEssenceFromForm(form, data, this.document._source?.system?.essence?.base)
   }
 
   async _prepareContext(options) {
