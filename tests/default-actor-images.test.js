@@ -2,7 +2,8 @@ import {
   describe, it, expect, beforeAll, afterEach
 } from 'vitest'
 import {
-  isDefaultActorImage, defaultIceImages, defaultSpriteImages, contactImageCandidates, defaultContactImage, seededRandom,
+  isDefaultActorImage, defaultIceImages, defaultSpriteImages, contactImageCandidates, defaultContactImage, defaultContactImages,
+  seededRandom,
   imageChanges, defaultImageOnCreate, defaultImageOnUpdate, ICE_IMAGE_DIR, SPRITE_IMAGE_DIR, CONTACT_IMAGE_DIR
 } from '../modules/entities/actors/default-actor-images.js'
 import {
@@ -19,7 +20,7 @@ const DEVICE = 'systems/sr5/assets/img/actors/actorDevice.svg'
 const GRUNT = 'systems/sr5/assets/img/actors/actorGrunt.svg'
 const LIST = [
   {
-    file: 'barman-ork-femme.webp', job: 'barman', metatype: 'ork', gender: 'female'
+    file: 'barman-ork-femme.webp', job: 'barman', metatype: 'ork', gender: 'female', token: 'barman-ork-femme-token.webp'
   },
   {
     file: 'barman-elfe-homme.webp', job: 'barman', metatype: 'elf', gender: 'male'
@@ -71,6 +72,15 @@ describe('images livrées', () => {
       expect(existsSync(file(i.portrait)) && existsSync(file(i.token))).toBe(true)
     }
     for (const e of CONTACT_IMAGES) expect(existsSync(file(`${CONTACT_IMAGE_DIR}/${e.file}`))).toBe(true)
+  })
+  it('chaque jeton rond annoncé existe et va avec son portrait', () => {
+    const avecJeton = CONTACT_IMAGES.filter((e) => e.token)
+    // 82 jetons ronds de DjamZ pour 83 portraits : seule Haley Soprano (nommée) n'en a pas
+    expect(CONTACT_IMAGES.filter((e) => !e.token).map((e) => e.file)).toEqual(['haley-soprano-fixer.webp'])
+    for (const e of avecJeton) {
+      expect(existsSync(file(`${CONTACT_IMAGE_DIR}/${e.token}`)), e.token).toBe(true)
+      expect(e.token).toBe(e.file.replace(/\.webp$/, '-token.webp'))
+    }
   })
   it('chaque type d’esprit annoncé a ses quatre paliers', () => {
     for (const t of SPIRIT_IMAGE_TYPES) for (const force of [1, 4, 7, 10]) {
@@ -128,6 +138,26 @@ describe('contacts', () => {
     for (const s of ['', 'x', 'abcdefghijklmnop']) expect(seededRandom(s)).toBeGreaterThanOrEqual(0)
     for (const s of ['', 'x', 'abcdefghijklmnop']) expect(seededRandom(s)).toBeLessThan(1)
   })
+  it('le jeton rond va avec le portrait tiré ; sans jeton rond, le portrait sert de jeton', () => {
+    expect(defaultContactImages({
+      job: 'Barman', metatype: 'ork', gender: 'female'
+    }, 's', LIST)).toEqual({
+      portrait: `${CONTACT_IMAGE_DIR}/barman-ork-femme.webp`, token: `${CONTACT_IMAGE_DIR}/barman-ork-femme-token.webp`
+    })
+    expect(defaultContactImages({
+      job: 'Fixer'
+    }, 's', LIST).token).toBe(`${CONTACT_IMAGE_DIR}/damian-welsch-fixer.webp`)
+    // sur la vraie liste, pour toute graine : même portrait que defaultContactImage, et son jeton
+    for (const seed of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) {
+      const i = defaultContactImages({
+        metatype: 'ork', gender: 'male'
+      }, seed)
+      expect(i.portrait).toBe(defaultContactImage({
+        metatype: 'ork', gender: 'male'
+      }, seed))
+      expect(i.token).toBe(i.portrait.replace(/\.webp$/, '-token.webp'))
+    }
+  })
 })
 
 function actor(type, src) {
@@ -184,7 +214,7 @@ describe('crochets', () => {
       }
     }))
     expect(contact.applied.img).toMatch(new RegExp(`^${CONTACT_IMAGE_DIR}/.*troll.*\\.webp$`))
-    expect(contact.applied['prototypeToken.texture.src']).toBe(contact.applied.img)
+    expect(contact.applied['prototypeToken.texture.src']).toBe(contact.applied.img.replace(/\.webp$/, '-token.webp'))
 
     // un sbire fait à la main n'est pas un contact
     const grunt = actor('actorGrunt', {
