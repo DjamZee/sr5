@@ -10,7 +10,11 @@ export async function sr5OpenManual() {
     fields: ['sort'] 
   })
   const first = [...index].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))[0]
-  if (!first) return ui.notifications.warn(game.i18n.localize('SR5.ManualMissing'))
+  // An installation served from the source tree has the pack declared but empty: the manual is compiled in the
+  // manuel-sr5 repository and copied into the published zip only (pack 5, DjamZ's 30000, 21/10)
+  if (!first) return ui.notifications.warn(game.i18n.localize('SR5.ManualEmpty'), {
+    permanent: true
+  })
   const entry = await pack.getDocument(first._id)
   const page = [...entry.pages].sort((a, b) => a.sort - b.sort)[0]
   return entry.sheet.render(true, {
