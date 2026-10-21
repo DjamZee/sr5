@@ -64,6 +64,16 @@
         <button type="button" data-action="restoreMine" {{#unless saved}}disabled{{/unless}}><i class="fas fa-rotate-left"></i> {{localize 'SR5.PRESETS_Restore'}}</button>
       </div>
     </fieldset>
+
+    <fieldset class="sr-preset-file">
+      <legend>{{localize 'SR5.PRESETS_File'}}</legend>
+      <p class="hint">{{localize 'SR5.PRESETS_File_Hint'}}</p>
+      <div class="sr-preset-mine-buttons">
+        <button type="button" data-action="exportFile"><i class="fas fa-file-export"></i> {{localize 'SR5.PRESETS_File_Export'}}</button>
+        <button type="button" data-action="importFile"><i class="fas fa-file-import"></i> {{localize 'SR5.PRESETS_File_Import'}}</button>
+      </div>
+      <input type="file" class="sr-preset-file-input" accept=".json,application/json" hidden>
+    </fieldset>
   </div>
 
   <footer class="form-footer">

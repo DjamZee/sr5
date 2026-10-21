@@ -5,11 +5,25 @@ import {
 import {
   RULE_LOCK_KEYS, currentRuleLocks, presetOf
 } from "../system/rule-locks.js"
+import {
+  TOKEN_DEFAULTS_SETTING
+} from "../system/token-defaults.js"
+import {
+  RULE_LOCKS_SETTING, buildWorldPreset, worldPresetFileName, parseWorldPreset, worldPresetChanges
+} from "../system/world-preset-file.js"
+
+// The names of the hidden settings a preset file carries: their menu's, as they have none of their own
+const FILE_SETTING_LABELS = {
+  [RULE_LOCKS_SETTING]: "SR5.RULELOCKS_Menu_T", [TOKEN_DEFAULTS_SETTING]: "SR5.TOKENDEFAULTS_Menu_T",
+  sr5ShopBuyerMode: "SR5.ShopConfigBuyers",
+}
 
 /**
  * The gamemaster's presets (lot 10, system/settings-presets.js): automation and rules, what the choice changes before
  * it is applied, and the settings saved by the table to come back to.
  * Opened from the first tab of the settings window (sr5PresetsMenu).
+ * The world preset as a .json file (pack 5, § 3, system/world-preset-file.js): exported to share with another
+ * gamemaster, imported after a look at what it changes.
  */
 export class SR5PresetsConfig extends foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2
@@ -31,6 +45,8 @@ export class SR5PresetsConfig extends foundry.applications.api.HandlebarsApplica
     actions: {
       saveMine: SR5PresetsConfig.#onSaveMine,
       restoreMine: SR5PresetsConfig.#onRestoreMine,
+      exportFile: SR5PresetsConfig.#onExportFile,
+      importFile: SR5PresetsConfig.#onImportFile,
     },
   }
 
@@ -90,6 +106,8 @@ export class SR5PresetsConfig extends foundry.applications.api.HandlebarsApplica
   }
 
   static valueLabel(setting, value){
+    // A list or a group of values (rule locks, token defaults): its rows are not shown one by one
+    if (value && typeof value === "object") return game.i18n.localize(Array.isArray(value) && !value.length ? "SR5.PRESETS_File_Empty" : "SR5.PRESETS_File_Group")
     if (typeof value === "boolean") return game.i18n.localize(value ? "SR5.SETTINGS_Default_On" : "SR5.SETTINGS_Default_Off")
     if (setting.choices && Object.hasOwn(setting.choices, value)) return game.i18n.localize(setting.choices[value])
     return String(value)
@@ -100,6 +118,13 @@ export class SR5PresetsConfig extends foundry.applications.api.HandlebarsApplica
     // A choice shows at once what it would change
     for (const select of this.element.querySelectorAll("select[data-preset]")) select.addEventListener("change", () => {
       this.#choice[select.dataset.preset] = select.value
+      this.render()
+    })
+    const input = this.element.querySelector(".sr-preset-file-input")
+    input?.addEventListener("change", async () => {
+      const file = input.files?.[0]
+      input.value = ""
+      if (file) await SR5PresetsConfig.#importText(await file.text())
       this.render()
     })
   }
@@ -135,6 +160,72 @@ export class SR5PresetsConfig extends foundry.applications.api.HandlebarsApplica
     await saveCurrentSettings()
     ui.notifications.info(game.i18n.localize("SR5.PRESETS_Saved"))
     this.render()
+  }
+
+  // The world's settings in a .json file, with the system's version and the date
+  static #onExportFile() {
+    const date = new Date()
+    const data = buildWorldPreset({
+      date
+    })
+    foundry.utils.saveDataToFile(`${JSON.stringify(data, null, 2)}\n`, "application/json", worldPresetFileName(game.world?.id, date))
+    ui.notifications.info(game.i18n.format("SR5.PRESETS_File_Exported", {
+      count: Object.keys(data.settings).length
+    }))
+  }
+
+  static #onImportFile() {
+    this.element.querySelector(".sr-preset-file-input")?.click()
+  }
+
+  // A file read: what it changes, what it leaves out, then the gamemaster's word before anything is written
+  static async #importText(text) {
+    const parsed = parseWorldPreset(text)
+    if (parsed.error) return ui.notifications.error(game.i18n.localize(`SR5.PRESETS_File_Error_${parsed.error}`))
+    const esc = value => foundry.utils.escapeHTML(String(value ?? ""))
+    const changes = worldPresetChanges(parsed)
+    const rows = changes.map(({
+      key, from, to
+    }) => {
+      const setting = game.settings.settings.get(`sr5.${key}`)
+      const label = game.i18n.localize(FILE_SETTING_LABELS[key] ?? setting?.name ?? key)
+      const valueLabel = value => key === "sr5ShopBuyerMode" ? game.i18n.localize(`SR5.ShopBuyerMode_${value}`) : SR5PresetsConfig.valueLabel(setting, value)
+      return {
+        label, from: valueLabel(from), to: valueLabel(to)
+      }
+    }).sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang))
+    const date = Date.parse(parsed.date)
+    let content = `<p>${esc(game.i18n.format("SR5.PRESETS_File_From", {
+      version: parsed.systemVersion || "?", date: Number.isNaN(date) ? "?" : new Date(date).toLocaleString(game.i18n.lang)
+    }))}</p>`
+    if (parsed.systemVersion && parsed.systemVersion !== game.system.version) content += `<p class="hint">${esc(game.i18n.format("SR5.PRESETS_File_OtherVersion", {
+      version: game.system.version
+    }))}</p>`
+    content += rows.length ? `<table class="sr-preset-preview"><tbody>${rows.map(row => `<tr><th scope="row">${esc(row.label)}</th><td class="from">${esc(row.from)}</td><td class="arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></td><td class="to">${esc(row.to)}</td></tr>`).join("")}</tbody></table>` :
+      `<p class="hint">${esc(game.i18n.localize("SR5.PRESETS_File_NoChange"))}</p>`
+    if (parsed.ignored.length) content += `<p class="hint">${esc(game.i18n.localize("SR5.PRESETS_File_Ignored"))} ${parsed.ignored.map(key => `<code>${esc(key)}</code>`).join(", ")}</p>`
+    if (parsed.invalid.length) content += `<p class="hint">${esc(game.i18n.localize("SR5.PRESETS_File_Invalid"))} ${parsed.invalid.map(key => `<code>${esc(key)}</code>`).join(", ")}</p>`
+    if (!changes.length) return foundry.applications.api.DialogV2.prompt({
+      window: {
+        title: "SR5.PRESETS_File_Import"
+      },
+      classes: ["sr-world-preset-import"],
+      content,
+      rejectClose: false,
+    })
+    const sure = await foundry.applications.api.DialogV2.confirm({
+      window: {
+        title: "SR5.PRESETS_File_Import"
+      },
+      classes: ["sr-world-preset-import"],
+      position: {
+        width: 560
+      },
+      content,
+      rejectClose: false,
+    })
+    if (!sure) return
+    await SR5PresetsConfig.#apply(parsed.values, parsed.locks)
   }
 
   static async #onRestoreMine() {
