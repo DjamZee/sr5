@@ -2813,6 +2813,8 @@
 	"SR5.INIT_MinusFive": "-5 au score d'initiative",
 	"SR5.INIT_MinusOne": "-1 au score d'initiative",
 	"SR5.INIT_MinusTen": "-10 au score d'initiative",
+	"SR5.INIT_MoveDown": "Descendre d'une place",
+	"SR5.INIT_MoveUp": "Monter d'une place",
 	"SR5.INIT_SeizeTheInitiative": "Prendre l'initiative",
 	"SR5.InitiationGrade": "Grade d'initiation ",
 	"SR5.Initiative": "Initiative",

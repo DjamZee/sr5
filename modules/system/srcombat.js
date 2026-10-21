@@ -43,6 +43,9 @@ import {
 import {
   rgOption, nextAlternativeTurn
 } from "./rg-combat-options.js"
+import {
+  turnOrderShift
+} from "./turn-order-shift.js"
 
 export class SR5Combat extends Combat {
   //Pass effects whose deletion is under way (see endOwnerPassEffects)
@@ -121,6 +124,42 @@ export class SR5Combat extends Combat {
     } else {
       ui.notifications.info(`${actor.name} ${game.i18n.localize("SR5.INFO_ActorUseBlitzFailed")}`)
     }
+  }
+
+  //The turns as turnOrderShift reads them: the key sortByRERIC sorts by first
+  static turnOrderEntries(combat){
+    return (combat?.turns ?? []).map(c => ({
+      id: c.id, key: Number(c.flags?.sr5?.baseCombatantInitiative ?? c.initiative ?? NaN), seize: c.flags?.sr5?.seizeInitiative,
+    }))
+  }
+
+  /** The move of a combatant one place up (-1) or down (+1) in the order of the pass, null when it is not possible */
+  static turnOrderMove(combatant, direction){
+    const combat = combatant?.combat ?? combatant?.parent
+    const index = combat?.turns?.findIndex(c => c.id === combatant.id) ?? -1
+    if (index < 0) return null
+    return turnOrderShift(SR5Combat.turnOrderEntries(combat), index, direction)
+  }
+
+  /**
+   * The gamemaster moves a combatant one place in the order of the pass (pack 5 of DjamZ, § 3): the sort keys
+   * only, the scores stay; the turn stays on its place (see turn-order-shift.js). On the GM's browser.
+   */
+  static async shiftTurnOrder(combatant, direction){
+    if (!game.user?.isGM) return false
+    const combat = combatant?.combat ?? combatant?.parent
+    const move = SR5Combat.turnOrderMove(combatant, direction)
+    if (!combat || !move) return false
+    const turn = combat.turn
+    const updates = Object.entries(move.keys).map(([id, key]) => ({
+      _id: id, "flags.sr5.baseCombatantInitiative": key
+    }))
+    if (updates.length) await combat.updateEmbeddedDocuments("Combatant", updates)
+    //Foundry follows the active combatant to its new place: the turn is the place's
+    if (Number.isInteger(turn) && combat.turn !== turn) await combat.update({
+      turn
+    })
+    return true
   }
 
   static async delayAction(combatant){

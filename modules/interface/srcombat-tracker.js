@@ -79,6 +79,25 @@ export class SR5CombatTracker extends foundry.applications.sidebar.tabs.CombatTr
         },
       },
       {
+        // The gamemaster moves a combatant one place in the order of the pass, the scores stay (pack 5, § 3)
+        name: game.i18n.localize('SR5.INIT_MoveUp'),
+        icon: '<i class="fas fa-arrow-up"></i>',
+        condition: (li) => game.user.isGM && !!SR5Combat.turnOrderMove(getCombatant(li), -1),
+        callback: async (li) => {
+          const combatant = getCombatant(li)
+          if (combatant) await SR5Combat.shiftTurnOrder(combatant, -1)
+        },
+      },
+      {
+        name: game.i18n.localize('SR5.INIT_MoveDown'),
+        icon: '<i class="fas fa-arrow-down"></i>',
+        condition: (li) => game.user.isGM && !!SR5Combat.turnOrderMove(getCombatant(li), 1),
+        callback: async (li) => {
+          const combatant = getCombatant(li)
+          if (combatant) await SR5Combat.shiftTurnOrder(combatant, 1)
+        },
+      },
+      {
         name: game.i18n.localize('SR5.INIT_Delaying'),
         icon: '<i class="fas fa-hourglass-end"></i>',
         condition: (li) => getCombatant(li)?.actor.permission > 0,
