@@ -9,7 +9,7 @@ import {
  * - a sprite gets those of its type (one picture per type, whatever its Level);
  * - a contact brought to life from its item gets one of the contact pictures, picked by metatype, gender and job (the
  *   item's free "type" text) when they match, at random otherwise; the draw is seeded by the item's id, so the same
- *   contact gets the same face each time it is called. A named character (a fixer of DjamZ's…) only comes on a job match.
+ *   contact gets the same face each time it is called, and the round token made for that face. A named character (a fixer of DjamZ's…) only comes on a job match.
  * A picture the gamemaster chose is never overwritten: only an actor whose portrait AND token are still a default
  * (Foundry's, the system's icon, or one set here) is given new ones. Each family has its world setting, on by default.
  */
@@ -82,12 +82,22 @@ export function contactImageCandidates({
   return out
 }
 
-/** The path of a contact's picture, drawn among the best candidates with the seed (the contact item's id). */
-export function defaultContactImage(contact, seed, list = CONTACT_IMAGES) {
+/**
+ * { portrait, token } of a contact, drawn among the best candidates with the seed (the contact item's id): the token is
+ * the round one made for that portrait, or the portrait itself when DjamZ made none (Haley Soprano). Null without candidate.
+ */
+export function defaultContactImages(contact, seed, list = CONTACT_IMAGES) {
   const candidates = contactImageCandidates(contact, list)
   if (!candidates.length) return null
   const pick = candidates[Math.floor(seededRandom(seed) * candidates.length)]
-  return `${CONTACT_IMAGE_DIR}/${pick.file}`
+  return {
+    portrait: `${CONTACT_IMAGE_DIR}/${pick.file}`, token: `${CONTACT_IMAGE_DIR}/${pick.token ?? pick.file}`
+  }
+}
+
+/** The path of a contact's portrait (see defaultContactImages). */
+export function defaultContactImage(contact, seed, list = CONTACT_IMAGES) {
+  return defaultContactImages(contact, seed, list)?.portrait ?? null
 }
 
 /** The changes that set portrait and token, or null when either is the gamemaster's or they are already in place. */
@@ -117,12 +127,9 @@ function imagesFor(type, system, findContactItem) {
     if (!enabled("sr5ContactDefaultImages")) return null
     const item = findContactItem(system.creatorId, system.creatorItemId)
     if (item && item.type !== "itemContact") return null
-    const portrait = defaultContactImage({
+    return defaultContactImages({
       job: item?.system?.type, metatype: system.biography?.metatype, gender: system.biography?.gender,
     }, system.creatorItemId)
-    return portrait ? {
-      portrait, token: portrait
-    } : null
   }
   return null
 }
