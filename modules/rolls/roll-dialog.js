@@ -244,9 +244,10 @@ export default class SR5_RollDialog {
   }
 
   _onReminder(ev, html, dialogData) {
-    const reminder = (dialogData.reminders ?? []).find(r => r.id === ev.currentTarget.dataset.reminder)
+    const box = ev.currentTarget
+    const reminder = (dialogData.reminders ?? []).find(r => r.id === box.dataset.reminder)
     if (!reminder) return
-    reminder.applied = ev.currentTarget.checked
+    reminder.applied = box.checked
     const type = reminderModifierType(reminder.id)
     SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', type)
     if (reminder.applied && reminder.dice) dialogData.dicePool.modifiers.push({
