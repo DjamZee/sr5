@@ -1,5 +1,5 @@
 import {
-  attitudeShift, shiftAttitude, scoreOf
+  attitudeShift, shiftAttitude, scoreOf, oneFactionPerMember
 } from "./faction-rules.js"
 import {
   updateLedger
@@ -43,10 +43,6 @@ export class SR5FactionRegistry {
   }
 
   /**
-   * Applies a change to a copy of the registry and saves it. Refused, with a warning, off the active GM.
-   * @param {(data:object) => void} mutate
-   */
-  /**
    * True, with a warning, when this user may not write the registry (not the active gamemaster).
    * Every action that changes something calls it first, before any other effect.
    */
@@ -56,16 +52,30 @@ export class SR5FactionRegistry {
     return true
   }
 
+  /**
+   * Applies a change to a copy of the registry and saves it. Refused, with a warning, off the active GM.
+   * The book's rule is kept whatever `mutate` does: one main faction per non-player character and per contact
+   * (CA p. 156, oneFactionPerMember: the faction just joined wins). `mutate` must be synchronous: one that returns a
+   * promise writes nothing (what it would write after its first await would be lost).
+   * @param {(data:object) => void} mutate
+   * @returns {Promise<boolean>} true once saved
+   */
   static async update(mutate){
     if (this.refuse()) return false
     // In the registry's turn, on its latest state (gm-ledger.js)
     return updateLedger(FACTIONS_SETTING, raw => {
+      const before = foundry.utils.deepClone(raw ?? {
+      })
       const data = {
         factions: raw.factions ?? [], log: raw.log ?? [], raises: raw.raises ?? {
         }
       }
-      mutate(data)
-      return data
+      const result = mutate(data)
+      if (typeof result?.then === "function") {
+        console.error("SR5 | factionRegistry.update: an async change is refused, nothing written")
+        return null
+      }
+      return oneFactionPerMember(before, data)
     })
   }
 
@@ -128,9 +138,21 @@ export class SR5FactionRegistry {
 }
 
 /**
- * The registry for the modules (game.sr5.factionRegistry; topologie-sr5 creates a faction and affiliates
- * a member through it). Every read gives a copy, so a module never edits the setting's cache; update()
- * stays the active gamemaster's alone, in the registry's turn (gm-ledger.js).
+ * The registry for the modules: game.sr5.factionRegistry. Exactly these, no more (there is no createFaction nor
+ * affiliate here: a module creates a faction or affiliates a member by update()):
+ * - data: a copy of {factions: [{id, name, type, enemies: [id], members: [actorId], contacts: [itemUuid], note}],
+ *   log: [{id, factionId, actorId, reason, delta, pending, time, note}], raises: {contactUuid: worldTime}};
+ * - canWrite: true on the active gamemaster's browser only;
+ * - faction(id), factionOfActor(actorId), factionOfContact(itemUuid): a copy of the faction, or null;
+ * - score(factionId, actorId): the applied movements' sum; standing(actorId): [{id, name, score, shift, pending}];
+ * - attitudeFor(actorId, targetActor): {faction, score, shift, attitude} of a social test (CA p. 160), or null;
+ * - update(mutate): the active gamemaster only (false, with a warning, elsewhere), in the registry's turn
+ *   (gm-ledger.js). `mutate(data)` changes `data` in place, synchronously (an async one writes nothing). After it, one
+ *   main faction per member and per contact (CA p. 156): a member listed in two factions stays in the one it just
+ *   joined. The system does not check the rest: unique ids, a known faction in `enemies`, a reciprocal enmity are
+ *   the module's to keep. Example, affiliate an NPC:
+ *   update(d => d.factions.find(f => f.id === id).members.push(actorId)) — it leaves its former faction.
+ * Every read gives a copy, so a module never edits the setting's cache.
  */
 export const factionRegistryApi = () => {
   const copy = value => foundry.utils.deepClone(value ?? null)

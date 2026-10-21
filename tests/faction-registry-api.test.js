@@ -106,6 +106,38 @@ describe('game.sr5.factionRegistry', () => {
     expect(stored.factions).toHaveLength(1)
   })
 
+  // Relecture du 21/10, D6: one main faction per NPC (CA p. 156), whatever the module writes
+  it('keeps one faction per member: the one just joined wins, the former is left', async () => {
+    await api.update(d => {
+      d.factions.push({
+        id: 'yak', name: 'Yakuza', type: 'syndicate', enemies: [], members: ['v1', 'v2', 'v2'], contacts: ['Item.c']
+      })
+      d.factions[0].contacts.push('Item.c')
+    })
+    expect(stored.factions.find(f => f.id === 'yak').members).toEqual(['v1', 'v2'])
+    expect(stored.factions.find(f => f.id === 'maf').members).toEqual([])
+    // Listed twice, none new: the first faction keeps it
+    expect(stored.factions.find(f => f.id === 'maf').contacts).toEqual(['Item.c'])
+    expect(stored.factions.find(f => f.id === 'yak').contacts).toEqual([])
+    expect(api.factionOfActor('v1').id).toBe('yak')
+  })
+
+  it('writes nothing for an async change', async () => {
+    const before = JSON.parse(JSON.stringify(stored))
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    let saved
+    updateLedger.mockImplementationOnce(async (key, mutate) => {
+      saved = mutate(JSON.parse(JSON.stringify(stored)))
+      return saved !== null
+    })
+    expect(await api.update(async d => {
+      d.factions.length = 0
+    })).toBe(false)
+    expect(saved).toBeNull()
+    expect(stored).toEqual(before)
+    error.mockRestore()
+  })
+
   it('is frozen: a module cannot replace update()', () => {
     expect(Object.isFrozen(api)).toBe(true)
   })
