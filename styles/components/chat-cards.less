@@ -82,6 +82,11 @@
       margin: 6px 8px 0;
     }
 
+    // Un peu d'air entre le texte et le premier bouton (manuel 4.4.1)
+    > :not(button) + button {
+      margin-top: 10px;
+    }
+
     > ul {
       list-style: none;
       margin: 6px 8px 0;
@@ -97,12 +102,16 @@
       }
     }
 
+    // Les boutons centrés, l'un sous l'autre, sur toute la largeur comme ceux des cartes de jet
+    // (DjamZ, 21/10, manuel 1.5.4, 4.4.1 et 5.2.4)
     button {
+      display: block;
       flex: 0 0 auto;
-      width: auto;
+      width: calc(100% - 16px);
       min-height: 0;
-      margin: 0;
+      margin: 6px 8px 0;
       padding: 3px 8px;
+      text-align: center;
       line-height: normal;
       background-color: var(--sr-text-color-dark);
       border: 0;
@@ -164,9 +173,13 @@
     .sr5-deadline-buttons {
       grid-column: 1 / -1;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      flex-direction: column;
       gap: 4px;
+
+      button {
+        width: 100%;
+        margin: 0;
+      }
     }
   }
 }

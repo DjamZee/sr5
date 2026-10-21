@@ -1,5 +1,7 @@
 /* v13: #chat-log replaced by #chat, .message replaced by .chat-message */
-#chat, #chat-notifications, #chat-popout {
+/* v13: a popped-out card is .chat-popout (id app-chat-popout-<message>): #chat-popout matched nothing, and the card
+   fell back on Foundry's parchment (DjamZ, 21/10, manual 7.1.4) */
+#chat, #chat-notifications, .chat-popout {
   .chat-message.SRCustomMessage {
     background-color: var(--sr-text-color-light);
     color: var(--sr-text-color-dark);
@@ -70,8 +72,8 @@
       h4 {
         font-family   : var(--sr-font-body-bold);
         text-transform: uppercase;
-        // The system red lightened: plain, it read 2.4:1 on the black band (pack 5, manual 6.1.4 and the chat captures)
-        color         : color-mix(in srgb, var(--sr-ui-border-color) 45%, var(--sr-text-color-light));
+        // The SR5 red, on every card: DjamZ's call (21/10), over the 2.4:1 contrast that had it lightened in pack 5
+        color         : var(--sr-ui-border-color);
         font-size     : var(--sr-font-size-normal);
         flex-grow     : 2;
         margin-bottom : 0;
@@ -79,7 +81,7 @@
       }
 
       a {
-        color        : color-mix(in srgb, var(--sr-ui-border-color) 45%, var(--sr-text-color-light));
+        color        : var(--sr-ui-border-color);
 
         &:hover {
           color      : var(--sr-text-color-flash);
@@ -310,7 +312,8 @@
         }
       }
 
-      .opposedTest {
+      // The chase card's opposition (chase-roll.js) is an opposed test too: it wore the theme's teal on pink (manual 6.4.2)
+      .opposedTest, .chaseRoll {
         background-color: var(--sr-text-color-flash);
         line-height     : 20px;
         margin          : 5px 0px 0px 0px;
@@ -533,6 +536,12 @@
         > .content-link {
           flex: 0 1 auto;
         }
+
+        // A text result's name keeps its own width, the description takes the rest: given an equal share, the name
+        // broke in the middle of a word (« intéressan-t », manual 8.4.3)
+        > .name {
+          flex: 0 1 auto;
+        }
       }
 
       .description {
@@ -634,11 +643,12 @@
   margin     : 4px 5px 0 5px;
   padding-top: 4px;
 
+  // The label above, its button under it, the whole width, like every card button (DjamZ, 21/10, manual 8.4.3)
   .SR-TablePayoutRow {
-    align-items    : center;
+    align-items    : stretch;
     display        : flex;
-    gap            : 6px;
-    justify-content: space-between;
+    flex-direction : column;
+    gap            : 4px;
 
     & + .SR-TablePayoutRow {
       margin-top: 4px;
@@ -646,8 +656,9 @@
   }
 
   .SR-TablePayoutLabel {
-    flex       : 1 1 auto;
+    flex       : 0 0 auto;
     font-weight: bold;
+    text-align : center;
   }
 
   // Left to Foundry's variables, the theme painted these turquoise at 75 %
@@ -681,9 +692,10 @@
 // "Relancer" and "Partager" under a table draw (table-actions.js). Added at
 // render, never stored in the card; they wear the payout buttons' colours.
 .SR-TableActions {
+  align-items    : stretch;
   display        : flex;
-  gap            : 6px;
-  justify-content: flex-end;
+  flex-direction : column;
+  gap            : 4px;
   margin         : 4px 5px 0 5px;
 
   .chat-message & button {

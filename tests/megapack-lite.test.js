@@ -8,7 +8,7 @@ vi.hoisted(() => {
 })
 
 import {
-  MEGAPACK_FULL_ID, MEGAPACK_LITE_ID, activeMegapackId, isMegapackPackage
+  MEGAPACK_FULL_ID, MEGAPACK_LITE_ID, activeMegapackId, inActiveMegapack, isMegapackPackage
 } from "../modules/system/megapack.js"
 import {
   SR5_CompendiumUtility
@@ -79,6 +79,32 @@ describe("the compendium of base items on auto", () => {
     globalThis.game.modules = modulesOf()
     expect(SR5_CompendiumUtility.getMainCompendiumIds("creaturePowers").every(id => id.startsWith("sr5-compendiums."))).toBe(true)
     expect(SR5_CompendiumUtility.MEGAPACK.pack).toBe("megapack-sr5-foundry-vtt.sr5-megapack-items")
+  })
+})
+
+describe("a compendium chosen in the other edition of the Megapack", () => {
+  const settingsOf = chosen => ({
+    get: (scope, key) => key === "language" ? "fr" : key === "compendium.creaturePowers" ? chosen : "auto"
+  })
+
+  it("full chosen, Lite alone active: reads the Lite one's pack of the same name (manual 2.1.3)", () => {
+    globalThis.game.settings = settingsOf("megapack-sr5-foundry-vtt.sr5-megapack-items")
+    globalThis.game.modules = modulesOf(MEGAPACK_LITE_ID)
+    expect(SR5_CompendiumUtility.getMainCompendiumIds("creaturePowers")).toEqual(["megapack-sr5-lite.sr5-megapack-items"])
+  })
+
+  it("Lite chosen, full alone active: reads the full one's", () => {
+    globalThis.game.settings = settingsOf("megapack-sr5-lite.sr5-megapack-items")
+    globalThis.game.modules = modulesOf(MEGAPACK_FULL_ID)
+    expect(SR5_CompendiumUtility.getMainCompendiumIds("creaturePowers")).toEqual(["megapack-sr5-foundry-vtt.sr5-megapack-items"])
+  })
+
+  it("the chosen edition active, or none active, or another compendium: the choice as it is", () => {
+    expect(inActiveMegapack("megapack-sr5-foundry-vtt.sr5-megapack-items", modulesOf(MEGAPACK_FULL_ID, MEGAPACK_LITE_ID)))
+      .toBe("megapack-sr5-foundry-vtt.sr5-megapack-items")
+    expect(inActiveMegapack("megapack-sr5-foundry-vtt.sr5-megapack-items", modulesOf()))
+      .toBe("megapack-sr5-foundry-vtt.sr5-megapack-items")
+    expect(inActiveMegapack("world.mes-pouvoirs", modulesOf(MEGAPACK_LITE_ID))).toBe("world.mes-pouvoirs")
   })
 })
 

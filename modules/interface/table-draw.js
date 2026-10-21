@@ -55,7 +55,20 @@ export function sr5DressTableDraw(html, message = null) {
     draw.querySelector(".dice-roll")?.remove()
   }
 
+  // A pool formula ({1d3,1d3,1d3}) draws several lines: the sum of its dice
+  // names no line and only puzzles the reader (DjamZ, 21/10, manual 8.4.3)
+  const formula = draw.querySelector(".dice-formula")?.textContent.trim() ?? ""
+  if (formula.startsWith("{")) draw.querySelector(".dice-total")?.remove()
+
   const rows = [...draw.querySelectorAll(".table-results > li")]
+
+  // A text result whose description only repeats its name said it twice, the name squeezed into a column of its
+  // own (« Rien d'intéressant », manual 8.4.3): the name alone
+  for (const row of rows) {
+    const name = row.querySelector(":scope > .name")
+    const description = row.querySelector(":scope > .description")
+    if (name && description && description.textContent.trim() === name.textContent.trim()) description.remove()
+  }
   const images = rows.map(row => row.querySelector(":scope > img")).filter(Boolean)
   const drawings = images.map(img => img.getAttribute("src")).filter(src => !isPlaceholder(src))
 

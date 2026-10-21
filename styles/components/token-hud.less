@@ -39,6 +39,16 @@
     --control-bg-color: var(--color-cool-5-75);
   }
 
+  /* The movement palette (DjamZ, 21/10, manual 3.7.4): Foundry's icons are black drawings, drawn white on the dark
+     ground; and the box takes the width of its longest line (« Clignement (Téléportation) » ran out of it) */
+  .palette.movement-actions {
+    width: max-content;
+
+    img {
+      filter: invert(1);
+    }
+  }
+
   button {
     color: var(--sr-text-color-grey-dark);
     text-shadow: 0 0 3px var(--sr-text-color-dark);
