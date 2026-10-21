@@ -6936,6 +6936,8 @@
 	"SR5.FACTION_Type": "Type",
 	"SR5.FACTION_Enemies": "Ennemies",
 	"SR5.FACTION_NoToken": "Sélectionnez d'abord les jetons des PNJ.",
+	"SR5.FACTION_DropActor": "Glissez ici un PNJ ou un vendeur depuis la barre des acteurs pour l'affilier à cette faction (il quitte toute autre faction).",
+	"SR5.FACTION_DropNoPc": "Un personnage joueur n'est pas membre d'une faction : sa réputation se tient dans le journal.",
 	"SR5.FACTION_PickFactionActor": "Choisissez une faction et au moins un personnage.",
 	"SR5.FACTION_NotEnough": "Réputation insuffisante : {score} pour un coût de {cost} (jamais sous zéro, p. 159).",
 	"SR5.FACTION_ContactNotInFaction": "Ce contact doit appartenir à ce personnage et à cette faction.",

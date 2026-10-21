@@ -149,6 +149,11 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
       const content = this.element.querySelector(".window-content") ?? this.element
       for (const el of content.querySelectorAll("button, input, select, textarea")) el.disabled = true
       for (const el of content.querySelectorAll("a[data-action]")) el.classList.add("disabled")
+    } else {
+      for (const section of this.element.querySelectorAll(".sr-faction[data-faction]")){
+        section.addEventListener("dragover", event => event.preventDefault())
+        section.addEventListener("drop", event => this._onDropActor(event, section.dataset.faction))
+      }
     }
     // The reason prefills the points with the book's value (p. 157); the gamemaster may change them
     const reason = this.element.querySelector("[name=reason]")
@@ -275,11 +280,40 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     const ids = [...new Set((canvas.tokens?.controlled ?? []).map(t => t.document.actorId).filter(Boolean))]
       .filter(a => game.actors.get(a)?.type !== "actorPc")
     if (!ids.length) return ui.notifications.info(game.i18n.localize("SR5.FACTION_NoToken"))
-    await SR5FactionRegistry.update(d => {
-      for (const f of d.factions) f.members = (f.members ?? []).filter(m => !ids.includes(m))
-      const f = d.factions.find(x => x.id === id)
-      f.members = [...f.members, ...ids]
+    await SR5FactionsApp.affiliate(id, ids)
+  }
+
+  /**
+   * Non-player characters join a faction and leave any other one (p. 156: one main faction). A vendor joins the
+   * same way: a module of house rules reads its faction (sr5.vendorPrice, factionOfActor).
+   */
+  static async affiliate(factionId, actorIds){
+    if (SR5FactionRegistry.refuse()) return false
+    return SR5FactionRegistry.update(d => {
+      const f = d.factions.find(x => x.id === factionId)
+      if (!f) return
+      for (const o of d.factions) o.members = (o.members ?? []).filter(m => !actorIds.includes(m))
+      f.members = [...f.members, ...actorIds]
     })
+  }
+
+  /**
+   * An actor dragged from the sidebar onto a faction joins it, as a selected token would, without a token on the
+   * scene. Player characters are refused: their standing is the journal's, not a membership.
+   */
+  async _onDropActor(event, factionId){
+    event.preventDefault()
+    if (SR5FactionRegistry.refuse()) return false
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event)
+    if (data?.type !== "Actor" || !data.uuid) return false
+    const actor = await fromUuid(data.uuid)
+    if (!actor) return false
+    if (actor.type === "actorPc"){
+      ui.notifications.info(game.i18n.localize("SR5.FACTION_DropNoPc"))
+      return false
+    }
+    // A token's actor stands for its base actor, as a selected token does (document.actorId)
+    return SR5FactionsApp.affiliate(factionId, [actor.isToken ? actor.token?.actorId ?? actor.id : actor.id])
   }
 
   static async #removeMember(event, target){
