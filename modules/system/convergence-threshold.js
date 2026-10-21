@@ -150,7 +150,7 @@ export async function postConvergenceNotice(actor, {
     speaker: {
       alias: game.i18n.localize("SR5.MatrixConvergence")
     },
-    content: `<div class="sr5-convergence-notice"><h3>${esc(game.i18n.localize("SR5.MatrixConvergence"))}</h3>${lines.map(l => `<p>${l}</p>`).join("")}${button}</div>`,
+    content: `<div class="sr5-convergence-notice">${lines.map(l => `<p>${l}</p>`).join("")}${button}</div>`,
     whisper: ChatMessage.getWhisperRecipients("GM").map(u => u.id),
     flags: {
       sr5: {
