@@ -26,7 +26,9 @@ import {
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined }
 const RACINE = arg("--racine") ?? "F:/FoundryVTT/Ressources Graphiques/Visuels/Esprits"
-const FAMILLES = [".Esprits Naturels"]
+// --familles "Esprits Toxiques,Esprits de l'Ombre" : ne refaire que celles-là. Les esprits nécrotiques (cadavre, carcasse,
+// détritus, feu pâle, pourriture) et l'esprit des os n'ont pas de type dans le système : leur dossier n'est pas lu.
+const FAMILLES = arg("--familles")?.split(",") ?? [".Esprits Naturels", "Esprits Toxiques", "Esprits de l'Ombre"]
 const CIBLE = "assets/img/spirits"
 const PORTRAIT = {
   taille: 400, qualite: 72 
@@ -40,6 +42,10 @@ const TYPES = [
   ["air", "air"], ["eau", "water"], ["feu", "fire"], ["terre", "earth"], ["homme", "man"],
   ["betes", "beasts"], ["plantes", "plant"], ["gardien", "guardian"], ["guide", "guidance"],
   ["ouvrier", "task"], ["ouvirer", "task"],
+  // toxiques, ombres et sang (Rémi#2846, 21/10)
+  ["abomination", "abomination"], ["deletere", "noxious"], ["epidemie", "plague"], ["fange", "sludge"],
+  ["nucleaire", "nuclear"], ["sterilite", "barren"], ["cauchemar", "shadowNightmare"], ["muse", "shadowMuse"],
+  ["noirceur", "shadowShade"], ["spectre", "shadowWraith"], ["succube", "shadowSuccubus"], ["sang", "blood"],
 ]
 
 const norm = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()

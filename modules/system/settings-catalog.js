@@ -108,6 +108,9 @@ export const SETTINGS_CATALOG = {
   sr5DevicelessAILogicDefense: ["matrix"],
   sr5EmulateOverwatchHalf: ["matrix", "house"],
   sr5WifiRequiresDNI: ["matrix"],
+  // No tag: pictures, not a rule (DjamZ's own, 21/10)
+  sr5IceDefaultImages: ["matrix"],
+  sr5SpriteDefaultImages: ["matrix"],
   // Rigging
   sr5Rigger5Actions: ["rigging", "book"],
   sr5Rigger5AdvancedDriving: ["rigging", "book"],
@@ -170,6 +173,7 @@ export const SETTINGS_CATALOG = {
   sr5CalendarCombatTime: ["time"],
   sr5CalendarRevealDeadlines: ["time"],
   // Gamemaster's tools
+  sr5ContactDefaultImages: ["gm"],
   "compendium.creaturePowers": ["gm"],
   "compendium.spritePowers": ["gm"],
   "compendium.baseWeapons": ["gm"],
