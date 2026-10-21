@@ -2,7 +2,7 @@ import {
   describe, it, expect, afterEach
 } from 'vitest'
 import {
-  formatNumber, formatNuyen, gameLang, formatDateTime
+  formatNumber, formatNuyen, gameLang, formatDateTime, intlLang
 } from '../modules/helpers/number-format.js'
 import {
   priceRangeLabel, infoType
@@ -36,6 +36,22 @@ describe('numbers in the language of the game', () => {
     expect(formatNumber(2500)).toBe('2,500')
     play('not a language!')
     expect(formatNumber(2500)).toBe('2,500')
+  })
+
+  // Relecture du 21/10, D8: a well-formed code Intl does not know (Foundry's « cn ») took the BROWSER's language
+  it('writes a language Intl does not know in English, not in the browser\'s language; a known one in its own', () => {
+    expect(intlLang('cn')).toBe('en')
+    expect(intlLang('not a language!')).toBe('en')
+    expect(intlLang('fr')).toBe('fr')
+    expect(intlLang('de')).toBe('de')
+    expect(intlLang('pt-BR')).toBe('pt-BR')
+    play('cn')
+    expect(formatNumber(2500)).toBe('2,500')
+    expect(formatDateTime('2026-10-21T21:40:05Z')).toBe(new Date('2026-10-21T21:40:05Z').toLocaleString('en'))
+    // Whatever the machine's language: the formatter asked is never left to Intl's default
+    expect(new Intl.NumberFormat(intlLang('cn')).resolvedOptions().locale).toMatch(/^en/)
+    play('de')
+    expect(formatNumber(1500)).toBe(new Intl.NumberFormat('de').format(1500))
   })
 
   it('caps the decimals as asked, and leaves a non-number as written', () => {
