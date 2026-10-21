@@ -6232,7 +6232,7 @@
 	"SR5.ToxinDosesHint": "+1 Puissance par dose supplémentaire (SR5 p. 410)",
 	"SR5.ToxinBookFolder": "Toxines",
 	"SR5.ToxinBookCreate": "Toxines du livre",
-	"SR5.ToxinBookCreateHint": "Crée dans le monde, dossier Toxines, les toxines du livre de base et les venins de créatures que le système connaît et qui n'y sont pas encore (repérées par leur nom). Utile sans le Mégapack, et pour les venins de créatures, que le Mégapack n'a pas.",
+	"SR5.ToxinBookCreateHint": "Crée dans le monde, dossier Toxines, les toxines du livre de base et les venins de créatures que le système connaît et qui n'y sont pas encore (repérés par leur nom). Utile sans le Mégapack, et pour les venins de créatures, que le Mégapack n'a pas.",
 	"SR5.WARN_NotAToxin": "Seul un objet de type Toxine peut être déposé ici.",
 	"SR5.INFO_ToxinBookCreated": "{count} toxine(s) du livre créée(s) dans le dossier Toxines.",
 	"SR5.ToxinVector": "Vecteur(s)",

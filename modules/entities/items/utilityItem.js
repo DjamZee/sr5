@@ -1405,7 +1405,8 @@ export class SR5_UtilityItem extends Actor {
     this._handleItemEssenceCost(itemData)
     // A module's house rule may change what the implant takes from this body (sr5.essenceCostFor, context "sheet"):
     // the hook the till asks too, so the sheet, the shop and the peak (implant-register.js) count the same cost. Asked
-    // before the final rounding; an accessory takes no Essence (entityActor.js). Without a subscriber, the book's
+    // before the final rounding; an accessory takes no Essence (entityActor.js). Without a subscriber, the book's cost
+    // is kept, exactly as before the hook (relecture du 21/10)
     if (actor && !itemData.isAccessory) itemData.essenceCost.value = essenceCostFor(actor, sheetLine(itemData, item), itemData.essenceCost.value, {
       context: "sheet"
     })
