@@ -100,6 +100,9 @@ import {
   spiritImageOnCreate, spiritImageOnTokens, spiritImageOnUpdate
 } from './entities/actors/spirit-default-image.js'
 import {
+  defaultImageOnCreate, defaultImageOnTokens, defaultImageOnUpdate
+} from './entities/actors/default-actor-images.js'
+import {
   sr5HookPreUpdateItem, sr5HookCreateItem, sr5HookUpdateItem, sr5HookDeleteItem
 } from './hooks/item.js'
 import {
@@ -294,6 +297,10 @@ Hooks.on('preCreateActor', stripCreationOnCreate)
 Hooks.on('preCreateActor', spiritImageOnCreate)
 Hooks.on('preUpdateActor', spiritImageOnUpdate)
 Hooks.on('updateActor', spiritImageOnTokens)
+// The same for IC by subtype, sprites by type and contacts called from their item (default-actor-images.js)
+Hooks.on('preCreateActor', defaultImageOnCreate)
+Hooks.on('preUpdateActor', defaultImageOnUpdate)
+Hooks.on('updateActor', defaultImageOnTokens)
 Hooks.on('preUpdateActorDelta', sr5HookPreUpdateActorDeltaCreation)
 Hooks.on('drawMeasuredTemplate', sr5HookDrawMeasuredTemplate)
 Hooks.on('deleteMeasuredTemplate', sr5HookDeleteMeasuredTemplate)

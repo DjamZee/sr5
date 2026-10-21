@@ -896,6 +896,17 @@ export class SR5_SystemHelpers {
       type: Boolean,
     })
 
+    // DjamZ's pictures of IC, sprites and contacts (default-actor-images.js), one setting per family, on by default as
+    // the spirits' are. Off, a new actor keeps the system's icon; pictures already given stay
+    for (const family of ["Ice", "Sprite", "Contact"]) game.settings.register("sr5", `sr5${family}DefaultImages`, {
+      name: `SR5.SETTINGS_${family}DefaultImages_T`,
+      hint: `SR5.SETTINGS_${family}DefaultImages_D`,
+      scope: "world",
+      config: true,
+      default: true,
+      type: Boolean,
+    })
+
     // SR5 p. 301 gives a homunculus the Structure of its material as Body, and no Armor: off by default.
     // On, it also gets the Armor of that material (SR5 p. 198). Read while the actors are prepared, hence the reload.
     game.settings.register("sr5", "sr5HomunculusMaterialArmor", {

@@ -8,12 +8,15 @@
  * Tiers are DjamZ's postulate, the book does not tie size to Force: Small 1-3, Medium 4-6, Large 7-9, Colossal 10+.
  * A picture the gamemaster chose is never overwritten: only a spirit whose portrait AND token are still a default
  * (Foundry's, the system's icon, or one set here) is given new ones. A custom type (itemSpiritType) takes the pictures
- * of the official type it is based on. A type without pictures yet (insect, shadow, toxic spirits…) keeps its own.
+ * of the official type it is based on. A type without pictures yet (insect spirits, shedim, watcher…) keeps its own.
+ * Toxic, shadow and blood spirits added on 21/10 (Rémi#2846).
  */
 export const SPIRIT_IMAGE_DIR = "systems/sr5/assets/img/spirits"
 
 /** Official types that have pictures; another family = its folder and its key here. */
-export const SPIRIT_IMAGE_TYPES = new Set(["air", "beasts", "earth", "fire", "guardian", "guidance", "man", "plant", "task", "water"])
+export const SPIRIT_IMAGE_TYPES = new Set(["air", "beasts", "earth", "fire", "guardian", "guidance", "man", "plant", "task", "water",
+  "abomination", "barren", "noxious", "nuclear", "plague", "sludge",
+  "shadowMuse", "shadowNightmare", "shadowShade", "shadowSuccubus", "shadowWraith", "blood"])
 
 const DEFAULT_IMAGES = new Set([
   "", "icons/svg/mystery-man.svg",
