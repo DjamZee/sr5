@@ -273,6 +273,7 @@ export class SR5_Toxins {
       const button = document.createElement("button")
       button.type = "button"
       button.className = "sr5-toxin-book"
+      button.dataset.tooltip = game.i18n.localize("SR5.ToxinBookCreateHint")
       button.innerHTML = `<i class="fas fa-skull-crossbones"></i> ${game.i18n.localize("SR5.ToxinBookCreate")}`
       button.addEventListener("click", () => SR5_Toxins.createBookToxins())
       actions.append(button)

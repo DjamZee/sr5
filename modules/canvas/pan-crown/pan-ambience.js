@@ -68,6 +68,17 @@ export function rainCrownIds({
   return ids
 }
 
+/**
+ * Whether a crown has something of the Matrix to show: a device, a drone, a persona, a sprite… A file alone is no
+ * device. An actor with none gets no rain of code (pack 5, DjamZ, 21/10: « un acteur sans appareil ne doit pas recevoir
+ * son effet spectaculaire »); its halos and flickers already follow the icons, which it has none of.
+ * @param {Object} graph  buildPanGraph's graph
+ * @return {Boolean}
+ */
+export function crownHasDevice(graph){
+  return !!graph?.master || !!graph?.rigger || !!graph?.wan || (graph?.nodes ?? []).some(node => node.kind !== "file")
+}
+
 /** A setting of the system, or its default when it cannot be read (tests, before init) */
 function setting(key, fallback){
   try {

@@ -37,7 +37,7 @@ import {
   PAN_CROWN_HOOKS, safeCall
 } from "./pan-hooks.js"
 import {
-  PAN_DEPLOY_MS, PAN_RAIN_MAX, ambienceRank, currentAmbience, deployScale, pulsePhase, pulsePoint, rainCrownIds
+  PAN_DEPLOY_MS, PAN_RAIN_MAX, ambienceRank, crownHasDevice, currentAmbience, deployScale, pulsePhase, pulsePoint, rainCrownIds
 } from "./pan-ambience.js"
 
 // The glyphs of the rain of code (lot 9), drawn once in a single texture: a ParticleContainer draws all its sprites
@@ -786,7 +786,7 @@ export class SR5PanCrownLayer extends foundry.canvas.layers.CanvasLayer {
 
   // The rain of code, on the crowns opened one by one (Q10 of DjamZ), never more than PAN_RAIN_MAX glyphs on the canvas
   #rainStep(dt){
-    const shown = new Set([...this.crowns.values()].filter(c => c.container.visible).map(c => c.token.id))
+    const shown = new Set([...this.crowns.values()].filter(c => c.container.visible && crownHasDevice(c.graph)).map(c => c.token.id))
     const falling = rainCrownIds({
       shown, manual: this.manual, hovered: this.hovered
     })

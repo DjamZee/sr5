@@ -470,6 +470,15 @@
     .sheet-header {
       padding: 8px;
 
+      // The table icons are transparent (the Mégapack's red pictograms): a neutral plate under them reads on the
+      // dark ground of the Nuit theme as on the light one (pack 5, DjamZ)
+      img {
+        background: rgb(221, 221, 221);
+        border: 1px solid rgb(160, 160, 160);
+        border-radius: 4px;
+        padding: 3px;
+      }
+
       h1 {
         font-family: var(--sr-font-title-alt);
         text-transform: uppercase;
