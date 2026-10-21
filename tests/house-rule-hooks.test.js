@@ -5,8 +5,9 @@ import {
   readFileSync
 } from "node:fs"
 import {
-  ROLL_REMINDERS_HOOK, VENDOR_PRICE_HOOK, PURCHASE_FUNDS_HOOK, MAX_REMINDERS,
-  rollRemindersFor, vendorPriceFor, purchaseFundsVerdict, reminderModifierType, reminderCardLine
+  ROLL_REMINDERS_HOOK, VENDOR_PRICE_HOOK, PURCHASE_FUNDS_HOOK, VENDOR_REFUSAL_HOOK, INITIATIVE_REMINDERS_HOOK,
+  MAX_REMINDERS, rollRemindersFor, vendorPriceFor, purchaseFundsVerdict, reminderModifierType, reminderCardLine,
+  vendorRefusalFor, shelfPrice, initiativeRemindersFor, initiativeCardLine
 } from "../modules/system/house-rule-hooks.js"
 
 // Câblage Maison, lot 2 (21/10): three hooks for a module of house rules, on the pattern of sr5.essenceCostFor. The
@@ -255,6 +256,187 @@ describe("sr5.purchaseFunds", () => {
   })
 })
 
+describe("sr5.vendorPrice on the vendor's shelves", () => {
+  it("leaves the row as it was when the module keeps the book's price", () => {
+    expect(shelfPrice(1000, {
+      price: 1000, notes: ["rien"]
+    })).toEqual({
+    })
+    expect(shelfPrice(1000, null)).toEqual({
+    })
+  })
+  it("gives the price asked, the book's to strike through and the notes as one text", () => {
+    expect(shelfPrice(1000, {
+      price: 900, notes: ["réputation : −100 ¥", "ami du gang"]
+    })).toEqual({
+      price: 900, bookPrice: 1000, priceNotes: "réputation : −100 ¥ · ami du gang"
+    })
+    expect(shelfPrice(1000, {
+      price: 1200, notes: []
+    })).toEqual({
+      price: 1200, bookPrice: 1000, priceNotes: ""
+    })
+  })
+})
+
+describe("sr5.vendorRefusal", () => {
+  const args = {
+    vendor: {
+      name: "Vendeur"
+    }, storage: {
+      id: "s1"
+    }, buyer: {
+      name: "Acheteur"
+    }
+  }
+
+  it("sells without a subscriber, as the book does", () => {
+    expect(vendorRefusalFor(args, {
+      call: none
+    })).toEqual({
+      refuse: false, reason: ""
+    })
+  })
+  it("gives the vendor, its shop and the buyer; refuses on refuse === true, with the reason cleaned", () => {
+    let got
+    const {
+      call, seen
+    } = subscribers(data => {
+      got = data
+      data.refuse = true
+      data.reason = `  Les Ancients ne vendent pas aux Halloweeners ${"x".repeat(300)}`
+    })
+    const verdict = vendorRefusalFor(args, {
+      call
+    })
+    expect(seen).toEqual([VENDOR_REFUSAL_HOOK])
+    expect(VENDOR_REFUSAL_HOOK).toBe("sr5.vendorRefusal")
+    expect(got.vendor).toBe(args.vendor)
+    expect(got.storage).toBe(args.storage)
+    expect(got.buyer).toBe(args.buyer)
+    expect(verdict.refuse).toBe(true)
+    expect(verdict.reason.startsWith("Les Ancients ne vendent pas aux Halloweeners")).toBe(true)
+    expect(verdict.reason).toHaveLength(200)
+    expect(vendorRefusalFor(args, subscribers(data => {
+      data.refuse = true
+      data.reason = 12
+    }))).toEqual({
+      refuse: true, reason: ""
+    })
+  })
+  it("sells on anything but true, or a subscriber that throws", () => {
+    for (const value of ["true", 1, [], null]) {
+      expect(vendorRefusalFor(args, subscribers(data => (data.refuse = value))).refuse).toBe(false)
+    }
+    expect(vendorRefusalFor(args, {
+      call: throwing
+    })).toEqual({
+      refuse: false, reason: ""
+    })
+  })
+})
+
+describe("sr5.initiativeReminders", () => {
+  const actor = {
+    name: "Essai"
+  }
+  const args = {
+    actor, combatant: {
+      id: "c1"
+    }, combat: {
+      id: "k1"
+    }, round: 1, pass: 1, roll: 14
+  }
+
+  it("adds nothing without a subscriber", () => {
+    expect(initiativeRemindersFor(args, {
+      call: none
+    })).toEqual({
+      lines: [], score: 0
+    })
+  })
+  it("gives the actor, the turn and the roll; keeps the lines cleaned and adds their scores", () => {
+    let got
+    const {
+      call, seen
+    } = subscribers(data => {
+      got = data
+      if (!data.firstRound) return
+      data.reminders.push({
+        label: " +2 au premier tour ", source: "Trait — Sur ses gardes", score: 2
+      }, {
+        label: "rappel seul"
+      }, {
+        source: "sans texte", score: 3
+      }, {
+        label: "trop", score: 11
+      }, {
+        label: "malus", score: -1
+      })
+    })
+    expect(initiativeRemindersFor(args, {
+      call
+    })).toEqual({
+      lines: [
+        {
+          label: "+2 au premier tour", source: "Trait — Sur ses gardes", score: 2
+        },
+        {
+          label: "rappel seul", source: "", score: 0
+        },
+        {
+          label: "trop", source: "", score: 0
+        },
+        {
+          label: "malus", source: "", score: -1
+        },
+      ], score: 1
+    })
+    expect(seen).toEqual([INITIATIVE_REMINDERS_HOOK])
+    expect(INITIATIVE_REMINDERS_HOOK).toBe("sr5.initiativeReminders")
+    expect(got.actor).toBe(actor)
+    expect(got.combatant).toBe(args.combatant)
+    expect(got.combat).toBe(args.combat)
+    expect(got).toMatchObject({
+      round: 1, firstRound: true, pass: 1, roll: 14
+    })
+    // From the second Combat Turn, this module says nothing
+    expect(initiativeRemindersFor({
+      ...args, round: 2
+    }, {
+      call
+    })).toEqual({
+      lines: [], score: 0
+    })
+  })
+  it("keeps ten lines at most, and none when a subscriber throws or replaces the list", () => {
+    const many = subscribers(data => {
+      for (let i = 0; i < 15; i++) data.reminders.push({
+        label: `ligne ${i}`, score: 1
+      })
+    })
+    expect(initiativeRemindersFor(args, many)).toMatchObject({
+      score: MAX_REMINDERS
+    })
+    expect(initiativeRemindersFor(args, {
+      call: throwing
+    })).toEqual({
+      lines: [], score: 0
+    })
+    expect(initiativeRemindersFor(args, subscribers(data => (data.reminders = "x")))).toEqual({
+      lines: [], score: 0
+    })
+  })
+  it("writes the card's line", () => {
+    expect(initiativeCardLine({
+      source: "Trait — Sur ses gardes", label: "premier tour", score: 2
+    }, " : ")).toBe("Trait — Sur ses gardes : premier tour (+2)")
+    expect(initiativeCardLine({
+      label: "rappel seul", score: 0
+    })).toBe("rappel seul")
+  })
+})
+
 describe("the system calls the hooks where the book is counted", () => {
   const source = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8")
 
@@ -266,6 +448,27 @@ describe("the system calls the hooks where the book is counted", () => {
   })
   it("the vendor's cart shows the price the till takes", () => {
     expect(source("modules/interface/shop-window.js")).toMatch(/vendorSource\) unit = vendorPriceFor\(/)
+  })
+  it("the vendor's shelves show the price asked, the book's struck through", () => {
+    const window = source("modules/interface/shop-window.js")
+    expect(window).toMatch(/\.\.\.described,\s*\/\/[^\n]*\n\s*\.\.\.SR5ShopWindow\.#askedOnShelf\(/)
+    expect(window).toMatch(/return shelfPrice\(book, asked\)/)
+    expect(source("templates/interface/shop-window.hbs")).toMatch(/<s class="sr-shop-price-book"[^>]*>\{\{this\.bookPrice\}\}<\/s>/)
+  })
+  it("the vendor's window and till ask the refusal, never in equip mode", () => {
+    const window = source("modules/interface/shop-window.js")
+    expect(window).toMatch(/vendorSource && buyer && !equip \? vendorRefusalFor\(/)
+    expect(window).toMatch(/canCheckout = buyer !== null && cart\.length > 0 && !refusal\?\.refuse/)
+    const till = source("modules/interface/shop-vendor.js")
+    expect(till).toMatch(/const refusal = equip \? null : vendorRefusalFor\(\{\s*vendor: actor, storage, buyer/)
+    expect(till.indexOf("vendorRefusalFor({")).toBeLessThan(till.indexOf("const lines = Array.isArray(request.lines)"))
+  })
+  it("the Initiative roll asks the reminders, adds their score and writes them on its card", () => {
+    const combat = source("modules/system/srcombat.js")
+    expect(combat).toMatch(/const reminders = initiativeRemindersFor\(\{/)
+    expect(combat).toMatch(/initiative = Math\.max\(0, initiative \+ reminders\.score\)/)
+    expect(combat.indexOf("initiativeRemindersFor({")).toBeLessThan(combat.indexOf("combatInitiativePass > 1"))
+    expect(source("templates/rolls/roll-init.hbs")).toMatch(/\{\{#each reminders\}\}/)
   })
   it("the world's shop asks the funds before refusing", () => {
     const shop = source("modules/interface/shop.js")
