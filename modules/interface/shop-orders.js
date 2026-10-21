@@ -30,6 +30,9 @@ import {
 import {
   isActiveGM as isWriter
 } from "../system/card-helpers.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 export const ORDERS_FLAG = 'shopOrders'
 export const DELIVERY_SETTING = 'sr5ShopDelivery'
@@ -231,7 +234,7 @@ async function tell(actor, key, order) {
     whisper: [...owners(actor), ...game.users.filter(u => u.isGM).map(u => u.id)],
     content: `<p>${game.i18n.format(key, {
       actor: foundry.utils.escapeHTML(actor.name), name: foundry.utils.escapeHTML(lineLabel(order)),
-      price: Number(order.paid).toLocaleString(),
+      price: formatNumber(Number(order.paid)),
     })}</p>`,
   })
 }
@@ -777,7 +780,7 @@ async function confirmCancel(actor, id, requester) {
   const shortDebit = own && left !== null && left < (Number(own.paid) || 0)
   const where = !own ? game.i18n.localize('SR5.ShopOrderCancelNotInLedger') :
     shortDebit ? game.i18n.format('SR5.ShopOrderCancelDebitGone', {
-      paid: (Number(own.paid) || 0).toLocaleString(), left: left.toLocaleString()
+      paid: formatNumber(Number(own.paid) || 0), left: formatNumber(left)
     }) : vendor ?
       game.i18n.format('SR5.ShopOrderCancelVendor', {
         vendor: esc(vendor.label)
@@ -788,7 +791,7 @@ async function confirmCancel(actor, id, requester) {
     },
     content: `<p>${game.i18n.format('SR5.ShopOrderCancelText', {
       user: esc(requester?.name ?? '?'), actor: esc(actor.name),
-      name: esc(ledgerLabel(order, own)), price: plan.refund.toLocaleString(),
+      name: esc(ledgerLabel(order, own)), price: formatNumber(plan.refund),
     })}</p><p>${where}</p>`,
     rejectClose: false,
   })

@@ -7,6 +7,9 @@ import {
 import {
   enhanceSelects
 } from '../helpers/enhance-selects.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * The counter a character sells over: its own gear on one side, a contact or
@@ -112,12 +115,12 @@ export class SR5SellDialog extends foundry.applications.api.HandlebarsApplicatio
           img: item.img,
           owned,
           listed,
-          listedLabel: `${listed.toLocaleString()}¥`,
+          listedLabel: `${formatNumber(listed)}¥`,
           availability: SR5ShopAvailability.availabilityOf(item.system),
           selected: selected !== undefined,
           quantity: selected ?? 1,
           contactLabel: contact ?
-            `${(SR5ShopFence.contactOffer(item, contact) * (selected ?? 1)).toLocaleString()}¥` : '',
+            `${formatNumber(SR5ShopFence.contactOffer(item, contact) * (selected ?? 1))}¥` : '',
         }
       })
       .sort((a, b) => a.name.localeCompare(b.name))

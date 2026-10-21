@@ -19,6 +19,9 @@ import {
 import {
   counterSystem
 } from './shop-vendor-rules.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * The availability test of SR5 p. 420.
@@ -362,7 +365,7 @@ export class SR5ShopAvailability {
       if (!availability) {
         results.push({
           uuid: line.uuid, grade, name, quantity, price, availability: 0,
-          priceLabel: `${price.toLocaleString()}¥`,
+          priceLabel: `${formatNumber(price)}¥`,
           outcome: 'common', obtained: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_common'),
         })
@@ -376,7 +379,7 @@ export class SR5ShopAvailability {
       if (!pool) {
         results.push({
           uuid: line.uuid, grade, name, quantity, price, availability,
-          priceLabel: `${price.toLocaleString()}¥`,
+          priceLabel: `${formatNumber(price)}¥`,
           outcome: 'noPool', obtained: false, untested: true, delayLabel: '—',
           outcomeLabel: game.i18n.localize('SR5.ShopOutcome_noPool'),
         })
@@ -424,7 +427,7 @@ export class SR5ShopAvailability {
         name,
         quantity,
         price,
-        priceLabel: `${price.toLocaleString()}¥`,
+        priceLabel: `${formatNumber(price)}¥`,
         availability,
         hits,
         opposition: opposition.hits,
@@ -470,13 +473,13 @@ export class SR5ShopAvailability {
       limit,
       results,
       total,
-      totalLabel: `${total.toLocaleString()}¥`,
+      totalLabel: `${formatNumber(total)}¥`,
       canBuy: obtained.length > 0,
       vendor: options.vendor ?? null,
       // Express delivery, a house rule off by default (arbitrage de DjamZ, 05/10): offered when a line waits
       express: SR5ShopAvailability.expressOffer(obtained, actor),
       // The checkout button shows this total once the express box is ticked
-      expressTotalLabel: `${(total + cardExpressExtra(obtained, currentExpress())).toLocaleString()}¥`,
+      expressTotalLabel: `${formatNumber(total + cardExpressExtra(obtained, currentExpress()))}¥`,
     }
 
     SR5_SystemHelpers.srLog(3, `Shop: availability test for ${actor.name} (pool ${pool})`, cardData)

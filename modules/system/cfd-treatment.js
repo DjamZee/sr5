@@ -21,6 +21,9 @@ import {
 import {
   escape, isActiveGM, gmIds, fmt, queuedCheck
 } from "./card-helpers.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 export const CFD_LEDGER = "sr5CfdLedger"
 
@@ -343,7 +346,7 @@ export async function startTreatment(actor, {
         atRisk = cyberwareAtRisk(actor.items, rating)
         rows.push({
           text: game.i18n.format(atRisk.length ? "SR5.CFD_ScrubGlitch" : "SR5.CFD_ScrubGlitchNothing", {
-            actor: escape(actor.name), n: (rating / 10).toLocaleString()
+            actor: escape(actor.name), n: formatNumber(rating / 10)
           })
         })
         for (const item of atRisk) rows.push({

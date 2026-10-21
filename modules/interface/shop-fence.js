@@ -10,6 +10,9 @@ import {
 import {
   raisedThreshold
 } from '../rolls/roll-helpers/threshold.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * Fencing gear, SR5 p. 421 (Fourguer du matériel).
@@ -130,7 +133,7 @@ export class SR5ShopFence {
       results: priced,
       total: priced.reduce((sum, line) => sum + line.total, 0),
     }
-    cardData.totalLabel = `${cardData.total.toLocaleString()}¥`
+    cardData.totalLabel = `${formatNumber(cardData.total)}¥`
     return SR5ShopFence.#postCard(actor, cardData)
   }
 
@@ -239,7 +242,7 @@ export class SR5ShopFence {
     for (const line of priced) {
       line.unitOffer = Math.round(line.listed * percent / 100)
       line.total = line.unitOffer * line.quantity
-      line.offerLabel = `${line.total.toLocaleString()}¥`
+      line.offerLabel = `${formatNumber(line.total)}¥`
     }
 
     const cardData = {
@@ -266,7 +269,7 @@ export class SR5ShopFence {
       results: priced,
       total: priced.reduce((sum, line) => sum + line.total, 0),
     }
-    cardData.totalLabel = `${cardData.total.toLocaleString()}¥`
+    cardData.totalLabel = `${formatNumber(cardData.total)}¥`
     return SR5ShopFence.#postCard(actor, cardData)
   }
 
@@ -305,11 +308,11 @@ export class SR5ShopFence {
         name: item.name,
         quantity,
         listed,
-        listedLabel: `${listed.toLocaleString()}¥`,
+        listedLabel: `${formatNumber(listed)}¥`,
         availability: SR5ShopAvailability.availabilityOf(item.system),
         unitOffer,
         total: unitOffer * quantity,
-        offerLabel: `${(unitOffer * quantity).toLocaleString()}¥`,
+        offerLabel: `${formatNumber(unitOffer * quantity)}¥`,
       })
     }
     return priced
@@ -564,13 +567,13 @@ export class SR5ShopFence {
         date: new Date().toISOString().slice(0, 10),
         description: game.i18n.format('SR5.ShopSaleDescription', {
           name: sold.map(line => SR5Shop.lineLabel(line.name, line.quantity)).join(', '),
-          price: total.toLocaleString(),
+          price: formatNumber(total),
         }),
       },
     }])
 
     ui.notifications.info(game.i18n.format('SR5.ShopSaleCashed', {
-      name: label, price: total.toLocaleString()
+      name: label, price: formatNumber(total)
     }))
     return true
   }

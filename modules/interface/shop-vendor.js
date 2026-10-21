@@ -56,6 +56,9 @@ import {
 import {
   purchaseStamp, stampAll, withoutPurchase, PURCHASE_FLAG
 } from './shop-purchase.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * The gamemaster's vendor (shop lot C, part 1).
@@ -174,7 +177,7 @@ export class SR5ShopVendor {
         })),
       templateLabel: shop.template ? game.i18n.localize(`SR5.ShopTemplate_${shop.template}`) : '',
       cashbox: cashbox ? {
-        name: cashbox.name, funds: SR5Credstick.funds(cashbox).toLocaleString(),
+        name: cashbox.name, funds: formatNumber(SR5Credstick.funds(cashbox)),
       } : null,
       stockCount: actor ? stockOf(actor.items, item.id).length : 0,
       hasActor: !!actor,
@@ -861,13 +864,13 @@ export class SR5ShopVendor {
       }
       if (SR5Credstick.funds(stick) < total) {
         SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_CredstickNotEnoughOnStick', {
-          name: stick.name, amount: total.toLocaleString(), loaded: SR5Credstick.funds(stick).toLocaleString(),
+          name: stick.name, amount: formatNumber(total), loaded: formatNumber(SR5Credstick.funds(stick)),
         })
         return false
       }
     } else if (!free && total > SR5Shop.balance(buyer)) {
       SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopNotEnoughNuyen', {
-        name: buyer.name, price: total.toLocaleString(), balance: SR5Shop.balance(buyer).toLocaleString(),
+        name: buyer.name, price: formatNumber(total), balance: formatNumber(SR5Shop.balance(buyer)),
       })
       return false
     }
@@ -893,7 +896,7 @@ export class SR5ShopVendor {
           })
         },
         content: `<p>${game.i18n.format('SR5.ShopVendorApproveText', {
-          user: requester.name, actor: buyer.name, name: labels.join(', '), price: total.toLocaleString(),
+          user: requester.name, actor: buyer.name, name: labels.join(', '), price: formatNumber(total),
         })}</p>`,
         rejectClose: false,
       })
@@ -970,7 +973,7 @@ export class SR5ShopVendor {
           ...SR5ShopVendor.#transaction('loss', total, game.i18n.format('SR5.ShopPurchaseOf', {
             name: summary
           }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
-            name: labels.join(', '), price: total.toLocaleString(), shop: label,
+            name: labels.join(', '), price: formatNumber(total), shop: label,
           })), _id: debitId,
           flags: {
             sr5: {
@@ -1015,7 +1018,7 @@ export class SR5ShopVendor {
     }
 
     const rows = resolved.map(line =>
-      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + (line.extra ?? 0)).toLocaleString()}&yen;${
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${formatNumber(line.total + (line.extra ?? 0))}&yen;${
         SR5Shop.orderNote(line.order)}</li>`).join('')
     await foundry.documents.ChatMessage.create({
       speaker: foundry.documents.ChatMessage.getSpeaker({
@@ -1023,13 +1026,13 @@ export class SR5ShopVendor {
       }),
       whisper: equip ? game.users.filter(u => u.isGM).map(u => u.id) : [],
       content: `<p>${game.i18n.format(free ? 'SR5.ShopVendorChatFree' : 'SR5.ShopVendorChat', {
-        actor: buyer.name, name: summary, shop: label, price: total.toLocaleString(),
+        actor: buyer.name, name: summary, shop: label, price: formatNumber(total),
       })}</p>${resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''}${overflow ? `<p>${game.i18n.format('SR5.ShopVendorOverflow', {
-        amount: overflow.toLocaleString()
+        amount: formatNumber(overflow)
       })}</p>` : ''}`,
     })
     SR5ShopVendor.#notify(requester, 'info', 'SR5.ShopVendorDone', {
-      name: summary, shop: label, price: total.toLocaleString(),
+      name: summary, shop: label, price: formatNumber(total),
     })
     SR5_SystemHelpers.srLog(3, `Shop vendor: ${buyer.name} buys ${summary} from ${label} (${total})`)
     return true
@@ -1339,7 +1342,7 @@ export class SR5ShopVendor {
       viaContact, loyalty, percent, test, results, total,
     }
     const rows = results.map(line => `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${
-      line.total.toLocaleString()}&yen; <small>(${line.listed.toLocaleString()}&yen; × ${percent}%)</small>${
+      formatNumber(line.total)}&yen; <small>(${formatNumber(line.listed)}&yen; × ${percent}%)</small>${
       ` <small class="muted">${game.i18n.localize(`SR5.ShopVendorOrigin_${line.origin}`)}</small>`}</li>`).join('')
     const how = viaContact ?
       game.i18n.format('SR5.ShopVendorOfferContact', {
@@ -1355,7 +1358,7 @@ export class SR5ShopVendor {
         actor
       }),
       content: `<div class="sr-shop-card"><p>${game.i18n.format('SR5.ShopVendorOfferTitle', {
-        shop: label, seller: seller.name, price: total.toLocaleString()
+        shop: label, seller: seller.name, price: formatNumber(total)
       })}</p><p class="muted">${how}</p>${warning ? `<p class="sr-shop-blocked">${warning}</p>` : ''}<ul>${rows}</ul>` +
         `<footer class="sr-shop-card-footer"><button type="button" data-vendor-offer="accept">${
           game.i18n.localize('SR5.ShopVendorOfferAccept')}</button><button type="button" data-vendor-offer="decline">${
@@ -1458,7 +1461,7 @@ export class SR5ShopVendor {
     const cashbox = SR5ShopVendor.cashboxOf(vendor.actor, vendor.storage)
     if (!cashbox || SR5Credstick.funds(cashbox) < total) {
       SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorCannotPay', {
-        name: data.shop, price: total.toLocaleString()
+        name: data.shop, price: formatNumber(total)
       })
       return null
     }
@@ -1545,7 +1548,7 @@ export class SR5ShopVendor {
         shop: data.shop
       }), lines.map(line => SR5Shop.lineLabel(line.name, line.quantity)).join(', '))])
     SR5ShopVendor.#notify(requester, 'info', 'SR5.ShopVendorOfferDone', {
-      shop: data.shop, price: total.toLocaleString()
+      shop: data.shop, price: formatNumber(total)
     })
     return true
   }
@@ -1582,7 +1585,7 @@ export class SR5ShopVendor {
     name: line.sourceName, figures: figuresLabel(line.sourceFigures)
   })}</p>` : ''}
         <p>${game.i18n.format('SR5.ShopVendorProposed', {
-    listed: line.listed.toLocaleString(), origin, percent: review.data.percent
+    listed: formatNumber(line.listed), origin, percent: review.data.percent
   })}</p>${warning}
         <label>${game.i18n.localize('SR5.ShopVendorUnitPrice')}
           <input type="number" min="0" step="1" name="unit-${index}" value="${line.unit}"></label></li>`
@@ -1597,7 +1600,7 @@ export class SR5ShopVendor {
         width: 520
       },
       content: `<p>${game.i18n.format('SR5.ShopVendorReviewText', {
-        seller: review.seller.name, price: review.total.toLocaleString()
+        seller: review.seller.name, price: formatNumber(review.total)
       })}</p><ul class="sr-shop-review">${rows}</ul>`,
       rejectClose: false,
       buttons: [{

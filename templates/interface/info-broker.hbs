@@ -80,7 +80,7 @@
         </ol>
         <div class="sr-infobroker-request-line">
           <span>{{localize 'SR5.INFOBROKER_Range'}} {{range}}</span>
-          {{#if isSell}}{{#if asked}}<span>{{localize 'SR5.INFOBROKER_AskedShort'}} {{asked}} ¥</span>{{/if}}{{/if}}
+          {{#if isSell}}{{#if asked}}<span>{{localize 'SR5.INFOBROKER_AskedShort'}} {{formatNumber asked}} ¥</span>{{/if}}{{/if}}
           {{#if (or (eq status 'quoted') (eq status 'paid') (eq status 'delivered') (eq status 'bid') (eq status 'sold'))}}<span class="sr-infobroker-price">{{priceLabel}}</span>{{/if}}
         </div>
 

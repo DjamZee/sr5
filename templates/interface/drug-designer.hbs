@@ -70,7 +70,7 @@
     <dt>{{localize 'SR5.AddictionRating'}}</dt><dd>{{stat.addictionRating}}</dd>
     <dt>{{localize 'SR5.AddictionThreshold'}}</dt><dd>{{threshold}}</dd>
     <dt>{{localize 'SR5.Availability'}}</dt><dd>{{stat.availability}}{{stat.legality}}</dd>
-    <dt>{{localize 'SR5.Price'}}</dt><dd>{{stat.cost}} ¥</dd>
+    <dt>{{localize 'SR5.Price'}}</dt><dd>{{formatNumber stat.cost}} ¥</dd>
   </dl>
   {{#if negativeAttributes}}<p class="hint">{{localize 'SR5.DrugDesignerAttributeFloor'}}</p>{{/if}}
 

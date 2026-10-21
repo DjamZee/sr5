@@ -12,6 +12,9 @@
 import {
   sr5StackPayload, sr5LineLabel
 } from "./item-payload.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * The documents to create so that a character ends up holding `quantity` of
@@ -67,7 +70,7 @@ export function sr5PayoutFooter({
 
   if (nuyen !== null) {
     rows.push(row("nuyen", game.i18n.format("SR5.TableNuyenFound", {
-      amount: nuyen.toLocaleString()
+      amount: formatNumber(nuyen)
     }), "sr5PayTableNuyen", game.i18n.localize("SR5.TableNuyenPay"), "fa-hand-holding-dollar"))
   }
 
@@ -234,7 +237,7 @@ export async function sr5HandOverNuyen(message, actors, shown) {
   }
 
   await spendRow(message, "nuyen", game.i18n.format("SR5.TableNuyenPaid", {
-    amount: amount.toLocaleString(),
+    amount: formatNumber(amount),
     names: actors.map(actor => actor.name).join(", ")
   }))
 }
@@ -360,7 +363,7 @@ async function payoutReviewLines(message, kind, actors) {
   if (kind === "nuyen") {
     const amount = Number(message.getFlag("sr5", "tableNuyen")) || 0
     return [game.i18n.format("SR5.TablePayoutReviewNuyen", {
-      amount: amount.toLocaleString(), names
+      amount: formatNumber(amount), names
     })]
   }
   const lines = []

@@ -29,6 +29,9 @@ import {
   usesModPoints, droneModRule, vehicleStats, modPointsCost, modPointsOnDrone, modPointsLines, modPointsGauge, modsTakingPoints, modPointsPrice,
   modPointsAvailability
 } from "./drone-mod-points.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 // The Foundry side of the workshop (Chop Shop, B12; Rigger 5.0 p. 153-156): the "Workshop" tab of the drone sheet and
 // of the vehicle item, the drop of a mod, its purchase through the shop, the direct fitting by the gamemaster and the
@@ -117,7 +120,7 @@ export function workshopContext(vehicle){
       rating: ms.itemRating && !m.name.includes(`(${ms.itemRating})`) ? ms.itemRating : 0,
       //A factory mod takes neither slots nor points (R5 p. 191): its column shows 0, like the gauge
       slots: factory ? 0 : points ? pointLines[index] : Number(ms.slots?.value) || 0, threshold: Number(ms.threshold?.value) || 0,
-      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: priceOf(m).toLocaleString(),
+      tools: ms.tools ? L(SR5.vehicleModTools[ms.tools] ?? ms.tools) : "", price: formatNumber(priceOf(m)),
       factory, fitted, pending: !fitted,
     }
   }
@@ -129,7 +132,7 @@ export function workshopContext(vehicle){
     ...g, label: L(SR5.vehicleModType[g.key])
   }))
   const cost = workshopCost(isItem ? s.price?.base : s.price, mods, priceOf)
-  const yen = n => `${n.toLocaleString()} ¥`
+  const yen = n => `${formatNumber(n)} ¥`
   return {
     isItem, isGM: game.user.isGM, canTest: !isItem && vehicle.isOwner,
     name: vehicle.name, img: workshopImage(vehicle.img, {
@@ -175,7 +178,7 @@ export async function dropModOnWorkshop(vehicle, dropData){
   const buttons = []
   if (!owned && !isItem && buyer) buttons.push({
     action: "buy", label: game.i18n.format("SR5.VehicleModWorkshopBuy", {
-      price: price.toLocaleString()
+      price: formatNumber(price)
     }), default: true
   })
   if (owned && source.parent.isOwner && !isItem) buttons.push({
@@ -204,10 +207,10 @@ export async function dropModOnWorkshop(vehicle, dropData){
       ${availability ? `<li>${L("SR5.ShopAvailability")}${L("SR5.Colons")} ${availability.availability}${availability.legality}</li>` : ""}
       <li>${L("SR5.Threshold")}${L("SR5.Colons")} ${s.threshold?.value ?? 0}${s.tools ? `, ${L(SR5.vehicleModTools[s.tools] ?? s.tools)}` : ""}</li>
       <li>${game.i18n.format("SR5.VehicleModWorkshopPriceOn", {
-    price: price.toLocaleString(), vehicle: vehicle.name
+    price: formatNumber(price), vehicle: vehicle.name
   })}</li>
       ${buyer && !isItem ? `<li>${game.i18n.format("SR5.VehicleModWorkshopBuyer", {
-    buyer: buyer.name, balance: `${SR5Shop.balance(buyer).toLocaleString()} ¥`
+    buyer: buyer.name, balance: `${formatNumber(SR5Shop.balance(buyer))} ¥`
   })}</li>` : ""}
     </ul>
     ${buttons.some(b => b.action === "buy" || b.action === "move") ? `<p class="hint">${L("SR5.VehicleModWorkshopDropHint")}</p>` : ""}

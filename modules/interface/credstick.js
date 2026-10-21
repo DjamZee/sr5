@@ -7,6 +7,9 @@ import {
 import {
   isStoredAway
 } from './storage-rules.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * Certified credsticks: cash a character carries.
@@ -91,8 +94,8 @@ export class SR5Credstick {
     if (sum > balance) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickNotEnoughFunds', {
         name: actor.name,
-        amount: sum.toLocaleString(),
-        balance: balance.toLocaleString(),
+        amount: formatNumber(sum),
+        balance: formatNumber(balance),
       }))
       return false
     }
@@ -101,7 +104,7 @@ export class SR5Credstick {
     if (sum > room) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickFull', {
         name: credstick.name,
-        room: room === Infinity ? '∞' : room.toLocaleString(),
+        room: room === Infinity ? '∞' : formatNumber(room),
       }))
       return false
     }
@@ -116,7 +119,7 @@ export class SR5Credstick {
     SR5_SystemHelpers.srLog(3, `Credstick: ${actor.name} withdraws ${sum} onto ${credstick.name}`)
     await SR5Credstick.#announce(actor, 'SR5.CredstickWithdrawalChat', {
       actor: actor.name,
-      amount: sum.toLocaleString(),
+      amount: formatNumber(sum),
       name: credstick.name,
     })
     return true
@@ -138,8 +141,8 @@ export class SR5Credstick {
     if (sum > loaded) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_CredstickNotEnoughOnStick', {
         name: credstick.name,
-        amount: sum.toLocaleString(),
-        loaded: loaded.toLocaleString(),
+        amount: formatNumber(sum),
+        loaded: formatNumber(loaded),
       }))
       return false
     }
@@ -154,7 +157,7 @@ export class SR5Credstick {
     SR5_SystemHelpers.srLog(3, `Credstick: ${actor.name} deposits ${sum} from ${credstick.name}`)
     await SR5Credstick.#announce(actor, 'SR5.CredstickDepositChat', {
       actor: actor.name,
-      amount: sum.toLocaleString(),
+      amount: formatNumber(sum),
       name: credstick.name,
     })
     return true

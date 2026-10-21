@@ -29,6 +29,9 @@ import {
   WORKSHOP_FAMILIES, workshopFamily, weaponSlots, slotLines, slotRefusal, accessorySlot, accessoryKind, toolsFor, installNeedsTest,
   capacityGauge, capacityRefusal, workshopTotals, DEFAULT_INSTALL
 } from "./item-workshop.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 // The Foundry side of an item's workshop (lot 12, C9; Armurerie, Personnalisation, Clinique, Établi): the tab of
 // the item sheet, the drop of an accessory (bought at the shop's till, taken from the inventory, or fitted by the
@@ -37,7 +40,7 @@ import {
 // `system.accessory`, the item itself marked `isPlugged` (itemSheet.js, #onAccessoryChoice)
 
 const L = k => game.i18n.localize(k)
-const yen = n => `${(Number(n) || 0).toLocaleString()} ¥`
+const yen = n => `${formatNumber(Number(n) || 0)} ¥`
 const availabilityLabel = (availability, legality) => availability || legality ? `${availability || ""}${legality ?? ""}` : "—"
 const list = v => Array.isArray(v) ? v : Object.values(v ?? {
 })
