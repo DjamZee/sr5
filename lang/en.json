@@ -6940,6 +6940,8 @@
 	"SR5.FACTION_Type": "Type",
 	"SR5.FACTION_Enemies": "Enemies",
 	"SR5.FACTION_NoToken": "Select the NPC tokens first.",
+	"SR5.FACTION_DropActor": "Drop an NPC or a vendor here from the actors sidebar to affiliate it with this faction (it leaves any other faction).",
+	"SR5.FACTION_DropNoPc": "A player character is not a faction member: their standing is kept in the journal.",
 	"SR5.FACTION_PickFactionActor": "Choose a faction and at least one character.",
 	"SR5.FACTION_NotEnough": "Not enough reputation: {score} for a cost of {cost} (never below zero, p. 159).",
 	"SR5.FACTION_ContactNotInFaction": "This contact must belong to this character and to this faction.",

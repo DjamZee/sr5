@@ -4,7 +4,7 @@
   <fieldset>
     <legend>{{localize 'SR5.FACTION_List'}}</legend>
     {{#each factions}}
-    <section class="sr-faction">
+    <section class="sr-faction" data-faction="{{id}}">
       <header class="sr-faction-head">
         <strong>{{name}}</strong> <span class="hint">{{localize typeLabel}}</span>
         {{#if enemyNames}}<span class="hint">— {{localize 'SR5.FACTION_Enemies'}} : {{enemyNames}}</span>{{/if}}
@@ -15,7 +15,7 @@
       </header>
       {{#if note}}<p class="hint">{{note}}</p>{{/if}}
       <div class="sr-faction-row">
-        <span>{{localize 'SR5.FACTION_Members'}} :</span>
+        <span data-tooltip="{{localize 'SR5.FACTION_DropActor'}}">{{localize 'SR5.FACTION_Members'}} :</span>
         {{#each memberList}}<span class="sr-faction-tag">{{name}} <a data-action="removeMember" data-faction="{{../id}}" data-member="{{id}}"><i class="fas fa-xmark"></i></a></span>{{/each}}
         <button type="button" data-action="addTokens" data-faction="{{id}}"><i class="fas fa-user-plus"></i> {{localize 'SR5.FACTION_AddTokens'}}</button>
       </div>
