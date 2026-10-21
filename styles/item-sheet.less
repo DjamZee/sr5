@@ -330,6 +330,14 @@
                 }
             }
 
+            // An @UUID link written in the text, in a list or not: the 25 % above is for the sheet's own list
+            // links. On Foundry's light chip (body.game .app a.content-link), the theme's opaque red reads at
+            // 6.7:1 (SR5) and 4.9:1 (SR6), in both colour schemes
+            a.content-link, a.inline-roll {
+                color: var(--sr-ui-border-color);
+                background: rgb(221, 221, 221);
+            }
+
             input {
                 background    : none;
                 color         : color-mix(in srgb, var(--sr-text-color-dark) 70%, transparent);
