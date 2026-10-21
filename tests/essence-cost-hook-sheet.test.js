@@ -10,6 +10,9 @@ import {
 import {
   SR5Shop
 } from "../modules/interface/shop.js"
+import {
+  foundryHooks
+} from "./fixtures/foundry-hooks.js"
 
 // Câblage Maison, lot 4 (Gaspard#5127, 21/10; voie A d'Élise): the sheet asks sr5.essenceCostFor too (context "sheet"),
 // the shop says "shop". Without a subscriber the sheet gives exactly what it gave before.
@@ -19,16 +22,17 @@ afterEach(() => {
   globalThis.Hooks = savedHooks
 })
 
+/** Foundry's Hooks (its callAll catches errors) with one subscriber recording each call, then running `fn` */
 function subscribe(fn) {
   const calls = []
-  globalThis.Hooks = {
-    callAll: (hook, data) => {
+  globalThis.Hooks = foundryHooks({
+    [ESSENCE_COST_HOOK]: data => {
       calls.push({
-        hook, data
+        hook: ESSENCE_COST_HOOK, data
       })
       fn?.(data)
     }
-  }
+  })
   return calls
 }
 
@@ -180,6 +184,13 @@ describe("the sheet asks sr5.essenceCostFor", () => {
     })
     expect(onSheet(implant("cyberware", 2))).toBe(2)
     subscribe(data => (data.cost = -1))
+    expect(onSheet(implant("cyberware", 2))).toBe(2)
+  })
+  it("keeps the book's cost when a subscriber writes, then throws (relecture du 21/10, D1)", () => {
+    subscribe(data => {
+      data.cost = 0.1
+      throw new Error("module")
+    })
     expect(onSheet(implant("cyberware", 2))).toBe(2)
   })
   it("sheetLine copies no data model: plain values only", () => {

@@ -8,24 +8,25 @@ import {
   ROLL_REMINDERS_HOOK, VENDOR_PRICE_HOOK, PURCHASE_FUNDS_HOOK, VENDOR_REFUSAL_HOOK, INITIATIVE_REMINDERS_HOOK,
   MAX_REMINDERS, rollRemindersFor, vendorPriceFor, purchaseFundsVerdict, reminderModifierType, reminderCardLine,
   vendorRefusalFor, shelfPrice, initiativeRemindersFor, initiativeCardLine,
-  confirmFundsWarning, MAX_WARNING
+  confirmFundsWarning, MAX_WARNING, callSubscribers
 } from "../modules/system/house-rule-hooks.js"
+import {
+  foundryHooks
+} from "./fixtures/foundry-hooks.js"
 
 // Câblage Maison, lot 2 (21/10): three hooks for a module of house rules, on the pattern of sr5.essenceCostFor. The
 // system plays the book; a subscriber changes it in a module; a bad answer or a subscriber that throws leaves the book.
 
-/** A `call` that runs these subscribers, as Hooks.callAll would, and records the hooks called */
+const HOOKS = [ROLL_REMINDERS_HOOK, VENDOR_PRICE_HOOK, PURCHASE_FUNDS_HOOK, VENDOR_REFUSAL_HOOK, INITIATIVE_REMINDERS_HOOK]
+
+/** Foundry's Hooks with these subscribers on every hook of this file, in order; `seen` the hooks called */
 function subscribers(...fns) {
-  const seen = []
-  const call = (hook, data) => {
-    seen.push(hook)
-    for (const fn of fns) fn(data)
-  }
+  const hooks = foundryHooks(Object.fromEntries(HOOKS.map(hook => [hook, fns])))
   return {
-    call, seen
+    hooks, seen: hooks.seen
   }
 }
-const none = () => true
+const none = foundryHooks()
 const throwing = () => {
   throw new Error("module")
 }
@@ -44,13 +45,13 @@ describe("sr5.rollReminders", () => {
 
   it("shows nothing without a subscriber", () => {
     expect(rollRemindersFor(actor, rollData, {
-      call: none
+      hooks: none
     })).toEqual([])
   })
   it("gives the actor, a copy of the test, and keeps the lines cleaned, unticked", () => {
     let got
     const {
-      call, seen
+      hooks, seen
     } = subscribers(data => {
       got = data
       data.rollData.dicePool.value = 99
@@ -67,7 +68,7 @@ describe("sr5.rollReminders", () => {
       })
     })
     const lines = rollRemindersFor(actor, rollData, {
-      call
+      hooks
     })
     expect(seen).toEqual([ROLL_REMINDERS_HOOK])
     expect(ROLL_REMINDERS_HOOK).toBe("sr5.rollReminders")
@@ -97,7 +98,7 @@ describe("sr5.rollReminders", () => {
     })
     expect(rollRemindersFor(actor, rollData, many)).toHaveLength(MAX_REMINDERS)
     expect(rollRemindersFor(actor, rollData, {
-      call: throwing
+      hooks: subscribers(throwing).hooks
     })).toEqual([])
     expect(rollRemindersFor(actor, rollData, subscribers(data => (data.reminders = "x")))).toEqual([])
   })
@@ -135,7 +136,7 @@ describe("sr5.vendorPrice", () => {
 
   it("is the book's price without a subscriber", () => {
     expect(vendorPriceFor(args, {
-      call: none
+      hooks: none
     })).toEqual({
       price: 1000, notes: []
     })
@@ -143,7 +144,7 @@ describe("sr5.vendorPrice", () => {
   it("gives the vendor, its shop, the buyer, a copy of the line, the unit price and the quantity", () => {
     let got
     const {
-      call, seen
+      hooks, seen
     } = subscribers(data => {
       got = data
       data.item.system.price.value = 0
@@ -151,7 +152,7 @@ describe("sr5.vendorPrice", () => {
       data.notes.push("dont réputation de faction : −100 ¥", 12, "")
     })
     expect(vendorPriceFor(args, {
-      call
+      hooks
     })).toEqual({
       price: 900, notes: ["dont réputation de faction : −100 ¥"]
     })
@@ -169,7 +170,7 @@ describe("sr5.vendorPrice", () => {
       expect(vendorPriceFor(args, subscribers(data => (data.price = bad))).price).toBe(1000)
     }
     expect(vendorPriceFor(args, {
-      call: throwing
+      hooks: subscribers(throwing).hooks
     })).toEqual({
       price: 1000, notes: []
     })
@@ -186,7 +187,7 @@ describe("sr5.purchaseFunds", () => {
 
   it("refuses without a subscriber, as the book does", () => {
     expect(purchaseFundsVerdict(args, {
-      call: none
+      hooks: none
     })).toEqual({
       allow: false, flags: {
       }, warning: ""
@@ -195,7 +196,7 @@ describe("sr5.purchaseFunds", () => {
   it("gives the buyer, the total, the balance and the shortfall; lets it go on allow === true", () => {
     let got
     const {
-      call, seen
+      hooks, seen
     } = subscribers(data => {
       got = data
       data.allow = true
@@ -206,7 +207,7 @@ describe("sr5.purchaseFunds", () => {
       }
     })
     expect(purchaseFundsVerdict(args, {
-      call
+      hooks
     })).toEqual({
       allow: true, flags: {
         "cablage-maison-sr5": {
@@ -252,7 +253,7 @@ describe("sr5.purchaseFunds", () => {
       expect(purchaseFundsVerdict(args, subscribers(data => (data.allow = value))).allow).toBe(false)
     }
     expect(purchaseFundsVerdict(args, {
-      call: throwing
+      hooks: subscribers(throwing).hooks
     }).allow).toBe(false)
   })
 })
@@ -349,7 +350,7 @@ describe("sr5.vendorRefusal", () => {
 
   it("sells without a subscriber, as the book does", () => {
     expect(vendorRefusalFor(args, {
-      call: none
+      hooks: none
     })).toEqual({
       refuse: false, reason: ""
     })
@@ -357,14 +358,14 @@ describe("sr5.vendorRefusal", () => {
   it("gives the vendor, its shop and the buyer; refuses on refuse === true, with the reason cleaned", () => {
     let got
     const {
-      call, seen
+      hooks, seen
     } = subscribers(data => {
       got = data
       data.refuse = true
       data.reason = `  Les Ancients ne vendent pas aux Halloweeners ${"x".repeat(300)}`
     })
     const verdict = vendorRefusalFor(args, {
-      call
+      hooks
     })
     expect(seen).toEqual([VENDOR_REFUSAL_HOOK])
     expect(VENDOR_REFUSAL_HOOK).toBe("sr5.vendorRefusal")
@@ -386,7 +387,7 @@ describe("sr5.vendorRefusal", () => {
       expect(vendorRefusalFor(args, subscribers(data => (data.refuse = value))).refuse).toBe(false)
     }
     expect(vendorRefusalFor(args, {
-      call: throwing
+      hooks: subscribers(throwing).hooks
     })).toEqual({
       refuse: false, reason: ""
     })
@@ -407,7 +408,7 @@ describe("sr5.initiativeReminders", () => {
 
   it("adds nothing without a subscriber", () => {
     expect(initiativeRemindersFor(args, {
-      call: none
+      hooks: none
     })).toEqual({
       lines: [], score: 0
     })
@@ -415,7 +416,7 @@ describe("sr5.initiativeReminders", () => {
   it("gives the actor, the turn and the roll; keeps the lines cleaned and adds their scores", () => {
     let got
     const {
-      call, seen
+      hooks, seen
     } = subscribers(data => {
       got = data
       if (!data.firstRound) return
@@ -432,7 +433,7 @@ describe("sr5.initiativeReminders", () => {
       })
     })
     expect(initiativeRemindersFor(args, {
-      call
+      hooks
     })).toEqual({
       lines: [
         {
@@ -461,7 +462,7 @@ describe("sr5.initiativeReminders", () => {
     expect(initiativeRemindersFor({
       ...args, round: 2
     }, {
-      call
+      hooks
     })).toEqual({
       lines: [], score: 0
     })
@@ -476,7 +477,7 @@ describe("sr5.initiativeReminders", () => {
       score: MAX_REMINDERS
     })
     expect(initiativeRemindersFor(args, {
-      call: throwing
+      hooks: subscribers(throwing).hooks
     })).toEqual({
       lines: [], score: 0
     })
@@ -491,6 +492,122 @@ describe("sr5.initiativeReminders", () => {
     expect(initiativeCardLine({
       label: "rappel seul", score: 0
     })).toBe("rappel seul")
+  })
+})
+
+// Relecture du 21/10, D1: Foundry's callAll catches a subscriber's error and keeps what it wrote. The system calls each
+// subscriber itself: one that writes its answer, then throws, has it thrown away.
+describe("a subscriber that writes, then throws", () => {
+  const writesThenThrows = write => data => {
+    write(data)
+    throw new Error("module")
+  }
+  const args = {
+    vendor: {
+      name: "Vendeur"
+    }, buyer: {
+      name: "Acheteuse"
+    }, price: 1000, total: 5000, balance: 1000
+  }
+
+  it("would be kept by Foundry's callAll: the fake is Foundry's", () => {
+    const hooks = foundryHooks({
+      [PURCHASE_FUNDS_HOOK]: writesThenThrows(data => (data.allow = true))
+    })
+    const data = {
+      allow: false
+    }
+    expect(() => hooks.callAll(PURCHASE_FUNDS_HOOK, data)).not.toThrow()
+    expect(data.allow).toBe(true)
+    expect(hooks.errors).toHaveLength(1)
+  })
+  it("leaves the book on every hook", () => {
+    const {
+      hooks
+    } = subscribers(writesThenThrows(data => {
+      data.allow = true
+      data.warning = "à crédit"
+      data.flags.module = {
+        debt: 4000
+      }
+      data.price = 1
+      data.notes?.push?.("soldé")
+      data.refuse = true
+      data.reason = "non"
+      data.reminders?.push?.({
+        label: "ligne", dice: 2, score: 3
+      })
+    }))
+    expect(purchaseFundsVerdict(args, {
+      hooks
+    })).toEqual({
+      allow: false, flags: {
+      }, warning: ""
+    })
+    expect(vendorPriceFor(args, {
+      hooks
+    })).toEqual({
+      price: 1000, notes: []
+    })
+    expect(vendorRefusalFor(args, {
+      hooks
+    })).toEqual({
+      refuse: false, reason: ""
+    })
+    expect(rollRemindersFor(args.buyer, {
+    }, {
+      hooks
+    })).toEqual([])
+    expect(initiativeRemindersFor({
+      round: 1
+    }, {
+      hooks
+    })).toEqual({
+      lines: [], score: 0
+    })
+  })
+  it("keeps the answers of the others, in order", () => {
+    const {
+      hooks
+    } = subscribers(data => (data.price = 900), writesThenThrows(data => (data.price = 1)), data => (data.price += 50))
+    expect(vendorPriceFor(args, {
+      hooks
+    }).price).toBe(950)
+    const reminders = subscribers(data => data.reminders.push({
+      label: "gardée"
+    }), writesThenThrows(data => data.reminders.push({
+      label: "jetée"
+    }))).hooks
+    expect(rollRemindersFor(args.buyer, {
+    }, {
+      hooks: reminders
+    }).map(line => line.label)).toEqual(["gardée"])
+  })
+  it("calls a `once` subscriber once, and keeps the book when its answer cannot be copied back", () => {
+    const hooks = foundryHooks()
+    hooks.once(VENDOR_PRICE_HOOK, data => (data.price = 800))
+    expect(vendorPriceFor(args, {
+      hooks
+    }).price).toBe(800)
+    expect(vendorPriceFor(args, {
+      hooks
+    }).price).toBe(1000)
+    // An answer that cannot be copied (a function and a loop in a line), then a subscriber that throws: the book
+    const data = {
+      reminders: []
+    }
+    const line = {
+      label: "x", fn: () => 1
+    }
+    line.self = line
+    const odd = foundryHooks({
+      [ROLL_REMINDERS_HOOK]: [d => d.reminders.push(line), writesThenThrows(d => (d.reminders = "x"))]
+    })
+    expect(callSubscribers(ROLL_REMINDERS_HOOK, data, ["reminders"], odd)).toBe(false)
+  })
+  it("is never asked of Hooks.callAll", () => {
+    const hooksFile = readFileSync(new URL("../modules/system/house-rule-hooks.js", import.meta.url), "utf8")
+    expect(hooksFile).not.toMatch(/Hooks(\?)?\.callAll\(/)
   })
 })
 
