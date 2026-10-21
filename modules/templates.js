@@ -641,6 +641,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/rolls/rollDialogPartial/manaBarrierRating.hbs",    
     "systems/sr5/templates/rolls/rollDialogPartial/rammingOptions.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/calledShots.hbs",
+    "systems/sr5/templates/rolls/rollDialogPartial/reminders.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/manaBarrierRating.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/healingModifier.hbs",
     "systems/sr5/templates/rolls/rollDialogPartial/escapeArtistModifier.hbs",

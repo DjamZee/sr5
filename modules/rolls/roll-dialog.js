@@ -101,6 +101,9 @@ import {
 import {
   streamOf, streamSpriteDice, noiseIgnoredByStream
 } from "../entities/actors/technomancer-streams.js"
+import {
+  reminderModifierType
+} from "../system/house-rule-hooks.js"
 
 export default class SR5_RollDialog {
 
@@ -240,6 +243,19 @@ export default class SR5_RollDialog {
     this.updateDicePoolValue(html)
   }
 
+  _onReminder(ev, html, dialogData) {
+    const box = ev.currentTarget
+    const reminder = (dialogData.reminders ?? []).find(r => r.id === box.dataset.reminder)
+    if (!reminder) return
+    reminder.applied = box.checked
+    const type = reminderModifierType(reminder.id)
+    SR5_MiscellaneousHelpers.removeElementFromArray(dialogData.dicePool.modifiers, 'type', type)
+    if (reminder.applied && reminder.dice) dialogData.dicePool.modifiers.push({
+      type, label: reminder.source || reminder.label, value: reminder.dice
+    })
+    this.updateDicePoolValue(html)
+  }
+
   updateFadingValue(html) {
     this.dialogData.matrix.level = parseInt(html.querySelector('[name="level"]').value)
     if (html.querySelector('[name="fadingValue"]')){
@@ -353,6 +369,8 @@ export default class SR5_RollDialog {
     //Binding: the (Force x 25) drachms are spent from the start (SR5 p. 304)
     if (dialogData.magic.bindingReagents > 0 && element.querySelector('[name="reagentsSpent"]')) this._updateReagents(dialogData.magic.bindingReagents, actor, element, dialogData)
     element.querySelectorAll('.SR-ReagentTier, .SR-ReagentForeign').forEach(el => el.addEventListener('change', () => this._onReagentOption(element, dialogData, actor)))
+    //A reminder of a module (sr5.rollReminders) ticked: its dice join the pool, and the card says it applied
+    element.querySelectorAll('.SR-ReminderBox').forEach(el => el.addEventListener('change', ev => this._onReminder(ev, element, dialogData)))
 
     //General commands for input
     element.querySelectorAll('.SR-ModInput').forEach(el => el.addEventListener('change', ev => this._manualInputModifier(ev, element, dialogData)))

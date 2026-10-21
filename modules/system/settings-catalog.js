@@ -68,6 +68,10 @@ export const SETTINGS_TAGS = {
 
 // Key (without the "sr5." namespace) → [tab, tag]. The tag is left out when the setting only tells
 // the system how far to automate the book's rule, or how to show it.
+// The "house" settings stay in the system, off (or at the book's value) by default: they touch the core (actions,
+// rolls, the shop, the PAN crown) and change nothing while off. A module of house rules (Câblage Maison) sets them
+// through the presets and explains them; it never copies them (DjamZ's decision D3, 21/10). A ruling on a silent or
+// contradictory book is no house rule: it stays in the code, untagged (MYSTIC_ADEPT_MASK_DRAIN, mentor-spirits.js).
 export const SETTINGS_CATALOG = {
   // Rule locks: the gamemaster never stopped by them (idea 11, lot 16b), under their menu, which
   // sits in the presets tab since the rule locks tab was merged into it (relecture djamz.13, R9)
@@ -108,6 +112,8 @@ export const SETTINGS_CATALOG = {
   sr5CommcodeCipher: ["matrix", "house"],
   sr5DevicelessAILogicDefense: ["matrix"],
   sr5EmulateOverwatchHalf: ["matrix", "house"],
+  // No tag: ticked, the book's rule (SR5 p. 165, 167); how far the system automates it, set by the automation preset
+  // (settings-presets.js), never by the rules preset
   sr5WifiRequiresDNI: ["matrix"],
   // No tag: pictures, not a rule (DjamZ's own, 21/10)
   sr5IceDefaultImages: ["matrix"],
@@ -127,14 +133,17 @@ export const SETTINGS_CATALOG = {
   // Perception and vision
   sr5CyberEyesReplaceNaturalVision: ["vision"],
   sr5VisionRangeLowLight: ["vision"],
-  sr5VisionRangeThermographic: ["vision", "house"],
+  // No tag: the book gives no range, this fills the gap as the other ranges do (Câblage Maison, lot 1)
+  sr5VisionRangeThermographic: ["vision"],
   sr5VisionRangeUltrasound: ["vision"],
   sr5VisionRangeAstral: ["vision"],
-  sr5LowLightGreenTint: ["vision", "house"],
+  // No tag: how low-light vision is drawn, not a rule (Câblage Maison, lot 1)
+  sr5LowLightGreenTint: ["vision"],
   // Body, health and augmentations
   // A character's Flight skill: no tab fits it better (DjamZ, 09/10)
   sr5FlightSkill: ["body"],
-  sr5AugmentationCap: ["body"],
+  // The book's cap by default (SR5 p. 96); the two others are table choices (rulings of DjamZ), hence the tag
+  sr5AugmentationCap: ["body", "house"],
   sr5EssenceHole: ["body", "book"],
   sr5AugmentationBundles: ["body", "book"],
   sr5RevealDiseases: ["body"],
@@ -183,6 +192,7 @@ export const SETTINGS_CATALOG = {
   "compendium.spritePowersExtra": ["gm"],
   "compendium.baseWeaponsExtra": ["gm"],
   sr5GMOnlyItemEffects: ["gm"],
+  // No tag: a guard of the gamemaster's, not a rule
   sr5CheckPlayerRolls: ["gm"],
   // Cutting Aces social rules (lot 21): next to the factions and the con tracker
   sr5CuttingAcesSocial: ["gm", "book"],

@@ -97,5 +97,6 @@ export function mentorMaskOn(actorPath, system, maskRule, magic, magicType){
 }
 
 // A mystic adept on the Adept path also gets the -1 Drain of the Mask when casting a spell, on top of the
-// +1 Power Point: arbitrage de DjamZ (2026-10-05), the book being silent on mystic adepts. One switch.
+// +1 Power Point: arbitrage de DjamZ (2026-10-05), the book being silent on mystic adepts. One switch. A reading of a
+// silent book, not a table's choice: a constant, no setting (Câblage Maison, lot 1, 21/10).
 export const MYSTIC_ADEPT_MASK_DRAIN = true

@@ -1,0 +1,13 @@
+<!-- The reminders a module of house rules gives this test (sr5.rollReminders): unticked, the player ticks those that apply -->
+<li class="grid">
+    <div class="col-12 SR-SubColor"><em>{{localize 'SR5.RollReminders'}}</em></div>
+</li>
+{{#each reminders}}
+<li class="grid">
+    <div class="col-10">{{#if this.source}}{{this.source}}{{localize 'SR5.Colons'}}{{/if}}{{this.label}}</div>
+    <div class="col-1 SR-TextRight"><input type="checkbox" class="SR-ReminderBox" data-reminder="{{this.id}}" data-tooltip="{{localize 'SR5.RollReminderApplies'}}"></div>
+    <div class="col-1 SR-TextCenter">
+        <input disabled type="number" value="{{this.dice}}" placeholder="0" data-dtype="Number" />
+    </div>
+</li>
+{{/each}}
