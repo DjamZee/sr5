@@ -63,9 +63,8 @@ export class SR5Credstick {
   /**
    * The ledger balance of a resource held as transactions.
    *
-   * `system.nuyen.value` sums every transaction, expenses included, so it is
-   * not a balance: the sheet reads gains minus losses (see `money.hbs`) and so
-   * does this.
+   * Gains minus losses, as the sheet reads them (see `money.hbs`), and as
+   * `system.nuyen.value` holds them since djamz.16 (utilityActor.js updateNuyens).
    */
   static ledgerBalance(actor) {
     const modifiers = actor?.system.nuyen?.modifiers ?? []
