@@ -535,6 +535,10 @@
         // own label instead of stretching its plate across the card
         > .content-link {
           flex: 0 1 auto;
+          // A long name wraps inside the card instead of running out of it (« Balles Subsoniques (Pistolet de
+          // poche) », manual 8.4.3)
+          min-width: 0;
+          white-space: normal;
         }
 
         // A text result's name keeps its own width, the description takes the rest: given an equal share, the name
