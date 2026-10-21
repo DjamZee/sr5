@@ -47,7 +47,7 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
-  vendorPriceFor, vendorRefusalFor, shelfPrice
+  vendorPriceFor, vendorRefusalFor, shelfPrice, purchaseFundsVerdict, confirmFundsWarning
 } from '../system/house-rule-hooks.js'
 import {
   lineWaits, deliveryDelayed
@@ -623,6 +623,11 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     })
     // No buyer yet: nothing is too dear, there is no purse to compare with
     const budget = free || !buyer ? Infinity : balance - cartTotal
+    // What the vendor's checkout asks a module before the request leaves (sr5.purchaseFunds, its warning)
+    this._cartFunds = {
+      buyer, total: cartTotal, balance, short: !free && !stick && !!buyer && cartTotal > balance,
+      vendor: vendorSource?.actor ?? null, storage: vendorSource?.storage ?? null
+    }
 
     // Filters first, on the whole catalogue, then the page (lot A review: the
     // count no longer gives a hidden prototype away). The entries come sorted.
@@ -1182,6 +1187,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     if (target) target.disabled = true
     try {
       if (this._source?.vendor) {
+        // Short on the accounts at a vendor's: the till runs on the gamemaster's browser, so a module's warning is
+        // confirmed here, by the buyer, before the request leaves (sr5.purchaseFunds); the till asks the funds again
+        const funds = this._cartFunds
+        if (funds?.short && !this._equipMode) {
+          const verdict = purchaseFundsVerdict({
+            buyer: funds.buyer, total: funds.total, balance: funds.balance, vendor: funds.vendor, storage: funds.storage
+          })
+          if (verdict.allow && !(await confirmFundsWarning(verdict.warning))) return
+        }
         const sent = await SR5ShopVendor.purchase({
           vendorUuid: this._source.actorUuid,
           storageId: this._source.storageId,

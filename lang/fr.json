@@ -682,6 +682,7 @@
 	"SR5.ShopGradeShort_standard": "Standard",
 	"SR5.ShopGradeShort_used": "Occasion",
 	"SR5.ShopGreywareConfirmTitle": "GreyWare sur un Éveillé",
+	"SR5.ShopFundsWarningTitle": "Achat au-delà du solde",
 	"SR5.ShopEssenceConfirmTitle": "Essence à 0 ou moins",
 	"SR5.ShopEssenceConfirmText": "{name} : cet achat ferait tomber l'Essence à {essence}. À 0, c'est la mort (SR5 p. 54). Confirmer quand même ?",
 	"SR5.ShopLeftAfter": "reste après achat : {value}",
