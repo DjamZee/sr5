@@ -83,7 +83,19 @@ export default async function matrixActionInfo(cardData, actorId){
     let depth = cardData.matrix.depth || 0, threshold = Number(cardData.threshold.value) || 0
     cardData.test.title = `${game.i18n.localize("SR5.MatrixActionTest")}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize(SR5.matrixRolledActions.redefineOwnership)} (${threshold})`
     //A glitch adds Depth to the Overwatch Score, a critical glitch triggers convergence
-    if (cardData.roll.criticalGlitchRoll) ui.notifications.warn(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_RedefineOwnershipConvergence")}`)
+    if (cardData.roll.criticalGlitchRoll) {
+      ui.notifications.warn(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_RedefineOwnershipConvergence")}`)
+      //DT p. 161: the GM is given the card of the convergence, once per roll (convergence-threshold.js)
+      if (!cardData.roll.convergenceTold) {
+        cardData.roll.convergenceTold = true
+        const {
+          postConvergenceNotice
+        } = await import("../../system/convergence-threshold.js")
+        await postConvergenceNotice(actor, {
+          forced: true
+        })
+      }
+    }
     //Raised once per roll: Second Chance and Push the limit refresh the same roll (SR5 p. 58)
     else if (cardData.roll.glitchRoll && !cardData.roll.overwatchRaised) {
       cardData.roll.overwatchRaised = true

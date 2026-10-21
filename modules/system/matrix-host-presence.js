@@ -13,8 +13,12 @@
 
 export const HOST_CHANGED_HOOK = "sr5.matrixHostChanged"
 export const HOST_EXIT_REASONS = ["exit", "reboot", "jackOut"]
-// SR5 p. 233: the convergence at 40
+// SR5 p. 233: the convergence at 40, the world's threshold (convergence-threshold.js)
 export const CONVERGENCE_SCORE = 40
+
+import {
+  convergenceThreshold
+} from "./convergence-threshold.js"
 
 import {
   isSceneryDevice
@@ -249,7 +253,7 @@ export async function exitHost(actor, {
 
 /** SR5 p. 249: leaving a host after the convergence, the demi-GOD converges at once; whispered to the gamemasters */
 export function warnConvergenceOnExit(actor){
-  if (!((Number(actor?.system?.matrix?.overwatchScore) || 0) >= CONVERGENCE_SCORE)) return
+  if (!((Number(actor?.system?.matrix?.overwatchScore) || 0) >= convergenceThreshold(actor))) return
   const gms = (game.users ?? []).filter(u => u.isGM).map(u => u.id)
   ChatMessage.create({
     whisper: gms, speaker: ChatMessage.getSpeaker({

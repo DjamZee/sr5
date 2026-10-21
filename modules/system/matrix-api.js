@@ -10,6 +10,9 @@ import {
 import {
   instanceName
 } from "./pan-candidates.js"
+import {
+  convergenceThreshold
+} from "./convergence-threshold.js"
 
 // SR5 p. 237: three marks at most on an icon, from one owner
 export const MAX_MARKS = 3
@@ -380,6 +383,9 @@ const presence = () => import("./matrix-host-presence.js")
 export const SR5MatrixApi = {
   placeMarks: (attacker, target, count, options) => placeMarks(attacker, target, count, options),
   converge: (persona, options) => converge(persona, options),
+  /** The Overwatch Score at which the grid converges on a persona: the world's threshold (40 by the book, SR5 p. 233),
+   * 10 lower with Wanted by GOD (DT p. 53). For a module's tracks */
+  convergenceThreshold: persona => convergenceThreshold(persona),
   /** Put a persona inside a host (SR5 p. 240): options {spendAction = true, force = false, chat = true} */
   enterHost: async (persona, host, options) => (await presence()).enterHost(await actorOf(persona), await actorOf(host), options),
   /** Take a persona out of its host: options {reason = "exit", spendAction, chat = true, warn = true} */

@@ -55,6 +55,9 @@ import {
   registerOverwatchHook
 } from './system/matrix-hooks.js'
 import {
+  registerConvergenceWatch, onRenderConvergenceNotice
+} from './system/convergence-threshold.js'
+import {
   registerInsectRaceHooks
 } from './entities/actors/insect-race-hooks.js'
 import {
@@ -340,6 +343,9 @@ registerNativeEffectWarningHooks()
 registerIceHostHooks()
 // S4 C5: the modules hear an Overwatch Score change (sr5.overwatchChanged)
 registerOverwatchHook()
+// The convergence (SR5 p. 233): the threshold crossed, told to the GM with its button, unless the module Matrice tells it
+registerConvergenceWatch()
+Hooks.on('renderChatMessageHTML', onRenderConvergenceNotice)
 registerInsectRaceHooks()
 // The cyberlimb enhancements raise the limb only: the active GM is told once which characters to check (SR5 p. 459)
 registerCyberlimbNotice()
