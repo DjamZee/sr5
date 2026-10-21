@@ -13,9 +13,6 @@
 
 export const HOST_CHANGED_HOOK = "sr5.matrixHostChanged"
 export const HOST_EXIT_REASONS = ["exit", "reboot", "jackOut"]
-// SR5 p. 233: the convergence at 40, the world's threshold (convergence-threshold.js)
-export const CONVERGENCE_SCORE = 40
-
 import {
   convergenceThreshold
 } from "./convergence-threshold.js"

@@ -7,6 +7,9 @@ import {
 import {
   SR5Shop
 } from "../modules/interface/shop.js"
+import {
+  foundryHooks
+} from "./fixtures/foundry-hooks.js"
 
 // Lot C0-bis of the character creator: the till counts the book's Essence; a module (createur-sr5, Règles Maison 7:
 // Essence at half price for a non-Awakened) adjusts it through sr5.essenceCostFor, never the system.
@@ -16,16 +19,12 @@ afterEach(() => {
   globalThis.Hooks = savedHooks
 })
 
-/** Hooks with these subscribers, called as Foundry's callAll would. */
+/** Foundry's Hooks with these subscribers (its callAll catches their errors); the hooks called */
 function subscribe(...fns) {
-  const seen = []
-  globalThis.Hooks = {
-    callAll: (hook, ...args) => {
-      seen.push(hook)
-      for (const fn of fns) fn(...args)
-    }
-  }
-  return seen
+  globalThis.Hooks = foundryHooks({
+    [ESSENCE_COST_HOOK]: fns
+  })
+  return globalThis.Hooks.seen
 }
 
 const reflexes = {
@@ -46,9 +45,7 @@ const buyer = essence => ({
 
 describe("sr5.essenceCostFor", () => {
   it("is the book's cost without a subscriber", () => {
-    globalThis.Hooks = {
-      callAll: () => true
-    }
+    globalThis.Hooks = foundryHooks()
     expect(essenceCostFor(buyer(6), reflexes, 5)).toBe(5)
   })
   it("gives the subscriber the actor, a copy of the line, the cost and the creation", () => {
@@ -79,6 +76,20 @@ describe("sr5.essenceCostFor", () => {
       throw new Error("module")
     })
     expect(essenceCostFor(buyer(6), reflexes, 5)).toBe(5)
+  })
+  // Relecture du 21/10, D1: Foundry's callAll would keep the 0.1 written before the error
+  it("throws away the cost a subscriber wrote before throwing, keeps the others'", () => {
+    const writesThenThrows = data => {
+      data.cost = 0.1
+      throw new Error("module")
+    }
+    subscribe(writesThenThrows)
+    expect(essenceCostFor(buyer(6), reflexes, 2)).toBe(2)
+    subscribe(data => (data.cost = 1), writesThenThrows)
+    expect(essenceCostFor(buyer(6), reflexes, 2)).toBe(1)
+    expect(essenceAfterPurchase(6, [], [reflexes], {
+      costFor: (line, cost) => essenceCostFor(buyer(6), line, cost)
+    }).essence).toBe(5)
   })
   it("counts the adjusted cost in essenceAfterPurchase", () => {
     expect(essenceAfterPurchase(6, [], [reflexes], {

@@ -5,7 +5,7 @@
  *
  *   import { formatNumber, formatNuyen } from '../helpers/number-format.js'
  *
- * Out of Foundry (the tests), the language falls back to 'en'.
+ * Out of Foundry (the tests), and for a language Intl does not know, the language falls back to 'en'.
  */
 
 const formats = new Map()
@@ -16,20 +16,33 @@ export function gameLang() {
   return typeof lang === 'string' && lang ? lang : 'en'
 }
 
+const supported = new Map()
+
+/**
+ * The language Intl writes with: the game's when Intl knows it, else 'en'. A well-formed code Intl does not know
+ * (Foundry's « cn ») throws no error: Intl silently takes the BROWSER's language, which this file exists to avoid
+ * (relecture du 21/10, D8). `supportedLocalesOf` says whether Intl knows it.
+ */
+export function intlLang(lang = gameLang()) {
+  if (!supported.has(lang)) {
+    let known = false
+    try {
+      known = Intl.NumberFormat.supportedLocalesOf([lang]).length > 0 && Intl.DateTimeFormat.supportedLocalesOf([lang]).length > 0
+    } catch {
+      // A malformed code: the English writing rather than an error on the sheet
+    }
+    supported.set(lang, known ? lang : 'en')
+  }
+  return supported.get(lang)
+}
+
 function numberFormat(lang, fraction) {
   const key = `${lang}|${fraction}`
   let format = formats.get(key)
   if (!format) {
-    try {
-      format = new Intl.NumberFormat(lang, {
-        maximumFractionDigits: fraction
-      })
-    } catch {
-      // A language code Intl does not know: the English writing rather than an error on the sheet
-      format = new Intl.NumberFormat('en', {
-        maximumFractionDigits: fraction
-      })
-    }
+    format = new Intl.NumberFormat(intlLang(lang), {
+      maximumFractionDigits: fraction
+    })
     formats.set(key, format)
   }
   return format
@@ -62,10 +75,5 @@ export function formatNuyen(n) {
 export function formatDateTime(date) {
   const value = date instanceof Date ? date : new Date(date)
   if (date === null || date === undefined || date === '' || Number.isNaN(value.getTime())) return ''
-  try {
-    return value.toLocaleString(gameLang())
-  } catch {
-    // A language code Intl does not know: the English writing rather than an error in the window
-    return value.toLocaleString('en')
-  }
+  return value.toLocaleString(intlLang())
 }

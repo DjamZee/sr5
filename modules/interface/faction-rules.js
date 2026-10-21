@@ -101,3 +101,30 @@ export function scoreOf(log, factionId, actorId){
 export function sameGameMonth(last, now){
   return !!last && last.year === now.year && last.month === now.month
 }
+
+/**
+ * One main faction per non-player character (p. 156), and per contact: a member (actor id, in `members`) or a contact
+ * (item uuid, in `contacts`) listed in several factions after a change is kept in the one it has just joined (not in it
+ * before), else in the first; it leaves the others. Changes `after.factions` in place.
+ * @param {{factions: Array}|null} before - the registry before the change
+ * @param {{factions: Array}} after - the registry after it
+ */
+export function oneFactionPerMember(before, after){
+  for (const field of ["members", "contacts"]) {
+    const had = new Map()
+    for (const f of before?.factions ?? []) for (const m of f?.[field] ?? []) had.set(`${f.id}|${m}`, true)
+    const where = new Map()
+    for (const f of after?.factions ?? []) for (const m of f?.[field] ?? []) {
+      const kept = where.get(m)
+      const joined = !had.has(`${f.id}|${m}`)
+      if (!kept || (joined && !kept.joined)) where.set(m, {
+        faction: f, joined
+      })
+    }
+    for (const f of after?.factions ?? []) {
+      if (!Array.isArray(f?.[field])) continue
+      f[field] = [...new Set(f[field])].filter(m => where.get(m)?.faction === f)
+    }
+  }
+  return after
+}

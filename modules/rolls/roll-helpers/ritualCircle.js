@@ -67,17 +67,19 @@ export class SR5_RitualCircle {
     })
   }
 
+  // The card's charter (chat-cards.less): a title band, then the buttons in a row, spaced (relecture du 21/10, D9)
   static circleContent(circle) {
+    const escape = text => globalThis.foundry?.utils?.escapeHTML?.(String(text ?? "")) ?? String(text ?? "")
     const title = game.i18n.format("SR5.RitualCircleTitle", {
-      ritual: circle.ritualName, force: circle.force
+      ritual: escape(circle.ritualName), force: circle.force
     })
     const leader = game.i18n.format("SR5.RitualCircleLeader", {
-      name: circle.leaderName
+      name: escape(circle.leaderName)
     })
-    if (circle.sealed) return `<div class="sr5-ritual-circle"><p><strong>${title}</strong></p><p>${leader}</p><p><em>${game.i18n.localize("SR5.RitualCircleSealed")}</em></p></div>`
-    return `<div class="sr5-ritual-circle"><p><strong>${title}</strong></p><p>${leader}</p>` +
+    if (circle.sealed) return `<div class="sr5-ritual-circle"><h3>${title}</h3><p>${leader}</p><p><em>${game.i18n.localize("SR5.RitualCircleSealed")}</em></p></div>`
+    return `<div class="sr5-ritual-circle"><h3>${title}</h3><p>${leader}</p><div class="sr5-card-buttons">` +
       `<button type="button" class="sr5-ritual-action" data-ritual-action="join">${game.i18n.localize("SR5.RitualJoin")}</button>` +
-      `<button type="button" class="sr5-ritual-action ritual-leader" data-ritual-action="seal">${game.i18n.localize("SR5.RitualSeal")}</button></div>`
+      `<button type="button" class="sr5-ritual-action ritual-leader" data-ritual-action="seal">${game.i18n.localize("SR5.RitualSeal")}</button></div></div>`
   }
 
   static activateListeners(html, message) {

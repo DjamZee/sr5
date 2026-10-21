@@ -4,7 +4,8 @@ import {
 import {
   isDefaultActorImage, defaultIceImages, defaultSpriteImages, contactImageCandidates, defaultContactImage, defaultContactImages,
   seededRandom,
-  imageChanges, defaultImageOnCreate, defaultImageOnUpdate, ICE_IMAGE_DIR, SPRITE_IMAGE_DIR, CONTACT_IMAGE_DIR
+  imageChanges, defaultImageOnCreate, defaultImageOnUpdate, ICE_IMAGE_DIR, SPRITE_IMAGE_DIR, CONTACT_IMAGE_DIR,
+  isDefaultContactPortrait, contactItemOf
 } from '../modules/entities/actors/default-actor-images.js'
 import {
   CONTACT_IMAGES
@@ -13,7 +14,7 @@ import {
   SPIRIT_IMAGE_TYPES, defaultSpiritImages
 } from '../modules/entities/actors/spirit-default-image.js'
 import {
-  existsSync
+  existsSync, readFileSync
 } from 'node:fs'
 
 const DEVICE = 'systems/sr5/assets/img/actors/actorDevice.svg'
@@ -276,5 +277,84 @@ describe('crochets', () => {
     }
     defaultImageOnUpdate(mj, c2)
     expect(c2.img).toBeUndefined()
+  })
+})
+
+// Relecture du 21/10, D2 et D3
+describe('contacts : visage choisi dans la banque, personnage en jeton non lié', () => {
+  const orkBarman = item => actor('actorGrunt', {
+    img: item.img, prototypeToken: {
+      texture: {
+        src: item.token ?? item.img
+      }
+    }, system: {
+      creatorId: 'pc', creatorItemId: 'it1', biography: {
+        metatype: 'ork', gender: 'male'
+      }
+    }
+  })
+  const barmanItem = () => ({
+    type: 'itemContact', system: {
+      type: 'Barman'
+    }
+  })
+
+  it('garde un portrait de la banque choisi par le MJ, même s’il ne correspond pas', () => {
+    const chosen = `${CONTACT_IMAGE_DIR}/street-doc-humain-femme.webp`
+    const called = orkBarman({
+      img: chosen
+    })
+    defaultImageOnCreate(called, {
+    }, {
+    }, 'u', barmanItem)
+    expect(called.applied).toBeUndefined()
+  })
+  it('donne le visage tiré au premier appel, et le même au rappel (jeton rond retenu au renvoi)', () => {
+    const first = orkBarman({
+      img: GRUNT
+    })
+    defaultImageOnCreate(first, {
+    }, {
+    }, 'u', barmanItem)
+    expect(first.applied.img).toMatch(new RegExp(`^${CONTACT_IMAGE_DIR}/.*ork.*\\.webp$`))
+    // Au renvoi, l'objet garde le jeton porté (rememberSidekickToken), pas le portrait
+    const again = orkBarman({
+      img: GRUNT, token: first.applied['prototypeToken.texture.src']
+    })
+    defaultImageOnCreate(again, {
+    }, {
+    }, 'u', barmanItem)
+    expect(again.applied).toEqual(first.applied)
+  })
+  it('un portrait de la banque est un défaut seulement s’il est celui tiré pour ce contact', () => {
+    const images = {
+      portrait: `${CONTACT_IMAGE_DIR}/a.webp`, token: `${CONTACT_IMAGE_DIR}/a-token.webp`, contact: true
+    }
+    expect(isDefaultContactPortrait(GRUNT, images)).toBe(true)
+    expect(isDefaultContactPortrait(undefined, images)).toBe(true)
+    expect(isDefaultContactPortrait(`${CONTACT_IMAGE_DIR}/a.webp`, images)).toBe(true)
+    expect(isDefaultContactPortrait(`${CONTACT_IMAGE_DIR}/b.webp`, images)).toBe(false)
+    expect(imageChanges(`${CONTACT_IMAGE_DIR}/b.webp`, GRUNT, images)).toBeNull()
+    // CI et sprites : leur dossier reste un défaut
+    expect(imageChanges(`${ICE_IMAGE_DIR}/iceAcid/portrait.webp`, DEVICE, defaultIceImages('iceKiller')).img)
+      .toBe(`${ICE_IMAGE_DIR}/iceKiller/portrait.webp`)
+  })
+  it('trouve l’objet contact d’un personnage en jeton non lié (creatorId = id du jeton)', () => {
+    const contact = {
+      id: 'it1', type: 'itemContact'
+    }
+    const tokenActor = {
+      items: new Map([['it1', contact]])
+    }
+    const actors = {
+      tok1: tokenActor
+    }
+    expect(contactItemOf('tok1', 'it1', id => actors[id])).toBe(contact)
+    expect(contactItemOf('absent', 'it1', id => actors[id])).toBeNull()
+    expect(contactItemOf('tok1', 'it1', () => {
+      throw new Error('pas de canevas')
+    })).toBeNull()
+    expect(readFileSync(new URL('../modules/entities/actors/default-actor-images.js', import.meta.url), 'utf8'))
+      .toMatch(/SR5_EntityHelpers\.getRealActorFromID\(id\)/)
   })
 })

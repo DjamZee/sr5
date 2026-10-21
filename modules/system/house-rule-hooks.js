@@ -4,6 +4,11 @@
  * says so in a module, never in the system. Each hook hands its subscribers a data object to set; a value that is not
  * of the kind asked, or a subscriber that throws, leaves the book's. Without a module, no subscriber: the book.
  *
+ * The subscribers are called one by one here (callSubscribers), never through Hooks.callAll: Foundry's callAll catches
+ * a subscriber's error without throwing it again, so what it wrote before failing would be kept (relecture du 21/10, D1:
+ * an Essence of 0.1 instead of 2, a sale at 1 ¥, a purchase on credit let through). Here, a subscriber that throws has
+ * its answer thrown away, the others' kept: alone, the book.
+ *
  * - sr5.rollReminders (information): lines shown in the roll dialog, each with an "applies" box left unticked, and on
  *   the card. A line may carry dice, added to the pool only when the box is ticked.
  * - sr5.vendorPrice (verdict): the unit price a vendor asks of a buyer, after the book's (surcharge, dealer).
@@ -29,8 +34,6 @@ export const MAX_WARNING = 500
 // ...and the Initiative score one line of sr5.initiativeReminders may add or take
 export const MAX_INITIATIVE_SCORE = 10
 
-const callAll = (hook, data) => globalThis.Hooks?.callAll(hook, data)
-
 /** A copy the subscriber may change without touching what the system goes on with */
 function copyOf(value) {
   try {
@@ -44,13 +47,48 @@ function copyOf(value) {
   }
 }
 
-/** Run the subscribers; false when one threw (the book is then kept) */
-function heard(hook, data, call) {
+/** The fields of `data` named, as an object */
+function pick(data, keys) {
+  return Object.fromEntries(keys.map(key => [key, data[key]]))
+}
+
+/**
+ * Call each subscriber of `hook` with `data`, as Hooks.callAll would (Hooks.events[hook], in order, a `once` one taken
+ * off before it is called), but keeping the answer each subscriber leaves only when it does not throw: before each,
+ * the fields named in `answers` (what the system reads back) are copied; a subscriber that throws gets them restored
+ * and its error logged. False when that copy cannot be made and a subscriber threw: the caller then keeps the book.
+ * @param {string} hook
+ * @param {object} data the object handed to every subscriber, in turn
+ * @param {string[]} answers the fields of `data` the system reads back
+ * @param {object} [hooks] Foundry's Hooks (injected in the tests)
+ * @returns {boolean}
+ */
+export function callSubscribers(hook, data, answers, hooks = globalThis.Hooks) {
+  const entries = Array.from(hooks?.events?.[hook] ?? [])
+  for (const entry of entries) {
+    const fn = typeof entry === "function" ? entry : entry?.fn
+    if (typeof fn !== "function") continue
+    if (entry.once) hooks.off?.(hook, entry.id)
+    const before = copyOf(pick(data, answers))
+    try {
+      const result = fn(data)
+      // An async subscriber: its error comes later and is only logged; what it writes after its first await is too late
+      if (typeof result?.then === "function") result.then(null, error => console.error(`SR5 | ${hook}: a subscriber failed`, error))
+    } catch (error) {
+      console.error(`SR5 | ${hook}: a subscriber failed, its answer thrown away`, error)
+      if (!before) return false
+      Object.assign(data, before)
+    }
+  }
+  return true
+}
+
+/** Run the subscribers; false when the book must be kept */
+function heard(hook, data, answers, hooks) {
   try {
-    call(hook, data)
-    return true
+    return callSubscribers(hook, data, answers, hooks)
   } catch (error) {
-    console.error(`SR5 | ${hook}: a subscriber failed, ignored`, error)
+    console.error(`SR5 | ${hook}: the subscribers could not be called, the book kept`, error)
     return false
   }
 }
@@ -71,13 +109,13 @@ const isPlainObject = value => !!value && typeof value === "object" && Object.ge
  * @returns {Array<{id, label, source, dice, applied}>}
  */
 export function rollRemindersFor(actor, rollData, {
-  call = callAll
+  hooks = globalThis.Hooks
 } = {
 }) {
   const data = {
     actor, rollData: copyOf(rollData), reminders: []
   }
-  if (!heard(ROLL_REMINDERS_HOOK, data, call) || !Array.isArray(data.reminders)) return []
+  if (!heard(ROLL_REMINDERS_HOOK, data, ["reminders"], hooks) || !Array.isArray(data.reminders)) return []
   const out = []
   for (const line of data.reminders) {
     if (out.length >= MAX_REMINDERS) break
@@ -116,14 +154,14 @@ export function vendorPriceFor({
   vendor = null, storage = null, buyer = null, item = null, price = 0, quantity = 1
 } = {
 }, {
-  call = callAll
+  hooks = globalThis.Hooks
 } = {
 }) {
   const book = Number(price) || 0
   const data = {
     vendor, storage, buyer, item: copyOf(item), price: book, quantity, notes: []
   }
-  if (!heard(VENDOR_PRICE_HOOK, data, call)) return {
+  if (!heard(VENDOR_PRICE_HOOK, data, ["price", "notes"], hooks)) return {
     price: book, notes: []
   }
   const value = data.price
@@ -164,14 +202,14 @@ export function purchaseFundsVerdict({
   buyer = null, total = 0, balance = 0, vendor = null, storage = null
 } = {
 }, {
-  call = callAll
+  hooks = globalThis.Hooks
 } = {
 }) {
   const data = {
     buyer, total, balance, shortfall: Math.max(0, total - balance), vendor, storage, allow: false, flags: {
     }, warning: ""
   }
-  if (!heard(PURCHASE_FUNDS_HOOK, data, call) || data.allow !== true) return {
+  if (!heard(PURCHASE_FUNDS_HOOK, data, ["allow", "flags", "warning"], hooks) || data.allow !== true) return {
     allow: false, flags: {
     }, warning: ""
   }
@@ -223,13 +261,13 @@ export function vendorRefusalFor({
   vendor = null, storage = null, buyer = null
 } = {
 }, {
-  call = callAll
+  hooks = globalThis.Hooks
 } = {
 }) {
   const data = {
     vendor, storage, buyer, refuse: false, reason: ""
   }
-  if (!heard(VENDOR_REFUSAL_HOOK, data, call) || data.refuse !== true) return {
+  if (!heard(VENDOR_REFUSAL_HOOK, data, ["refuse", "reason"], hooks) || data.refuse !== true) return {
     refuse: false, reason: ""
   }
   return {
@@ -252,13 +290,13 @@ export function initiativeRemindersFor({
   actor = null, combatant = null, combat = null, round = 0, pass = 1, roll = 0
 } = {
 }, {
-  call = callAll
+  hooks = globalThis.Hooks
 } = {
 }) {
   const data = {
     actor, combatant, combat, round, firstRound: round <= 1, pass, roll, reminders: []
   }
-  if (!heard(INITIATIVE_REMINDERS_HOOK, data, call) || !Array.isArray(data.reminders)) return {
+  if (!heard(INITIATIVE_REMINDERS_HOOK, data, ["reminders"], hooks) || !Array.isArray(data.reminders)) return {
     lines: [], score: 0
   }
   const lines = []

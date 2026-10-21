@@ -17,7 +17,7 @@ import {
   SHEET_ACTIONS_WITHOUT_TEST
 } from "../../system/matrix-ownership.js"
 import {
-  gruntEssenceFromForm
+  gruntEssenceFromForm, gruntEssenceMax
 } from "../../system/grunt-profile-essence.js"
 
 /**
@@ -55,10 +55,13 @@ export class SR5GruntSheet extends ActorSheetSR5 {
     },
   }
 
-  /** The profile's Essence kept between 0 and 6, "4,5" read and an emptied field back to 6 (grunt-profile-essence.js) */
+  /**
+   * The profile's Essence kept between 0 and 6 (12 and more with Essence Drain), "4,5" read and an emptied field back
+   * to 6 (grunt-profile-essence.js)
+   */
   _processFormData(event, form, formData) {
     const data = super._processFormData(event, form, formData)
-    return gruntEssenceFromForm(form, data, this.document._source?.system?.essence?.base)
+    return gruntEssenceFromForm(form, data, this.document._source?.system?.essence?.base, gruntEssenceMax(this.document))
   }
 
   async _prepareContext(options) {

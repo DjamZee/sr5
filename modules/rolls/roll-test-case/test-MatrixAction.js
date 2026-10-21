@@ -85,13 +85,15 @@ export default async function matrixActionInfo(cardData, actorId){
     //A glitch adds Depth to the Overwatch Score, a critical glitch triggers convergence
     if (cardData.roll.criticalGlitchRoll) {
       ui.notifications.warn(`${actor.name}${game.i18n.localize("SR5.Colons")} ${game.i18n.localize("SR5.INFO_RedefineOwnershipConvergence")}`)
-      //DT p. 161: the GM is given the card of the convergence, once per roll (convergence-threshold.js)
+      //DT p. 161: the GM is given the card of the convergence, once per roll (convergence-threshold.js). Rolled on the
+      //player's browser: the card is left pending for the active GM's to write, never whispered from here (its author
+      //would read the GM's lines), and the module Matrice, when active, tells it itself
       if (!cardData.roll.convergenceTold) {
         cardData.roll.convergenceTold = true
         const {
-          postConvergenceNotice
+          requestConvergenceNotice
         } = await import("../../system/convergence-threshold.js")
-        await postConvergenceNotice(actor, {
+        await requestConvergenceNotice(actor, {
           forced: true
         })
       }

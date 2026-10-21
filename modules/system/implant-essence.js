@@ -19,6 +19,9 @@ import {
   refuseByRule, ruleLockActive
 } from "./rule-locks.js"
 import {
+  callSubscribers
+} from "./house-rule-hooks.js"
+import {
   escape
 } from "./card-helpers.js"
 
@@ -177,7 +180,7 @@ export function implantEssence(gradedCost, effects, gradeMultiplier = 1) {
  * Essence at half price for a non-Awakened, Règles Maison 7) tells the till so in a module, never in the system.
  * Called with `{actor, item, cost, creation, context}`: `item` a copy of the line `{type, name, system, grade,
  * quantity}`, `cost` the Essence of the whole line (quantity included). A subscriber sets `cost`; a value that is not a
- * finite number ≥ 0, or a subscriber that throws, leaves the book's. Without a module, no subscriber: the book's cost.
+ * finite number ≥ 0 leaves the book's; a subscriber that throws has its answer thrown away (the others' kept). Without a module, no subscriber: the book's cost.
  * `context` says who asks: "shop" (the till and the cart) or "sheet" (what an implant on the sheet takes,
  * utilityItem.js _handleAugmentation; `item` then also carries the implant's `uuid`, `flags` and `_stats`). The sheet
  * asks too so that a house rule counts once, the same everywhere: the sheet, the till and the peak (implant-register.js).
@@ -186,7 +189,7 @@ export const ESSENCE_COST_HOOK = "sr5.essenceCostFor"
 
 /** The cost of a line once the subscribers of sr5.essenceCostFor have had their say. */
 export function essenceCostFor(actor, line, cost, {
-  creation = false, context = "shop", call = (hook, data) => globalThis.Hooks?.callAll(hook, data)
+  creation = false, context = "shop", hooks = globalThis.Hooks
 } = {
 }) {
   let item
@@ -203,10 +206,11 @@ export function essenceCostFor(actor, line, cost, {
   const data = {
     actor, item, cost, creation, context
   }
+  // Each subscriber called here, not through Hooks.callAll, which keeps what a failing one wrote (house-rule-hooks.js)
   try {
-    call(ESSENCE_COST_HOOK, data)
+    if (!callSubscribers(ESSENCE_COST_HOOK, data, ["cost"], hooks)) return cost
   } catch (error) {
-    console.error(`SR5 | ${ESSENCE_COST_HOOK}: a subscriber failed, ignored`, error)
+    console.error(`SR5 | ${ESSENCE_COST_HOOK}: the subscribers could not be called, the book's cost kept`, error)
     return cost
   }
   const value = data.cost
