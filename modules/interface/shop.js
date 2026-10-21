@@ -41,6 +41,9 @@ import {
 import {
   purchaseStamp, stampAll, PURCHASE_FLAG
 } from './shop-purchase.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * Purchases made from the compendium browser.
@@ -406,8 +409,8 @@ export class SR5Shop {
     if (!free && total > balance) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotEnoughNuyen', {
         name: actor.name,
-        price: total.toLocaleString(),
-        balance: balance.toLocaleString(),
+        price: formatNumber(total),
+        balance: formatNumber(balance),
       }))
       return false
     }
@@ -522,7 +525,7 @@ export class SR5Shop {
         type: 'loss',
         date: new Date().toISOString().slice(0, 10),
         description: game.i18n.format('SR5.ShopPurchaseDescription', {
-          name: labels.join(', '), price: total.toLocaleString()
+          name: labels.join(', '), price: formatNumber(total)
         }),
       },
       flags: {
@@ -545,7 +548,7 @@ export class SR5Shop {
     if (!free && orders.length && debit) await requestRegister(actor, orders, debit.id)
 
     const rows = resolved.map(line =>
-      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${(line.total + line.extra).toLocaleString()}&yen;${
+      `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${formatNumber(line.total + line.extra)}&yen;${
         SR5Shop.orderNote(line.order)}</li>`).join('')
     const detail = resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''
     if (equip) {
@@ -568,8 +571,8 @@ export class SR5Shop {
         content: `<p>${game.i18n.format('SR5.ShopPurchaseChat', {
           actor: actor.name,
           name: label,
-          price: total.toLocaleString(),
-          balance: (balance - total).toLocaleString(),
+          price: formatNumber(total),
+          balance: formatNumber(balance - total),
         })}</p>${detail}`,
       })
     }
@@ -583,7 +586,7 @@ export class SR5Shop {
           name: label
         }) :
         game.i18n.format('SR5.ShopPurchaseDone', {
-          name: label, price: total.toLocaleString()
+          name: label, price: formatNumber(total)
         }))
     return true
   }
@@ -666,7 +669,7 @@ export class SR5Shop {
     })
     if (essence > 0 || essence >= current) return true
     const data = {
-      name: actor.name, essence: essence.toLocaleString()
+      name: actor.name, essence: formatNumber(essence)
     }
     if (!isGM) {
       // The "body" rule lock family lifted (B13, lot 4): the purchase goes, the gamemaster hears of it

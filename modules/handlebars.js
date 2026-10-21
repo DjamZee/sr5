@@ -14,6 +14,9 @@ import {
   martialArtNeedsSwitch
 } from "./system/martial-arts-technique.js"
 import {
+  formatNumber, formatNuyen
+} from "./helpers/number-format.js"
+import {
   drugTakesDoseInCrash
 } from "./entities/items/drug-damage.js"
 import {
@@ -104,32 +107,18 @@ export const registerHandlebarsHelpers = function () {
     return !reduceOp(arguments, (a, b) => a && b)
   })
 
-  // Display amount of nuyens
+  // Display amount of nuyens, as the game's language writes them (« 1 000 ¥ » / « 1,000 ¥ »)
   Handlebars.registerHelper("nuyen", function (amount) {
     if (!amount) return "0 ¥"
-    let lang = game.settings.get("core", "language")
-    if (lang === "fr")
-      return amount.toLocaleString('fr-FR', {
-        maximumFractionDigits: 2 
-      }).concat(" ¥")
-    else
-      return amount.toLocaleString('en-US', {
-        maximumFractionDigits: 2 
-      }).concat(" ¥")
+    return formatNuyen(amount)
   })
 
-  // Display nummber
+  // Display number, as the game's language writes it
   Handlebars.registerHelper("formatNumber", function (amount) {
     if (!amount) return "0"
-    let lang = game.settings.get("core", "language")
-    if (lang === "fr")
-      return amount.toLocaleString('fr-FR', {
-        maximumFractionDigits: 2 
-      })
-    else
-      return amount.toLocaleString('en-US', {
-        maximumFractionDigits: 2 
-      })
+    return formatNumber(amount, {
+      fraction: 2
+    })
   })
 
   // get translation key from config.js of

@@ -4,6 +4,9 @@ import {
 import {
   MECHANIC_SKILLS, mechanicSkillFor, repairState, partsCost, nanomaintenanceRating, repairedMonitor
 } from "./vehicle-repair.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 // The Foundry side of the vehicle repair (Rigger 5.0 p. 33-34, p. 167): the window of the "Repair" button of
 // the drone sheet, and the repaired boxes taken off the monitor from the chat card. The rules are in vehicle-repair.js
@@ -46,7 +49,7 @@ export async function openVehicleRepair(vehicle){
 
   const content = `<div class="sr5-vehicle-repair">
     <p>${game.i18n.format("SR5.VehicleRepairIntro", {
-    damage: state.damage, cost: partsCost(vehicle.system.price, state.damage).toLocaleString()
+    damage: state.damage, cost: formatNumber(partsCost(vehicle.system.price, state.damage))
   })}</p>
     <div class="form-group"><label>${L("SR5.VehicleRepairMode")}</label><select name="mode">${modes.join("")}</select></div>
     ${repairer ? `<div class="form-group"><label>${L("SR5.VehicleRepairMechanic")}</label><span>${repairer.name}</span></div>

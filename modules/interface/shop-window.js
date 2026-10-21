@@ -49,6 +49,9 @@ import {
 import {
   lineWaits, deliveryDelayed
 } from './shop-orders.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 /**
  * Where the shop's goods come from: the world's shelves, the compendiums the
@@ -514,7 +517,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.payChoices = sticks.length ? [{
       id: '', label: game.i18n.localize('SR5.ShopVendorPayAccounts'), selected: !this._payWith
     }, ...sticks.map(s => ({
-      id: s.id, label: `${s.name} (${SR5Credstick.funds(s).toLocaleString()}¥)`, selected: s.id === this._payWith,
+      id: s.id, label: `${s.name} (${formatNumber(SR5Credstick.funds(s))}¥)`, selected: s.id === this._payWith,
     }))] : null
     const offeredByKind = new Map()
     // An implant's Essence as the buyer's body will take it (Système sensible, Biocompatibilité): the sheet's own
@@ -718,7 +721,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.cartAffordable = free || cartTotal <= balance
     context.cartBlocked = cartBlocked
     context.cartLeft = free ? null : SR5ShopWindow.#nuyen(balance - cartTotal)
-    context.cartEssence = cartEssence ? (Math.round(cartEssence * 100) / 100).toLocaleString() : null
+    context.cartEssence = cartEssence ? formatNumber(Math.round(cartEssence * 100) / 100) : null
     context.cartDelay = cartDelay ? SR5ShopAvailability.formatDelay(cartDelay) : null
     context.canCheckout = buyer !== null && cart.length > 0
     context.creationMode = creationMode
@@ -804,7 +807,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     const entry = row.entry
     const summary = [entry.info]
     if (row.essence) summary.push(game.i18n.format('SR5.ShopEssenceShort', {
-      value: row.essence.toLocaleString()
+      value: formatNumber(row.essence)
     }))
     const blocked = SR5ShopCatalog.creationRefusal(row, limits)
     const overLimit = SR5ShopCatalog.overLimitMark(row, limits)
@@ -861,7 +864,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
   }
 
   static #nuyen(value) {
-    return `${Math.round(value).toLocaleString()}¥`
+    return `${formatNumber(Math.round(value))}¥`
   }
 
   /** A vehicle mod off a vehicle: « 1 000¥ × Structure » when it names its multiplier, else « Selon le véhicule » (lot R6). */

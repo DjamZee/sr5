@@ -3,6 +3,9 @@
 // p. 187, retouched); no book gives a broker's own rules beyond this price list. What the gamemaster decides
 // stays his: the price within the range (« le MJ a le dernier mot sur la disponibilité »), the time it takes,
 // whether the data are sound, and what a broker pays for data sold to him (no book prices it).
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 // The table of p. 149, in its order. max null: the book prints « + » (no ceiling).
 // Read against the VO (Cutting Aces VO, « Information for sale »): the same fifteen lines.
@@ -59,8 +62,8 @@ export function infoType(key) {
   return INFO_TYPES.find(t => t.key === key) ?? null
 }
 
-/** « 500–2 500 ¥ », « 2 000+ ¥ »: the price range as the book prints it. */
-export function priceRangeLabel(type, format = n => n.toLocaleString('fr-FR')) {
+/** « 500–2 500 ¥ », « 2 000+ ¥ » (« 500–2,500 ¥ » in English): the price range as the book prints it, in the game's language. */
+export function priceRangeLabel(type, format = n => formatNumber(n)) {
   if (!type) return ''
   return type.max === null ? `${format(type.min)}+ ¥` : `${format(type.min)}–${format(type.max)} ¥`
 }

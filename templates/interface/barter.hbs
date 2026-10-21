@@ -18,7 +18,7 @@
     <div class="sr-con-gauges">
       <div class="sr-con-gauge props">
         <span class="sr-con-gauge-label">{{#if intimidation}}{{localize 'SR5.BARTER_Obtained'}}{{else}}{{localize 'SR5.BARTER_Value'}}{{/if}}</span>
-        <span class="sr-con-gauge-value">{{value}} ¥</span>
+        <span class="sr-con-gauge-value">{{formatNumber value}} ¥</span>
       </div>
       <p class="hint">{{#if intimidation}}{{localize 'SR5.BARTER_IntimidationHint'}}{{else}}{{localize 'SR5.BARTER_NegotiationHint'}}{{/if}}</p>
     </div>
@@ -43,7 +43,7 @@
         <label>{{localize 'SR5.BARTER_Hours'}} <input type="number" data-line="{{index}}" data-field="hours" value="{{hours}}" min="0" step="0.5"></label>
         {{/if}}
         {{#if isInformation}}<label>{{localize 'SR5.BARTER_DicePool'}} <input type="number" data-line="{{index}}" data-field="dicePool" value="{{dicePool}}" min="0"></label>{{/if}}
-        <span class="sr-con-log-net">{{value}} ¥</span>
+        <span class="sr-con-log-net">{{formatNumber value}} ¥</span>
         <a data-action="removeLine" data-line="{{index}}"><i class="fas fa-xmark"></i></a>
       </div>
     </div>
@@ -53,7 +53,7 @@
       <button type="button" data-action="addLine"><i class="fas fa-plus"></i> {{localize 'SR5.BARTER_AddLine'}}</button>
     </div>
     <div class="sr-con-faction">
-      <i class="fas fa-coins"></i> {{localize remainderLabel}} : <strong>{{remainder}} ¥</strong>
+      <i class="fas fa-coins"></i> {{localize remainderLabel}} : <strong>{{formatNumber remainder}} ¥</strong>
     </div>
     <p class="hint">{{localize 'SR5.BARTER_TableHint'}}</p>
   </fieldset>

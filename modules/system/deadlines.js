@@ -16,6 +16,9 @@ import {
 import {
   escape, isActiveGM as isWriter, fmt, allActors, queuedCheck
 } from "./card-helpers.js"
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 export const REVEAL_DEADLINES_SETTING = "sr5CalendarRevealDeadlines"
 const DAY = 86400
@@ -197,7 +200,7 @@ function rowText(r){
     actor: escape(r.actor.name), name: escape(r.label)
   })
   return game.i18n.format("SR5.CALENDAR_DeadlineRent", {
-    actor: escape(r.actor.name), name: escape(r.label), price: r.price.toLocaleString()
+    actor: escape(r.actor.name), name: escape(r.label), price: formatNumber(r.price)
   })
 }
 

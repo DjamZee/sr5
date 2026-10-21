@@ -23,6 +23,9 @@ import {
 import {
   isActiveGM as isWriter
 } from "../system/card-helpers.js"
+import {
+  formatNuyen
+} from "../helpers/number-format.js"
 
 const {
   ApplicationV2, HandlebarsApplicationMixin
@@ -30,7 +33,7 @@ const {
 
 export const INFO_BROKER_LEDGER = "sr5InfoBrokerLedger"
 const L = (key, data) => data ? game.i18n.format(key, data) : game.i18n.localize(key)
-const nuyen = n => `${Number(n || 0).toLocaleString("fr-FR")} ¥`
+const nuyen = n => formatNuyen(n)
 
 export function brokerLedger(){
   try {

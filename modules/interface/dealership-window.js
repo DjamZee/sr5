@@ -41,9 +41,12 @@ import {
 import {
   vendorBanner
 } from '../system/item-workshop-apply.js'
+import {
+  formatNumber
+} from '../helpers/number-format.js'
 
 const L = k => game.i18n.localize(k)
-const yen = n => `${(Number(n) || 0).toLocaleString()} ¥`
+const yen = n => `${formatNumber(Number(n) || 0)} ¥`
 // A mod's availability may hang on the vehicle too: its legality alone then, or a dash
 const availabilityLabel = (availability, legality) => availability || legality ? `${availability || ''}${legality ?? ''}` : '—'
 // The short labels of the showroom's figures

@@ -144,6 +144,9 @@ import {
 import {
   tooltipsToHelp, fillHelpBubble
 } from "../../interface/help-tooltips.js"
+import {
+  formatNumber
+} from '../../helpers/number-format.js'
 
 /**
  * Extend the basic ActorSheet class to do all the SR5 things!
@@ -1212,7 +1215,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
         title: `${title}${game.i18n.localize("SR5.Colons")} ${credstick.name}` 
       },
       content: `<p>${game.i18n.format("SR5.CredstickPromptMax", {
-        max: (ceiling === Infinity ? "∞" : ceiling.toLocaleString()) 
+        max: (ceiling === Infinity ? "∞" : formatNumber(ceiling)) 
       })}</p>
         <input type="number" name="amount" min="0" value="0" autofocus>`,
       ok: {
