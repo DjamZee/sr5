@@ -455,6 +455,12 @@ export class SR5_EntityHelpers {
     return sortable
   }
 
+  //The monitor a Heal or unresisted damage effect aims at, named as the item sheet's list names it (effect.hbs):
+  //conditionMonitorTypes lets the drones' and grunts' "Condition Monitor" overwrite the "Monitor" of the list (relecture djamz.17)
+  static effectMonitorLabel(monitor){
+    return SR5.characterConditionMonitors?.[monitor] ?? SR5.conditionMonitorTypes?.[monitor] ?? monitor
+  }
+
   static getLabelByKey(key){
     let newKey = ""
     if (key.includes("system.matrix.attributes")){
@@ -475,7 +481,7 @@ export class SR5_EntityHelpers {
       //Heal and unresisted damage, named as the item sheet names them: the "sheet-defined effect" window of Heal showed
       //": Hits = 3" without it (vérification djamz.16, B2)
       const [monitor, action] = key.split(".")
-      const name = game.i18n.localize(SR5.conditionMonitorTypes?.[monitor] ?? monitor)
+      const name = game.i18n.localize(this.effectMonitorLabel(monitor))
       const what = action === "removeDamage" ? game.i18n.localize("SR5.Heal") :
         `${game.i18n.localize("SR5.Damage")} ${game.i18n.localize("SR5.NotResisted")}`
       return `${name} [${what}]`
