@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   ambienceRank, currentAmbience, deployScale, effectiveAmbience, PAN_AMBIENCE_LEVELS, pulsePhase, pulsePoint,
-  rainCrownIds, registerPanAmbienceSettings
+  crownHasDevice, rainCrownIds, registerPanAmbienceSettings
 } from '../modules/canvas/pan-crown/pan-ambience.js'
 
 // The ambiences of the PAN crowns (couronne du PAN, lot 9; decision 7 of DjamZ, 07/10)
@@ -148,5 +148,32 @@ describe('the rain of code', () => {
     expect(rainCrownIds({
       shown, manual: new Set(), hovered: null
     })).toEqual(new Set())
+  })
+
+  it('never falls on an actor without a device (pack 5)', () => {
+    expect(crownHasDevice({
+      master: null, nodes: [] 
+    })).toBe(false)
+    expect(crownHasDevice({
+      master: null, nodes: [{
+        kind: 'file' 
+      }] 
+    })).toBe(false)
+    expect(crownHasDevice(null)).toBe(false)
+    expect(crownHasDevice({
+      master: {
+        uuid: 'x' 
+      }, nodes: [] 
+    })).toBe(true)
+    expect(crownHasDevice({
+      master: null, nodes: [{
+        kind: 'device' 
+      }] 
+    })).toBe(true)
+    expect(crownHasDevice({
+      master: null, rigger: {
+        actorId: 'r' 
+      }, nodes: [] 
+    })).toBe(true)
   })
 })
