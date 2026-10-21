@@ -51,6 +51,9 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
+  vendorPriceFor, purchaseFundsVerdict
+} from '../system/house-rule-hooks.js'
+import {
   CREATION_OVER_LIMIT_FLAG
 } from '../system/creation-actor.js'
 import {
@@ -780,11 +783,19 @@ export class SR5ShopVendor {
         continue
       }
       // The surcharge that bought dice on the card is paid (SR5 p. 420); a dealer takes 10 % off after it (Rigger 5.0 p. 37)
-      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card)), {
-        type: item.type, system: counterSystem(item)
-      }, buyer.items)
+      // A module of house rules may change the vendor's price (sr5.vendorPrice), as the cart asked it
+      const asked = vendorPriceFor({
+        vendor: actor, storage, buyer, quantity,
+        item: {
+          type: item.type, name: item.name, system: counterSystem(item), grade: null, uuid: item.uuid
+        },
+        price: dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, item.uuid, senderId, card)), {
+          type: item.type, system: counterSystem(item)
+        }, buyer.items),
+      })
+      const unit = asked.price
       resolved.push({
-        item, quantity, unit, total: unit * quantity, name: item.name,
+        item, quantity, unit, total: unit * quantity, name: item.name, notes: asked.notes,
         // Past the creation limits where the table allows it: marked for the creation summary (C3)
         overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
@@ -827,13 +838,20 @@ export class SR5ShopVendor {
       const waits = lineWaits({
         delayed: deliveryDelayed(buyer), availability: described.availability, free
       })
-      const unit = dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card)), source, buyer.items)
+      const asked = vendorPriceFor({
+        vendor: actor, storage, buyer, quantity,
+        item: {
+          type: source.type, name: source.name, system: source.system, grade, uuid: line.uuid
+        },
+        price: dealerPrice(surchargedUnit(described.price, cardSurcharge(messageId, line.uuid, senderId, card)), source, buyer.items),
+      })
+      const unit = asked.price
       const total = unit * quantity
       // The express surcharge and the search time stay on the price before the surcharge (DjamZ's ruling, 05/10)
       const baseTotal = described.price * quantity
       const extra = waits ? expressCost(baseTotal, terms) : 0
       resolved.push({
-        source, grade, quantity, unit, total, baseTotal, extra, waits,
+        source, grade, quantity, unit, total, baseTotal, extra, waits, notes: asked.notes,
         name: SR5Shop.gradedName(source.name, grade),
         overLimit: limits ? SR5ShopCatalog.overLimitMark(described, limits) : null,
       })
@@ -868,11 +886,21 @@ export class SR5ShopVendor {
         })
         return false
       }
-    } else if (!free && total > SR5Shop.balance(buyer)) {
-      SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopNotEnoughNuyen', {
-        name: buyer.name, price: formatNumber(total), balance: formatNumber(SR5Shop.balance(buyer)),
+    }
+    // Short on the accounts: refused, as the book has it, unless a module of house rules lets it go (sr5.purchaseFunds)
+    let fundsFlags = {
+    }
+    if (!free && !stick && total > SR5Shop.balance(buyer)) {
+      const verdict = purchaseFundsVerdict({
+        buyer, total, balance: SR5Shop.balance(buyer), vendor: actor, storage
       })
-      return false
+      if (!verdict.allow) {
+        SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopNotEnoughNuyen', {
+          name: buyer.name, price: formatNumber(total), balance: formatNumber(SR5Shop.balance(buyer)),
+        })
+        return false
+      }
+      fundsFlags = verdict.flags
     }
     const cashbox = SR5ShopVendor.cashboxOf(actor, storage)
     if (!free && !cashbox) {
@@ -975,7 +1003,9 @@ export class SR5ShopVendor {
           }), game.i18n.format('SR5.ShopVendorPurchaseDescription', {
             name: labels.join(', '), price: formatNumber(total), shop: label,
           })), _id: debitId,
+          // What a module wrote when it let a purchase past the accounts go (sr5.purchaseFunds), never under sr5
           flags: {
+            ...fundsFlags,
             sr5: {
               [PURCHASE_FLAG]: {
                 ...stamp, price: total
@@ -1020,6 +1050,9 @@ export class SR5ShopVendor {
     const rows = resolved.map(line =>
       `<li>${SR5Shop.lineLabel(line.name, line.quantity)} — ${formatNumber(line.total + (line.extra ?? 0))}&yen;${
         SR5Shop.orderNote(line.order)}</li>`).join('')
+    // The notes a module of house rules put on its prices (sr5.vendorPrice), written as text
+    const notes = [...new Set(resolved.flatMap(line => line.notes ?? []))]
+      .map(note => `<p class="notes">${foundry.utils.escapeHTML(note)}</p>`).join('')
     await foundry.documents.ChatMessage.create({
       speaker: foundry.documents.ChatMessage.getSpeaker({
         actor: buyer
@@ -1027,7 +1060,7 @@ export class SR5ShopVendor {
       whisper: equip ? game.users.filter(u => u.isGM).map(u => u.id) : [],
       content: `<p>${game.i18n.format(free ? 'SR5.ShopVendorChatFree' : 'SR5.ShopVendorChat', {
         actor: buyer.name, name: summary, shop: label, price: formatNumber(total),
-      })}</p>${resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''}${overflow ? `<p>${game.i18n.format('SR5.ShopVendorOverflow', {
+      })}</p>${resolved.length > 1 || orders.length ? `<ul>${rows}</ul>` : ''}${notes}${overflow ? `<p>${game.i18n.format('SR5.ShopVendorOverflow', {
         amount: formatNumber(overflow)
       })}</p>` : ''}`,
     })

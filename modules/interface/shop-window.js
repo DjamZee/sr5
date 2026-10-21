@@ -47,6 +47,9 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
+  vendorPriceFor
+} from '../system/house-rule-hooks.js'
+import {
   lineWaits, deliveryDelayed
 } from './shop-orders.js'
 import {
@@ -570,7 +573,15 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       if (row?.entry.stock && line.quantity > row.entry.stock) line.quantity = row.entry.stock
       const described = row ? SR5ShopWindow.#described(row.entry, line.grade) : null
       // Relation avec un concessionnaire (Rigger 5.0 p. 37): the cart shows what the till will take
-      const unit = described && buyer ? dealerPrice(described.price, row.entry, buyer.items) : described?.price ?? line.unit ?? 0
+      let unit = described && buyer ? dealerPrice(described.price, row.entry, buyer.items) : described?.price ?? line.unit ?? 0
+      // At a vendor's, the price a module of house rules asks (sr5.vendorPrice), as the till will
+      if (described && buyer && vendorSource) unit = vendorPriceFor({
+        vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer, quantity: line.quantity,
+        item: {
+          type: row.entry.type, name: row.entry.name, system: row.entry.system, grade: line.grade ?? null, uuid: row.entry.uuid
+        },
+        price: unit,
+      }).price
       line.unit = unit
       const total = unit * line.quantity
       cartTotal += total

@@ -33,6 +33,9 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
+  purchaseFundsVerdict
+} from '../system/house-rule-hooks.js'
+import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
 } from './item-payload.js'
 import {
@@ -406,7 +409,14 @@ export class SR5Shop {
     const total = resolved.reduce((sum, line) => sum + line.total + line.extra, 0)
     const balance = SR5Shop.balance(actor)
 
-    if (!free && total > balance) {
+    // Short on the accounts: refused, as the book has it, unless a module of house rules lets it go (sr5.purchaseFunds)
+    const funds = !free && total > balance ? purchaseFundsVerdict({
+      buyer: actor, total, balance
+    }) : {
+      allow: true, flags: {
+      }
+    }
+    if (!funds.allow) {
       ui.notifications.warn(game.i18n.format('SR5.WARN_ShopNotEnoughNuyen', {
         name: actor.name,
         price: formatNumber(total),
@@ -528,7 +538,9 @@ export class SR5Shop {
           name: labels.join(', '), price: formatNumber(total)
         }),
       },
+      // What a module wrote when it let a purchase past the accounts go (sr5.purchaseFunds), never under sr5
       flags: {
+        ...funds.flags,
         sr5: {
           [PURCHASE_FLAG]: {
             ...stamp, price: total

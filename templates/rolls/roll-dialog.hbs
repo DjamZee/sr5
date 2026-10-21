@@ -17,6 +17,11 @@
 		{{#if (ne test.type "passThroughDefense")}}
 	  		{{> systems/sr5/templates/rolls/rollDialogPartial/modifiers.hbs}}
 		{{/if}}
+
+		<!-- REMINDERS OF A MODULE (sr5.rollReminders) -->
+		{{#if reminders.length}}
+			{{> systems/sr5/templates/rolls/rollDialogPartial/reminders.hbs}}
+		{{/if}}
 		
 
 	  	<!-- ATTACK -->

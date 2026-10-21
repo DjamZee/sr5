@@ -31,6 +31,9 @@ import {
 } from "../system/srcombat.js"
 import SR5_RollDialog from "./roll-dialog.js"
 import {
+  rollRemindersFor, reminderCardLine
+} from "../system/house-rule-hooks.js"
+import {
   testsLeash
 } from "../entities/items/spirit-bonds.js"
 import {
@@ -174,6 +177,10 @@ export class SR5_RollTest {
     dialogData.thresholdModifier = hasOwnThreshold(dialogData.test) ? thresholdModifierOf(actorData, dialogData.test) : {
       value: 0, sources: []
     }
+
+    //The reminders a module of house rules gives this test (sr5.rollReminders): shown unticked, carried to the card
+    delete dialogData.reminders
+    dialogData.reminders = rollRemindersFor(actor, dialogData)
 
     // Render template and show dialog
     const dlg = await foundry.applications.handlebars.renderTemplate(template, dialogData)
@@ -821,6 +828,14 @@ export class SR5_RollTest {
   static async addInfoToCard(cardData, actorId) {
     //Reset button
     cardData.chatCard.buttons = {
+    }
+
+    //The reminders of a module (sr5.rollReminders), ticked or not in the dialog: text lines, escaped
+    const colon = `${game.i18n.localize("SR5.Colons")} `
+    for (const reminder of Array.isArray(cardData.reminders) ? cardData.reminders : []) {
+      const state = game.i18n.localize(reminder.applied ? "SR5.RollReminderApplied" : "SR5.RollReminderNotApplied")
+      cardData.chatCard.buttons[`reminder_${reminder.id}`] = SR5_RollMessage.generateChatButton("SR-CardButtonHit endTest", "",
+        `${foundry.utils.escapeHTML(reminderCardLine(reminder, colon))} — ${state}`)
     }
 
     //Testing the Leash (Forbidden Arcana p. 176, optional rule): a spirit that scores 6 - (Force / 2) hits or more
