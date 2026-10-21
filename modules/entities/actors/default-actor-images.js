@@ -1,6 +1,9 @@
 import {
   CONTACT_IMAGES
 } from "./contact-images-list.js"
+import {
+  SR5_EntityHelpers
+} from "../helpers.js"
 
 /**
  * Default pictures of IC, sprites and contacts (DjamZ's own Midjourney pictures, free to use), on the model of the
@@ -12,6 +15,9 @@ import {
  *   contact gets the same face each time it is called, and the round token made for that face. A named character (a fixer of DjamZ's…) only comes on a job match.
  * A picture the gamemaster chose is never overwritten: only an actor whose portrait AND token are still a default
  * (Foundry's, the system's icon, or one set here) is given new ones. Each family has its world setting, on by default.
+ * For a contact, a portrait from the bank contacts/ is the gamemaster's choice unless it is the very one drawn for this
+ * contact (relecture du 21/10, D2): the system never writes a portrait on the contact's item, only the token it wore
+ * when dismissed (rememberSidekickToken), so a token from the bank still counts as a default.
  */
 export const IMAGE_DIR = "systems/sr5/assets/img"
 export const ICE_IMAGE_DIR = `${IMAGE_DIR}/ice`
@@ -100,9 +106,20 @@ export function defaultContactImage(contact, seed, list = CONTACT_IMAGES) {
   return defaultContactImages(contact, seed, list)?.portrait ?? null
 }
 
-/** The changes that set portrait and token, or null when either is the gamemaster's or they are already in place. */
+/** Whether a contact's portrait is a default one: Foundry's, the system's icon, or the one drawn for that contact. */
+export function isDefaultContactPortrait(img, images) {
+  if (img == null) return true
+  return DEFAULT_IMAGES.has(img) || img === images?.portrait
+}
+
+/**
+ * The changes that set portrait and token, or null when either is the gamemaster's or they are already in place.
+ * `images.contact`: a contact's, whose portrait taken from the bank is the gamemaster's (isDefaultContactPortrait).
+ */
 export function imageChanges(img, token, images) {
-  if (!images || !isDefaultActorImage(img) || !isDefaultActorImage(token)) return null
+  if (!images) return null
+  const portraitIsDefault = images.contact ? isDefaultContactPortrait(img, images) : isDefaultActorImage(img)
+  if (!portraitIsDefault || !isDefaultActorImage(token)) return null
   if (images.portrait === img && images.token === token) return null
   return {
     img: images.portrait, "prototypeToken.texture.src": images.token
@@ -127,15 +144,26 @@ function imagesFor(type, system, findContactItem) {
     if (!enabled("sr5ContactDefaultImages")) return null
     const item = findContactItem(system.creatorId, system.creatorItemId)
     if (item && item.type !== "itemContact") return null
-    return defaultContactImages({
+    const images = defaultContactImages({
       job: item?.system?.type, metatype: system.biography?.metatype, gender: system.biography?.gender,
     }, system.creatorItemId)
+    return images ? {
+      ...images, contact: true
+    } : null
   }
   return null
 }
 
-function contactItemOf(creatorId, itemId) {
-  return globalThis.game?.actors?.get?.(creatorId)?.items?.get?.(itemId) ?? null
+/**
+ * The contact item of the character who calls it. `creatorId` is the token's id when that character is an unlinked
+ * token (baseSheet.js, createSidekick): getRealActorFromID finds it there too (relecture du 21/10, D3).
+ */
+export function contactItemOf(creatorId, itemId, findActor = id => SR5_EntityHelpers.getRealActorFromID(id)) {
+  try {
+    return findActor(creatorId)?.items?.get?.(itemId) ?? null
+  } catch {
+    return null
+  }
 }
 
 /** preCreateActor: an IC, a sprite or a contact made by hand, called from a sheet or taken from a compendium. */
