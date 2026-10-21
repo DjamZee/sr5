@@ -568,6 +568,53 @@
   }
 }
 
+/* === Import of a world preset file (presets-config.js, pack 5): what the file changes, as the presets' preview === */
+.application.sr-world-preset-import {
+  .window-content {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  table.sr-preset-preview {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.25rem 0;
+    border: none;
+    background: transparent !important;
+
+    tr,
+    th,
+    td {
+      background: transparent !important;
+      text-shadow: none;
+    }
+
+    tr + tr {
+      border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    }
+
+    th {
+      width: 100%;
+      text-align: left;
+      font-weight: normal;
+      padding: 0.2rem 0.3rem;
+    }
+
+    td {
+      padding: 0.2rem 0.3rem;
+      white-space: nowrap;
+    }
+
+    .from {
+      opacity: 0.7;
+    }
+
+    .to {
+      font-weight: bold;
+    }
+  }
+}
+
 /* === Token of what the system creates (token-defaults-config.hbs, lot 9) ===
    One row per family, one column per field; the controls take the window's own text colour, as the rule locks
    do, so that they stay readable in both themes. */

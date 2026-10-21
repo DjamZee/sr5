@@ -75,6 +75,9 @@ import {
   SETTINGS_TABS, SETTINGS_TAGS, SETTINGS_CATALOG, MENU_CATALOG, SETTINGS_WINDOW_MENU,
   captureSystemSettings, capturedSettingIds, capturedMenus, catalogEntry
 } from '../modules/system/settings-catalog.js'
+import {
+  worldPresetKeys, WORLD_PRESET_EXCLUDED, WORLD_PRESET_HIDDEN_KEYS
+} from '../modules/system/world-preset-file.js'
 
 const SNAPSHOT =new URL('./fixtures/settings-before-b10.json', import.meta.url)
 
@@ -235,6 +238,19 @@ describe('settings registered by the system', () => {
     for (const id of registered.menus.keys()) {
       expect(catalogEntry(id.slice('sr5.'.length)).tab, `${id}: add it to MENU_CATALOG`).not.toBe('other')
     }
+  })
+
+  it('shares in a preset file every visible world setting, and none of the world\'s state (pack 5, § 3)', () => {
+    const shared = new Set(worldPresetKeys(registered.settings))
+    for (const data of registered.settings.values()) {
+      if (data.scope !== 'world' || !data.config) continue
+      expect(shared.has(data.key) || Object.hasOwn(WORLD_PRESET_EXCLUDED, data.key),
+        `${data.id}: share it, or add it to WORLD_PRESET_EXCLUDED (modules/system/world-preset-file.js)`).toBe(true)
+    }
+    for (const key of WORLD_PRESET_HIDDEN_KEYS) expect(registered.settings.get(`sr5.${key}`)?.scope, key).toBe('world')
+    for (const key of ['systemMigrationVersion', 'sr5RuleLocksMigration', 'sr5RuleLocksAsk', 'sr5PresetsSaved',
+      'sr5ShopBuyerFolder', 'sr5ShopExcludedPacks', 'sr5ShopCreationMode', 'sr5SpiritLedger', 'sr5CalendarEvents',
+      'compendium.creaturePowers', 'sr5ShopBannerFolder']) expect(shared.has(key), key).toBe(false)
   })
 
   it('shows the tabs in DjamZ\'s order, with the settings he moved (09/10)', () => {
