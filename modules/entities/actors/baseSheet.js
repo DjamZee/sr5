@@ -2453,8 +2453,7 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
           .filter(i => i.system.storedIn === storage._id)
           .sort((a, b) => a.name.localeCompare(b.name))
         const max = storage.system.capacity.value
-        // What the lot is worth. Item prices, not the actor's nuyen: that
-        // field sums every transaction and is not a balance.
+        // What the lot is worth: item prices, not the actor's nuyen.
         const value = contents.reduce((total, i) => {
           const price = i.system.price?.value ?? i.system.price?.base ?? 0
           // Ammunition carries its whole stack in its computed price (utilityItem.js _handleAmmoPrice)

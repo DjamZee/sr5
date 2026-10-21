@@ -382,6 +382,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     }
     // [{uuid, grade, name, img, quantity}]
     this._cart = []
+    // A payment on its way to the till: the Pay button waits for its answer (#onCheckoutCart)
+    this._checkingOut = false
     this._contactId = null
     this._surcharge = 0
     this._overridePool = null
@@ -741,7 +743,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer
     }) : null
     context.vendorRefusal = refusal?.refuse ? refusal.reason || game.i18n.localize('SR5.ShopVendorRefusesBuyer') : ''
-    context.canCheckout = buyer !== null && cart.length > 0 && !refusal?.refuse
+    context.canCheckout = buyer !== null && cart.length > 0 && !refusal?.refuse && !this._checkingOut
     context.creationMode = creationMode
     context.creationLimits = limits
     context.creationLimitsLabel = limits ? SR5ShopWindow.#limitsLabel(limits) : ''
@@ -1172,29 +1174,37 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     this.render()
   }
 
-  static async #onCheckoutCart() {
-    if (this._source?.vendor) {
-      const sent = await SR5ShopVendor.purchase({
-        vendorUuid: this._source.actorUuid,
-        storageId: this._source.storageId,
-        buyerId: this._buyerId,
-        payWith: this._payWith,
-        equip: this._equipMode,
-        lines: this._cart.map(line => ({
-          uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
-        })),
+  static async #onCheckoutCart(event, target) {
+    // One payment at a time: the cart is emptied only once the till answers, and a second click meanwhile was queued
+    // behind the first sale with the same cart, so 1 × AK-98 in the cart was sold twice (anomalies de la boutique, djamz.16)
+    if (this._checkingOut) return
+    this._checkingOut = true
+    if (target) target.disabled = true
+    try {
+      if (this._source?.vendor) {
+        const sent = await SR5ShopVendor.purchase({
+          vendorUuid: this._source.actorUuid,
+          storageId: this._source.storageId,
+          buyerId: this._buyerId,
+          payWith: this._payWith,
+          equip: this._equipMode,
+          lines: this._cart.map(line => ({
+            uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
+          })),
+        })
+        if (sent) this._cart = []
+        return
+      }
+      const bought = await SR5Shop.checkout(SR5Shop.buyerFromKey(this._buyerId), this._cart.map(line => ({
+        uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
+      })), {
+        equip: this._equipMode, creation: this.#creationForced(SR5Shop.buyerFromKey(this._buyerId))
       })
-      if (sent) this._cart = []
+      if (bought) this._cart = []
+    } finally {
+      this._checkingOut = false
       this.render()
-      return
     }
-    const bought = await SR5Shop.checkout(SR5Shop.buyerFromKey(this._buyerId), this._cart.map(line => ({
-      uuid: line.uuid, quantity: line.quantity, name: line.name, grade: line.grade,
-    })), {
-      equip: this._equipMode, creation: this.#creationForced(SR5Shop.buyerFromKey(this._buyerId))
-    })
-    if (bought) this._cart = []
-    this.render()
   }
 
   #searchingContact() {

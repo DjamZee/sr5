@@ -7,6 +7,9 @@ import {
 import {
   isMegapackPackage
 } from "../system/megapack.js"
+import {
+  formatDateTime
+} from "../helpers/number-format.js"
 
 /** What a compendium index must carry so that an entry stands for its document. */
 const INDEX_FIELDS = ["system.skills.negotiation.rating.base", "system.skills.negociation"]
@@ -275,7 +278,7 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
     }
     const last = record.last
     context.last = last?.date ? game.i18n.format("SR5.NEGO_REPAIR_LastRun", {
-      date: new Date(last.date).toLocaleString(), count: last.count ?? 0, user: last.user ?? ""
+      date: formatDateTime(last.date), count: last.count ?? 0, user: last.user ?? ""
     }) : ""
     context.isActiveGM = SR5NegotiationRepair.isActiveGM
     // The window opens at once and says how far the search is; the list comes when it is done
