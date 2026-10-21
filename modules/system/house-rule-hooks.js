@@ -19,6 +19,8 @@ export const MAX_REMINDERS = 10
 export const MAX_NOTES = 5
 export const MAX_TEXT = 200
 export const MAX_REMINDER_DICE = 6
+// The warning a module may ask the buyer to confirm before a purchase past the accounts (sr5.purchaseFunds)
+export const MAX_WARNING = 500
 
 const callAll = (hook, data) => globalThis.Hooks?.callAll(hook, data)
 
@@ -130,9 +132,11 @@ export function vendorPriceFor({
  * pays only what it carries, nor a free purchase), with `{buyer, total, balance, shortfall, vendor, storage, allow,
  * flags}`: `vendor` and `storage` null in the world's shop, `allow` false, `flags` an empty object. A subscriber sets
  * `allow` to true to let the purchase go (the accounts then go below zero), and may set `flags.<its module id>` to a
- * plain object, written on the purchase's debit (the ledger line), where the module finds its debt again. Anything else
- * than `true` refuses, as the book does ("not enough nuyen"); `flags.sr5` is never written.
- * @returns {{allow: boolean, flags: object}}
+ * plain object, written on the purchase's debit (the ledger line), where the module finds its debt again. It may also
+ * set `warning` to a text (500 characters at most) that the buyer's browser shows to confirm before paying, or before
+ * the request goes to the vendor (confirmFundsWarning); without one, nothing is asked. Anything else than `true`
+ * refuses, as the book does ("not enough nuyen"); `flags.sr5` is never written.
+ * @returns {{allow: boolean, flags: object, warning: string}}
  */
 export function purchaseFundsVerdict({
   buyer = null, total = 0, balance = 0, vendor = null, storage = null
@@ -143,11 +147,11 @@ export function purchaseFundsVerdict({
 }) {
   const data = {
     buyer, total, balance, shortfall: Math.max(0, total - balance), vendor, storage, allow: false, flags: {
-    }
+    }, warning: ""
   }
   if (!heard(PURCHASE_FUNDS_HOOK, data, call) || data.allow !== true) return {
     allow: false, flags: {
-    }
+    }, warning: ""
   }
   const flags = {
   }
@@ -156,7 +160,27 @@ export function purchaseFundsVerdict({
     const copy = copyOf(value)
     if (copy) flags[scope] = copy
   }
+  const warning = typeof data.warning === "string" ? data.warning.trim().slice(0, MAX_WARNING) : ""
   return {
-    allow: true, flags
+    allow: true, flags, warning
   }
+}
+
+/**
+ * The buyer confirms the warning of a purchase let past the accounts (sr5.purchaseFunds), in their own browser. No
+ * warning: true, nothing asked. `confirm` is DialogV2.confirm's shape (injected in the tests).
+ */
+export async function confirmFundsWarning(warning, {
+  confirm = options => foundry.applications.api.DialogV2.confirm(options)
+} = {
+}) {
+  if (!warning) return true
+  const escape = text => globalThis.foundry?.utils?.escapeHTML?.(text) ?? String(text).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`)
+  return (await confirm({
+    window: {
+      title: game.i18n.localize("SR5.ShopFundsWarningTitle")
+    },
+    content: `<p>${escape(warning)}</p>`,
+    rejectClose: false,
+  })) === true
 }

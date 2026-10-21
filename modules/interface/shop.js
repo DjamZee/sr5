@@ -33,7 +33,7 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
-  purchaseFundsVerdict
+  purchaseFundsVerdict, confirmFundsWarning
 } from '../system/house-rule-hooks.js'
 import {
   STACKABLE_TYPES, sr5StackPayload, sr5LineLabel
@@ -424,6 +424,8 @@ export class SR5Shop {
       }))
       return false
     }
+    // The module's warning, confirmed by the buyer before anything is paid (sr5.purchaseFunds)
+    if (!(await confirmFundsWarning(funds.warning))) return false
 
     // Greyware on an Awakened character costs Magic (BTB p. 142): the buyer, or the gamemaster in
     // Equip mode, sees the penalty before anything is created and may cancel (DjamZ's ruling, 2026-10-05)

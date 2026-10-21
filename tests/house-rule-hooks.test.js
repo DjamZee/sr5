@@ -6,7 +6,8 @@ import {
 } from "node:fs"
 import {
   ROLL_REMINDERS_HOOK, VENDOR_PRICE_HOOK, PURCHASE_FUNDS_HOOK, MAX_REMINDERS,
-  rollRemindersFor, vendorPriceFor, purchaseFundsVerdict, reminderModifierType, reminderCardLine
+  rollRemindersFor, vendorPriceFor, purchaseFundsVerdict, reminderModifierType, reminderCardLine, confirmFundsWarning,
+  MAX_WARNING
 } from "../modules/system/house-rule-hooks.js"
 
 // Câblage Maison, lot 2 (21/10): three hooks for a module of house rules, on the pattern of sr5.essenceCostFor. The
@@ -187,7 +188,7 @@ describe("sr5.purchaseFunds", () => {
       call: none
     })).toEqual({
       allow: false, flags: {
-      }
+      }, warning: ""
     })
   })
   it("gives the buyer, the total, the balance and the shortfall; lets it go on allow === true", () => {
@@ -212,7 +213,7 @@ describe("sr5.purchaseFunds", () => {
             creditorId: "c1", rate: 10
           }
         }
-      }
+      }, warning: ""
     })
     expect(seen).toEqual([PURCHASE_FUNDS_HOOK])
     expect(PURCHASE_FUNDS_HOOK).toBe("sr5.purchaseFunds")
@@ -255,6 +256,62 @@ describe("sr5.purchaseFunds", () => {
   })
 })
 
+describe("sr5.purchaseFunds, the buyer's warning (Câblage Maison, retours de DjamZ du 21/10)", () => {
+  const args = {
+    buyer: {
+      name: "Acheteur"
+    }, total: 5000, balance: 1200
+  }
+  it("carries the module's text, trimmed and cut, only when the purchase is let through", () => {
+    const text = "  Attention, tu es sur le point de contracter une dette.  "
+    expect(purchaseFundsVerdict(args, subscribers(data => {
+      data.allow = true
+      data.warning = text
+    })).warning).toBe(text.trim())
+    expect(purchaseFundsVerdict(args, subscribers(data => {
+      data.allow = true
+      data.warning = "x".repeat(MAX_WARNING + 50)
+    })).warning).toHaveLength(MAX_WARNING)
+    expect(purchaseFundsVerdict(args, subscribers(data => {
+      data.warning = text
+    })).warning).toBe("")
+    expect(purchaseFundsVerdict(args, subscribers(data => {
+      data.allow = true
+      data.warning = {
+        html: "<b>"
+      }
+    })).warning).toBe("")
+  })
+  it("asks nothing without a warning; with one, the buyer's answer decides", async () => {
+    const asked = []
+    const confirm = answer => async options => {
+      asked.push(options)
+      return answer
+    }
+    globalThis.game = {
+      i18n: {
+        localize: key => key
+      }
+    }
+    expect(await confirmFundsWarning("", {
+      confirm: confirm(false)
+    })).toBe(true)
+    expect(asked).toHaveLength(0)
+    expect(await confirmFundsWarning("Dette <b>vorace</b>", {
+      confirm: confirm(true)
+    })).toBe(true)
+    expect(asked[0].content).not.toContain("<b>")
+    expect(asked[0].window.title).toBe("SR5.ShopFundsWarningTitle")
+    expect(await confirmFundsWarning("Dette", {
+      confirm: confirm(false)
+    })).toBe(false)
+    expect(await confirmFundsWarning("Dette", {
+      confirm: confirm(null)
+    })).toBe(false)
+    delete globalThis.game
+  })
+})
+
 describe("the system calls the hooks where the book is counted", () => {
   const source = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8")
 
@@ -271,6 +328,18 @@ describe("the system calls the hooks where the book is counted", () => {
     const shop = source("modules/interface/shop.js")
     expect(shop).toMatch(/total > balance \? purchaseFundsVerdict\(/)
     expect(shop).toMatch(/flags: \{\s*\.\.\.funds\.flags,\s*sr5: \{/)
+  })
+  it("the buyer confirms the warning before paying, at the world's shop and before a vendor's request leaves", () => {
+    const shop = source("modules/interface/shop.js")
+    expect(shop.indexOf("confirmFundsWarning(funds.warning)")).toBeGreaterThan(shop.indexOf("if (!funds.allow)"))
+    expect(shop.indexOf("confirmFundsWarning(funds.warning)")).toBeLessThan(shop.indexOf("const payload = []"))
+    const window = source("modules/interface/shop-window.js")
+    const checkout = window.indexOf("static async #onCheckoutCart()")
+    const warned = window.indexOf("confirmFundsWarning(verdict.warning)", checkout)
+    expect(warned).toBeGreaterThan(checkout)
+    expect(warned).toBeLessThan(window.indexOf("SR5ShopVendor.purchase({", checkout))
+    // The vendor's till, on the gamemaster's browser, never asks it
+    expect(source("modules/interface/shop-vendor.js")).not.toMatch(/confirmFundsWarning/)
   })
   it("the roll dialog asks the reminders, shows them and the card writes them", () => {
     const test = source("modules/rolls/roll-test.js")

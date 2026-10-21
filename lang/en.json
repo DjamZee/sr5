@@ -682,6 +682,7 @@
 	"SR5.ShopGradeShort_standard": "Standard",
 	"SR5.ShopGradeShort_used": "Used",
 	"SR5.ShopGreywareConfirmTitle": "Greyware on an Awakened character",
+	"SR5.ShopFundsWarningTitle": "Purchase past the accounts",
 	"SR5.ShopEssenceConfirmTitle": "Essence at 0 or below",
 	"SR5.ShopEssenceConfirmText": "{name}: this purchase would take Essence down to {essence}. At 0, the character dies (SR5 p. 54). Confirm anyway?",
 	"SR5.ShopLeftAfter": "left after purchase: {value}",
