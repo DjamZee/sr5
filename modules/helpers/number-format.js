@@ -54,3 +54,18 @@ export function formatNuyen(n) {
     fraction: 2
   })} ¥`
 }
+
+/**
+ * A date and time as the game's language writes them: « 21/10/2026 23:40:00 » (fr), « 10/21/2026, 11:40:00 PM » (en).
+ * A bare `new Date(…).toLocaleString()` follows the browser. Anything that is not a date is returned as ''.
+ */
+export function formatDateTime(date) {
+  const value = date instanceof Date ? date : new Date(date)
+  if (date === null || date === undefined || date === '' || Number.isNaN(value.getTime())) return ''
+  try {
+    return value.toLocaleString(gameLang())
+  } catch {
+    // A language code Intl does not know: the English writing rather than an error in the window
+    return value.toLocaleString('en')
+  }
+}

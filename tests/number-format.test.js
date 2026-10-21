@@ -2,7 +2,7 @@ import {
   describe, it, expect, afterEach
 } from 'vitest'
 import {
-  formatNumber, formatNuyen, gameLang
+  formatNumber, formatNuyen, gameLang, formatDateTime
 } from '../modules/helpers/number-format.js'
 import {
   priceRangeLabel, infoType
@@ -56,5 +56,27 @@ describe('numbers in the language of the game', () => {
     expect(priceRangeLabel(infoType('safehouses'))).toBe('1,000+ ¥')
     play('fr')
     expect(spaces(priceRangeLabel(infoType('accessCodes')))).toBe('500–2 500 ¥')
+  })
+})
+
+// The last run of the Negotiation repair (negotiation-repair.js) was dated in the browser's language (djamz.16)
+describe('dates in the language of the game', () => {
+  afterEach(() => { globalThis.game.i18n.lang = lang })
+  const date = '2026-10-21T21:40:05Z'
+
+  it('writes the date as the game\'s language does', () => {
+    play('fr')
+    expect(formatDateTime(date)).toBe(new Date(date).toLocaleString('fr'))
+    play('en')
+    expect(formatDateTime(date)).toBe(new Date(date).toLocaleString('en'))
+    expect(formatDateTime(new Date(date))).toBe(new Date(date).toLocaleString('en'))
+  })
+
+  it('falls back to English on an unknown language, and writes nothing for no date', () => {
+    play('not a language!')
+    expect(formatDateTime(date)).toBe(new Date(date).toLocaleString('en'))
+    expect(formatDateTime(null)).toBe('')
+    expect(formatDateTime(undefined)).toBe('')
+    expect(formatDateTime('not a date')).toBe('')
   })
 })
