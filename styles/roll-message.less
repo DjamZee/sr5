@@ -70,7 +70,8 @@
       h4 {
         font-family   : var(--sr-font-body-bold);
         text-transform: uppercase;
-        color         : var(--sr-ui-border-color);
+        // The system red lightened: plain, it read 2.4:1 on the black band (pack 5, manual 6.1.4 and the chat captures)
+        color         : color-mix(in srgb, var(--sr-ui-border-color) 45%, var(--sr-text-color-light));
         font-size     : var(--sr-font-size-normal);
         flex-grow     : 2;
         margin-bottom : 0;
@@ -78,7 +79,7 @@
       }
 
       a {
-        color        : var(--sr-ui-border-color);
+        color        : color-mix(in srgb, var(--sr-ui-border-color) 45%, var(--sr-text-color-light));
 
         &:hover {
           color      : var(--sr-text-color-flash);

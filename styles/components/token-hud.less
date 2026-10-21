@@ -33,6 +33,12 @@
   --control-hover-icon-color: var(--sr-ui-color-active);
   --control-active-icon-color: var(--sr-ui-color-active);
 
+  /* The palettes (movement, effects) have their own background: in the light theme Foundry makes it a white veil,
+     where the near-white text above vanished (pack 5, manual 3.7.4). Keep it dark, as in the dark theme. */
+  .palette {
+    --control-bg-color: var(--color-cool-5-75);
+  }
+
   button {
     color: var(--sr-text-color-grey-dark);
     text-shadow: 0 0 3px var(--sr-text-color-dark);

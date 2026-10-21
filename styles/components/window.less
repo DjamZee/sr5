@@ -329,7 +329,9 @@
     }
 
     /* === Section headers === */
-    h3, h4 {
+    // Not the title of a chat card shown in a window (a detached message): it turned red on the card's black band
+    // (pack 5, manual 7.4.2)
+    :is(h3, h4):not(.chat-message *) {
       color      : var(--sr-ui-border-color);
       font-family: var(--sr-font-title);
       border-bottom: 1px solid var(--sr-ui-border-color-idle);
