@@ -51,7 +51,7 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
-  vendorPriceFor, purchaseFundsVerdict
+  vendorPriceFor, purchaseFundsVerdict, vendorRefusalFor
 } from '../system/house-rule-hooks.js'
 import {
   CREATION_OVER_LIMIT_FLAG
@@ -728,6 +728,16 @@ export class SR5ShopVendor {
     if (!equip && !SR5ShopStock.isBuyer(buyer, SR5ShopStock.buyerRule)) {
       SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopNotABuyer', {
         name: buyer.name
+      })
+      return false
+    }
+    // A vendor a module of house rules says will not sell to this buyer (sr5.vendorRefusal), as the window told it
+    const refusal = equip ? null : vendorRefusalFor({
+      vendor: actor, storage, buyer
+    })
+    if (refusal?.refuse) {
+      SR5ShopVendor.#notify(requester, 'warn', 'SR5.WARN_ShopVendorRefusesBuyer', {
+        name: label, buyer: buyer.name, reason: refusal.reason || game.i18n.localize('SR5.ShopVendorRefusesBuyer'),
       })
       return false
     }

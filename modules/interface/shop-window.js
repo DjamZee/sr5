@@ -47,7 +47,7 @@ import {
   dealerPrice
 } from '../system/rigger-qualities.js'
 import {
-  vendorPriceFor
+  vendorPriceFor, vendorRefusalFor, shelfPrice
 } from '../system/house-rule-hooks.js'
 import {
   lineWaits, deliveryDelayed
@@ -557,6 +557,8 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         sub: entry.sub ?? SR5ShopCatalog.subOf(entry),
         notForSale: SR5ShopStock.isNotForSale(entry),
         ...described,
+        // At a vendor's, the price a module of house rules asks (sr5.vendorPrice), the book's struck through beside it
+        ...SR5ShopWindow.#askedOnShelf(entry, described, grade, buyer, vendorSource),
         essence: essenceFor(entry, described.essence, grade),
       }
     })
@@ -734,7 +736,12 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
     context.cartLeft = free ? null : SR5ShopWindow.#nuyen(balance - cartTotal)
     context.cartEssence = cartEssence ? formatNumber(Math.round(cartEssence * 100) / 100) : null
     context.cartDelay = cartDelay ? SR5ShopAvailability.formatDelay(cartDelay) : null
-    context.canCheckout = buyer !== null && cart.length > 0
+    // A vendor a module of house rules says will not sell to this buyer (sr5.vendorRefusal): told, no checkout
+    const refusal = vendorSource && buyer && !equip ? vendorRefusalFor({
+      vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer
+    }) : null
+    context.vendorRefusal = refusal?.refuse ? refusal.reason || game.i18n.localize('SR5.ShopVendorRefusesBuyer') : ''
+    context.canCheckout = buyer !== null && cart.length > 0 && !refusal?.refuse
     context.creationMode = creationMode
     context.creationLimits = limits
     context.creationLimitsLabel = limits ? SR5ShopWindow.#limitsLabel(limits) : ''
@@ -861,6 +868,9 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       price: onVehicle ? SR5ShopWindow.#onVehiclePrice(entry) : onWeapon ? game.i18n.format('SR5.ShopPriceOnWeapon', {
         multiplier: SR5ShopCatalog.weaponPriceMultiplier(entry)
       }) : SR5ShopWindow.#nuyen(row.price),
+      // The book's price, struck through, when a module of house rules asks another (sr5.vendorPrice)
+      bookPrice: !onVehicle && !onWeapon && row.bookPrice !== undefined ? SR5ShopWindow.#nuyen(row.bookPrice) : '',
+      priceNotes: row.priceNotes ?? '',
       onVehicle,
       onWeapon,
       tooExpensive: !free && !onVehicle && !onWeapon && row.price > budget,
@@ -872,6 +882,25 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
       // Without a buyer the list stays readable: only what cannot be sold at all is dimmed
       dim: (!forSale && !onVehicle && !onWeapon) || !!blocked,
     }
+  }
+
+  /**
+   * A shelf's row at a vendor's, priced as the cart will price one piece: the book's price for the buyer (dealer
+   * included), then sr5.vendorPrice. Only when a module changes it does the row take its price, and keep the book's
+   * to strike through; without one, nothing (the row shows the book's price, as before).
+   */
+  static #askedOnShelf(entry, described, grade, buyer, vendorSource) {
+    if (!buyer || !vendorSource || !(described?.price > 0)) return {
+    }
+    const book = dealerPrice(described.price, entry, buyer.items)
+    const asked = vendorPriceFor({
+      vendor: vendorSource.actor ?? null, storage: vendorSource.storage ?? null, buyer, quantity: 1,
+      item: {
+        type: entry.type, name: entry.name, system: entry.system, grade: grade ?? null, uuid: entry.uuid
+      },
+      price: book,
+    })
+    return shelfPrice(book, asked)
   }
 
   static #nuyen(value) {

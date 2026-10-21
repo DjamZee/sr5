@@ -1,4 +1,7 @@
 import {
+  initiativeRemindersFor, initiativeCardLine
+} from "./house-rule-hooks.js"
+import {
   woundResolvePhaseStart
 } from "./wound-resolve.js"
 import {
@@ -565,6 +568,15 @@ export class SR5Combat extends Combat {
       await roll.evaluate()
       let initiative = roll.total
 
+      //What a module of house rules adds to this Initiative (sr5.initiativeReminders): its score at once, its lines on
+      //the card, as there is no dialog to tick them in
+      const reminders = initiativeRemindersFor({
+        actor: combatant.actor, combatant, combat: this, round: this.round, pass: this.flags.sr5?.combatInitiativePass ?? 1,
+        roll: roll.total,
+      })
+      if (reminders.score) initiative = Math.max(0, initiative + reminders.score)
+      const score = initiative
+
       if (this.flags.sr5?.combatInitiativePass > 1){
         let currentPass = this.flags.sr5?.combatInitiativePass - 1
         initiative -= (currentPass * 10)
@@ -593,6 +605,8 @@ export class SR5Combat extends Combat {
         actor: combatant.actor,
         title: title,
         roll: roll,
+        reminders: reminders.lines.map(line => initiativeCardLine(line, `${game.i18n.localize("SR5.Colons")} `)),
+        reminderScore: reminders.score ? score : null,
       }
 
       const template = `systems/sr5/templates/rolls/roll-init.hbs`
