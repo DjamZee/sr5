@@ -6200,6 +6200,7 @@
 	"SR5.ToxinDosesHint": "+1 Power per extra dose (SR5 p. 410)",
 	"SR5.ToxinBookFolder": "Toxins",
 	"SR5.ToxinBookCreate": "Book toxins",
+	"SR5.ToxinBookCreateHint": "Creates in the world, Toxins folder, the core book toxins and critter venoms the system knows that are not there yet (matched by name). Useful without the Megapack, and for critter venoms, which the Megapack lacks.",
 	"SR5.WARN_NotAToxin": "Only a Toxin item can be dropped here.",
 	"SR5.INFO_ToxinBookCreated": "{count} book toxin(s) created in the Toxins folder.",
 	"SR5.ToxinVector": "Vector(s)",
