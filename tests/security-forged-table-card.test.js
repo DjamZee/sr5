@@ -5,6 +5,9 @@ import {
 import {
   sr5HookRenderTablePayout, sr5PayoutNeedsReview
 } from "../modules/interface/table-payout.js"
+import {
+  formatNumber
+} from "../modules/helpers/number-format.js"
 
 // Security pass of 06/10 (Kurt): the money and the gear a table card hands over are flags of the card, its author's to
 // write, and the card itself shows only how many items were found. A player who forges one from her console (any
@@ -148,7 +151,7 @@ describe("a table card a GM did not write", () => {
     rendered(forged).sr5PayTableNuyen.click()
     await tick()
     await tick()
-    expect(confirm.mock.calls[0][0].content).toContain((1000000).toLocaleString())
+    expect(confirm.mock.calls[0][0].content).toContain(formatNumber(1000000))
     expect(received).toHaveLength(0)
   })
 
