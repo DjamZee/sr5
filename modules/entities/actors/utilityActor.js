@@ -759,8 +759,14 @@ export class SR5_CharacterUtility extends Actor {
     nuyen.value = SR5_EntityHelpers.roundDecimal(nuyen.value - 2 * (SR5_EntityHelpers.modifiersOnlyNegativesSum(nuyen.modifiers) || 0), 2)
   }
 
+  //The balance, as the sheet reads it (karma.hbs): gains minus expenses, as updateNuyens does. An expense is written
+  //positive on its transaction (entityActor.js, itemKarma), so the plain sum of updateValue added it to the gains (30
+  //earned and 45 spent read 75, petits correctifs du 22/10). Street Cred still counts the gains only (SR5 p. 372)
   static updateKarmas(actor) {
-    SR5_EntityHelpers.updateValue(actor.system.karma)
+    const karma = actor.system.karma
+    SR5_EntityHelpers.updateValue(karma)
+    //updateValue counted each expense as a gain: it is taken off twice
+    karma.value = SR5_EntityHelpers.roundDecimal(karma.value - 2 * (SR5_EntityHelpers.modifiersOnlyNegativesSum(karma.modifiers) || 0), 2)
     let karmaGained = SR5_EntityHelpers.modifiersOnlyPositivesSum(actor.system.karma.modifiers)
     // Karma / 10 (SR5 p. 372); a quality can raise the divisor (Assassin's Primer p. 15, Consummate Professional: / 20)
     let divisor = 10 + SR5_EntityHelpers.modifiersSum(actor.system.specialProperties?.streetCredDivisor?.modifiers || [])

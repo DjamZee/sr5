@@ -88,12 +88,19 @@
     // The tabs
     nav.tabs, .sheet-tabs {
       border-color: var(--srw-border);
-      // The theme's red band (window.less) under the Concepteur's tabs: the roll table sheet showed it (pack 5)
-      background: transparent !important;
-      > :is(a, .item) {
+      // The theme's red band (window.less) under the Concepteur's tabs: the roll table sheet showed it (pack 5). In its
+      // place the theme's panel, light or dark: transparent, the tabs stood on the grid of the ground (22/10)
+      background: var(--srw-panel) !important;
+      background-image: none !important;
+      // Any tab: Foundry's (a or button, data-tab), a module's (.item); a button tab would take the buttons' field below
+      > :is(a, .item, [data-tab]) {
         .srw-tab();
+        background: var(--srw-panel) !important;
         padding: 0.2rem 0.6rem;
-        &.active { .srw-tab-active(); }
+        &.active {
+          .srw-tab-active();
+          background: var(--srw-sel-bg) !important;
+        }
       }
     }
 
@@ -183,7 +190,8 @@
     border-bottom: 1px solid var(--srw-border);
   }
   > .window-content nav.tabs:not(.vertical) {
-    background: transparent;
+    // The theme's panel, as the other dressed windows' tabs (22/10), not the ground showing through
+    background: var(--srw-panel) !important;
     border-top: 1px solid var(--srw-border);
     border-bottom: 1px solid var(--srw-border);
     [data-tab] { color: var(--srw-text); opacity: 1; }

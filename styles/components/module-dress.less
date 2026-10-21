@@ -102,8 +102,11 @@
       --button-hover-text-color: var(--srw-essence);
     }
 
-    // The tabs: the active one underlined in the selection colour
-    nav.tabs [data-tab] { color: var(--srw-muted); text-shadow: none; }
+    // The tabs: the active one underlined in the selection colour, on the theme's panel, light or dark (22/10: without
+    // it the tabs were transparent, the window's ground showing through). Not !important: a module's own tabs win
+    nav.tabs:not(.vertical) { background-color: var(--srw-panel); }
+    nav.tabs [data-tab] { background-color: var(--srw-panel); color: var(--srw-muted); text-shadow: none; }
+    nav.tabs [data-tab].active { background-color: var(--srw-sel-bg); }
     nav.tabs [data-tab]:hover { color: var(--srw-text); }
     nav.tabs [data-tab].active { color: var(--srw-sel-text); }
     nav.tabs:not(.vertical) [data-tab].active { border-bottom-color: var(--srw-sel-border); }
