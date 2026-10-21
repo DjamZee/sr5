@@ -591,7 +591,7 @@ export class SR5ShopWindow extends foundry.applications.api.HandlebarsApplicatio
         cartEssence += buyer && row.entry.type === 'itemAugmentation' && !row.entry.system?.isAccessory ? essenceCostFor(buyer, {
           type: row.entry.type, name: row.entry.name, system: row.entry.system, grade: line.grade, quantity: line.quantity
         }, book, {
-          creation: !!SR5Shop.creationModeFor(buyer, forced)
+          creation: !!SR5Shop.creationModeFor(buyer, forced), context: "shop"
         }) : book
       }
       // An item on a vendor's counter is there: it adds no search time (SR5 p. 420)

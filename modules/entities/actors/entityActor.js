@@ -772,7 +772,7 @@ export class SR5Actor extends Actor {
 
         case "itemAugmentation":
           i.prepareData()
-          SR5_UtilityItem._handleAugmentation(iData, actor)
+          SR5_UtilityItem._handleAugmentation(iData, actor, i)
           // An implant improved or lowered in place keeps the highest Essence it took (Chrome Flesh p. 74, SR5 p. 53)
           // The cost before that peak is kept: the end of creation starts the peak from it (peaksAtCreationEnd)
           iData.essenceCost.withoutPeak = iData.essenceCost.value

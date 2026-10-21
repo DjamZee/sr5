@@ -53,7 +53,7 @@ export function leavesHole(item, marks = item?.system) {
  * @param {object} [entry] the implant's register entry
  * @param {Function} [compute] how an implant's data is priced (SR5_UtilityItem._handleAugmentation)
  */
-export function registeredCost(item, entry, actor, compute = (data, body) => SR5_UtilityItem._handleAugmentation(data, body)) {
+export function registeredCost(item, entry, actor, compute = (data, body) => SR5_UtilityItem._handleAugmentation(data, body, item)) {
   const value = Number(item?.system?.essenceCost?.value) || 0
   if (!entry || !("essenceCost.base" in entry)) return value
   const now = item.system?.essenceCost ?? {
