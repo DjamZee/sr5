@@ -113,9 +113,14 @@ answers, only for a known user. A refusal is a notification on the asking user's
   `{asCommcode, asName, to, text}` (`gm` for a player). A message needs a text (`empty`), a call or a message a
   recipient (`noRecipient`).
 - `answer(entryId, {side = "to"})`, `refuse(entryId, {side = "to"})`, `hangup(entryId, {side})`, `say(entryId, text, {side})`.
-- `entries()`, `unanswered()`: copies of the register.
+- `entries()`, `unanswered()`: copies of the register. The gamemaster gets all of it; a player only the entries her
+  characters' devices see in their own window (all they sent, what they received once it reached them). The world
+  setting that holds the register stays readable by anyone: the filter is what a module shows, not a lock.
 - `directory.get(actor)`, `directory.set(actor, list)`, `directory.add(actor, {name, commcode})`: the owner writes it.
-- `commcodeOf(actor) → Promise<string>` (`""` when none), `generate() → string`.
+- `commcodeOf(actor) → Promise<string>` (`""` when none), `generate() → string`: a commcode none of the devices and
+  contacts the calling user can see has yet. Called by a player, it does not see the actors hidden from her: the code
+  may already be taken by one of them (far less than one chance in a billion per hidden code), and nothing checks it
+  again when it is written. `contacts.commcodeOf(item, {create: true})` draws its code the same way.
 
 ### game.sr5.contacts
 

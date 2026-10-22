@@ -3,7 +3,7 @@ import {
 } from "vitest"
 
 import {
-  isSystemCard
+  isSystemCard, sr5HookChatMessage
 } from "../modules/hooks/render-chat-message.js"
 
 // Arbitrage de DjamZ (relecture djamz.13): no card of the system or of a module shows the line of its recipients; a
@@ -49,5 +49,37 @@ describe("a whisper typed in the chat, which keeps them", () => {
     expect(isSystemCard({
       content: "Regarde <strong>ça</strong>, et <em>vite</em>"
     })).toBe(false)
+  })
+})
+
+describe("a line typed in the chat box, marked when it is sent (relecture du 22/10)", () => {
+  it("the chat box marks what is typed, and keeps the flags already there", () => {
+    const chatData = {
+      speaker: {
+      }, flags: {
+        other: {
+          x: 1
+        }
+      }
+    }
+    sr5HookChatMessage(null, "/w Bob salut", chatData)
+    expect(chatData.flags.sr5.typed).toBe(true)
+    expect(chatData.flags.other.x).toBe(1)
+  })
+
+  it("a typed whisper turned into paragraphs by a module of the chat box keeps its recipients", () => {
+    expect(isSystemCard({
+      flags: {
+        sr5: {
+          typed: true
+        }
+      }, content: "<p>Rendez-vous au parking.</p>"
+    })).toBe(false)
+  })
+
+  it("the GM's notices in bare paragraphs are not typed: still cards", () => {
+    expect(isSystemCard({
+      content: "<p>Tacnet : Bob refuse.</p>"
+    })).toBe(true)
   })
 })

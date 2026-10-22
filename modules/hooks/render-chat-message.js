@@ -66,12 +66,23 @@ import {
  * A card posted by the system or a module, as opposed to a line typed in the chat (/w): flags of its own,
  * or markup that a typed message does not carry. A paragraph too: the GM's notices are bare <p> lines without flags
  * (convergence, blood magic, tacnet…), and Foundry keeps a typed line as plain text (manual 5.2.4, DjamZ 21/10).
+ * A line typed in the chat box is marked when it is sent (sr5HookChatMessage): it is never a card, even when a
+ * module of the chat box turns it into paragraphs (relecture du 22/10).
  */
 export function isSystemCard(message) {
+  if (message.flags?.sr5?.typed) return false
   const flags = Object.keys(message.flags ?? {
   }).filter(k => k !== "core")
   if (flags.length) return true
   return /<(div|section|table|button|header|h[1-6]|p)\b/i.test(message.content ?? "")
+}
+
+/**
+ * Foundry calls this hook for what a user types in the chat box (ChatLog#processMessage), and for nothing else:
+ * the data it receives is the message about to be created.
+ */
+export function sr5HookChatMessage(_chatLog, _text, chatData) {
+  foundry.utils.setProperty(chatData, "flags.sr5.typed", true)
 }
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {

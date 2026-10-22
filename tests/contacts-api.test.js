@@ -153,6 +153,39 @@ describe('game.sr5.commcode', () => {
     })
   })
 
+  // Relecture du 22/10: entries() gave a player the traffic of every character of the world
+  it('gives the gamemaster the whole register, a player only what her characters\' devices see', () => {
+    pc.testUserPermission = (user, level) => user.id === 'joueuse' && level === 'OWNER'
+    pc.items = [{
+      type: 'itemDevice', system: {
+        commcode: '#PC-0000-0000-01'
+      }
+    }]
+    const other = {
+      id: 'npc', items: [{
+        type: 'itemDevice', system: {
+          commcode: '#JN-0000-0000-01'
+        }
+      }], testUserPermission: () => false
+    }
+    game.actors = [pc, other]
+    game.user = {
+      id: 'mj', isGM: true
+    }
+    expect(api.entries().map(e => e.id)).toEqual(['e1', 'e2', 'e3'])
+    expect(api.unanswered().map(e => e.id)).toEqual(['e1'])
+    game.user = {
+      id: 'joueuse', isGM: false
+    }
+    expect(api.entries().map(e => e.id)).toEqual(['e2'])
+    expect(api.unanswered()).toEqual([])
+    game.user = {
+      id: 'autre', isGM: false
+    }
+    expect(api.entries()).toEqual([])
+    delete game.user
+  })
+
   it('generates a commcode none of the devices or contacts has', () => {
     expect(api.generate()).toMatch(/^#[0-9A-Z]{2}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{2}$/)
   })

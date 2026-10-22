@@ -212,4 +212,23 @@ describe("drone sneaking by control mode (DjamZ 07/10, SR5 p. 239 and 272)", () 
     expect(system.skills.sneaking.test.dicePool).toBe(4 + 2)
     expect(system.skills.sneaking.limit.value).toBe(5)
   })
+  // Relecture du 22/10: a controller without Sneaking defaults, the attribute alone −1 (SR5 p. 132; Sneaking defaults, p. 135)
+  it("without Sneaking, the controller defaults: the attribute −1, in all three modes", () => {
+    const untrained = options => {
+      const actor = drone(options)
+      actor.system.vehicleOwner.system.skills.sneaking.rating.value = 0
+      SR5_CharacterUtility.generateVehicleSkills(actor)
+      return actor.system.skills.sneaking.test
+    }
+    expect(untrained().dicePool).toBe(5 - 1)
+    expect(untrained({
+      controlMode: "manual"
+    }).dicePool).toBe(2 - 1)
+    expect(untrained({
+      controlMode: "rigging", userMode: "coldsim"
+    }).dicePool).toBe(3 - 1)
+    expect(untrained({
+      controlMode: "manual"
+    }).modifiers.map(m => m.value)).toContain(-1)
+  })
 })

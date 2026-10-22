@@ -82,6 +82,26 @@ describe("Initiative modifier typed on a grunt's profile", () => {
     expect(actor.system.initiatives.physicalInit.dice.value).toBe(1)
   })
 
+  // Relecture du 22/10: a GM who copied the printed Initiative (8 + 1D6) counted it twice. The field says it is a bonus
+  it("is named a bonus, and its help warns against copying the printed Initiative, in both languages", () => {
+    const fr = JSON.parse(readFileSync(new URL("../lang/fr.json", import.meta.url), "utf8"))
+    const en = JSON.parse(readFileSync(new URL("../lang/en.json", import.meta.url), "utf8"))
+    expect(fr["SR5.InitiativeProfile"]).toMatch(/^Bonus/)
+    expect(en["SR5.InitiativeProfile"]).toMatch(/bonus$/)
+    expect(fr["SR5.HELP_InitiativeProfileMsg"]).toContain("Ne recopiez pas l'Initiative imprimée")
+    expect(en["SR5.HELP_InitiativeProfileMsg"]).toContain("Do not copy the whole printed Initiative")
+  })
+
+  it("gives the help's example: profile 10 + 2D6 with REA 4 and INT 4 is typed 2 and 1", () => {
+    const actor = grunt({
+      score: 2, dice: 1
+    })
+    actor.system.attributes.intuition.augmented.value = 4
+    SR5_CharacterUtility.updateInitiativePhysical(actor)
+    expect(actor.system.initiatives.physicalInit.value).toBe(10)
+    expect(actor.system.initiatives.physicalInit.dice.value).toBe(2)
+  })
+
   it("still caps the dice at 5D6 (SR5 p. 159)", () => {
     const actor = grunt({
       score: 0, dice: 6
