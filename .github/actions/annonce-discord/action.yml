@@ -27,13 +27,13 @@ inputs:
     default: ''
   username:
     description: Nom affiché par le webhook
-    default: Shadow Talker DjamZ
+    default: Shadowtalker GhostFrame
   avatar-url:
-    description: Image de l'avatar du webhook
-    default: https://raw.githubusercontent.com/DjamZee/sr5/13.0.0-djamz.13/assets/img/pan/commlink.webp
+    description: Image de l'avatar du webhook (Dropbox, lien direct raw=1 : le fork public qui l'hébergeait ferme)
+    default: https://www.dropbox.com/scl/fi/n14eydrsyj6w02iz4cigb/.Valentina-GhostFrame-Nu-ez-Portrait.png?rlkey=v30p0a65098z1ip9k32wfbszq&raw=1
   thumbnail-url:
     description: Vignette de l'embed (vide = aucune)
-    default: https://raw.githubusercontent.com/DjamZee/sr5/13.0.0-djamz.13/assets/img/ui/SR5_Logo.png
+    default: https://www.dropbox.com/scl/fi/t59i0q6zbqlz47fawxwcl/SR5_Logo.png?rlkey=we8p99by44x7s3g91jm5n5qf0&raw=1
   dry-run:
     description: « true » affiche le JSON au lieu de l'envoyer
     default: 'false'
