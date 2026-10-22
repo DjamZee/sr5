@@ -224,10 +224,42 @@ export default class Migration {
       results: "TableResult" 
     },
     Scene: {
-      tokens: "Token" 
+      tokens: "Token"
     },
     Macro: {
     },
+    JournalEntry: {
+      pages: "JournalEntryPage"
+    },
+  }
+
+  /**
+   * An unlinked token's own changes (its delta: the actor's fields and the items changed on the token), which the
+   * Token update skips. Written through its synthetic actor, which routes them into the delta (Gédéon, D5: an item
+   * changed on such a token kept a broken icon once the Lite module was gone). Returns the documents written.
+   */
+  static async migrateLiteTokenDelta(token) {
+    const actor = token?.actor
+    if (token?.actorLink || !token?.delta || !actor) return 0
+    const delta = token.delta.toObject()
+    let written = 0
+    const own = litePathUpdate(delta, ["items", "effects"])
+    if (!foundry.utils.isEmpty(own)) {
+      await actor.update(own, {
+        render: false
+      })
+      written++
+    }
+    const items = (delta.items ?? []).map(i => ({
+      _id: i._id, ...litePathUpdate(i, ["effects"])
+    })).filter(u => Object.keys(u).length > 1)
+    if (items.length) {
+      await actor.updateEmbeddedDocuments("Item", items, {
+        render: false
+      })
+      written += items.length
+    }
+    return written
   }
 
   /**
@@ -248,7 +280,7 @@ export default class Migration {
       written++
     }
     const collections = [["Actor", game.actors], ["Item", game.items], ["RollTable", game.tables], ["Macro", game.macros],
-      ["Scene", game.scenes]]
+      ["Scene", game.scenes], ["JournalEntry", game.journal]]
     for (const [type, collection] of collections) {
       const embedded = Migration.LITE_EMBEDDED[type]
       for (const doc of collection?.contents ?? []) {
@@ -260,10 +292,11 @@ export default class Migration {
             })).filter(u => Object.keys(u).length > 1)
             if (!updates.length) continue
             await doc.updateEmbeddedDocuments(embeddedType, updates, {
-              render: false 
+              render: false
             })
             written += updates.length
           }
+          if (type === "Scene") for (const token of doc.tokens?.contents ?? []) written += await Migration.migrateLiteTokenDelta(token)
         } catch (err) {
           err.message = `Failed sr5 Megapack Lite paths migration for ${type} ${doc.name}: ${err.message}`
           console.error(err)
