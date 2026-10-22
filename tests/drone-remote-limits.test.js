@@ -31,7 +31,7 @@ const rated = value => ({
 })
 
 /** A drone (Handling 5, Sensor 4, Pilot 3) controlled through a device of Data Processing 3, in the given mode.
- * The controller: Sneaking 4, Agility 5, Intuition 3, Gunnery 4, Logic 4, control rig 0 */
+ * The controller: Sneaking 4, Agility 5, Intuition 3, Reaction 2, Gunnery 4, Logic 4, control rig 0 */
 function drone({
   controlMode = "remote", dataProcessing = 3, userMode = "ar"
 } = {
@@ -58,7 +58,7 @@ function drone({
             }
           },
           attributes: {
-            agility: rated(5), intuition: rated(3), logic: rated(4)
+            agility: rated(5), intuition: rated(3), reaction: rated(2), logic: rated(4)
           },
           matrix: {
             userMode, attributes: {
@@ -204,5 +204,12 @@ describe("drone sneaking by control mode (DjamZ 07/10, SR5 p. 239 and 272)", () 
     expect(prepared({
       controlMode: "rigging", userMode: "hotsim"
     }).skills.sneaking.test.dicePool).toBe(4 + 3 + 1)
+  })
+  it("manual control: the driver's Sneaking + Reaction [Handling] (Rigger 5.0 p. 180)", () => {
+    const system = prepared({
+      controlMode: "manual"
+    })
+    expect(system.skills.sneaking.test.dicePool).toBe(4 + 2)
+    expect(system.skills.sneaking.limit.value).toBe(5)
   })
 })

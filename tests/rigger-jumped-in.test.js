@@ -80,7 +80,7 @@ function drone({
             },
           },
           attributes: {
-            agility: rated(5), intuition: rated(3)
+            agility: rated(5), intuition: rated(3), reaction: rated(4)
           },
         },
       },

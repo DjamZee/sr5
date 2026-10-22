@@ -86,11 +86,10 @@ export class SR5_CharacterRiggingUtility {
       case "manual":
         SR5_EntityHelpers.updateModifier(skills.perception.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills.perception.test.dicePool)
         SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.VehicleStat_SensorShort'), "linkedAttribute", attributes.sensor.augmented.value)
-        //TODO : sneaking is equal to lesser value between pilotSkill and Sneaking(pilotSkill)
-        if (actorData.pilotSkill) {
-          SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills[actorData.pilotSkill].test.dicePool)
-          this.applyMetahumanAdaptation(actor, skills.sneaking.test)
-        }
+        //Driving by hand: the driver's Sneaking + Reaction [Handling] (Rigger 5.0 p. 180); no book text caps it at the piloting skill
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Reaction')})`, actorData.controlMode, controlerData.attributes.reaction.augmented.value)
+        this.applyMetahumanAdaptation(actor, skills.sneaking.test)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         break
       case "rigging":
