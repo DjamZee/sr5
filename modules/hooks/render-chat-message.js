@@ -90,7 +90,7 @@ export function sr5HookRenderChatMessageHTML(message, html, _data) {
     // Inject actor thumbnail into Foundry's default message header
     const msgHeader = html.querySelector(":scope > header")
     if (msgHeader) {
-      const imgSrc = message.flags?.sr5data?.owner?.speakerImg || "systems/sr5/assets/img/ui/sr6-embleme.svg"
+      const imgSrc = message.flags?.sr5data?.owner?.speakerImg || "systems/sr5/assets/img/ui/embleme-dragon.webp"
       const img = document.createElement("img")
       img.classList.add("SRAuthorIcon")
       img.src = imgSrc

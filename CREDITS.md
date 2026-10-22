@@ -13,6 +13,7 @@
 | `assets/fonts/barlow/Barlow-*.ttf` | Barlow | The Barlow Project Authors | SIL OFL 1.1 (`assets/fonts/barlow/OFL.txt`) |
 | `assets/fonts/barlow/BarlowCondensed-Bold-Capitales.ttf` | Barlow Condensed Bold, version modifiée (minuscules en capitales) | The Barlow Project Authors | SIL OFL 1.1 |
 | `assets/fonts/bruno-ace/bruno-ace-sc.woff2` | Bruno Ace SC | The Bruno Ace Project Authors | SIL OFL 1.1 (`assets/fonts/bruno-ace/OFL.txt`) |
+| `assets/fonts/audiowide/Audiowide-Regular.ttf` | Audiowide (écran de pause) | Astigmatic (Brian J. Bonislawsky) | SIL OFL 1.1 (`assets/fonts/audiowide/OFL.txt`) |
 | `assets/fonts/pt-serif/PT_Serif-Web-*.ttf` | PT Serif | ParaType Ltd. | SIL OFL 1.1 (`assets/fonts/pt-serif/OFL.txt`) |
 
 Armadura Solid (Graviton) n'est pas fournie : le thème l'utilise seulement si elle est installée sur la machine.
@@ -24,7 +25,7 @@ Armadura Solid (Graviton) n'est pas fournie : le thème l'utilise seulement si e
   (`assets/img/pan/`), CI et sprites, images du Mégapack Lite (`megapack/`), image du README.
 - **Interface d'origine** (fonds `SR5_BG_*` / `SR6_BG_*`, icônes d'états, d'objets et d'acteurs de `assets/img/`) :
   système `sr5` de Karmaroms et deurk.
-- **Emblème** (`assets/img/ui/sr5-embleme.svg`, `sr6-embleme.svg`) : dessin original pour la 1.0.
+- **Emblème** (`assets/img/ui/embleme-dragon.webp`) : logo de DjamZ (Midjourney).
 - **game-icons.net**, licence [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) : les quatre icônes de types
   d'armes du Mégapack Lite, par leurs auteurs sur [game-icons.net](https://game-icons.net) (Lorc, Delapouite et
   contributeurs).
