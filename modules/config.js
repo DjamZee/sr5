@@ -4366,6 +4366,7 @@ SR5.modifiersTypes = {
   level 					  : "SR5.Level",
   lifeStyleOption 		  : "SR5.LifeStyleOptions",
   linkedAttribute 		  : "SR5.LinkedAttribute",
+  gruntProfile			  : "SR5.InitiativeProfile",
   wildSpirit                : "SR5.SpiritWild",
   matrixAttribute 		  : "SR5.MatrixAttribute",
   matrixUserMode 			  : "SR5.MatrixUserMode",

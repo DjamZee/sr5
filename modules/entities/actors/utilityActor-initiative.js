@@ -101,6 +101,12 @@ export class SR5_CharacterInitiativeUtility {
         //Attribute Boost (SR5 p. 312) leaves the Initiative attribute alone; the AR matrix initiative copies these modifiers
         SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.Reaction'), "linkedAttribute", limitAttributeValue(attributes.reaction))
         initPhy.dice.base = 1
+        // A grunt's profile prints its Initiative (SR5 p. 381): typed on the sheet, kept outside the reset initiatives
+        if (actor.type === "actorGrunt") {
+          const profile = actorData.profileInitiative
+          if (profile?.score) SR5_EntityHelpers.updateModifier(initPhy, game.i18n.localize('SR5.InitiativeProfile'), "gruntProfile", profile.score)
+          if (profile?.dice) SR5_EntityHelpers.updateModifier(initPhy.dice, game.i18n.localize('SR5.InitiativeProfile'), "gruntProfile", profile.dice)
+        }
     }
 
     this.applyPenalty("condition", initPhy, actor)

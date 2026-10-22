@@ -93,6 +93,15 @@ export class sr5ActorGruntDataModel extends foundry.abstract.TypeDataModel {
       hasDNI: new fields.BooleanField({
         initial: false
       }),
+      //Initiative bonus printed in the profile (SR5 p. 381), outside the initiatives that are reset at each preparation
+      profileInitiative: new fields.SchemaField({
+        score: new fields.NumberField({
+          initial: 0
+        }),
+        dice: new fields.NumberField({
+          initial: 0
+        }),
+      }),
       specialAttributes: new fields.SchemaField({
         edge: new fields.SchemaField({
           natural: new fields.SchemaField({
