@@ -13,6 +13,9 @@ import {
 import {
   convergenceThreshold
 } from "./convergence-threshold.js"
+import {
+  marksOnHost
+} from "./matrix-host-presence.js"
 
 // SR5 p. 237: three marks at most on an icon, from one owner
 export const MAX_MARKS = 3
@@ -380,6 +383,52 @@ export function announceMatrixAction(entry, call = (...args) => globalThis.Hooks
 // S3: being inside a host (matrix-host-presence.js), loaded when called
 const presence = () => import("./matrix-host-presence.js")
 
+/** actorOf with no wait, for the reads a module makes while drawing: an actor, a token, or a uuid fromUuidSync finds */
+export function actorOfSync(value){
+  if (!value) return null
+  if (typeof value === "string") {
+    try {
+      value = globalThis.fromUuidSync?.(value) ?? null
+    } catch {
+      value = null
+    }
+  }
+  if (!value) return null
+  if (value.documentName === "Actor") return value
+  if (value.documentName === "Token") return value.actor ?? null
+  if (value.document?.documentName === "Token") return value.document.actor ?? null
+  return null
+}
+
+const isHostActor = actor => actor?.type === "actorDevice" && actor.system?.matrix?.deviceType === "host"
+
+/** The hosts of the world: the actors, and the hosts of unlinked tokens on every scene (each instance its own host) */
+export function worldHosts(actors = globalThis.game?.actors ?? [], scenes = globalThis.game?.scenes ?? []){
+  const found = new Map()
+  for (const actor of actors) if (isHostActor(actor)) found.set(actor.uuid, actor)
+  for (const scene of scenes) for (const token of scene.tokens ?? []) {
+    if (token.actorLink) continue
+    const actor = token.actor
+    if (isHostActor(actor)) found.set(actor.uuid, actor)
+  }
+  return [...found.values()]
+}
+
+/** The marks a persona has on a host (SR5 p. 237, 240), 0 to 3; 0 when either cannot be read. With no wait */
+export function marksOn(persona, host){
+  const by = actorOfSync(persona), on = actorOfSync(host)
+  return by && isHostActor(on) ? marksOnHost(by, on) : 0
+}
+
+/** The hosts a persona has marks on, the most marks first: [{host, uuid, name, marks}]. With no wait */
+export function markedHosts(persona, hosts = worldHosts()){
+  const by = actorOfSync(persona)
+  if (!by) return []
+  return hosts.map(host => ({
+    host, uuid: host.uuid, name: host.name, marks: marksOnHost(by, host)
+  })).filter(h => h.marks > 0).sort((a, b) => b.marks - a.marks || String(a.name).localeCompare(String(b.name)))
+}
+
 export const SR5MatrixApi = {
   placeMarks: (attacker, target, count, options) => placeMarks(attacker, target, count, options),
   converge: (persona, options) => converge(persona, options),
@@ -392,4 +441,8 @@ export const SR5MatrixApi = {
   exitHost: async (persona, options) => (await presence()).exitHost(await actorOf(persona), options),
   /** The host a persona is inside, or null */
   currentHost: async persona => (await presence()).currentHostOf(await actorOf(persona)),
+  /** The marks a persona has on a host, 0 to 3 (landing-metroplexes-sr5, NETWORKS): read at once, no promise */
+  marksOn: (persona, host) => marksOn(persona, host),
+  /** The hosts a persona has marks on: [{host, uuid, name, marks}], the most marks first; read at once, no promise */
+  markedHosts: persona => markedHosts(persona),
 }
