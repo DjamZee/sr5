@@ -53,6 +53,27 @@ function headOf(repo) {
   }
 }
 
+/**
+ * Whether the full Megapack still holds what the copy was built from: the same trees for each path it reads (a commit
+ * of its tools alone changes nothing) and nothing modified in them.
+ */
+function sameSources(repo, build) {
+  const paths = Object.keys(build?.sources ?? {
+  })
+  if (!paths.length) return false
+  const git = args => {
+    try {
+      return execFileSync('git', args, {
+        cwd: repo, encoding: 'utf8',
+      }).trim()
+    } catch {
+      return null
+    }
+  }
+  return paths.every(p => git(['rev-parse', `HEAD:${p}`]) === build.sources[p]) &&
+    git(['status', '--porcelain', '--', ...paths]) === ''
+}
+
 module.exports = {
-  ROOT, BUILD_FLAG, megapackPacks, lastBuild, completRepo, headOf,
+  ROOT, BUILD_FLAG, megapackPacks, lastBuild, completRepo, headOf, sameSources,
 }

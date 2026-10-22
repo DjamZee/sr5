@@ -10,7 +10,7 @@ const {
 const fs = require('fs')
 const path = require('path')
 const {
-  ROOT, megapackPacks, lastBuild, completRepo, headOf,
+  ROOT, megapackPacks, lastBuild, completRepo, headOf, sameSources,
 } = require('./megapack-paths.js')
 
 const packs = megapackPacks()
@@ -33,13 +33,13 @@ if (!complet) {
   console.error('Mégapack Lite : packs présents mais Mégapack complet introuvable (-- --complet <dépôt>) : verify-lite impossible')
   process.exit(1)
 }
-// The full Megapack moved since the build: its sources are no longer those of the copy. Text and images are still
-// checked; the comparison (same documents, same _id) is skipped, and the output says so.
+// The full Megapack's sources moved since the build (not only its commit): they are no longer those of the copy. Text
+// and images are still checked; the comparison (same documents, same _id) is skipped, and the output says so.
 const head = headOf(complet)
-const compare = head === build.commit && !build.sourcesModifiees
+const compare = !build.sourcesModifiees && sameSources(complet, build)
 if (!compare) {
   console.log(`Mégapack Lite : complet à ${head?.slice(0, 8) ?? '?'}, copie construite depuis ${build.commit.slice(0, 8)}` +
-    `${build.sourcesModifiees ? ' (sources modifiées)' : ''} : comparaison au complet sautée`)
+    `${build.sourcesModifiees ? ' (sources modifiées)' : ''}, sources différentes : comparaison au complet sautée`)
 }
 const result = spawnSync('node', [path.join(complet, 'tools', 'verify-lite.mjs'), '--cible', 'systeme', '--lite', ROOT,
   '--complet', complet, ...(compare ? [] : ['--sans-complet'])], {
