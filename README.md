@@ -20,7 +20,7 @@ depuis 2026. Version actuelle : **1.0** (numéro technique 13.1.0 : le premier c
   sur le modèle de Chummer.
 - **Aucun texte des livres.** Les descriptions disent ce que fait l'objet ou l'état et renvoient à la page (« SR5 p. 432 ») :
   il vous faut vos livres pour le texte complet.
-- Un manuel intégré (compendium « Manuel ») et un [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
+- Un manuel intégré (compendium « Manuel Shadowrun 5 », et « Shadowrun 5 Manual » en anglais) et un [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
 
 ## Installation
 
@@ -70,7 +70,7 @@ It carries on the `sr5` system created by **Karmaroms** and **deurk** (with Mich
 - Compendiums of items, archetypes and tables (Megapack Lite): **names, numbers and the book page**, the Chummer way.
 - **No text from the books.** Descriptions say what an item or a condition does and point to the page ("SR5 p. 431"):
   you need your books for the full text.
-- A built-in manual ("Manuel" compendium) and a [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
+- A built-in manual ("Shadowrun 5 Manual" compendium, "Manuel Shadowrun 5" in French) and a [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
 
 ## Installation
 
