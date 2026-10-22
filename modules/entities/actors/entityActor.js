@@ -91,7 +91,7 @@ import {
   SR5StorageLockRights
 } from "../../interface/storage-lock-rights.js"
 import {
-  worsenAddiction, burnoutAttribute
+  worsenAfterTest, burnoutAttribute
 } from "../../rolls/roll-helpers/addiction.js"
 import {
   isNecroSpirit
@@ -1331,9 +1331,14 @@ export class SR5Actor extends Actor {
     let addictions = foundry.utils.duplicate(this.system.addictions || [])
     let addiction = addictions[index]
     if (!addiction || addiction.name !== messageData.various.addictionName) return ui.notifications.warn(game.i18n.localize("SR5.WARN_AddictionNotFound"))
+    //From the level the test was rolled at: the two tests of an addiction both physiological and psychological
+    //worsen it by one level, however many fail (SR5 p. 416)
     let {
-      level, attributeLoss
-    } = worsenAddiction(addiction.level)
+      level, attributeLoss, already
+    } = worsenAfterTest(messageData.various.addictionLevel, addiction.level)
+    if (already) return ui.notifications.info(game.i18n.format("SR5.AddictionAlreadyWorsened", {
+      drug: addiction.name
+    }))
     let levelLabel = game.i18n.localize(SR5.addictionLevels[level])
     if (attributeLoss) {
       let attributes = this.system.attributes

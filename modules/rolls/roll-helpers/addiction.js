@@ -120,6 +120,19 @@ export function worsenAddiction(level){
   }
 }
 
+// A failed test worsens the addiction from the level it was rolled at (`rolledLevel`, kept on the card), never
+// lower than it stands now. An addiction both physiological and psychological is tested with both pools, and a
+// failure at either one is the step of p. 416: the second failure of the same test finds the step taken (`already`)
+export function worsenAfterTest(rolledLevel, currentLevel){
+  const next = worsenAddiction(rolledLevel ?? currentLevel)
+  if (!next.attributeLoss && addictionLevelIndex(currentLevel) >= addictionLevelIndex(next.level)) return {
+    level: currentLevel || "", attributeLoss: false, already: true
+  }
+  return {
+    ...next, already: false
+  }
+}
+
 // The attribute a burnout failure takes a point from: the higher of Body and Willpower; on a tie, Body
 // for a physiological addiction, Willpower for a psychological one, the gamemaster's pick for both (SR5 p. 416)
 export function burnoutAttribute(body, willpower, type){

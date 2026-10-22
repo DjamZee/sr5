@@ -26,6 +26,9 @@ import {
   lifestyleMetatypeSurcharge
 } from "./lifestyle-metatype.js"
 import {
+  lifestyleOptionEffectKey
+} from "./lifestyle-options.js"
+import {
   purityStateArmorPenetration
 } from "./adept-powers-btb.js"
 import {
@@ -2344,9 +2347,7 @@ export class SR5_UtilityItem extends Actor {
 
       if (option.name){
         //Get the game info and put it in the array
-        let nameString = option.name.charAt(0).toUpperCase() + option.name.slice(1)
-        let gameEffectString = 'SR5.LifeStyleOption'+ `${nameString}` + '_GE'
-        option.gameEffects = game.i18n.localize(gameEffectString)
+        option.gameEffects = game.i18n.localize(lifestyleOptionEffectKey(option.name))
       }
 
     }

@@ -648,12 +648,11 @@ export class SR5Item extends Item {
           [`${game.i18n.localize('SR5.LifestyleNeighborhood')}${game.i18n.localize('SR5.Colons')} ${itemData.neighborhood.value} (${itemData.neighborhood.zone})`, itemData.neighborhood.gameEffects]
         )
         if (itemData.options) {
+          //The increases of Comforts, Security or Neighborhood too: their text tells what the point bought (Run Faster p. 210)
           for (let option of itemData.options){
-            if(option.type != "modification") {
-              options.push(`${option.name}`)
-              tags.push([game.i18n.localize(lists.allLifestyleOptions[option.name]), option.gameEffects])
-            }
-          }       
+            options.push(`${option.name}`)
+            tags.push([game.i18n.localize(lists.allLifestyleOptions[option.name]), option.gameEffects])
+          }
         }
         break
       case "itemSin":
