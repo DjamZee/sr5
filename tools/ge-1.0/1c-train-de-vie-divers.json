@@ -2,466 +2,466 @@
   "famille": "1c-train-de-vie-divers",
   "entrees": {
     "SR5.ElementalDamageElectricity_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Si l'attaque électrique inflige au moins une case, la cible perd 5 points d'initiative sur-le-champ et subit -1 dé à ses actions et à ses défenses (pas à la résistance aux dommages) pendant 1 tour de combat. Les effets ne s'additionnent pas : chaque nouvelle touche électrique pendant ce temps prolonge le malus d'un tour. Initiative tombée à 0 ou moins : la dernière action est perdue ; si elle y était déjà, les -5 portent sur le tour de combat suivant.</p><p><em>SR5 p. 172</em></p>",
+      "en": "<p>If the electrical attack deals at least one box, the target immediately loses 5 Initiative and takes -1 die on actions and defense tests (not damage resistance) for 1 Combat Turn. The effects do not add up: each further electrical hit during that time extends the penalty by one turn. Initiative at 0 or less: the last action is lost; if it was already there, the -5 hits the next Combat Turn.</p><p><em>SR5 p. 170</em></p>",
+      "source": "SR5 p. 172 (VF) / p. 170 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : texte d'origine trop proche de l'ordre des phrases du livre, resserré. EN p. 170 vérifié au livre VO."
     },
     "SR5.HELP_AmmoReloadMsgBelt": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "Clic gauche : mettre la bande. Clic droit : l'enlever. Maj + clic gauche : changer de bande (plusieurs actions). Ctrl + clic gauche : ajouter autant de cartouches que l'Agilité. Maj + Ctrl + clic gauche : la bande est rempli sans coût en action.",
+      "en": "Left click: load a belt. Right click: take it out. Shift + left click: swap the belt (takes several actions). Ctrl + left click: add as many rounds as Agility. Shift + Ctrl + left click: refill the belt at no action cost.",
+      "source": "SR5 p. 169 (VF) / p. 163 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Aide d'interface (pas du livre) ; renvoi en source seulement."
     },
     "SR5.HELP_AmmoReloadMsgClip": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "Clic gauche : mettre le chargeur. Clic droit : l'enlever. Maj + clic gauche : changer de chargeur (plusieurs actions). Ctrl + clic gauche : ajouter autant de cartouches que l'Agilité. Maj + Ctrl + clic gauche : le chargeur est rempli sans coût en action.",
+      "en": "Left click: load a clip. Right click: take it out. Shift + left click: swap the clip (takes several actions). Ctrl + left click: add as many rounds as Agility. Shift + Ctrl + left click: refill the clip at no action cost.",
+      "source": "SR5 p. 169 (VF) / p. 163 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Aide d'interface (pas du livre)."
     },
     "SR5.HELP_AmmoReloadMsgDrum": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "Clic gauche : mettre le tambour. Clic droit : l'enlever. Maj + clic gauche : changer de tambour (plusieurs actions). Ctrl + clic gauche : ajouter autant de cartouches que l'Agilité. Maj + Ctrl + clic gauche : le tambour est rempli sans coût en action.",
+      "en": "Left click: load a drum. Right click: take it out. Shift + left click: swap the drum (takes several actions). Ctrl + left click: add as many rounds as Agility. Shift + Ctrl + left click: refill the drum at no action cost.",
+      "source": "SR5 p. 169 (VF) / p. 163 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Aide d'interface (pas du livre)."
     },
     "SR5.HELP_EnvironmentalModMsg": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "Décalage, en lignes, sur la table Modificateurs environnementaux.<br>Négatif : on monte d'autant de lignes.<br>Positif : on descend d'autant de lignes.",
+      "en": "Shift within the Environmental Modifiers table.<br>Negative: move up that many rows.<br>Positive: move down that many rows.",
+      "source": "SR5 p. 176 (VF) / p. 175 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Aide d'interface (pas du livre)."
     },
     "SR5.LifeStyleAddComforts_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Dépense 1 point de style de vie pour monter Confort &amp; Nécessités d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
+      "en": "<p>Spend 1 lifestyle point to raise Comforts &amp; Necessities by one level, up to the category limit; the rent rises by 10% of the base cost.</p><p><em>Run Faster p. 216</em></p>",
+      "source": "Run Faster p. 210 (VF) / p. 216 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : FR sans renvoi."
     },
     "SR5.LifeStyleAddNeighborhood_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Dépense 1 point de style de vie pour monter le Quartier d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
+      "en": "<p>Spend 1 lifestyle point to raise Neighborhood by one level, up to the category limit; the rent rises by 10% of the base cost.</p><p><em>Run Faster p. 216</em></p>",
+      "source": "Run Faster p. 210 (VF) / p. 216 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : le FR disait « Confort et nécessités » (erreur) ; corrigé en Quartier."
     },
     "SR5.LifeStyleAddSecurity_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Dépense 1 point de style de vie pour monter la Sécurité d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
+      "en": "<p>Spend 1 lifestyle point to raise Security by one level, up to the category limit; the rent rises by 10% of the base cost.</p><p><em>Run Faster p. 216</em></p>",
+      "source": "Run Faster p. 210 (VF) / p. 216 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : FR sans renvoi."
     },
     "SR5.LifeStyleOptionAngryDrunkReputation_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. Le personnage est connu pour se battre une fois ivre : pas de Pilier de bar ni d'Ami des arts (club privé), et des rencontres tendues avec les Johnson du coin. La réputation ne le suit pas hors de son quartier.</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. The character is known for brawling when drunk: the Patron of the Arts (private club) and Local Bar Patron options are barred, and expect tense meetings with local Johnsons. The reputation does not follow them outside their neighborhood.</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionArmory_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 1 000 ¥ par mois, gratuit dès un style de vie Élevé. Munitions et une arme semblable à une arme du personnage. Avec le kit adapté, l'arme récupère 1 point de Précision ou de PA par semaine, ou 1 point d'Allonge en 2 semaines, sans frais.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Asset: 2 points, 1,000¥ per month, free from a High lifestyle. Ammo and a weapon similar to one the character owns. With the matching kit, the weapon recovers 1 point of Accuracy or AP per week, or 1 point of Reach in 2 weeks, at no cost.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionCleaningServiceMage_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 point, 200 ¥ par mois, gratuit dès un style de vie Élevé. Ménage et linge assurés avec discrétion ; se prend plusieurs fois pour des services voisins (jardin, coiffeur, lavage de véhicule). Version mana-sensible : tout lien matériel laissé chez le personnage ou dans son véhicule est rendu inutilisable pour un rituel.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Service: 1 point, 200¥ per month, free from a High lifestyle. Housekeeping and laundry handled discreetly; can be taken several times for similar services (gardening, hairdresser, car wash). Mage-sensitive version: any material link left in the home or vehicle is made useless for ritual magic.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionCleaningServicePollution_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 point, 400 ¥ par mois, gratuit dès un style de vie Élevé. Ménage et linge assurés avec discrétion ; se prend plusieurs fois pour des services voisins (jardin, coiffeur, lavage de véhicule). Version écologique : -1 aux dommages de fatigue causés par une allergie à l'environnement.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Service: 1 point, 400¥ per month, free from a High lifestyle. Housekeeping and laundry handled discreetly; can be taken several times for similar services (gardening, hairdresser, car wash). Pollution-sensitive version: -1 to fatigue from environmental allergies.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionCleaningServiceStandard_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 point, 100 ¥ par mois, gratuit dès un style de vie Élevé. Ménage et linge assurés avec discrétion ; se prend plusieurs fois pour des services voisins (jardin, coiffeur, lavage de véhicule).</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Service: 1 point, 100¥ per month, free from a High lifestyle. Housekeeping and laundry handled discreetly; can be taken several times for similar services (gardening, hairdresser, car wash).</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionCorporateOwned_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option positive : -3 points au style de vie (impossible avec moins de 3 points de base). Confort &amp; Nécessités et Sécurité gagnent +1 au niveau et à la limite. Exige un SIN corporatiste, même limité (SR5 p. 86).</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Positive option: -3 lifestyle points (not allowed with fewer than 3 base points). Comforts &amp; Necessities and Security gain +1 to level and limit. Requires a corporate or limited corporate SIN (SR5 p. 84).</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionCramped_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative pour un seul Atout Garage ou Atelier, une fois par Atout : -10 % à son coût mensuel, -2 à la limite des tests faits sur place.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Negative option for a single Garage or Workshop Asset, once per Asset: -10% to its monthly cost, -2 to the limit of tests made there.</p><p><em>Run Faster p. 225</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 225 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionDangerousArea_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option : -20 % au coût du style de vie. Quartier violent où la police tarde : les temps de réponse de la sécurité et des équipes d'intervention se lancent un niveau de zone plus bas.</p><p><em>SR5 p. 377</em></p>",
+      "en": "<p>Option: -20% to lifestyle cost. Violent area where police are slow: security and High Threat Response times are rolled one zone level lower.</p><p><em>SR5 p. 370</em></p>",
+      "source": "SR5 p. 376-377 (VF) / p. 370 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Option du livre de base, non reprise par Run Faster."
     },
     "SR5.LifeStyleOptionDifficultToFind_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. Les services Livreur discret et Dealer discret y sont impossibles.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. The Discreet Deliveryman and Candyman services are not available here.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 226 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Run Faster remplace l'effet du livre de base (SR5 p. 376 : -2 Discrétion aux autres, +10 %)."
     },
     "SR5.LifeStyleOptionDiscreetCleaningService_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 4 points, 10 000 ¥ par mois, jamais couvert par le style de vie. Une équipe efface impacts, sang et traces astrales en moins de 24 h, une fois par mois, hors lieux publics ou corpos. Le contrat suit le personnage même s'il change de style de vie.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Service: 4 points, 10,000¥ per month, never covered by the lifestyle. A crew wipes bullet holes, blood and astral traces within 24 hours, once a month, never in public or corporate places. The contract follows the character even if they change lifestyle.</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionDiscreetDeliveryman_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 3 points, 100 ¥ (livreur) ou 1 000 ¥ (dealer) par mois, jamais couvert par le style de vie. Un coursier livre sans se faire voir (Discrétion 14 dés, Chance 4) ; délai selon le prix de l'objet, que le personnage doit se procurer lui-même. Livreur : Disponibilité 8 ou moins, objets légaux ; Dealer : Disponibilité 16 ou moins, illégal et sous permis compris.</p><p><em>Run Faster p. 215-216</em></p>",
+      "en": "<p>Service: 3 points, 100¥ (deliveryman) or 1,000¥ (candyman) per month, never covered by the lifestyle. A courier delivers unseen (Sneaking 14 dice, Edge 4); delay depends on the item's price, and the character still has to acquire it. Deliveryman: Availability 8 or less, legal goods; Candyman: Availability 16 or less, illegal and licensed goods included.</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 215-216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionExtraSecure_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option positive : +20 % au coût du style de vie, Atouts compris sans surcoût. Temps de réponse de la sécurité et des équipes d'intervention lancés un niveau de zone plus haut (SR5 p. 376).</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Positive option: +20% to lifestyle cost, Assets included at no extra cost. Security and High Threat Response times are rolled one zone level higher (SR5 p. 370).</p><p><em>Run Faster p. 225</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 225 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageAirplane_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout (avion) : 4 points, 20 000 ¥ par mois, gratuit dès un style de vie Luxueux. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset (airplane): 4 points, 20,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageBoat_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout (bateau, avec quai) : 3 points, 5 000 ¥ par mois, gratuit dès un style de vie Élevé. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset (boat, dock included): 3 points, 5,000¥ per month, free from a High lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageHelicopter_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout (hélicoptère, avec aire de décollage) : 4 points, 10 000 ¥ par mois, gratuit dès un style de vie Luxueux. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset (helicopter, landing pad included): 4 points, 10,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageLargeCar_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout (voiture de Structure 15 ou plus) : 2 points, 100 ¥ par mois, gratuit dès un style de vie Moyen. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset (car, Body 15 or more): 2 points, 100¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Seuil VF 14 / 15 suivi, aussi en EN : la VO imprime Body 4 / 5, ce qui ne laisse que le Dodge Scoot (Structure 4) en petit garage alors que toutes les voitures de SR5 p. 467 ont 8 à 15 ; avec 14 / 15, les voitures (8-12) sont petites, Nightsky (15) et camions (15-18) grands. Coquille VO probable (chiffre 1 perdu), aucun errata."
     },
     "SR5.LifeStyleOptionGarageSmallCar_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout (voiture de Structure 14 ou moins) : 1 point, 50 ¥ par mois, gratuit dès un style de vie Moyen. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset (car, Body 14 or less): 1 point, 50¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Seuil VF 14 / 15 suivi, aussi en EN : la VO imprime Body 4 / 5, ce qui ne laisse que le Dodge Scoot (Structure 4) en petit garage alors que toutes les voitures de SR5 p. 467 ont 8 à 15 ; avec 14 / 15, les voitures (8-12) sont petites, Nightsky (15) et camions (15-18) grands. Coquille VO probable (chiffre 1 perdu), aucun errata."
     },
     "SR5.LifeStyleOptionGreenHouse_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 500 ¥ par mois, gratuit dès un style de vie Élevé. Un potager à la maison : -1 aux dommages des allergies alimentaires.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Asset: 2 points, 500¥ per month, free from a High lifestyle. A vegetable patch at home: -1 to damage from food allergies.</p><p><em>Run Faster p. 221</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGridSubscription_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 1 point, 50 ¥ par mois, gratuit dès un style de vie Moyen. Accès aux catalogues de divertissement de la Matrice ; sans lui, seulement des programmes tridéo périmés.</p><p><em>Run Faster p. 214</em></p>",
+      "en": "<p>Asset: 1 point, 50¥ per month, free from a Middle lifestyle. Access to the Matrix entertainment catalogs; without it, only outdated trid shows.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 214 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGym_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 300 ¥ par mois, gratuit dès un style de vie Moyen. -20 % au temps d'entraînement des attributs physiques.</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Asset: 2 points, 300¥ per month, free from a Middle lifestyle. -20% training time for Physical attributes.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionHotelCalifornia_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. On n'entre et ne sort qu'à certaines heures ; le reste du temps, le personnage reste enfermé. La durée se fixe entre la table et le MJ, assez courte pour ne pas bloquer les runs.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. Entry and exit only at set times; the rest of the time the character is locked in. The duration is agreed between the player and the GM, short enough not to block runs.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionIndoorArboretum_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 500 ¥ par mois, gratuit dès un style de vie Élevé. Pièce plantée : -1 aux dommages des allergies à la pollution liées au Confort &amp; Nécessités.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Asset: 2 points, 500¥ per month, free from a High lifestyle. A planted room: -1 to damage from pollution allergies tied to Comforts &amp; Necessities.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionLocalBarPatron_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Sortie : 1 point, 25 ¥ par mois, gratuit dès un style de vie Bas. Repas et boissons couverts dans un bar (ou un restaurant) choisi à l'achat ; se prend plusieurs fois pour d'autres adresses.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Outing: 1 point, 25¥ per month, free from a Low lifestyle. Food and drinks covered at one bar (or restaurant) chosen on purchase; can be taken several times for other places.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionMaidIsOut_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. -1 à la limite de Confort &amp; Nécessités, +1 VD à la fatigue des allergies environnementales, aucun Service de nettoyage possible.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. -1 to the Comforts &amp; Necessities limit, +1 DV to environmental allergy fatigue, no Cleaning Service allowed.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionMerchandiseGoods_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 à 4 points, 10 000 ¥ par mois, gratuit dès un style de vie Commerçant. Boutique d'un type d'objets légaux choisi à l'achat : Disponibilité 3 au départ, +2 par point dépensé. -10 % sur le prix, et l'intervalle du test pour trouver l'objet baisse d'un cran.</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Service: 1 to 4 points, 10,000¥ per month, free from a Commercial lifestyle. A shop for one type of legal goods chosen on purchase: Availability 3 to start, +2 per point spent. -10% on the price, and the interval of the test to find the item drops one step.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionMerchandisePawnShop_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 2 points, 10 000 ¥ par mois, gratuit dès un style de vie Commerçant. Toute marchandise légale y part en une semaine, à 15 % de sa valeur.</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Service: 2 points, 10,000¥ per month, free from a Commercial lifestyle. Any legal goods sell there within a week, at 15% of their value.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionMerchandiseUsedGoods_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 2 points, 10 000 ¥ par mois, gratuit dès un style de vie Commerçant. Pour un type d'objet choisi à l'achat : trouver un acheteur est deux fois plus facile, ou vente immédiate à 25 % du prix de base.</p><p><em>Run Faster p. 216</em></p>",
+      "en": "<p>Service: 2 points, 10,000¥ per month, free from a Commercial lifestyle. For one item type chosen on purchase: finding a buyer is twice as easy, or sell at once for 25% of the base price.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 216 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionNotAHome_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. Lieu non prévu pour l'habitation (conteneur, local commercial) : -1 à la limite de Confort &amp; Nécessités.</p><p><em>Run Faster p. 218-219</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. A place not meant for living (container, shop unit): -1 to the Comforts &amp; Necessities limit.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218-219 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionOnlyGoodThingAbout_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option positive, style de vie Voyageur seulement. Le personnage choisit un Atout de 1 ou 2 points qu'il retrouve partout où il loge, tant qu'il en paie le coût mensuel.</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Positive option, Traveler lifestyle only. The character picks a 1- or 2-point Asset that they find wherever they stay, as long as its monthly cost is paid.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPanicRoom_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 1 000 ¥ par mois, gratuit dès un style de vie Élevé. Pièce blindée de 3 m × 3 m en matériau de structure (SR5 p. 198), serrure d'indice 5.</p><p><em>Run Faster p. 216-217</em></p>",
+      "en": "<p>Asset: 2 points, 1,000¥ per month, free from a High lifestyle. A 3 m × 3 m reinforced room in structural material (SR5 p. 197), Rating 5 lock.</p><p><em>Run Faster p. 222</em></p>",
+      "source": "Run Faster p. 216-217 (VF) / p. 222 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPatronConcerts_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Sortie (concerts, sport) : 1 point, 100 ¥ par mois, gratuit dès un style de vie Moyen. Entrée prioritaire, coulisses et espaces réservés (sans armes) pour un type de sortie choisi à l'achat ; se prend plusieurs fois.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Outing (concerts, sports): 1 point, 100¥ per month, free from a Middle lifestyle. Priority entry, backstage and members-only areas (no weapons) for one type of venue chosen on purchase; can be taken several times.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPatronPrivateClub_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Sortie (club privé) : 1 point, 200 ¥ par mois, gratuit dès un style de vie Élevé. Entrée prioritaire, coulisses et espaces réservés (sans armes) pour un type de sortie choisi à l'achat ; se prend plusieurs fois.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Outing (private club): 1 point, 200¥ per month, free from a High lifestyle. Priority entry, backstage and members-only areas (no weapons) for one type of venue chosen on purchase; can be taken several times.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPatronPublicEntertainment_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Sortie (zoo, musées) : 1 point, 75 ¥ par mois, gratuit dès un style de vie Bas. Entrée prioritaire, coulisses et espaces réservés (sans armes) pour un type de sortie choisi à l'achat ; se prend plusieurs fois.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Outing (zoo, museums): 1 point, 75¥ per month, free from a Low lifestyle. Priority entry, backstage and members-only areas (no weapons) for one type of venue chosen on purchase; can be taken several times.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPatronThemeParks_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Sortie (parcs à thème) : 1 point, 100 ¥ par mois, gratuit dès un style de vie Moyen. Entrée prioritaire, coulisses et espaces réservés (sans armes) pour un type de sortie choisi à l'achat ; se prend plusieurs fois.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Outing (theme parks): 1 point, 100¥ per month, free from a Middle lifestyle. Priority entry, backstage and members-only areas (no weapons) for one type of venue chosen on purchase; can be taken several times.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPrivateRoom_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 1 point, 20 ¥ par mois, gratuit dès un style de vie Squatter. Réduit caché de 2 m × 2 m : -4 dés à la Perception pour repérer de l'extérieur qui s'y trouve, couverture totale.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Asset: 1 point, 20¥ per month, free from a Squatter lifestyle. A hidden 2 m × 2 m nook: -4 dice to Perception to spot someone inside from outside, total cover.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionPublicTransportation_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 point, 50 ¥ par mois, gratuit dès un style de vie Bas. Abonnement à tous les transports en commun d'une ville (bus, tram, métro, ferry) ; une fois par ville qui en possède.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Service: 1 point, 50¥ per month, free from a Low lifestyle. Pass for all public transit in one city (bus, tram, subway, ferry); once per city that has any.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionRailwayPass_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Service : 1 point, 75 ¥ par mois, gratuit dès un style de vie Moyen. Abonnement ferroviaire entre deux villes proches reliées par le rail, péages de passage compris.</p><p><em>Run Faster p. 214-215</em></p>",
+      "en": "<p>Service: 1 point, 75¥ per month, free from a Middle lifestyle. Rail pass between two nearby rail-linked cities, transit tolls included.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 214-215 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionSafehouse_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option positive : +500 ¥ par mois. -4 dés à quiconque cherche à pister le personnage tant qu'il y loge. Pas d'Atout de divertissement possible, et le MJ fixe le règlement de la maison.</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Positive option: +500¥ per month. -4 dice to anyone trying to track the character while they stay there. No entertainment Assets allowed, and the GM sets the house rules.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 226 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Errata VO de Run Faster (p. 226) suivi : -4 à la réserve des poursuivants."
     },
     "SR5.LifeStyleOptionSafetyThird_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative pour un seul Atout Garage ou Atelier, cumulable : +1 point au style de vie. Il faut un 1 de moins pour une complication sur les tests faits sur place.</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Negative option for a single Garage or Workshop Asset, can be stacked: +1 lifestyle point. Tests made there need one fewer 1 for a glitch.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionShootingRange_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 500 ¥ par mois, gratuit dès un style de vie Élevé. -10 % au temps d'entraînement des compétences d'armes à feu.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Asset: 2 points, 500¥ per month, free from a High lifestyle. -10% training time for firearms skills.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionSoyProcessingUnit_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 1 point, 20 ¥ par mois, gratuit dès un style de vie Moyen. Cuisine haut de gamme : -1 aux dommages des allergies alimentaires liées au Confort &amp; Nécessités.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Asset: 1 point, 20¥ per month, free from a Middle lifestyle. High-end kitchen: -1 to damage from food allergies tied to Comforts &amp; Necessities.</p><p><em>Run Faster p. 223</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 223 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionSpecialWorkArea_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option positive pour un seul Atout Garage ou Atelier, une fois par Atout : +1 000 ¥ par mois, +2 à la limite des tests de compétence liés au lieu (SR5 p. 376).</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Positive option for a single Garage or Workshop Asset, once per Asset: +1,000¥ per month, +2 to the limit of related skill tests made there (SR5 p. 370).</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionSportsCourt_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 300 ¥ par mois, gratuit dès un style de vie Élevé. Terrain de sport privé : -10 % au temps d'entraînement des compétences du groupe Athlétisme.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Asset: 2 points, 300¥ per month, free from a High lifestyle. Private sports court: -10% training time for Athletics group skills.</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionSwimmingPool_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 1 point, 100 ¥ par mois, gratuit dès un style de vie Moyen. Une piscine assez grande pour nager. Aucun effet chiffré.</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Asset: 1 point, 100¥ per month, free from a Middle lifestyle. A pool large enough to swim in. No game effect.</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionThrifty_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative, style de vie Voyageur seulement : -2 points au style de vie et -1 000 ¥ par mois.</p><p><em>Run Faster p. 218</em></p>",
+      "en": "<p>Negative option, Traveler lifestyle only: -2 lifestyle points and -1,000¥ per month.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 218 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionWZone_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Option négative : +1 point au style de vie. Zone désertique loin de la ville : Quartier -1, secours retardés de 1D6 heures, réseau et électricité aléatoires.</p><p><em>Run Faster p. 219</em></p>",
+      "en": "<p>Negative option: +1 lifestyle point. Wilderness far from town: Neighborhood -1, emergency response delayed by 1D6 hours, spotty grid and power.</p><p><em>Run Faster p. 226</em></p>",
+      "source": "Run Faster p. 219 (VF) / p. 226 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionWalkinFreezer_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 1 point, 1 000 ¥ par mois, gratuit dès un style de vie Commerçant. Chambre froide pour stocker ce qui doit rester au frais. Aucun effet chiffré.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Asset: 1 point, 1,000¥ per month, free from a Commercial lifestyle. Cold room to store whatever must stay cool. No game effect.</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionWorkshopFacility_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 2 500 ¥ par mois, gratuit dès un style de vie Moyen (avec activité commerciale). Les armes et objets liés au lieu réparent 1 case par semaine sans frais (2 avec une installation).</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Asset: 2 points, 2,500¥ per month, free from a Middle (with a business) lifestyle. Weapons and items tied to the place repair 1 box per week at no cost (2 with a facility).</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionYard_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 50 ¥ par mois, gratuit dès un style de vie Bas. Terrain nu de 50 à 200 m² selon le style de vie (voiture, petite piscine ou cercle rituel) ; se prend plusieurs fois pour l'agrandir.</p><p><em>Run Faster p. 215</em></p>",
+      "en": "<p>Asset: 2 points, 50¥ per month, free from a Low lifestyle. Bare plot of 50 to 200 m² depending on lifestyle (a car, a small pool or a ritual circle); can be taken several times to enlarge it.</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 215 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionZenDenBatCave_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Atout : 2 points, 100 ¥ par mois, gratuit dès un style de vie Moyen. Repaire zen : +1 dé aux tests de connaissance de son hobby, chez soi. Batcave : avec un kit lié à une compétence académique, +1 dé à cette compétence, chez soi (3 kits au plus).</p><p><em>Run Faster p. 217</em></p>",
+      "en": "<p>Asset: 2 points, 100¥ per month, free from a Middle lifestyle. Zen Den: +1 die to Knowledge tests about the hobby, at home. Bat Cave: with a kit tied to an Academic skill, +1 die to that skill, at home (3 kits at most).</p><p><em>Run Faster p. 224</em></p>",
+      "source": "Run Faster p. 217 (VF) / p. 224 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleZone_C": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Quartier 3. Secours en 1D6 × 10 minutes. Zone vieillissante : logements bon marché, entrepôts, petits commerces.</p><p><em>Run Faster p. 214</em></p>",
+      "en": "<p>Neighborhood 3. Emergency response in 1D6 × 10 minutes. Run-down area: cheap housing, warehouses, small shops.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 214 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleZone_D": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Quartier 2. Secours en 1D6 × 12 minutes. Frange entre usines et habitations : bureaux délabrés, bâtiments vides, parkings ; les patrouilles passent rarement.</p><p><em>Run Faster p. 214</em></p>",
+      "en": "<p>Neighborhood 2. Emergency response in 1D6 × 12 minutes. Fringe between factories and housing: decaying offices, empty buildings, parking lots; patrols are rare.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 214 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleZone_E": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Quartier 1. Secours en 1D6 heures. Zone industrielle polluée, refuge des sans-SIN ; la sécurité privée n'y protège pas les sans-SIN.</p><p><em>Run Faster p. 214</em></p>",
+      "en": "<p>Neighborhood 1. Emergency response in 1D6 hours. Polluted industrial zone, home to the SINless; private security does not protect the SINless here.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 214 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleZone_Z": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Quartier 0. Secours en 2D6 heures. Cœur des barrens, sans loi : créatures Éveillées, esprits toxiques ; la sécurité ne s'y déplace qu'en cas extrême.</p><p><em>Run Faster p. 214</em></p>",
+      "en": "<p>Neighborhood 0. Emergency response in 2D6 hours. Lawless heart of the barrens: Awakened critters, toxic spirits; security only comes in extreme cases.</p><p><em>Run Faster p. 220</em></p>",
+      "source": "Run Faster p. 214 (VF) / p. 220 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifestyleComforts_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Fatigue de début de séance : quand le personnage a pu se reposer chez lui depuis la séance précédente, il résiste à 6E de fatigue, moins 2 par niveau de Confort &amp; Nécessités (fatigue : SR5 p. 174). Avec Confort &amp; Nécessités à 3 ou moins, une allergie environnementale ajoute +1 VD par degré au-delà de Légère (Commune) ou de Modérée (Rare), et une allergie alimentaire Commune +1 VD par degré au-delà de Légère (Rare : +1 si Grave, +2 si Extrême).</p><p><em>Run Faster p. 212-213</em></p>",
+      "en": "<p>Start-of-session fatigue: when the character got to rest at home since the last session, they resist 6S fatigue, minus 2 per level of Comforts &amp; Necessities (fatigue: SR5 p. 172). With Comforts &amp; Necessities at 3 or less, an environmental allergy adds +1 DV per degree above Mild (Common) or Moderate (Uncommon), and a common food allergy +1 DV per degree above Mild (Uncommon: +1 if Severe, +2 if Extreme).</p><p><em>Run Faster p. 218-219</em></p>",
+      "source": "Run Faster p. 212-213 (VF) / p. 218-219 (EN)",
       "garder": false,
-      "note": ""
+      "note": "VO : 'Uncommon' = « Rare » de la VF ; allergie alimentaire Commune : la VO dit +1 par degré au-delà de Légère, la VF imprime +1 tout court ; VO suivie."
     },
     "SR5.LifestyleSecurity_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Cambriolage en l'absence du personnage : les cambrioleurs lancent Agilité + Discrétion en opposition à Sécurité × 2 dés ; si la Sécurité l'emporte, ils sont repérés ou mis en fuite. Un objet dont la Disponibilité atteint ou dépasse le niveau de Sécurité peut attirer les convoitises. Variante rapide : réserve = Sécurité achetée moins Sécurité minimale du style de vie ; chaque succès coûte 1 % du loyer mensuel en pertes (sécurité : SR5 p. 357).</p><p><em>Run Faster p. 213</em></p>",
+      "en": "<p>Burglary while the character is away: the burglars roll Agility + Sneaking opposed by Security × 2 dice; if Security wins, they are spotted or scared off. Any item whose Availability equals or exceeds the Security level may draw unwanted attention. Quick variant: pool = purchased Security minus the lifestyle's minimum Security; each hit costs 1% of the monthly rent in losses (security: SR5 p. 355).</p><p><em>Run Faster p. 219</em></p>",
+      "source": "Run Faster p. 213 (VF) / p. 219 (EN)",
       "garder": false,
-      "note": ""
+      "note": "Variante rapide : le livre dit « différence entre le minimum et l'acheté » ; sens repris tel quel."
     },
     "SR5.NetEntangled_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Pris dans le filet : la cible est maîtrisée (SR5 p. 195), ne peut faire aucune action demandant de bouger et compte comme à terre contre toute attaque. Pour s'en dégager : action complexe, Agilité + Combat à mains nues ou Agilité + Évasion, seuil {threshold}.</p><p><em>Run & Gun p. 25</em></p>",
+      "en": "<p>Caught in the net: the target is subdued (SR5 p. 195), can take no action that requires moving, and counts as prone against any attack. To break out: Complex Action, Agility + Unarmed Combat or Agility + Escape Artist, threshold {threshold}.</p><p><em>Run & Gun p. 25</em></p>",
+      "source": "Run & Gun p. 25 ; SR5 p. 195",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : FR déjà à nous, EN sans renvoi → réécrit dans les deux langues (garder est tout ou rien)."
     },
     "SR5.NetShockCharge_GE": {
-      "fr": "",
-      "en": "",
-      "source": "",
+      "fr": "<p>Deux décharges pour le ShockNet : l'une à l'impact, l'autre quand commence le tour de combat suivant.</p><p><em>Run & Gun p. 28</em></p>",
+      "en": "<p>Two discharges for the ShockNet: one on impact, the other when the next Combat Turn begins.</p><p><em>Run & Gun p. 28</em></p>",
+      "source": "Run & Gun p. 28",
       "garder": false,
-      "note": ""
+      "note": "Relecture fork : EN sans renvoi → réécrit."
     }
   }
 }
