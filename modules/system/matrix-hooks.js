@@ -7,7 +7,12 @@
 // - C5 sr5.overwatchChanged (actor, value, previous): told once an Overwatch Score changes
 // - sr5.matrixHostEntry, a verdict {actor, host, offer}: a module with its own way into a host hides the system's entry
 // A verdict hook hands an object the subscriber may change; a value that is not one the system takes is ignored. A
-// subscriber that fails is logged and goes no further. Plain rules, no Foundry in them: the tests give `call`.
+// subscriber that fails is logged and its answer thrown away (verdictCall, house-rule-hooks.js: Foundry's callAll would
+// keep what it wrote before failing). Plain rules, no Foundry in them: the tests give `call`.
+
+import {
+  verdictCall
+} from "./house-rule-hooks.js"
 
 export const MATRIX_HOOKS = {
   hostChanged: "sr5.matrixHostChanged",
@@ -39,11 +44,11 @@ function safely(hook, args, call){
 export function matrixMarkCap({
   attacker = null, target = null
 } = {
-}, call = defaultCall){
+}, call = null){
   const verdict = {
     attacker, target, cap: BOOK_MARK_CAP
   }
-  safely(MATRIX_HOOKS.markCap, [verdict], call)
+  safely(MATRIX_HOOKS.markCap, [verdict], call ?? verdictCall(verdict, ["cap"]))
   return Number.isInteger(verdict.cap) && verdict.cap >= 1 ? verdict.cap : BOOK_MARK_CAP
 }
 
@@ -56,12 +61,12 @@ export function matrixMarkCap({
 export function matrixEffectiveMarks({
   viewer = null, target = null, key = null, marks = 0
 } = {
-}, call = defaultCall){
+}, call = null){
   const real = Number(marks) || 0
   const verdict = {
     viewer, target, key, marks: real
   }
-  safely(MATRIX_HOOKS.effectiveMarks, [verdict], call)
+  safely(MATRIX_HOOKS.effectiveMarks, [verdict], call ?? verdictCall(verdict, ["marks"]))
   return Number.isFinite(verdict.marks) && verdict.marks >= 0 ? verdict.marks : real
 }
 
@@ -85,11 +90,11 @@ export function announceOverwatchChanged(actor, value, previous, call = defaultC
 export function hostEntryOffered({
   actor = null, host = null
 } = {
-}, call = defaultCall){
+}, call = null){
   const verdict = {
     actor, host, offer: true
   }
-  safely(MATRIX_HOOKS.hostEntry, [verdict], call)
+  safely(MATRIX_HOOKS.hostEntry, [verdict], call ?? verdictCall(verdict, ["offer"]))
   return verdict.offer !== false
 }
 

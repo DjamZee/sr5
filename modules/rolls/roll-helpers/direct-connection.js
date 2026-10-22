@@ -8,6 +8,9 @@ import {
   safeCall
 } from "../../canvas/pan-crown/pan-hooks.js"
 import {
+  verdictCall
+} from "../../system/house-rule-hooks.js"
+import {
   hostNodesAllowed
 } from "../../system/host-nodes.js"
 import {
@@ -15,10 +18,6 @@ import {
 } from "../../system/pan-candidates.js"
 
 export const MATRIX_DIRECT_CONNECTION_HOOK = "sr5.matrixDirectConnection"
-
-function defaultCall(hook, ...args){
-  return globalThis.Hooks?.callAll(hook, ...args)
-}
 
 /**
  * Is this attacker directly connected to this slave? The system's verdict, which a subscriber may turn either way.
@@ -29,11 +28,12 @@ function defaultCall(hook, ...args){
  * @param {Function} [call]
  * @return {Boolean}
  */
-export function directConnectionVerdict(attacker, device, direct, call = defaultCall){
+export function directConnectionVerdict(attacker, device, direct, call = null){
   const verdict = {
     direct: direct === true
   }
-  safeCall(MATRIX_DIRECT_CONNECTION_HOOK, [attacker ?? null, device ?? null, verdict], call)
+  // Each subscriber called in turn, the answer of one that throws thrown away (verdictCall, house-rule-hooks.js)
+  safeCall(MATRIX_DIRECT_CONNECTION_HOOK, [attacker ?? null, device ?? null, verdict], call ?? verdictCall(verdict, ["direct"]))
   return verdict.direct === true
 }
 
