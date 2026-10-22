@@ -4384,6 +4384,7 @@ SR5.modifiersTypes = {
   possession 				  : "SR5.Possession",
   program 				  : "SR5.Program",
   sensorAttribute           : "SR5.VehicleStat_SensorShort",
+  situationalArmor          : "SR5.SituationalArmor",
   specialization 			  : "SR5.Skill",
   skillRating				  : "SR5.SkillRating",
   skillGroup 				  : "SR5.SkillGroup",

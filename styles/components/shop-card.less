@@ -84,8 +84,28 @@
       width: 100%;
     }
 
+    // « Encaisser l'achat » / « la vente »: the theme's teal on the card's pink was about 1.1:1 (relecture de
+    // Romuald, 22/10); the colours of the other chat card buttons instead, as « Nouvel essai » above
     button {
       width: 100%;
+      min-height: 0;
+      line-height: normal;
+      padding: 2px 6px;
+      background-color: var(--sr-text-color-dark);
+      border: 0;
+      border-radius: 0;
+      color: var(--sr-text-color-light);
+      font-family: var(--sr-font-body-bold);
+      text-transform: uppercase;
+
+      &:hover:not(:disabled) {
+        color: var(--sr-text-color-flash);
+        box-shadow: none;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
     }
   }
 

@@ -3257,6 +3257,7 @@
 	"SR5.SETTINGS_IndirectDisplayHidden": "Nothing: applied without a box, under the neutral label",
 	"SR5.RollTestsAny": "Any test (situational only)",
 	"SR5.RollTestsLinkedTo": "Tests linked to attribute",
+	"SR5.SituationalArmor": "Situational armor",
 	"SR5.SituationalEffect": "Situational",
 	"SR5.SituationalEffectHint": "Effect that only applies in a given situation: it is not applied on the sheet, it is offered as a box to tick in the roll dialog.",
 	"SR5.SituationalWhen": "When? (e.g. against inhaled toxins, at night)",

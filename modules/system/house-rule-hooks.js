@@ -16,6 +16,8 @@
  * - sr5.vendorRefusal (verdict): a vendor that will not sell to a buyer, with the reason shown (the book: it sells).
  * - sr5.initiativeReminders (information and score): lines written on the Initiative card, each with an Initiative
  *   score modifier applied at once (there is no dialog to tick it in).
+ * - sr5.situationalArmor (score): Armor a module adds against one attack (a kinetic field against bullets), at the
+ *   damage resistance test, before the AP and the conversion to Stun.
  */
 
 export const ROLL_REMINDERS_HOOK = "sr5.rollReminders"
@@ -23,6 +25,7 @@ export const VENDOR_PRICE_HOOK = "sr5.vendorPrice"
 export const PURCHASE_FUNDS_HOOK = "sr5.purchaseFunds"
 export const VENDOR_REFUSAL_HOOK = "sr5.vendorRefusal"
 export const INITIATIVE_REMINDERS_HOOK = "sr5.initiativeReminders"
+export const SITUATIONAL_ARMOR_HOOK = "sr5.situationalArmor"
 
 // What a module may write, at most: the lines a dialog shows, the length of a text, the dice of a reminder
 export const MAX_REMINDERS = 10
@@ -33,6 +36,8 @@ export const MAX_REMINDER_DICE = 6
 export const MAX_WARNING = 500
 // ...and the Initiative score one line of sr5.initiativeReminders may add or take
 export const MAX_INITIATIVE_SCORE = 10
+// ...and the Armor one line of sr5.situationalArmor may add
+export const MAX_SITUATIONAL_ARMOR = 20
 
 /** A copy the subscriber may change without touching what the system goes on with */
 function copyOf(value) {
@@ -312,6 +317,64 @@ export function initiativeRemindersFor({
   }
   return {
     lines, score: lines.reduce((sum, line) => sum + line.score, 0)
+  }
+}
+
+/** What sr5.situationalArmor tells a module of the attack, read from its card: what the hook may test, nothing more */
+export function situationalAttackOf(card) {
+  return {
+    testType: card?.test?.type ?? "",
+    category: card?.test?.typeSub ?? "",
+    weaponType: card?.combat?.weaponType ?? "",
+    ammoType: card?.combat?.ammo?.type ?? "",
+    firingMode: card?.combat?.firingMode?.selected ?? "",
+    isGrenade: !!card?.combat?.grenade?.isGrenade,
+    element: card?.damage?.element ?? "",
+    magical: card?.damage?.source === "magical",
+    damageType: card?.damage?.type ?? "",
+    damageValue: Number(card?.damage?.value) || 0,
+    armorPenetration: Number(card?.combat?.armorPenetration) || 0,
+  }
+}
+
+/**
+ * sr5.situationalArmor — called at the damage resistance test of a character (physical damage, elemental or not),
+ * before the AP is capped by the Armor (SR5 p. 171) and before the comparison that turns the damage to Stun (SR5 p.
+ * 170), with `{actor, attack, card, armor, bonuses}`: `attack` what situationalAttackOf reads of the attack card
+ * (`testType` the type of the card resisted: "defense" after a defense test, "attack" or "spell" without one, `category` "rangedWeapon", "meleeWeapon", "grenade"…, `weaponType` the weapon's type,
+ * `ammoType`, `firingMode`, `isGrenade`, `element`, `magical`, `damageType`, `damageValue`, `armorPenetration`), `card`
+ * a copy of the whole card, `armor` the character's Armor before it, `bonuses` an empty array. A subscriber pushes
+ * `{label, source?, value}`: `label` the text ("Champ cinétique"), `value` an integer from 1 to 20, the Armor added
+ * against this attack only. The system adds it to the Armor: dice of the resistance test, the AP cap, the conversion
+ * to Stun. Up to 10 lines; a line without a label or a value is left out. Without a subscriber: the book, nothing.
+ * Not asked when Run & Gun's armor penalty (world setting) has put the Armor into the attack test already.
+ * @returns {{lines: Array<{label, source, value}>, value: number}}
+ */
+export function situationalArmorFor({
+  actor = null, card = null, armor = 0
+} = {
+}, {
+  hooks = globalThis.Hooks
+} = {
+}) {
+  const data = {
+    actor, attack: situationalAttackOf(card), card: copyOf(card), armor, bonuses: []
+  }
+  if (!heard(SITUATIONAL_ARMOR_HOOK, data, ["bonuses"], hooks) || !Array.isArray(data.bonuses)) return {
+    lines: [], value: 0
+  }
+  const lines = []
+  for (const line of data.bonuses) {
+    if (lines.length >= MAX_REMINDERS) break
+    const label = cleanText(line?.label)
+    const value = Number(line?.value)
+    if (!label || !Number.isInteger(value) || value < 1 || value > MAX_SITUATIONAL_ARMOR) continue
+    lines.push({
+      label, source: cleanText(line?.source), value
+    })
+  }
+  return {
+    lines, value: lines.reduce((sum, line) => sum + line.value, 0)
   }
 }
 

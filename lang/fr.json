@@ -3257,6 +3257,7 @@
 	"SR5.SETTINGS_IndirectDisplayHidden": "Rien : appliqué sans case, sous le libellé neutre",
 	"SR5.RollTestsAny": "Tout jet (circonstanciel seulement)",
 	"SR5.RollTestsLinkedTo": "Tests liés à l'attribut",
+	"SR5.SituationalArmor": "Armure de situation",
 	"SR5.SituationalEffect": "Circonstanciel",
 	"SR5.SituationalEffectHint": "Effet qui ne vaut que dans une situation : il n'est pas appliqué sur la fiche, il est proposé comme une case à cocher dans la fenêtre de jet.",
 	"SR5.SituationalWhen": "Quand ? (ex. contre les toxines inhalées, de nuit)",

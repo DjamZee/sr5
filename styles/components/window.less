@@ -816,7 +816,9 @@
     width: 100%;
   }
 
-  footer,
+  /* A chat card's own footer (a table draw's payout, a shop card) keeps the card's dress in a popped-out card
+     (.chat-popout), as in the chat (relecture de Romuald, 22/10: "Nuyens trouvés" black on the dark band) */
+  footer:not(.chat-message footer),
   .dialog-buttons,
   .form-footer {
     background-image   : var(--sr-img-actor-sheet-bottom) !important;
