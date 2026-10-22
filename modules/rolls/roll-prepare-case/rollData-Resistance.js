@@ -40,6 +40,34 @@ import {
 import {
   deviceElectricPool
 } from "../roll-helpers/electric-device.js"
+import {
+  situationalArmorFor
+} from "../../system/house-rule-hooks.js"
+
+/**
+ * The Armor a module adds against this attack (sr5.situationalArmor, house-rule-hooks.js), asked before the AP is
+ * capped and the damage compared (SR5 p. 170-171). Kept on rollData.combat.situationalArmor for the later comparisons
+ * (Splitting Damage, test-Resistance.js); its lines go into the pool once its composition is set (addSituationalDice).
+ */
+function askSituationalArmor(rollData, actor, chatData, armor){
+  const extra = situationalArmorFor({
+    actor, card: chatData, armor
+  })
+  rollData.combat.situationalArmor = extra.value
+  rollData.combat.situationalArmorLines = extra.lines
+  return armor + extra.value
+}
+
+/** The dice of that Armor, on a copy of the composition: never the actor's own array */
+function addSituationalDice(rollData){
+  const lines = rollData.combat.situationalArmorLines ?? []
+  delete rollData.combat.situationalArmorLines
+  if (!lines.length) return
+  rollData.dicePool.composition = [...rollData.dicePool.composition, ...lines.map(line => ({
+    source: line.source ? `${line.source} (${line.label})` : line.label, type: "situationalArmor", value: line.value
+  }))]
+  rollData.dicePool.base += rollData.combat.situationalArmor
+}
 
 /**
  * Run & Gun RG5 (RG p. 124-125): the armor went into the attack test as a penalty, so it stays out of this one.
@@ -260,7 +288,7 @@ async function handlePhysicalDamage(rollData, actor, chatData, rollType){
       armor = actorData.itemsProperties.armor.value
       if (chatData.damage.element) {
         if (rollType === "resistanceToxin") rollData = await handleToxinDamage(rollData, actorData, chatData)
-        else rollData = await handleElementDamage(rollData, actorData, chatData, armor)
+        else rollData = await handleElementDamage(rollData, actorData, chatData, armor, actor)
       } else rollData = await handleNormalPhysicalDamage(rollData, actor, chatData, armor)
       break
     default:
@@ -300,12 +328,15 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
     return rollData
   }
 
+  //A module's Armor against this attack, counted before the AP cap and the conversion to Stun
+  armor = askSituationalArmor(rollData, actor, chatData, armor)
+
   //Check if AP is greater than Armor
   if (-chatData.combat.armorPenetration > armor) chatData.combat.armorPenetration = -armor
 
   //Add AP modifiers to dicepool
   rollData.dicePool.modifiers.push({
-    type: "armorPenetration", 
+    type: "armorPenetration",
     label: game.i18n.localize("SR5.ArmorPenetration"),
     value: chatData.combat.armorPenetration,
   })
@@ -313,6 +344,7 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
   //Get the base dicepool and composition
   rollData.dicePool.composition = actor.system.resistances.physicalDamage.modifiers
   rollData.dicePool.base = actor.system.resistances.physicalDamage.dicePool
+  addSituationalDice(rollData)
 
   //Run Faster p. 80 (Granite skin): its rating gives no die, only the automatic hits (test-Resistance). Its points
   //still count for the conversion to Stun below (SR5 p. 170): arbitrage de DjamZ, the book is silent
@@ -335,12 +367,13 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
   return rollData
 }
 
-async function handleElementDamage(rollData, actorData, chatData, armor){
+async function handleElementDamage(rollData, actorData, chatData, armor, actor){
   let element = chatData.damage.element
   if (element != "anticoagulant") {
 
     //Add special armor if any
     armor += actorData.itemsProperties.armor.specialDamage[element].value
+    armor = askSituationalArmor(rollData, actor, chatData, armor)
 
     //Check if AP is greater than Armor
     if (-chatData.combat.armorPenetration > armor) chatData.combat.armorPenetration = -armor
@@ -355,6 +388,7 @@ async function handleElementDamage(rollData, actorData, chatData, armor){
     //Get the base dicepool and composition
     rollData.dicePool.composition = actorData.resistances.specialDamage[element].modifiers
     rollData.dicePool.base = actorData.resistances.specialDamage[element].dicePool
+    addSituationalDice(rollData)
 
     //Run Faster p. 80 (Granite skin): no die against any damage, only the automatic hits, as on the physical path
     const hardened = actorData.specialProperties?.hardenedArmors?.normalWeapon

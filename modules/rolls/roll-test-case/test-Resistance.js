@@ -256,7 +256,8 @@ async function handleCalledShotResistanceInfo(cardData, actor, actorId){
     case "splittingDamage": {
       let originalDamage = cardData.damage.value
       cardData.damage.splittedOne = Math.ceil(originalDamage/2)
-      if (originalDamage > (actor.system.itemsProperties.armor.value + cardData.combat.armorPenetration)) cardData.damage.splittedTwo = Math.floor(originalDamage/2)				
+      //A module's Armor against this attack counts too (sr5.situationalArmor, rollData-Resistance.js)
+      if (originalDamage > (actor.system.itemsProperties.armor.value + (cardData.combat.situationalArmor || 0) + cardData.combat.armorPenetration)) cardData.damage.splittedTwo = Math.floor(originalDamage/2)				
       break
     }
   }
