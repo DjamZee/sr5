@@ -22,7 +22,10 @@ Armadura Solid (Graviton) n'est pas fournie : le thème l'utilise seulement si e
 
 - **Illustrations de DjamZ** (générées avec Midjourney, propriété de DjamZ) : image d'accueil (`assets/img/accueil.webp`),
   esprits (`assets/img/spirits/`), contacts (`assets/img/contacts/`), véhicules (`assets/img/vehicles/`), PAN
-  (`assets/img/pan/`), CI et sprites, images du Mégapack Lite (`megapack/`), image du README.
+  (`assets/img/pan/`), CI et sprites, images du Mégapack Lite (`megapack/`, dossiers de véhicules et de drones compris,
+  dont `Visuels/Vehicules-Rigger-5-Webp/` : leurs noms reprennent le livre où figure le véhicule, pas l'origine de
+  l'image), image du README.
+- **Marqueur de tour** (`assets/img/ui/turn-marker-ouroboros.webp`, ouroboros) : image de DjamZ.
 - **Interface d'origine** (fonds `SR5_BG_*` / `SR6_BG_*`, icônes d'états, d'objets et d'acteurs de `assets/img/`) :
   système `sr5` de Karmaroms et deurk.
 - **Emblème** (`assets/img/ui/embleme-dragon.webp`) : logo de DjamZ (Midjourney).

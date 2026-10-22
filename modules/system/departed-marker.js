@@ -36,10 +36,15 @@ export async function forgetDepartedMarker(actor, markerId, helpers = null) {
       markedItems: marked
     }
   }, markerId)
-  for (const ownerId of markers) if (ownerId !== markerId) await h.deleteMarkInfo(ownerId, `${actor.uuid}.`)
+  for (const ownerId of markers) if (ownerId !== markerId) {
+    await h.deleteMarkInfo(ownerId, `${actor.uuid}.`)
+    // A persona marked directly is its own owner (mark.js): its trace bears the actor's uuid, without a dot
+    await h.deleteMarkInfo(ownerId, actor.uuid, true)
+  }
 }
 
-/** The active GM alone cleans up, once, whoever deleted */
+/** The active GM alone cleans up, once, whoever deleted; with no GM connected nothing is cleaned, nor later (the traces
+ *  go at the next reboot of each marker's deck) */
 export function registerDepartedMarkerHooks() {
   Hooks.on("deleteActor", actor => {
     if (game.users?.activeGM?.isSelf) forgetDepartedMarker(actor, actor.id)

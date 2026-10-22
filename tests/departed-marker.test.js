@@ -95,6 +95,24 @@ describe("forgetDepartedMarker", () => {
     expect(helpers.deleteMarkInfo).toHaveBeenCalledWith("D", "Scene.S.Token.T.Actor.A.")
   })
 
+  // Romane: an AI's persona marked directly leaves a trace under the actor's own uuid (mark.js), without a dot
+  it("also takes off the trace of a mark put on the persona itself", async () => {
+    const helpers = {
+      deleteMarksOnActor: vi.fn(), deleteMarkInfo: vi.fn()
+    }
+    await forgetDepartedMarker({
+      uuid: "Actor.IA", system: {
+        matrix: {
+          markedItems: [], marks: [{
+            ownerId: "D", value: 2
+          }]
+        }
+      }, items: [],
+    }, "IA", helpers)
+    expect(helpers.deleteMarkInfo).toHaveBeenCalledWith("D", "Actor.IA.")
+    expect(helpers.deleteMarkInfo).toHaveBeenCalledWith("D", "Actor.IA", true)
+  })
+
   it("does nothing for an actor that neither marked nor was marked", async () => {
     const helpers = {
       deleteMarksOnActor: vi.fn(), deleteMarkInfo: vi.fn()

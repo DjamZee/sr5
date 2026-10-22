@@ -50,8 +50,8 @@ manifeste de tous les MJ répondrait 404.
 - `annonce-discord.yml` : à la publication d'une release, l'annonce part sur le Discord (secret `DISCORD_WEBHOOK`).
   Lancement à la main possible, à blanc par défaut.
 
-Le script `npm run release` hérité de shadowfoundry n'est pas utilisé : il refuse les étiquettes en `v` et les
-versions stables hors de `main`.
+`npm run release -- <version>` fait l'étape 1 d'un coup (version, `download`, verrou, contrôle, commit) et pose
+l'étiquette `v<version>`. Il refuse une version stable hors de la branche `main`.
 
 <a id="english"></a>
 
@@ -91,4 +91,5 @@ release the middle one.
 - `controle.yml`: `npm ci` + `npm run check` on every push to `main` and every pull request.
 - `annonce-discord.yml`: Discord announcement when a release is published (secret `DISCORD_WEBHOOK`).
 
-The inherited `npm run release` script is not used (it rejects `v` tags and stable versions outside `main`).
+`npm run release -- <version>` does step 1 at once (version, `download`, lockfile, check, commit) and tags
+`v<version>`. It refuses a stable version outside the `main` branch.

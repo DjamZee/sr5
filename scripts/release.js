@@ -43,10 +43,30 @@ function getBranch() {
   }).toString().trim()
 }
 
+// The tag of a release: one form, v<version>, as on DjamZee/sr5-unofficial (v13.1.0)
+function tagOf(version) {
+  return `v${version}`
+}
+
+// The versions already tagged, under either form (the older tags of the fork have no "v")
 function getExistingTags() {
   return execSync('git tag --list', {
     cwd: ROOT
-  }).toString().split('\n').filter(Boolean)
+  }).toString().split('\n').filter(Boolean).map(t => t.replace(/^v/, ''))
+}
+
+/**
+ * The manifest with its version and its download address set to `version`: the download keeps its host and its file
+ * name, only the tag in .../releases/download/<tag>/ changes. Left alone, Foundry saw the new version and fetched the
+ * old zip, then offered the update again at every launch (Gédéon, D3).
+ */
+function bumpManifest(content, version) {
+  if (!/"version"\s*:\s*"[^"]*"/.test(content)) throw new Error('no "version" field in the manifest')
+  const download = /("download"\s*:\s*"[^"]*\/releases\/download\/)[^/"]+(\/[^"]*")/
+  if (!download.test(content)) throw new Error('no "download" field of the form .../releases/download/<tag>/<file>')
+  return content
+    .replace(/("version"\s*:\s*)"[^"]*"/, `$1"${version}"`)
+    .replace(download, `$1${tagOf(version)}$2`)
 }
 
 function parseVersion(ver) {
@@ -310,7 +330,7 @@ async function main() {
   // --- Check tag does not already exist ---
   const existingTags = getExistingTags()
   if (existingTags.includes(version)) {
-    console.error(`Error: tag "${version}" already exists.`)
+    console.error(`Error: tag "${tagOf(version)}" already exists.`)
     process.exit(1)
   }
 
@@ -330,7 +350,13 @@ async function main() {
 
   console.log(`\nManifest: ${MANIFEST}`)
   console.log(`Bumping version to ${version}...`)
-  bumpVersion(path.join(ROOT, MANIFEST))
+  const manifestPath = path.join(ROOT, MANIFEST)
+  try {
+    fs.writeFileSync(manifestPath, bumpManifest(fs.readFileSync(manifestPath, 'utf8'), version))
+  } catch (e) {
+    console.error(`Error: ${MANIFEST}: ${e.message}`)
+    process.exit(1)
+  }
   bumpVersion(path.join(ROOT, 'package.json'))
 
   // --- Regenerate lockfile ---
@@ -354,11 +380,11 @@ async function main() {
   })
 
   // --- Tag ---
-  execSync(`git tag ${version}`, {
+  execSync(`git tag ${tagOf(version)}`, {
     cwd: ROOT
   })
 
-  console.log(`\nVersion bumped to ${version} and tagged.`)
+  console.log(`\nVersion bumped to ${version} and tagged ${tagOf(version)}.`)
   console.log('\nTo publish the release, push the commit and tag:')
   if (isMainBranch) {
     console.log('  git push origin main --tags')
@@ -367,7 +393,11 @@ async function main() {
   }
 }
 
-main().catch(err => {
+if (require.main === module) main().catch(err => {
   console.error(err.message)
   process.exit(1)
 })
+
+module.exports = {
+  bumpManifest, tagOf
+}

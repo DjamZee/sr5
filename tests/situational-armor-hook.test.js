@@ -178,6 +178,20 @@ describe("situationalArmorFor", () => {
       label: "d", value: -2
     }))
   }).value).toBe(0))
+  // Romane: Number() prenait true pour 1, "3" pour 3 et [5] pour 5
+  it("écarte une valeur qui n'est pas un nombre (booléen, texte, tableau)", () => expect(situationalArmorFor({
+    card: card(8, 0)
+  }, {
+    hooks: hooksWith(d => d.bonuses.push({
+      label: "a", value: true
+    }, {
+      label: "b", value: "3"
+    }, {
+      label: "c", value: [5]
+    }, {
+      label: "d", value: 2
+    }))
+  }).value).toBe(2))
   it("un abonné qui plante est ignoré, les autres gardés (D1)", () => expect(situationalArmorFor({
     card: card(8, 0)
   }, {
