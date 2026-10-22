@@ -404,10 +404,20 @@ async function onCreateActor(actor, options, userId) {
   return registerCharacter([actor, ...(actor.items ?? [])], options, userId)
 }
 
+/**
+ * importFromJSON: Foundry V13 replaces the character's items by one update with diff and recursive both off. The sheet
+ * (an item switched on), rebootDeck and the helpers of entityActor also send the whole list of items, but as an
+ * ordinary update: taken for an import, a player's switch worked every mark out again from the body and a GM's reboot
+ * brought the peaks down to the costs of now (Romane, D-REG-1).
+ */
+export function isJsonImport(changes, options) {
+  return Array.isArray(changes?.items) && options?.diff === false && options?.recursive === false
+}
+
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
 async function onUpdate(doc, changes, _options, userId) {
   // A character's items replaced in one write (importFromJSON) do not go through createItem either
-  if (doc.documentName === "Actor" && Array.isArray(changes?.items) && isActiveGM()) await registerCharacter([...(doc.items ?? [])], _options, userId)
+  if (doc.documentName === "Actor" && isJsonImport(changes, _options) && isActiveGM()) await registerCharacter([...(doc.items ?? [])], _options, userId)
   // The gamemaster ends the creation: the peaks start from the costs of now (inCreation). Every client prepares the
   // character again once they have arrived (onWorldCreationModeChange), or it shows an old peak until then
   if (doc.documentName === "Actor" && creationEnded(changes) && !creationMode(doc)) {

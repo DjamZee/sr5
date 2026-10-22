@@ -123,13 +123,54 @@ describe("a character the GM imports: its implants are registered as they stand"
       store, hooks
     } = world()
     const joy = joyKeller()
+    // Foundry V13's importFromJSON: update(data, {diff: false, recursive: false, noHook: true})
+    await hooks.updateActor(joy, {
+      items: joy.items.map(i => ({
+        _id: i.id
+      }))
+    }, {
+      diff: false, recursive: false
+    }, GM)
+    expect(store[IMPLANT_REGISTER]["Actor.joy.Item.bc02"].transhumanGift).toBe(true)
+  })
+  // Romane, D-REG-1: the sheet, rebootDeck and the helpers of entityActor write the whole list of items too
+  it("leaves the register as it is when the player switches an item on her sheet", async () => {
+    const {
+      store, warnings, hooks
+    } = world()
+    const joy = joyKeller()
+    await hooks.createActor(joy, {
+    }, GM)
+    const before = JSON.stringify(store[IMPLANT_REGISTER])
+    await hooks.updateActor(joy, {
+      items: joy.items.map(i => ({
+        _id: i.id, system: {
+          isActive: true
+        }
+      }))
+    }, {
+      diff: true, recursive: true
+    }, PLAYER)
+    expect(JSON.stringify(store[IMPLANT_REGISTER])).toBe(before)
+    expect(joy.items.map(i => i.updates)).toEqual([[], []])
+    expect(warnings).toEqual([])
+  })
+  it("keeps the peak when the GM reboots the deck of a character whose implant was lowered", async () => {
+    const {
+      store, hooks
+    } = world()
+    const joy = joyKeller()
+    await hooks.createActor(joy, {
+    }, GM)
+    store[IMPLANT_REGISTER]["Actor.joy.Item.eyes"][PEAK_COST] = 1
+    joy.items[1].system.essenceCost.value = 0.5
     await hooks.updateActor(joy, {
       items: joy.items.map(i => ({
         _id: i.id
       }))
     }, {
     }, GM)
-    expect(store[IMPLANT_REGISTER]["Actor.joy.Item.bc02"].transhumanGift).toBe(true)
+    expect(store[IMPLANT_REGISTER]["Actor.joy.Item.eyes"][PEAK_COST]).toBe(1)
   })
   it("still works out a player's own character from the body", async () => {
     const {
