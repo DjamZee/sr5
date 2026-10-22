@@ -54,6 +54,6 @@ describe('no wireless matrix action on a switched-off drone (N91)', () => {
     expect(SOURCE.slice(refusal, refusal + 250)).toMatch(/WARN_TargetWirelessOff",\s*null,\s*\{\s*actor\s*\}\)/)
     expect(refusal).toBeLessThan(SOURCE.indexOf('await checkTargetMarks('))
     expect(FR['SR5.WARN_TargetWirelessOff']).toMatch(/p\. 424[\s\S]*p\. 234/)
-    expect(EN['SR5.WARN_TargetWirelessOff']).toMatch(/p\. 424[\s\S]*p\. 234/)
+    expect(EN['SR5.WARN_TargetWirelessOff']).toMatch(/p\. 421[\s\S]*p\. 233/) // English book pages (tools/pages-vo)
   })
 })

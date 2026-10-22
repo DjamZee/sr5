@@ -16,7 +16,8 @@ describe("the help of the cybereyes setting", () => {
     it(`cites the rule of the book in ${code}`, () => {
       const strings = lang(code)
       for (const key of keys) {
-        expect(strings[key]).toContain("SR5 p. 96")
+        // Page of each edition's book: French p. 96, English p. 94 (tools/pages-vo).
+        expect(strings[key]).toContain(code === "fr" ? "SR5 p. 96" : "SR5 p. 94")
         expect(strings[key]).not.toMatch(/does not settle|ne tranche pas|p\. 456/)
       }
     })
