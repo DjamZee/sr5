@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" preserveAspectRatio="xMidYMid slice">
+  <!-- Placeholder background of the setup screen, until DjamZ chooses his image (system.json "background") -->
+  <defs>
+    <radialGradient id="fond" cx="50%" cy="45%" r="75%">
+      <stop offset="0" stop-color="#2a0a08"/>
+      <stop offset="1" stop-color="#07090c"/>
+    </radialGradient>
+    <pattern id="grille" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48,0 H0 V48" fill="none" stroke="#931004" stroke-width="1" opacity="0.18"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#fond)"/>
+  <rect width="1920" height="1080" fill="url(#grille)"/>
+  <g transform="translate(760,340) scale(2)" fill="none" stroke="#931004" stroke-linecap="square">
+    <polygon points="100,8 180,54 180,146 100,192 20,146 20,54" stroke-width="7"/>
+    <polygon points="100,22 168,61 168,139 100,178 32,139 32,61" stroke-width="2" opacity="0.6"/>
+    <g stroke-width="10" transform="translate(38,72)">
+      <path d="M36,6 L30,0 H6 L0,6 V22 L6,28 H30 L36,34 V50 L30,56 H6 L0,50"/>
+      <path d="M44,56 V0 H74 L80,6 V22 L74,28 H44 M62,28 L80,56"/>
+      <path d="M124,0 H88 V26 H118 L124,32 V50 L118,56 H88"/>
+    </g>
+  </g>
+</svg>
