@@ -1,0 +1,467 @@
+{
+  "famille": "1c-train-de-vie-divers",
+  "entrees": {
+    "SR5.ElementalDamageElectricity_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HELP_AmmoReloadMsgBelt": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HELP_AmmoReloadMsgClip": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HELP_AmmoReloadMsgDrum": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HELP_EnvironmentalModMsg": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleAddComforts_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleAddNeighborhood_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleAddSecurity_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionAngryDrunkReputation_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionArmory_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionCleaningServiceMage_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionCleaningServicePollution_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionCleaningServiceStandard_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionCorporateOwned_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionCramped_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionDangerousArea_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionDifficultToFind_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionDiscreetCleaningService_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionDiscreetDeliveryman_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionExtraSecure_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGarageAirplane_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGarageBoat_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGarageHelicopter_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGarageLargeCar_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGarageSmallCar_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGreenHouse_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGridSubscription_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionGym_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionHotelCalifornia_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionIndoorArboretum_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionLocalBarPatron_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionMaidIsOut_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionMerchandiseGoods_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionMerchandisePawnShop_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionMerchandiseUsedGoods_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionNotAHome_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionOnlyGoodThingAbout_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPanicRoom_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPatronConcerts_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPatronPrivateClub_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPatronPublicEntertainment_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPatronThemeParks_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPrivateRoom_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionPublicTransportation_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionRailwayPass_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSafehouse_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSafetyThird_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionShootingRange_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSoyProcessingUnit_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSpecialWorkArea_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSportsCourt_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionSwimmingPool_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionThrifty_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionWZone_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionWalkinFreezer_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionWorkshopFacility_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionYard_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleOptionZenDenBatCave_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleZone_C": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleZone_D": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleZone_E": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifeStyleZone_Z": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifestyleComforts_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.LifestyleSecurity_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.NetEntangled_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.NetShockCharge_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    }
+  }
+}

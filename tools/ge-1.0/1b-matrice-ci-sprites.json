@@ -1,0 +1,537 @@
+{
+  "famille": "1b-matrice-ci-sprites",
+  "entrees": {
+    "SR5.IceAcid_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceBinder_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceBlack_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceBlaster_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceBloodhound_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceBlueGoo_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceCatapult_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceCrash_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceFlicker_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceJammer_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceKiller_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceMarker_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IcePatrol_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceProbe_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceScramble_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceShocker_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceSleuther_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceSparky_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceTarBaby_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.IceTrack_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionBreakFile_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionBreakTargetLock_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionBruteForce_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionCalibration_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionChangeIcon_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionCheckOverwatchScore_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionConfusePilot_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionControlDevice_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionCrackFile_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionCrashProgram_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionDataSpike_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionDenialOfService_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionDetectTargetLock_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionDisarmDataBomb_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionEditFile_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionEnterOrExitHost_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionEraseMark_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionEraseMatrixSignature_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionFormatDevice_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionGarbageInGarbageOut_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionGridHop_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionHackOnTheFly_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionHaywire_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionHide_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionIAmTheFirewall_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionIntervene_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionInviteMark_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionJackOut_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionJamSignals_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionJumpIntoRiggedDevice_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionLoadProgram_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionMasquerade_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionMatrixPerception_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionMatrixSearch_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionPopupCybercombat_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionPopupHacking_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionRebootDevice_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSendMessage_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSetDataBomb_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSnoop_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSpoofCommand_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSquelch_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSubvertInfrastructure_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSuppressNoise_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSwapTwoPrograms_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSwitchInterfaceMode_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSwitchTwoMatrixAttributes_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionTag_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionTargetDevice_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionTraceIcon_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionTrackback_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionUnloadProgram_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionWatchdog_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteDataDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteFaultDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteMachineDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    }
+  }
+}

@@ -1,0 +1,978 @@
+{
+  "famille": "1a-accessoires-statuts",
+  "entrees": {
+    "SR5.AccessoryAdditionalClipMagazine_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemElec_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemExSD_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemImmo_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemSelfD_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystem_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAirburstLink_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAmmoSkipSystem_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryBackPack_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryClip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryPack_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBayonet_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBipod_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCapBall_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo1_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo2_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo3_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo4_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo5_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo6_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryChameleonCoating_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryConcealableHolster_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryConcealedQDHolster_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCustomLook_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryDeathInstrument_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryEasyBreakdownManual_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryEasyBreakdownPowered_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryElectronicFiring_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExplosiveClip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtendedBarrel_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtendedClip1_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtendedClip2_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtremeEnvironment_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlamethrower_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLightInfrared_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLightLowLight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFoldingStock_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryForegrip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemOne_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemThree_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemTwo_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGeckoGrip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGuncam_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGyroMount_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHiddenArmSlide_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHipPad_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHolographicSight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryImagingScope_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryImprovedRangeFinder_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKick_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKrimePack_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKrimeStunONet_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLaserSight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLaserWeapon_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLongbarrel_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryMeleeHardening_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryMountedCrossbow_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNarcojectDazzler_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNetXL_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNet_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryOsmium_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryOverclocked_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryPeriscope_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryPersonalizedGrip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryQuickDrawHolster_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryRedDotSight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryReducedWeight_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryRetractibleBayonet_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySafeTargetSystemWithImage_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySafeTargetSystem_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySawedoffShortbarrel_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryShockNet_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryShockPad_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySilencerSuppressor_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySlideMount_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySling_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartFiringPlatform_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartgunSystemExternal_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartgunSystemInternal_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpareClip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModAccuracy_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModArmorPenetration_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModConcealment_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModDamage_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModReach_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModRecoil_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpeedLoader_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryStockRemoval_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTracker_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTriggerRemoval_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTripod_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTrollAdaptation_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelBolaLauncher_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelChainsaw_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelFlamethrower_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelGrappleGun_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelGrenadeLauncher_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelLaser_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelShotgun_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryVintage_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryWeaponCommlink_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryWeaponPersonality_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.Anticoagulant_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Antenna_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Axle_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_BleedOut_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Blinded_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_BrokenGrip_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Buckled_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Deafened_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_DirtyTrick_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_DoorLock_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_EngineBlock_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Entanglement_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Fatigued_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Feint_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Flared_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_FuelTankBattery_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Knockdown_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Nauseous_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_OnPinsAndNeedles_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_OneArmBandit_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Pin_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Shaked_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_SlowDeath_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Slowed_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Stunned_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_TrickShot_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_UnableToSpeak_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_WeakSide_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Winded_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_WindowMotor_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectAgony_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectArcaneInhibitor_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectDisorientation_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectManasphereCut_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectNausea_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectParalysis_GE": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    }
+  }
+}
