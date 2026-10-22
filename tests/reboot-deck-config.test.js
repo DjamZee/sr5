@@ -67,8 +67,11 @@ function documentWith(data) {
  * holds the source, where both are empty.
  */
 function preparedSystem(activeDeck) {
+  let built = null
   const source = () => ({
     matrix: {
+      //The mode a test sets on the sheet is a source field
+      userMode: built?.matrix.userMode,
       attributes: {
         attack: {
           base: 2
@@ -101,6 +104,7 @@ function preparedSystem(activeDeck) {
     },
   })
   const system = source()
+  built = system
   Object.defineProperty(system.matrix, 'markedItems', {
     get: () => activeDeck.system.markedItems, enumerable: true
   })
@@ -401,6 +405,31 @@ describe('Jacking out reboots the device used (SR5 p. 244)', () => {
     expect(commlink.system.marks).toHaveLength(1)
     // Dumpshock in VR only, cold sim included (SR5 p. 231)
     expect(dumpshock).toHaveBeenCalledTimes(shocked ? 1 : 0)
+  })
+
+  // SR5 p. 231, 239, 244: thrown out of VR, the character is back in AR; the next reboot deals no dumpshock again
+  // (Delphin#2947, 23/10: the sheet stayed in hot sim and a later reboot dealt a second one)
+  it.each([['hotsim'], ['coldsim']])('jacking out in %s: dumpshock of that mode, then the sheet in AR', async userMode => {
+    hacker.system.matrix.userMode = userMode
+    await SR5_MatrixHelpers.jackOut({
+      owner: {
+        actorId: 'hacker'
+      }, previousMessage: {
+      }
+    })
+    expect(dumpshock).toHaveBeenCalledTimes(1)
+    expect(dumpshock.mock.calls[0][2].damage.ejectedMode).toBe(userMode)
+    expect(hacker.update.mock.calls[0][0].system.matrix.userMode).toBe('ar')
+    hacker.system.matrix.userMode = hacker.update.mock.calls[0][0].system.matrix.userMode
+    await hacker.rebootDeck()
+    expect(dumpshock).toHaveBeenCalledTimes(1)
+  })
+
+  it('an AI keeps its mode through the reboot (it lives in the Matrix)', async () => {
+    hacker.system.matrix.userMode = 'hotsim'
+    hacker.system.activeSpecialAttribute = 'depth'
+    await hacker.rebootDeck()
+    expect(hacker.update.mock.calls[0][0].system.matrix.userMode).toBe('hotsim')
   })
 
   // SR5 p. 246: one roll, compared to each lock; only the beaten ones go
