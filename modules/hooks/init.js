@@ -172,6 +172,9 @@ import {
   commcodeApi, contactsApi
 } from "../interface/commcode-api.js"
 import {
+  infoBrokerApi
+} from "../interface/info-broker-api.js"
+import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
@@ -469,7 +472,7 @@ export async function sr5HookInit() {
     panCrown: SR5PanCrown,
     // The combat for the modules: count an action (API pour Matrice v1, A4)
     combat: SR5CombatApi,
-    // The Matrix for the modules: put marks, converge (API pour Matrice v1, A11, A12)
+    // The Matrix for the modules: put marks, converge (API pour Matrice v1, A11, A12), read the marks on a host (NETWORKS)
     matrix: SR5MatrixApi,
     // The GM's token of each family the system creates (lot 9): for a module that lays IC or sprites itself
     tokenDefaults: SR5TokenDefaultsApi,
@@ -481,6 +484,8 @@ export async function sr5HookInit() {
     // The messaging between commcodes and the contacts for the modules (API pour CONTACTS, landing-metroplexes-sr5)
     commcode: commcodeApi(),
     contacts: contactsApi(),
+    // The information broker's window for the modules (landing-metroplexes-sr5, NETWORKS): open({vendor, buyer, tab})
+    infoBroker: infoBrokerApi(),
   }
 
   // Register DataModels
