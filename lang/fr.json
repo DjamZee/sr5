@@ -6880,6 +6880,7 @@
 	"SR5.AddictionTest": "Test d'addiction",
 	"SR5.AddictionTestShort": "Test",
 	"SR5.AddictionWorsen": "Échec : l'addiction s'aggrave d'un niveau",
+	"SR5.AddictionAlreadyWorsened": "{drug} : l'addiction a déjà gagné son niveau pour ce test. Une addiction globale se teste avec les deux réserves, mais un seul niveau est gagné même si les deux tests échouent (SR5 p. 416).",
 	"SR5.AddictionResisted": "Addiction évitée",
 	"SR5.AddictionBurnoutEither": "Constitution ou Volonté, à pile ou face (égalité, SR5 p. 416)",
 	"SR5.AddictionBurnoutLoss": "{name} rate un test d'addiction ({drug}) au niveau Dévorante : 1 point de {attribute} est perdu définitivement, et 1 point de son maximum (SR5 p. 416). À 0, coma : les deux moniteurs sont remplis, plus 1 case de surplus physique. À appliquer à la main.",
