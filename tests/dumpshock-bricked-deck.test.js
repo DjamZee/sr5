@@ -94,6 +94,54 @@ describe('Dumpshock when a deck is bricked in VR (SR5 p. 229)', () => {
     expect(chatData.damage.bricked).toBe(true)
   })
 
+  it('throws the character out the reboot\'s way, once the brick is written, with no second dumpshock (Fulbert#8023)', async () => {
+    const actor = hacker()
+    const order = []
+    actor.items[0].update = vi.fn(async () => order.push('brick'))
+    actor.rebootDeck = vi.fn(async () => order.push('reboot'))
+    await SR5_MatrixHelpers.applyDamageToDecK(actor, {
+      damage: {
+        matrix: {
+          value: 12
+        }
+      }, target: {
+      }
+    }, null, false)
+    expect(order).toEqual(['brick', 'reboot'])
+    expect(actor.rebootDeck).toHaveBeenCalledWith(null, {
+      dumpshock: false, notify: false
+    })
+    expect(actor.rollTest).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves a character in AR, or a device not in use, as it is', async () => {
+    const inAR = hacker()
+    inAR.system.matrix.userMode = 'ar'
+    const spare = hacker()
+    spare.items[0].system.isActive = false
+    const savedFromUuid = globalThis.fromUuid
+    // The spare device is aimed at by its uuid
+    globalThis.fromUuid = async () => spare.items[0]
+    try {
+      for (const [actor, target] of [[inAR, {
+      }], [spare, {
+        itemUuid: 'Actor.h.Item.dk'
+      }]]) {
+        actor.rebootDeck = vi.fn(async () => {})
+        await SR5_MatrixHelpers.applyDamageToDecK(actor, {
+          damage: {
+            matrix: {
+              value: 12
+            }
+          }, target
+        }, null, false)
+        expect(actor.rebootDeck).not.toHaveBeenCalled()
+      }
+    } finally {
+      globalThis.fromUuid = savedFromUuid
+    }
+  })
+
   it('bricked by a player, the dumpshock is left to the GM\'s browser, never opened on the attacker\'s screen', async () => {
     game.user = {
       isGM: false, id: 'p'
@@ -173,5 +221,17 @@ describe('Dumpshock when a deck is bricked in VR (SR5 p. 229)', () => {
     }
     expect(await pool(true)).toEqual([4, ['Volonté']])
     expect(await pool(false)).toEqual([7, ['Volonté', 'Firewall']])
+    // A brick the GM wrote for a player: the deck is off when the window is prepared, its pool empty (instance 10)
+    actor.system.matrix.resistances.dumpshock = {
+      dicePool: 0, modifiers: []
+    }
+    actor.system.attributes = {
+      willpower: {
+        augmented: {
+          value: 5
+        }
+      }
+    }
+    expect((await pool(true))[0]).toBe(5)
   })
 })

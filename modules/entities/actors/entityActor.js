@@ -1199,7 +1199,7 @@ export class SR5Actor extends Actor {
   //Reboot deck = reset Overwatch score and delete any marks on or from the actor
   //A character in VR when the device reboots takes dumpshock (SR5 p. 244), whatever made it reboot
   async rebootDeck(_device = null, {
-    hostExitReason = "reboot", dumpshock = true
+    hostExitReason = "reboot", dumpshock = true, notify = true
   } = {
   }) {
     //A character a Flicker disconnected has had its dumpshock already: reconnecting reboots without a second one
@@ -1296,8 +1296,8 @@ export class SR5Actor extends Actor {
     if (lockStatuses.length) await this.deleteEmbeddedDocuments("ActiveEffect", lockStatuses)
 
     //deviceName is prepared from the active device, the copy only holds the source; empty when that device was just
-    //turned off: the persona's name then (Anatolie)
-    ui.notifications.info(`${this.system.matrix.deviceName || SR5_EntityHelpers.displayName(this)} ${game.i18n.localize("SR5.Rebooted")}.`)
+    //turned off: the persona's name then (Anatolie). A brick says "disconnected" instead (ejectBricked)
+    if (notify) ui.notifications.info(`${this.system.matrix.deviceName || SR5_EntityHelpers.displayName(this)} ${game.i18n.localize("SR5.Rebooted")}.`)
   }
 
   //Reset Cumulative Recoil (SR5 p. 178)

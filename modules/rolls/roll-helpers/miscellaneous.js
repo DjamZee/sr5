@@ -307,7 +307,11 @@ export class SR5_MiscellaneousHelpers {
       } = await import("../../entities/actors/entityActor-helpers.js")
       if (SR5_ActorHelper.dumpshockIfInVR(target.actor, {
         bricked: true
-      })) ui.notifications.info(`${target.actor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
+      })) {
+        ui.notifications.info(`${target.actor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
+        //isActive went from true to false: the device in use
+        await SR5_ActorHelper.ejectBricked(target.actor)
+      }
     }
     //The button the player's browser left for the GM is spent once the damage is written (Hyacinthe's review, D5)
     if (data.use === "matrixDamage" && data.button) {

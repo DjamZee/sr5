@@ -810,6 +810,16 @@ export class SR5_ActorHelper {
     return true
   }
 
+  //The device in use bricked under a character in VR, its dumpshock dealt (dumpshockIfInVR): thrown out of the Matrix
+  //(SR5 p. 229, 231), the character goes the reboot's way without a second dumpshock: back in AR, out of the host, its
+  //link locks gone (Fulbert#8023). Called once the brick is written: the reboot writes the character's items again
+  static async ejectBricked(actor) {
+    if (typeof actor?.rebootDeck !== "function") return
+    await actor.rebootDeck(null, {
+      dumpshock: false, notify: false
+    })
+  }
+
   //Worked out by the GM (a destroyed drone, a brick he wrote, a drone hit under its rigger): the resistance is rolled
   //by the player of the character when one is connected, as for an area spell (effectArea.js); here otherwise
   static rollForOwner(actor, rollType, chatData) {

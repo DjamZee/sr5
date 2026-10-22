@@ -353,8 +353,61 @@ async function onCreate(doc, _options, userId) {
   return notePeak(doc)
 }
 
+/**
+ * The register for documents a gamemaster brought in with their character, taken as they stand (like firstSight): the
+ * items of a character do not go through createItem when the character is created (Anatole, 23/10: Joy Keller imported
+ * from a compendium, her Biocondensateur's Prototype de transhumain mark worked out again from the body at the first
+ * write of her player, a false alert and the gift taken off). Null when nothing changes.
+ */
+export function registerAsTheyStand(register, docs, {
+  creation = false
+} = {
+}) {
+  let changed = false
+  for (const doc of docs) {
+    const values = reservedValues(doc.system, reservedFieldsOf(doc))
+    const implant = doc.type === "itemAugmentation"
+    if (!implant && Object.entries(values).every(([f, v]) => v === RESERVED_DEFAULTS[f])) continue
+    // At creation, no peak (inCreation)
+    const cost = implant && !creation ? Math.round((Number(doc.system?.essenceCost?.value) || 0) * 100) / 100 : null
+    const next = cost === null ? values : {
+      ...values, [PEAK_COST]: cost
+    }
+    if (JSON.stringify(register[doc.uuid]) === JSON.stringify(next)) continue
+    register[doc.uuid] = next
+    changed = true
+  }
+  return changed ? register : null
+}
+
+/**
+ * A character created (createActor: imported from a compendium, duplicated, made from a file) or whose items were all
+ * replaced (importFromJSON): a gamemaster's documents are recorded as they stand, in one write; a player's are worked
+ * out like an item he creates (onCreate).
+ */
+async function registerCharacter(docs, options, userId) {
+  docs = docs.filter(d => reservedFieldsOf(d).length)
+  if (!docs.length) return
+  if (!game.users.get(userId)?.isGM) {
+    for (const doc of docs) await onCreate(doc, options, userId)
+    return
+  }
+  const creation = creationMode(docs[0])
+  return updateLedger(IMPLANT_REGISTER, register => registerAsTheyStand(register, docs, {
+    creation
+  })).catch(e => console.error("SR5 | implant register", e))
+}
+
+/** createActor: the character and the items it comes with. */
+async function onCreateActor(actor, options, userId) {
+  if (!isActiveGM()) return
+  return registerCharacter([actor, ...(actor.items ?? [])], options, userId)
+}
+
 /** updateItem / updateActor: a gamemaster's write is recorded; a player's change is put back. */
 async function onUpdate(doc, changes, _options, userId) {
+  // A character's items replaced in one write (importFromJSON) do not go through createItem either
+  if (doc.documentName === "Actor" && Array.isArray(changes?.items) && isActiveGM()) await registerCharacter([...(doc.items ?? [])], _options, userId)
   // The gamemaster ends the creation: the peaks start from the costs of now (inCreation). Every client prepares the
   // character again once they have arrived (onWorldCreationModeChange), or it shows an old peak until then
   if (doc.documentName === "Actor" && creationEnded(changes) && !creationMode(doc)) {
@@ -524,6 +577,7 @@ export function registerImplantRegisterHooks() {
   Hooks.on("updateSetting", guard(onWorldCreationModeChange))
   Hooks.on("createSetting", guard(onWorldCreationModeChange))
   Hooks.on("createItem", guard(onCreate))
+  Hooks.on("createActor", guard(onCreateActor))
   Hooks.on("updateItem", guard(onUpdate))
   Hooks.on("updateActor", guard(onUpdate))
   Hooks.on("deleteItem", guard(onDelete))
