@@ -341,7 +341,7 @@ export function situationalAttackOf(card) {
  * sr5.situationalArmor — called at the damage resistance test of a character (physical damage, elemental or not),
  * before the AP is capped by the Armor (SR5 p. 171) and before the comparison that turns the damage to Stun (SR5 p.
  * 170), with `{actor, attack, card, armor, bonuses}`: `attack` what situationalAttackOf reads of the attack card
- * (`testType` "attack", "spell"…, `category` "rangedWeapon", "meleeWeapon", "grenade"…, `weaponType` the weapon's type,
+ * (`testType` the type of the card resisted: "defense" after a defense test, "attack" or "spell" without one, `category` "rangedWeapon", "meleeWeapon", "grenade"…, `weaponType` the weapon's type,
  * `ammoType`, `firingMode`, `isGrenade`, `element`, `magical`, `damageType`, `damageValue`, `armorPenetration`), `card`
  * a copy of the whole card, `armor` the character's Armor before it, `bonuses` an empty array. A subscriber pushes
  * `{label, source?, value}`: `label` the text ("Champ cinétique"), `value` an integer from 1 to 20, the Armor added
