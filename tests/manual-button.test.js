@@ -64,6 +64,68 @@ describe("Manual button (L11)", () => {
     expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.ManualMissing')
   })
 
+  // English edition (Aurore, 22/10): Foundry's language picks the pack, the French one stays the fallback
+  describe("edition by Foundry's language", () => {
+    const english = {
+      getIndex: vi.fn(async () => [{
+        _id: 'e', sort: 100000
+      }]),
+      getDocument: vi.fn(async () => ({
+        pages: [{
+          id: 'en-menu', sort: 100000
+        }], sheet: {
+          render
+        }
+      })),
+    }
+    const empty = {
+      getIndex: vi.fn(async () => []), getDocument: vi.fn()
+    }
+
+    it("opens the English manual in English, and in any language other than French", async () => {
+      game.packs = new Map([['sr5.manuel', pack], ['sr5.manual', english]])
+      for (const lang of ['en', 'de']) {
+        render.mockClear()
+        game.i18n.lang = lang
+        await sr5OpenManual()
+        expect(render).toHaveBeenCalledWith(true, {
+          pageId: 'en-menu'
+        })
+      }
+    })
+
+    it("opens the French manual in French", async () => {
+      game.packs = new Map([['sr5.manuel', pack], ['sr5.manual', english]])
+      game.i18n.lang = 'fr'
+      await sr5OpenManual()
+      expect(render).toHaveBeenCalledWith(true, {
+        pageId: 'menu'
+      })
+    })
+
+    it("falls back to the French manual when the English pack is missing or empty", async () => {
+      game.i18n.lang = 'en'
+      for (const packs of [[['sr5.manuel', pack]], [['sr5.manuel', pack], ['sr5.manual', empty]]]) {
+        render.mockClear()
+        game.packs = new Map(packs)
+        await sr5OpenManual()
+        expect(render).toHaveBeenCalledWith(true, {
+          pageId: 'menu'
+        })
+      }
+    })
+
+    it("warns once, permanently, when every pack is empty", async () => {
+      game.i18n.lang = 'en'
+      game.packs = new Map([['sr5.manuel', empty], ['sr5.manual', empty]])
+      await sr5OpenManual()
+      expect(ui.notifications.warn).toHaveBeenCalledTimes(1)
+      expect(ui.notifications.warn).toHaveBeenCalledWith('SR5.ManualEmpty', {
+        permanent: true
+      })
+    })
+  })
+
   it("adds the button once to the journal sidebar header, and none without the pack", () => {
     // Minimal DOM stand-in: the tests run without a browser environment
     globalThis.document = {

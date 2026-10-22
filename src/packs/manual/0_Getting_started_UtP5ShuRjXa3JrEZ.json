@@ -1,0 +1,365 @@
+{
+  "_id": "UtP5ShuRjXa3JrEZ",
+  "_key": "!journal!UtP5ShuRjXa3JrEZ",
+  "name": "0. Getting started",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 100000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "97e4IWOiXu7XAeW3",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.97e4IWOiXu7XAeW3",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part gets you on your feet: what this manual contains, how to install the system, what you see the first time you launch a world, and what each area of the screen is for. The gamemaster (the GM) reads all of it; the player can settle for chapter 0.4.</p>\n<p>This manual describes <strong>the fork's alpha</strong> as it is played, not the version published by the system's team. It does not copy the rules: it gives the page of the book where to read them, and says what the system does with them.</p><table><tbody><tr><td><p>@UUID[.lrwAacCOjwgDMIpA]{0.1 This manual}</p></td><td><p>All</p></td></tr><tr><td><p>@UUID[.K6CX2EasFO6vz6Be]{0.2 Installing and updating}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.Gfk5zUuTaOqS9vUv]{0.3 The first launch of a world}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.aOF67Nbl48znk5T7]{The new world question}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.q5GXYM16NSmsFUJp]{The Shadowrun settings window}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.mKZ6bak91UOPwDlM]{The sidebar}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.YRfJG9p6WnN6cUDi]{The clock and the calendar}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.9jXWevgNpySvo7Wz]{The token HUD}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.onM6wQeM2Rn5e8sp]{Hover help}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Pr4eleOT7yPQN1jR]{Appearance: Shadowrun 5 and 6 themes}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.tf3RaZcBiA1euScW]{Related settings and references}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lrwAacCOjwgDMIpA",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.lrwAacCOjwgDMIpA",
+      "name": "0.1 This manual",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>This manual teaches you to play Shadowrun 5 in Foundry with the fork's system: where to click, what the system computes for you, what it leaves you to do by hand. It assumes you know the rules of Shadowrun 5 and the basic gestures of Foundry (opening a sheet, dragging an item); it assumes no knowledge of code.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">About this English edition</p><p>This edition is a translation of the French manual. Its <strong>screenshots were taken in French</strong>: the buttons and windows you see in them carry French labels. The text quotes each label as it appears in Foundry set to English, so match a screenshot by its layout and its icons rather than by its words.</p>\n<p>The page references point to the <strong>English editions</strong> of the books (Core Rulebook, Run &amp; Gun, Kill Code…). They were converted from the French editions, whose page numbers differ; if a reference lands one page off, the rule is on the neighbouring page. The system's own cards, roll windows and help still cite the French page numbers, so a page given by Foundry can differ from the one given here by a few pages. The fork's wiki, linked here and there, is written in French.</p></div>\n\n<h4>Reader badges</h4>\n<p>Each chapter carries, under its title, a badge that tells who it is meant for:</p>\n<ul>\n<li><p><strong>All</strong>: the GM as well as the player.</p></li>\n<li><p><strong>GM</strong>: the settings, the rule locks and the gamemaster's tools. Nothing in them is secret: a player who knows what the GM ticked understands a refusal better.</p></li>\n<li><p><strong>Player</strong>: what happens on your character's sheet.</p></li>\n</ul>\n\n<h4>How to read it</h4>\n<ol>\n<li><p><strong>Once, before playing</strong>: this part 0, then the chapter for your role. The GM also reads part 8 (settings and tools); the player reads part 2 (the sheet and rolls), then the part for their archetype (magic, Matrix, rigging).</p></li>\n<li><p><strong>At the table</strong>: look up the button or the window in the table of contents; each chapter begins with \"What it is for\" and ends with its settings and references.</p></li>\n<li><p><strong>In Foundry</strong>: this manual also exists as a compendium of journals, \"Shadowrun 5 Manual\". Each part has its MENU page there, and each page ends with a line leading back (<strong>Backlinks</strong>) to the MENU.</p></li>\n</ol>\n\n<h4>References and boxes</h4>\n<ul>\n<li><p><strong>The rules are not copied.</strong> A page of the book is cited in italics, for example (<em>Core Rulebook p. 49</em>): the book is authoritative, this manual only says what the system does with it. When the book does not decide and a choice was made for the system, the text says so in one line.</p></li>\n<li><p>Boxes like this one give a tip or a warning:</p></li>\n</ul>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Good to know</p><p>The fork's wiki describes each feature exhaustively, with its edge cases. This manual walks you through them; it refers to the wiki for the detail (<a href=\"https://github.com/DjamZee/sr5/wiki/Home\">wiki: home</a>).</p></div>\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — an example</p><p>This box flags a rule that no book gives, offered by a setting or by a module. The system itself applies the book; House Rules only come into play if the GM decides so.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU}</p><p>@UUID[.K6CX2EasFO6vz6Be]{0.2 Installing and updating} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "K6CX2EasFO6vz6Be",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.K6CX2EasFO6vz6Be",
+      "name": "0.2 Installing and updating",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The fork's system installs in Foundry like any other system, from a manifest link. It carries the same identifier (<strong>sr5</strong>) as the official Shadowrun 5 system: installing it <strong>replaces</strong> the official version on your Foundry.</p>\n\n<h4>Before you start</h4>\n<ul>\n<li><p>Foundry VTT version 13 (the system does not work in version 12).</p></li>\n<li><p>Chrome, Microsoft Edge or the Foundry application; Firefox is less tested.</p></li>\n<li><p>The manifest link of the version you want, given with each release. The fork's releases are prereleases: their link carries the version number, in the form <strong>https://github.com/DjamZee/sr5/releases/download/13.0.0-djamz.N/system.json</strong> (replace N with the version number).</p></li>\n</ul>\n\n<h4>Step by step: installing</h4>\n<ol>\n<li><p>On Foundry's setup screen, open the <strong>Game Systems</strong> tab, then click <strong>Install System</strong>.</p></li>\n<li><p>At the bottom of the window, paste the link into the <strong>Manifest URL</strong> field, then click the install button.</p></li>\n<li><p>In the <strong>Game Worlds</strong> tab, click <strong>Create World</strong> and choose the <strong>Shadowrun 5</strong> system.</p></li>\n</ol>\n\n<h4>Step by step: updating</h4>\n<ol>\n<li><p>Back up your world first: copy the <strong>Data/worlds/&lt;world name&gt;</strong> folder somewhere else.</p></li>\n<li><p>Install the new version from its manifest link, as above: each prerelease has its own link, and Foundry does not find it on its own.</p></li>\n<li><p>Open the world. A migration may run on the first launch: let it finish without reloading the page. Since djamz.13, one of them rewrites once the description of every character and every NPC of the world: that is why the backup of step 1 matters.</p></li>\n</ol>\n\n<h4>Bringing in a Foundry V12 sheet</h4>\n<p>A sheet exported from a Foundry V12 world (right-click on the actor → <strong>Export Data</strong>) carries over as is into V13:</p>\n<ol>\n<li><p>In the V13 world, create an actor of the same type (character, NPC…).</p></li>\n<li><p>Right-click it in the <strong>Actors</strong> tab → <strong>Import Data</strong>, and choose the exported file.</p></li>\n<li><p>Open the sheet: attributes, skills, items and effects are those of V12. On the way, the system took back the description (V12 stored it elsewhere), replaced the V12 item icons with today's, and restored the Physical limit of Locksmith (<em>Core Rulebook p. 145</em>).</p></li>\n</ol>\n<p>A V12 world opened in V13 receives the same repairs on its first launch, and a sheet already in V13 is left alone. A sheet imported with an alpha older than djamz.13 has already lost its description: import it again from the file.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Going back to an earlier version</p><p>Reinstall the old version from its own manifest link, then open the world again from the backup made before the update. Never get the system from a clone of the repository: it would lack its styles.</p></div>\n\n<h4>Recommended modules</h4>\n<p>None is required. Each has its own entry in part 9.</p>\n<table>\n<thead><tr><th>Module</th><th>What it brings</th></tr></thead>\n<tbody>\n<tr><td>Mégapack Lite</td><td>the content compendiums (weapons, spells, qualities, vehicles, NPCs…), without the text of the books; the system reads it first, and it is enough on its own (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.Qp5FrYdO1ggybgHp]{Mégapack entry})</td></tr>\n<tr><td>Bibliothèque SR5</td><td>the books as journals, to read a rule without leaving Foundry (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.foo9qJetkajRaK5n]{Bibliothèque entry})</td></tr>\n<tr><td>Matrice v1</td><td>Matrix House Rules, with the inside of hosts as a map (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.4V7hFPTyp4NVXfhI]{Matrice v1 entry})</td></tr>\n<tr><td>Vertige</td><td>a supplement of rules and content (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.g0O9ecLvjhjaIxvY]{Vertige entry})</td></tr>\n<tr><td>Character Designer (Concepteur de personnage)</td><td>guided character creation, step by step (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.FY83GXbOqmVz6WN9]{Character Designer entry})</td></tr>\n<tr><td>Visual effects (SFX)</td><td>the animations of shots, spells and explosions (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.T5p4QWSziZNI4xOL]{SFX entry})</td></tr>\n<tr><td>Corporate topology (Topologie corporatiste)</td><td>the map of the megacorporations, from one era to the next (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.hu1TCY7d5cZXfs3p]{Topology entry})</td></tr>\n<tr><td>Revised martial arts (Arts martiaux révisés)</td><td>DjamZ's revision of martial arts, as House Rules (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.G5lt3ucuBihlzQCc]{revised martial arts entry})</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Installation-et-mise-a-jour\">wiki: Installing and updating</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/FAQ\">wiki: FAQ</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU}</p><p>← @UUID[.lrwAacCOjwgDMIpA]{0.1 This manual} · @UUID[.Gfk5zUuTaOqS9vUv]{0.3 The first launch of a world} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Gfk5zUuTaOqS9vUv",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.Gfk5zUuTaOqS9vUv",
+      "name": "0.3 The first launch of a world",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The first time a new world opens, the system asks you a single question: how far should it enforce the rules of the book? After that, all its settings are in a single window, <strong>Shadowrun settings</strong>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU}</p><p>← @UUID[.K6CX2EasFO6vz6Be]{0.2 Installing and updating} · @UUID[.aOF67Nbl48znk5T7]{The new world question} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aOF67Nbl48znk5T7",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.aOF67Nbl48znk5T7",
+      "name": "The new world question",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>In a world that has never been opened with the system, the GM sees the new world window once. An existing world never sees it.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-3-monde-neuf.webp\" width=\"1443\" alt=\"The new world window: three levels of automation, &quot;Advanced&quot; ticked by default.\" /><figcaption><strong>Figure 0.3.1</strong> — The new world window: three levels of automation, \"Advanced\" ticked by default.</figcaption></figure>\n\n<h4>Step by step: choosing</h4>\n<ol>\n<li><p>Read the three choices:</p>\n<ul>\n<li><p><strong>Automation: Advanced</strong>: where a rule of the book forbids an action, the system refuses it; it sets the \"Running\" state from the distance, moves the clock forward in combat and delivers purchases after their delay. This is the book, and the default choice.</p></li>\n<li><p><strong>Automation: Light</strong>: no refusal; the system lets things through, and the GM gets a discreet message at each deviation. Purchases arrive at once.</p></li>\n<li><p><strong>Automation: Custom</strong>: nothing is changed, and the Shadowrun settings window opens on the <strong>Presets</strong> tab.</p></li>\n</ul></li>\n<li><p>Tick your choice, then confirm. Closing the window without choosing applies <strong>Advanced</strong>.</p></li>\n</ol>\n<p>This choice can be changed at any time, in the Presets menu (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.MxHL8At1JidYvFM3]{see 8.1}) or family by family in @UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{the rule locks}.</p><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.Gfk5zUuTaOqS9vUv]{0.3 The first launch of a world}</p><p>← @UUID[.Gfk5zUuTaOqS9vUv]{0.3 The first launch of a world} · @UUID[.q5GXYM16NSmsFUJp]{The Shadowrun settings window} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "q5GXYM16NSmsFUJp",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.q5GXYM16NSmsFUJp",
+      "name": "The Shadowrun settings window",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>All the system's settings are sorted by tabs in a single window.</p>\n\n<h4>Step by step: opening it</h4>\n<ol>\n<li><p>Open the <strong>Settings</strong> tab of the sidebar, then <strong>Configure Settings</strong>.</p></li>\n<li><p>In the system's section, click <strong>Open the settings</strong>.</p></li>\n<li><p>Pick a tab on the left, or type a word in the search field at the top: it finds a setting by its name or its description.</p></li>\n<li><p>Make your changes, then click <strong>Save Changes</strong>. If a setting requires a reload, a single question offers it; for a world setting, the players' pages reload too.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-3-reglages-combat.webp\" width=\"792\" alt=\"The Shadowrun settings window, Combat tab: each setting recalls its default value.\" /><figcaption><strong>Figure 0.3.2</strong> — The Shadowrun settings window, Combat tab: each setting recalls its default value.</figcaption></figure>\n\n<ul>\n<li><p>Each setting recalls its default value at the end of its description (\"Default: unticked.\").</p></li>\n<li><p>A tag flags what departs from the core rulebook: <strong>book option</strong> (a printed optional rule) or <strong>house rule</strong> (a rule no book gives). Type \"house\" in the search to see them all.</p></li>\n<li><p><strong>Reset Defaults</strong> puts the values of a new world back into the window; nothing is saved before <strong>Save Changes</strong> (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.EVmnGJKbAtj857w9]{8.1}).</p></li>\n<li><p>A player who opens the window only sees their own settings (PAN crown, interface).</p></li>\n</ul>\n\n<h4>The tabs</h4>\n<table>\n<thead><tr><th>Tab</th><th>What you set there</th></tr></thead>\n<tbody>\n<tr><td><strong>Presets</strong></td><td>an automation level and rules set in one go, your saved settings, and the rule locks: what the system refuses in the name of the book (GM only)</td></tr>\n<tr><td><strong>Interface</strong></td><td>the appearance, the hover help, the reminder of book pages (each for themselves, except the rule reminders)</td></tr>\n<tr><td><strong>Combat</strong>, <strong>Magic</strong>, <strong>Matrix</strong>, <strong>Rigging</strong></td><td>the rule options of each domain</td></tr>\n<tr><td><strong>PAN crown</strong></td><td>the crown of devices around tokens</td></tr>\n<tr><td><strong>Perception and vision</strong></td><td>cybereyes, vision ranges</td></tr>\n<tr><td><strong>Body, health and augmentations</strong></td><td>healing, diseases, Essence, augmentations</td></tr>\n<tr><td><strong>Looting and spoils</strong>, <strong>Shop</strong></td><td>pickpocketing, looting bodies, buying, selling, delivery</td></tr>\n<tr><td><strong>Calendar</strong></td><td>the world's clock</td></tr>\n<tr><td><strong>Gamemaster's tools</strong></td><td>reference compendiums, factions, cons, tokens created during play, item effects</td></tr>\n<tr><td><strong>Other</strong></td><td>the encryption of commcode messages, a house rule (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.6tBbo4KfG1RXgBmJ]{see 5.3})</td></tr>\n</tbody>\n</table>\n<p>The detail of each box: @UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.EVmnGJKbAtj857w9]{the Shadowrun settings window, tab by tab}.</p>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki: System settings</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Premiers-pas-MJ\">wiki: GM's first steps</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.Gfk5zUuTaOqS9vUv]{0.3 The first launch of a world}</p><p>← @UUID[.aOF67Nbl48znk5T7]{The new world question} · @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "o25ieQmnMSZt0yYC",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.o25ieQmnMSZt0yYC",
+      "name": "0.4 The screen at a glance",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Before your first game, take five minutes to find your way around the screen. The Shadowrun 5 system adds a few buttons to Foundry's: a Sixth World clock at the top, the shop and the dealership in the right-hand bar, a crown of icons around each token and a help window that explains what you hover over. This chapter shows them to you, then points you to the chapter that details them.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-vue-ensemble.webp\" width=\"1600\" alt=\"The GM's screen on a scene. The numbers refer to the list below.\" /><figcaption><strong>Figure 0.4.1</strong> — The GM's screen on a scene. The numbers refer to the list below.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① The scene controls</strong> (left column): Foundry's tools for tokens, measuring, walls, lighting… The system adds the <strong>Chase</strong> tool to the token tools (@UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.Kyp3B3PN2QJ1zfc3]{chases}).</p></li>\n<li><p><strong>② Scene navigation</strong>: the scene on display and, for the GM, the other prepared scenes.</p></li>\n<li><p><strong>③ The Sixth World clock</strong>: the world's date and time, which the GM moves forward with a click (@UUID[.YRfJG9p6WnN6cUDi]{see below}).</p></li>\n<li><p><strong>④ The sidebar</strong>: chat, combat, actors, items, journals, compendiums… and two buttons of the system, the <strong>Shop</strong> and the <strong>Dealership</strong> (@UUID[.mKZ6bak91UOPwDlM]{see below}).</p></li>\n<li><p><strong>⑤ A token</strong>: click it to select it, right-click to open its HUD (@UUID[.9jXWevgNpySvo7Wz]{see below}).</p></li>\n<li><p><strong>⑥ Connected players and the scene's environment</strong>: the list of connected people, and below it the Matrix <strong>Noise</strong> and the <strong>background count</strong> of the displayed scene, which are added automatically to rolls made on that scene.</p></li>\n<li><p><strong>⑦ The macro bar</strong>: drag a weapon, a spell or a skill onto it from the sheet, and the system makes the button that rolls the test.</p></li>\n<li><p><strong>⑧ Chat input</strong>: roll cards arrive in the chat tab, above it.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The GM and the player do not see the same screen</p><p>The player has neither the wall and lighting tools, nor the buttons that move the clock forward, nor the scenes the GM has not shown. Everything described here as \"GM only\" is simply absent from their screen.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU}</p><p>← @UUID[.q5GXYM16NSmsFUJp]{The Shadowrun settings window} · @UUID[.mKZ6bak91UOPwDlM]{The sidebar} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "mKZ6bak91UOPwDlM",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.mKZ6bak91UOPwDlM",
+      "name": "The sidebar",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The column of icons on the right of the screen opens Foundry's tabs. The system slips two buttons into it, just above the <strong>Settings</strong> cog.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-barre-laterale.webp\" width=\"95\" alt=\"The sidebar: ① the Shop (cart), ② the Dealership (car), ③ Settings.\" /><figcaption><strong>Figure 0.4.2</strong> — The sidebar: ① the Shop (cart), ② the Dealership (car), ③ Settings.</figcaption></figure>\n\n<h4>Step by step: opening the shop</h4>\n<ol>\n<li><p>Hover over the cart icon: the tooltip shows <strong>Shop</strong>.</p></li>\n<li><p>Click it. The shop window opens; choose the buyer at the top of the window.</p></li>\n<li><p>To open it with your character already chosen as the buyer, go through their sheet instead: <strong>Gear</strong> tab, <strong>Shop</strong> button in the finances block.</p></li>\n</ol>\n<p>The car-shaped button, just below, opens the <strong>Dealership</strong>: there you build a drone or a vehicle with its modifications and see its price before buying it. Both buttons are there for everyone, GM and player alike; what each can buy there depends on the GM's settings.</p>\n<p>The detail: @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.zKky8MvmSeq77inw]{the shop} and @UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.I5GXBTreZxunHsIW]{the dealership}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">A module adds a tab?</p><p>The tabs other modules add are placed before the <strong>Settings</strong> cog: the system always keeps it at the bottom of the column, just above the arrow that folds the bar.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance} · @UUID[.YRfJG9p6WnN6cUDi]{The clock and the calendar} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "YRfJG9p6WnN6cUDi",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.YRfJG9p6WnN6cUDi",
+      "name": "The clock and the calendar",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>At the top centre of the screen, the clock shows the world's date and time, for example <strong>Wednesday 1 January 2070 00:00:00</strong>. Everyone sees it; only the GM has the buttons that move it forward.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-horloge.webp\" width=\"318\" alt=\"The clock as the GM sees it: the date, the time, and the buttons that move time forward.\" /><figcaption><strong>Figure 0.4.3</strong> — The clock as the GM sees it: the date, the time, and the buttons that move time forward.</figcaption></figure>\n\n<h4>Step by step: moving the clock forward (GM)</h4>\n<ol>\n<li><p>Click <strong>+1 min</strong>, <strong>+10 min</strong>, <strong>+1 h</strong>, <strong>+1 d</strong> or <strong>+1 wk</strong>. Several quick clicks add up: three clicks on <strong>+1 min</strong> make three minutes.</p></li>\n<li><p>To jump to a precise date, click the calendar icon at the end of the line (<strong>Go to a date</strong>), enter the date and time, then confirm.</p></li>\n</ol>\n\n<h4>Step by step: choosing your display (everyone)</h4>\n<ol>\n<li><p>Click the crossed-out eye (<strong>Hide the calendar</strong>): only a small icon remains at the top of the screen; click it to reopen the clock.</p></li>\n<li><p>Click the calendar icon at the top right of the clock (<strong>Month view</strong>): the month grid opens under the clock, with the current day framed and the list of the month's events. The same button (<strong>Compact view</strong>) closes it.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-calendrier-mois.webp\" width=\"330\" alt=\"The month view: the clock's day is framed; the GM can add an event.\" /><figcaption><strong>Figure 0.4.4</strong> — The month view: the clock's day is framed; the GM can add an event.</figcaption></figure>\n\n<p>This display choice belongs to each person and is kept from one session to the next. In combat, each new turn moves the clock forward by three seconds (<em>Core Rulebook p. 49</em>); the <strong>Calendar: combat advances the clock</strong> setting turns that off. The events, deadlines and deliveries that follow the clock are described in the chapter @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.aK1sRuW82YTF1xdL]{on the calendar}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Already using a calendar module?</p><p>If a calendar module is active (Simple Calendar Reborn, Seasons &amp; Stars…), the system steps aside: it does not display its clock and lets that module handle the date. Durations, deadlines and deliveries keep following the world's time.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.mKZ6bak91UOPwDlM]{The sidebar} · @UUID[.9jXWevgNpySvo7Wz]{The token HUD} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9jXWevgNpySvo7Wz",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.9jXWevgNpySvo7Wz",
+      "name": "The token HUD",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The HUD is the crown of buttons that surrounds a token when you right-click it. The system redraws it in its colours and adds the <strong>PAN</strong> button.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-hud.webp\" width=\"253\" alt=\"A token's HUD, opened by a right-click. On the left, elevation, sort order and configuration; in the middle, the two bars; on the right, visibility, states, movement, target, combat, the PAN and messaging.\" /><figcaption><strong>Figure 0.4.5</strong> — A token's HUD, opened by a right-click. On the left, elevation, sort order and configuration; in the middle, the two bars; on the right, visibility, states, movement, target, combat, the PAN and messaging.</figcaption></figure>\n\n<h4>Step by step: targeting before attacking</h4>\n<ol>\n<li><p>Right-click the opponent's token: the HUD opens.</p></li>\n<li><p>Click the target (<strong>Toggle Target State</strong>). The token now carries your target marker.</p></li>\n<li><p>Launch the attack from your sheet. The chat card then offers the defense to the targeted character.</p></li>\n</ol>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Why target?</p><p>Almost every chain of the system starts from the target: it is the one that receives the defense button, then the resistance button. Without a target, the attack card has nobody to offer the response to, and the GM has to do the rest by hand.</p></div>\n\n<h4>The other buttons</h4>\n<ul>\n<li><p><strong>Toggle Visibility State</strong> (GM): hides the token from the players, or shows it to them.</p></li>\n<li><p><strong>Assign Status Effects</strong>: opens the palette of states. They really act on the character's rolls; <strong>Dead</strong> marks them defeated in the combat, and their turn is skipped.</p></li>\n<li><p><strong>Toggle Combat State</strong>: adds the token to the current combat, or removes it.</p></li>\n<li><p><strong>Show or hide the PAN</strong>: opens the crown of the character's connected devices (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4tswtGQqbgDVe9IS]{the PAN crown}).</p></li>\n<li><p>A Foundry shortcut: a <strong>double right-click</strong> on someone else's token targets it directly; the HUD opened by the first click closes again.</p></li>\n<li><p>On a vendor's token, the GM has a <strong>Shop</strong> button that opens their stall; the player opens it with a double click or a right-click on the token, when the vendor is open (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.VJKiwMTDWIl9kXMx]{see 7.2}).</p></li>\n<li><p>On a bag lying on the ground, one more button opens its contents without changing the selection: whoever searches stays whoever takes (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.FI0Yyn9xEWcJLmHX]{items}).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.YRfJG9p6WnN6cUDi]{The clock and the calendar} · @UUID[.onM6wQeM2Rn5e8sp]{Hover help} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "onM6wQeM2Rn5e8sp",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.onM6wQeM2Rn5e8sp",
+      "name": "Hover help",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>When help is on, a small window opens at the bottom left of the screen and explains the element of the sheet you hover over: what it is for, what a click on it does, and for a computed value, the detail of the computation (the base, then each bonus with its source). It is the quickest way to discover a sheet: move the mouse around, the help follows.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-aide.webp\" width=\"1162\" alt=\"The mouse over an attribute of the sheet: the help window gives its role and the detail of the computation.\" /><figcaption><strong>Figure 0.4.6</strong> — The mouse over an attribute of the sheet: the help window gives its role and the detail of the computation.</figcaption></figure>\n\n<h4>Step by step: turning help on or off</h4>\n<ol>\n<li><p>Open the <strong>Settings</strong> tab (the cog at the bottom of the sidebar), then <strong>Configure Settings</strong>.</p></li>\n<li><p>In the system's section, click <strong>Open the settings</strong>: the <strong>Shadowrun settings</strong> window opens.</p></li>\n<li><p>Go to the <strong>Interface</strong> tab, tick or untick <strong>Show Help Window</strong>, then save. The page reloads.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-reglages-interface.webp\" width=\"792\" alt=\"The Shadowrun settings window, Interface tab: appearance and help are set here.\" /><figcaption><strong>Figure 0.4.7</strong> — The Shadowrun settings window, Interface tab: appearance and help are set here.</figcaption></figure>\n\n<p>This setting is <strong>personal</strong>: each person decides for themselves, and turning it off deprives nobody else. At a table discovering the system, leave it on; at a seasoned table, turn it off, and the sheet breathes better.</p>\n<p>When help is on, the sheets' tooltips are shown there too, instead of floating near the mouse; where the sheet already has its own help text, that is what is shown. The window sits just above the list of connected people and rises with it when the list grows.</p>\n\n<h4>The reminder of book pages</h4>\n<p>Chat cards, roll windows, notifications and help cite the page of the book their computation rests on, for example \"(SR5 p. 170, 182)\" (French page numbers, see 0.1). A table that prefers lighter screens unticks <strong>Rule reminders</strong>, in the same <strong>Interface</strong> tab: this setting belongs to the <strong>world</strong>, set by the GM for everyone, and requires a reload. The rules apply the same way; only the page mentions disappear, including on cards already posted. Item descriptions do not change.</p><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.9jXWevgNpySvo7Wz]{The token HUD} · @UUID[.Pr4eleOT7yPQN1jR]{Appearance: Shadowrun 5 and 6 themes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Pr4eleOT7yPQN1jR",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.Pr4eleOT7yPQN1jR",
+      "name": "Appearance: Shadowrun 5 and 6 themes",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The look of the system's sheets and windows is chosen in a personal setting, <strong>Appearance</strong>: it only changes your screen, never anyone else's, and touches no rule.</p>\n\n<h4>Step by step: changing the appearance</h4>\n<ol>\n<li><p>Open <strong>Shadowrun settings</strong>, <strong>Interface</strong> tab (see hover help, above).</p></li>\n<li><p>In <strong>Appearance</strong>, choose <strong>Shadowrun 5 Theme</strong> (the default) or <strong>Shadowrun 6 Theme</strong>, closer to the look of the sixth edition.</p></li>\n<li><p>Click <strong>Save Changes</strong>. The page reloads with the new look.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/0-4-fiche-sr5.webp\" width=\"912\" alt=\"A character sheet with the Shadowrun 5 Theme.\" /><figcaption><strong>Figure 0.4.8</strong> — A character sheet with the Shadowrun 5 Theme.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/0-4-fiche-sr6.webp\" width=\"912\" alt=\"The same sheet with the Shadowrun 6 Theme.\" /><figcaption><strong>Figure 0.4.9</strong> — The same sheet with the Shadowrun 6 Theme.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">And Foundry's light or dark mode?</p><p>Foundry also offers a light or dark mode (<strong>Settings</strong> → <strong>Configure Settings</strong> → <strong>Configure Interface</strong>). The sheets keep their look in both modes: it is the <strong>Appearance</strong> above that decides how they look. The system's other windows (shop, dealership, chase, factions, presets, broker, messaging…) have the look of the Character Designer — night header, cyan capital titles, square-cornered buttons — and follow Foundry's mode: \"daylight\" in light mode, neon in dark mode. The system's dialogs (confirmations, choices, installing a part) wear the same outfit.</p></div>\n\n<p>Each sheet can also be enlarged from its bottom right corner, and remembers its size from one opening to the next, per type of sheet and on your computer only (<a href=\"https://github.com/DjamZee/sr5/wiki/Barres-moniteurs-et-fenetres\">wiki: bars, monitors and windows</a>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.onM6wQeM2Rn5e8sp]{Hover help} · @UUID[.tf3RaZcBiA1euScW]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "tf3RaZcBiA1euScW",
+      "_key": "!journal.pages!UtP5ShuRjXa3JrEZ.tf3RaZcBiA1euScW",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It adds the displayed scene's Matrix Noise and background count to the roll.</p></li>\n<li><p>It moves the clock forward by three seconds at each new combat turn (<em>Core Rulebook p. 49</em>).</p></li>\n<li><p>It keeps the <strong>Settings</strong> cog at the bottom of the sidebar, whatever modules are active.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Moves the clock forward outside combat, with a click, when time passes in the story.</p></li>\n<li><p>Shows or hides tokens and scenes.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Show Help Window</strong> (Interface)</td><td>each for themselves</td><td>ticked</td></tr>\n<tr><td><strong>Appearance</strong> (Interface)</td><td>each for themselves</td><td>Shadowrun 5 Theme</td></tr>\n<tr><td><strong>Rule reminders</strong> (Interface)</td><td>GM, for the world</td><td>ticked</td></tr>\n<tr><td><strong>Calendar: start year</strong> (Calendar)</td><td>GM, for the world</td><td>2070</td></tr>\n<tr><td><strong>Calendar: combat advances the clock</strong> (Calendar)</td><td>GM, for the world</td><td>ticked</td></tr>\n<tr><td><strong>Calendar: show deadlines to players</strong> (Calendar)</td><td>GM, for the world</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Length of a combat turn: (<em>Core Rulebook p. 49</em>).</p></li>\n<li><p>The exhaustive detail of each feature: <a href=\"https://github.com/DjamZee/sr5/wiki/Calendrier\">wiki: Calendar</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Token-HUD-et-statuts\">wiki: Token HUD and status effects</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Aide-en-jeu\">wiki: In-game help</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Themes-et-apparence\">wiki: Themes and appearance</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.97e4IWOiXu7XAeW3]{MENU} &gt; @UUID[.o25ieQmnMSZt0yYC]{0.4 The screen at a glance}</p><p>← @UUID[.Pr4eleOT7yPQN1jR]{Appearance: Shadowrun 5 and 6 themes}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

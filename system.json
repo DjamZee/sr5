@@ -55,6 +55,17 @@
       }
     },
     {
+      "name": "manual",
+      "label": "Shadowrun 5 Manual",
+      "path": "packs/manual",
+      "type": "JournalEntry",
+      "system": "sr5",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
       "name": "sr5-megapack-items",
       "label": "SR5 - Objets",
       "path": "packs/sr5-megapack-items",
