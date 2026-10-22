@@ -1,0 +1,619 @@
+{
+ "_lisezmoi": "Pages VF -> VO des renvois de lang/en.json, vérifiées une à une sur les PDF VF et VO (méthode en tête de convertir.mjs). pages[livre][pageVF] = pageVO ; cles[clé][\"livre pageVF\"] = page VO pour cette clé (liste : un renvoi après l'autre), \"VF\" = contenu absent de la VO, la page française reste avec « (French edition) ».",
+ "livres": {
+  "SR5": {
+   "titre": "Shadowrun, Fifth Edition (core rulebook)",
+   "vo": "pdf"
+  },
+  "RG": {
+   "titre": "Run & Gun",
+   "vo": "pdf"
+  },
+  "RF": {
+   "titre": "Run Faster",
+   "vo": "pdf"
+  },
+  "R5": {
+   "titre": "Rigger 5.0",
+   "vo": "pdf"
+  },
+  "KC": {
+   "titre": "Kill Code",
+   "vo": "pdf"
+  },
+  "DT": {
+   "titre": "Data Trails",
+   "vo": "pdf"
+  },
+  "CF": {
+   "titre": "Chrome Flesh",
+   "vo": "pdf"
+  },
+  "CA": {
+   "titre": "Cutting Aces",
+   "vo": "pdf"
+  },
+  "ARC": {
+   "titre": "Forbidden Arcana",
+   "vo": "pdf"
+  },
+  "GO": {
+   "titre": "Street Grimoire",
+   "vo": "pdf"
+  },
+  "AETH": {
+   "titre": "Aetherology",
+   "vo": "pdf"
+  },
+  "BP": {
+   "titre": "Bullets & Bandages",
+   "vo": "pdf"
+  },
+  "BTB": {
+   "titre": "Better Than Bad",
+   "vo": "pdf"
+  },
+  "HS": {
+   "titre": "Howling Shadows",
+   "vo": "pdf"
+  },
+  "HT": {
+   "titre": "Hard Targets",
+   "vo": "pdf"
+  },
+  "DTER": {
+   "titre": "Dark Terrors",
+   "vo": "pdf"
+  },
+  "SSP": {
+   "titre": "Shadow Spells",
+   "vo": "pdf"
+  },
+  "SL": {
+   "titre": "Street Lethal",
+   "vo": "pdf"
+  },
+  "TCT": {
+   "titre": "The Complete Trog",
+   "vo": "pdf"
+  },
+  "AV": {
+   "titre": "Stolen Souls",
+   "vo": "pdf"
+  },
+  "NF": {
+   "titre": "No Future",
+   "vo": "pdf"
+  },
+  "MP": {
+   "titre": "Market Panic",
+   "vo": "pdf"
+  },
+  "LD": {
+   "titre": "Lockdown",
+   "vo": "pdf"
+  },
+  "MA": {
+   "titre": "Assassin's Primer (Manuel de l'assassin)",
+   "vo": "absente"
+  },
+  "GH3": {
+   "titre": "Gun H(e)aven 3",
+   "vo": "identique"
+  }
+ },
+ "pages": {
+  "AETH": {
+   "33": 32,
+   "34": 33,
+   "35": 34,
+   "39": 38
+  },
+  "ARC": {
+   "37": 42,
+   "38": 39,
+   "39": 39,
+   "43": 44,
+   "71": 68,
+   "98": 101,
+   "122": 125,
+   "127": 132,
+   "130": 135,
+   "170": 176,
+   "172": 179,
+   "175": 181,
+   "176": 182,
+   "180": 186,
+   "181": 187,
+   "184": 192
+  },
+  "AV": {
+   "192": 188
+  },
+  "BP": {
+   "14": 14,
+   "15": 15,
+   "16": 16,
+   "18": 18,
+   "19": 19
+  },
+  "BTB": {
+   "140": 156,
+   "141": 157,
+   "142": 158,
+   "145": 161
+  },
+  "CA": {
+   "153": 153,
+   "154": 154,
+   "156": 156,
+   "157": 157,
+   "159": 159,
+   "160": 160,
+   "161": 161,
+   "162": 162,
+   "163": 163,
+   "164": 164
+  },
+  "CF": {
+   "57": 54,
+   "58": 54,
+   "59": 57,
+   "74": 72,
+   "96": 92,
+   "165": 160,
+   "185": 179,
+   "187": 182,
+   "194": 190,
+   "195": 190,
+   "196": 191
+  },
+  "DT": {
+   "53": 49,
+   "63": 59,
+   "152": 146,
+   "153": 147,
+   "157": 152,
+   "159": 154,
+   "161": 155
+  },
+  "DTER": {
+   "24": 22,
+   "25": 23,
+   "26": 24,
+   "27": 25,
+   "28": 26,
+   "29": 27,
+   "30": 28,
+   "32": 30,
+   "33": 31,
+   "34": 32,
+   "87": 83,
+   "88": 84,
+   "89": 85,
+   "90": 86,
+   "91": 87,
+   "169": 165
+  },
+  "GO": {
+   "36": 36,
+   "90": 90,
+   "91": 91,
+   "117": "VF",
+   "122": 122,
+   "133": 137,
+   "170": 170,
+   "197": 197,
+   "203": 203,
+   "207": 207,
+   "209": 209,
+   "210": 210,
+   "211": 211
+  },
+  "HS": {
+   "128": 114,
+   "217": 193,
+   "218": 194
+  },
+  "HT": {
+   "180": 180,
+   "181": 182,
+   "183": 183
+  },
+  "KC": {
+   "35": 29,
+   "48": 42,
+   "52": 46,
+   "74": 67,
+   "100": 90,
+   "101": 91,
+   "102": 92,
+   "103": 92,
+   "107": 97,
+   "145": 133,
+   "146": 134
+  },
+  "LD": {
+   "206": 202
+  },
+  "NF": {
+   "154": 172
+  },
+  "R5": {
+   "33": 29,
+   "34": 30,
+   "35": 31,
+   "37": 33,
+   "38": 34,
+   "126": 122,
+   "127": 123,
+   "128": 124,
+   "129": 125,
+   "131": 127,
+   "153": 151,
+   "154": 152,
+   "156": 155,
+   "161": 159,
+   "167": 165,
+   "169": 168,
+   "170": 168,
+   "171": 170,
+   "173": 171,
+   "175": 173,
+   "176": 174,
+   "178": 176,
+   "179": 177,
+   "181": 179,
+   "182": 180,
+   "183": 180,
+   "184": 181,
+   "185": 182,
+   "191": 189
+  },
+  "RF": {
+   "75": 123,
+   "111": 142,
+   "174": 180,
+   "216": 221
+  },
+  "RG": {
+   "67": 51,
+   "113": 99,
+   "119": 105,
+   "126": 112,
+   "133": 119,
+   "135": 120,
+   "138": 124,
+   "148": 137,
+   "149": 138,
+   "164": 152,
+   "165": 152,
+   "188": 176,
+   "189": 177,
+   "191": 179
+  },
+  "SL": {
+   "57": 55,
+   "58": 56,
+   "59": 57
+  },
+  "SR5": {
+   "50": 48,
+   "51": 49,
+   "53": 52,
+   "54": 52,
+   "55": 53,
+   "66": 64,
+   "68": 66,
+   "76": 76,
+   "79": 77,
+   "80": 78,
+   "86": 82,
+   "89": 87,
+   "96": 94,
+   "97": 95,
+   "130": 128,
+   "135": 133,
+   "142": 140,
+   "146": 144,
+   "147": 145,
+   "162": 160,
+   "163": 161,
+   "164": 162,
+   "165": 163,
+   "167": 164,
+   "169": 163,
+   "170": 168,
+   "171": 169,
+   "172": 170,
+   "173": 171,
+   "174": 172,
+   "176": 175,
+   "181": 180,
+   "184": 182,
+   "188": 187,
+   "191": 190,
+   "192": 191,
+   "195": 195,
+   "196": 195,
+   "197": 197,
+   "198": 197,
+   "200": 199,
+   "201": 200,
+   "202": 201,
+   "203": 202,
+   "204": 204,
+   "205": 205,
+   "207": 206,
+   "208": 207,
+   "227": 227,
+   "229": 228,
+   "231": 229,
+   "232": 231,
+   "233": 232,
+   "234": 233,
+   "235": 234,
+   "236": 235,
+   "237": 235,
+   "238": 237,
+   "239": 238,
+   "240": 239,
+   "241": 242,
+   "242": 238,
+   "243": 242,
+   "244": 240,
+   "246": 243,
+   "247": 246,
+   "248": 247,
+   "249": 247,
+   "253": 251,
+   "256": 254,
+   "261": 258,
+   "267": 265,
+   "268": 266,
+   "269": 266,
+   "271": 269,
+   "281": 278,
+   "283": 281,
+   "284": 282,
+   "285": 282,
+   "290": 288,
+   "291": 288,
+   "299": 296,
+   "301": 298,
+   "304": 301,
+   "306": 303,
+   "307": 304,
+   "309": 305,
+   "312": 309,
+   "317": 314,
+   "319": 316,
+   "320": 317,
+   "321": 318,
+   "324": 320,
+   "329": 325,
+   "365": 359,
+   "377": 370,
+   "381": 379,
+   "389": 387,
+   "394": 395,
+   "399": 396,
+   "401": 398,
+   "403": 401,
+   "410": 409,
+   "413": 412,
+   "415": 414,
+   "416": 414,
+   "417": 415,
+   "418": 416,
+   "419": 417,
+   "420": 416,
+   "421": 418,
+   "422": 419,
+   "423": 420,
+   "424": 421,
+   "427": 424,
+   "434": 431,
+   "435": 432,
+   "443": 441,
+   "447": 444,
+   "450": 447,
+   "458": 455,
+   "459": 456,
+   "460": 457,
+   "462": 459
+  },
+  "SSP": {
+   "18": 24,
+   "19": 17,
+   "25": 22
+  },
+  "TCT": {
+   "179": 188
+  }
+ },
+ "cles": {
+  "SR5.AIDISSIPATION_Bricked": {
+   "DT 161": 156
+  },
+  "SR5.CHASE_ControlledHint": {
+   "SR5 203": 203
+  },
+  "SR5.CHASE_HandlingEffectGE": {
+   "R5 179": 176
+  },
+  "SR5.CHASE_NoteFallingLeafNoPursuer": {
+   "R5 181": 178
+  },
+  "SR5.CHASE_NoteSnatchFailed": {
+   "SR5 203": 203
+  },
+  "SR5.CHASE_Refused_autopilot": {
+   "R5 183": 174
+  },
+  "SR5.COMMCODE_InterceptHint": {
+   "SR5 242": 241
+  },
+  "SR5.ConvergenceNoticeForced": {
+   "DT 161": 154
+  },
+  "SR5.DEFRAG_Connection": {
+   "DTER 89": 86
+  },
+  "SR5.DealerWaits": {
+   "SR5 420": 418
+  },
+  "SR5.DroneCannotMoveHint": {
+   "R5 128": 123
+  },
+  "SR5.DrugDesignerError_loweredByBase": {
+   "CF 195": 191
+  },
+  "SR5.DrugTraitUncouth": {
+   "SR5 80": 85
+  },
+  "SR5.GrappleClinchTaken": {
+   "RG 133": 120
+  },
+  "SR5.HELP_GrappleEscapeMsg": {
+   "RG 148": 138,
+   "RG 149": 138
+  },
+  "SR5.HELP_MachinistNoiseReduction": {
+   "KC 101": 90
+  },
+  "SR5.HELP_MachinistSharing": {
+   "KC 101": 90
+  },
+  "SR5.INFO_RedefineOwnershipConvergence": {
+   "DT 161": 154
+  },
+  "SR5.ImplantRejectedConfirmText": {
+   "SR5 89": 83
+  },
+  "SR5.InsectRace_orchidMantis_D": {
+   "DTER 32": 29,
+   "HS 217": 190
+  },
+  "SR5.MONAD_Formatted": {
+   "DTER 88": 85
+  },
+  "SR5.MatrixPerceptionChooseAround": {
+   "SR5 242": 241
+  },
+  "SR5.MatrixPerceptionChooseOn": {
+   "SR5 242": 241
+  },
+  "SR5.PreparationFullPotency_D": {
+   "ARC 39": [
+    36,
+    39
+   ]
+  },
+  "SR5.RammingGaitHint": {
+   "SR5 203": 203
+  },
+  "SR5.RammingRelativeSpeedHint": {
+   "SR5 203": 203
+  },
+  "SR5.SETTINGS_OverwatchGMOnly_D": {
+   "SR5 233": 231
+  },
+  "SR5.SETTINGS_ShopContactFence_D": {
+   "SR5 421": 419
+  },
+  "SR5.SETTINGS_ShopCreationLevel_D": {
+   "SR5 420": 418
+  },
+  "SR5.SETTINGS_ShopCreationOverLimit_D": {
+   "SR5 420": 418
+  },
+  "SR5.SETTINGS_ShopDeliveryDelayed": {
+   "SR5 420": 418
+  },
+  "SR5.SETTINGS_ShopDelivery_D": {
+   "SR5 420": 418
+  },
+  "SR5.SETTINGS_SpellShapingBubbleCost_D": {
+   "SR5 329": 326
+  },
+  "SR5.SETTINGS_SpiritDrainAttribute_D": {
+   "SR5 403": 398
+  },
+  "SR5.SharedVisionShareHint": {
+   "SR5 241": 240
+  },
+  "SR5.ShopCreationSource_p420": {
+   "SR5 420": 418
+  },
+  "SR5.ShopOddsHint": {
+   "SR5 420": 418
+  },
+  "SR5.ShopRetryHint": {
+   "SR5 420": 418
+  },
+  "SR5.ShopSellToContactHint": {
+   "SR5 421": 419
+  },
+  "SR5.ShopVendorClientsHint": {
+   "SR5 421": 419
+  },
+  "SR5.ShopVendorOfferContact": {
+   "SR5 421": 419
+  },
+  "SR5.ShopVendorOnOrderHint": {
+   "SR5 420": 418
+  },
+  "SR5.ShopVendorSearches": {
+   "SR5 420": 418
+  },
+  "SR5.ShopVendorSellHint": {
+   "SR5 421": 419
+  },
+  "SR5.SpiritFreeEdge_D": {
+   "SR5 306": 304
+  },
+  "SR5.SpiritFree_D": {
+   "SR5 306": 304
+  },
+  "SR5.SpiritMagicPact_D": {
+   "SR5 306": 304
+  },
+  "SR5.SpriteMajorPower_overdrive_D": {
+   "KC 103": 93
+  },
+  "SR5.SpriteMajorPower_sacrifice_D": {
+   "KC 103": 93
+  },
+  "SR5.StreamApophenian": {
+   "KC 146": 133
+  },
+  "SR5.StreamCyberadept": {
+   "KC 100": 89
+  },
+  "SR5.StreamMorphinae": {
+   "KC 145": 132
+  },
+  "SR5.VehicleRepairIntro": {
+   "R5 34": 29
+  },
+  "SR5.WARN_BindingReagents": {
+   "SR5 304": 300
+  },
+  "SR5.WARN_ImplantRejected": {
+   "SR5 89": 83
+  },
+  "SR5.WARN_MachinistAutosoftNoEcho": {
+   "KC 101": 90
+  },
+  "SR5.WARN_RebootLinkLocked": {
+   "SR5 244": 242
+  },
+  "SR5.WARN_StunHealsFirst": {
+   "SR5 207": 207
+  },
+  "SR5.WeaponAccessoryPriceMultiplier_D": {
+   "HT 181": 180
+  }
+ }
+}
