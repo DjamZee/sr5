@@ -1,0 +1,978 @@
+{
+  "famille": "1a-accessoires-statuts",
+  "entrees": {
+    "SR5.AccessoryAdditionalClipMagazine_GE": {
+      "fr": "<p>Modification lourde qui donne à l'arme un second chargeur ou magasin. Sur un pistolet, chacun ne garde que 75 % de la capacité d'origine ; sur les autres armes, capacité pleine. Dissimulation +2 et apparence personnalisée (niveau 1) sans bonus d'Intimidation. Changer de chargeur actif : action simple (gratuite en sans fil).</p><p><em>Street Lethal p. 48</em></p>",
+      "en": "<p>Heavy rebuild that gives the weapon a second clip or magazine. On a pistol each holds 75% of the original capacity; on other weapons, full capacity. Concealability +2 and a level 1 custom look, without the Intimidation bonus. Switching between them: Simple Action; wireless: Free Action.</p><p><em>Street Lethal p. 45</em></p>",
+      "source": "Street Lethal p. 48 ; EN : Street Lethal p. 45",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemElec_GE": {
+      "fr": "<p>Fonctionne avec le smartgun (obligatoire) : l'arme refuse de tirer si aucun utilisateur autorisé ne la tient ou ne se trouve à moins d'1 m (lecteur biométrique, ou tags RFID et PAN reconnus). Indice d'appareil 3 par défaut. Se loge dans l'emplacement interne et n'accepte qu'une option.</p><p>Option électrocuteur : 5E(e) infligés à quiconque tient l'arme sans autorisation ; 3 charges avant recharge.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Works with the smartgun system (required): the weapon will not fire unless an authorized user holds it or stands within 1 m (biometric reader, or recognized RFID tags and PANs). Default Device Rating 3. Fits the internal slot and takes a single upgrade.</p><p>Electro shocker option: 5S(e) to anyone holding the weapon without authorization; 3 charges before it needs recharging.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemExSD_GE": {
+      "fr": "<p>Fonctionne avec le smartgun (obligatoire) : l'arme refuse de tirer si aucun utilisateur autorisé ne la tient ou ne se trouve à moins d'1 m (lecteur biométrique, ou tags RFID et PAN reconnus). Indice d'appareil 3 par défaut. Se loge dans l'emplacement interne et n'accepte qu'une option.</p><p>Option autodestruction explosive : l'arme explose, 14P(f), PA −5 pour son porteur et +4 pour les autres, souffle −2/m.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Works with the smartgun system (required): the weapon will not fire unless an authorized user holds it or stands within 1 m (biometric reader, or recognized RFID tags and PANs). Default Device Rating 3. Fits the internal slot and takes a single upgrade.</p><p>Explosive self-destruct option: the weapon blows up, 14P(f), AP −5 for the holder and +4 for everyone else, blast −2/m.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemImmo_GE": {
+      "fr": "<p>Fonctionne avec le smartgun (obligatoire) : l'arme refuse de tirer si aucun utilisateur autorisé ne la tient ou ne se trouve à moins d'1 m (lecteur biométrique, ou tags RFID et PAN reconnus). Indice d'appareil 3 par défaut. Se loge dans l'emplacement interne et n'accepte qu'une option.</p><p>Option verrou : l'arme se bloque entièrement. Remise en service : Armurerie + Logique, test étendu (12, 5 minutes), kit d'Armurerie requis.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Works with the smartgun system (required): the weapon will not fire unless an authorized user holds it or stands within 1 m (biometric reader, or recognized RFID tags and PANs). Default Device Rating 3. Fits the internal slot and takes a single upgrade.</p><p>Immobilization option: the whole weapon locks up; making it usable again takes an armorer kit and an Armorer + Logic (12, 5 minutes) Extended Test.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystemSelfD_GE": {
+      "fr": "<p>Fonctionne avec le smartgun (obligatoire) : l'arme refuse de tirer si aucun utilisateur autorisé ne la tient ou ne se trouve à moins d'1 m (lecteur biométrique, ou tags RFID et PAN reconnus). Indice d'appareil 3 par défaut. Se loge dans l'emplacement interne et n'accepte qu'une option.</p><p>Option autodestruction : les composants internes sont détruits, l'arme est irréparable.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Works with the smartgun system (required): the weapon will not fire unless an authorized user holds it or stands within 1 m (biometric reader, or recognized RFID tags and PANs). Default Device Rating 3. Fits the internal slot and takes a single upgrade.</p><p>Self-destruct option: the internal parts are wrecked and the weapon cannot be repaired.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAdvancedSafetySystem_GE": {
+      "fr": "<p>Fonctionne avec le smartgun (obligatoire) : l'arme refuse de tirer si aucun utilisateur autorisé ne la tient ou ne se trouve à moins d'1 m (lecteur biométrique, ou tags RFID et PAN reconnus). Indice d'appareil 3 par défaut. Se loge dans l'emplacement interne et n'accepte qu'une option.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Works with the smartgun system (required): the weapon will not fire unless an authorized user holds it or stands within 1 m (biometric reader, or recognized RFID tags and PANs). Default Device Rating 3. Fits the internal slot and takes a single upgrade.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAirburstLink_GE": {
+      "fr": "<p>Pour lance-grenades et lance-roquettes équipés d'un smartgun : en déclenchement sans fil, chaque succès réduit la déviation de 2 m au lieu d'1. Le lanceur et les projectiles doivent être en mode sans fil.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>For grenade and rocket launchers with a smartgun system: on a wireless detonation, each hit cuts scatter by 2 m instead of 1. Both the launcher and the projectiles must be in wireless mode.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryAmmoSkipSystem_GE": {
+      "fr": "<p>Pour les armes à barillet ou à tambour : une action simple fait tourner le barillet jusqu'aux munitions voulues, pour alterner entre plusieurs types. Sans fil : action gratuite.</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>For weapons with a cylinder or drum: a Simple Action rotates it to the chosen ammunition, so several types can be alternated. Wireless: Free Action.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryBackPack_GE": {
+      "fr": "<p>Source d'énergie des armes électriques, sans emplacement. Se recharge d'1 unité toutes les 30 minutes ; la dépense par tir est indiquée sur l'arme.</p><p>Sac à dos relié à l'arme par un cordon : 30 unités. Brancher le cordon : action simple.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Power source for energy weapons; uses no slot. Regains 1 power unit every 30 minutes; the cost per shot is listed with the weapon.</p><p>Backpack linked to the weapon by a cord: 30 units. Plugging in the cord: Simple Action.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryClip_GE": {
+      "fr": "<p>Source d'énergie des armes électriques, sans emplacement. Se recharge d'1 unité toutes les 30 minutes ; la dépense par tir est indiquée sur l'arme.</p><p>Chargeur qui se met comme un chargeur ordinaire : 10 unités.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Power source for energy weapons; uses no slot. Regains 1 power unit every 30 minutes; the cost per shot is listed with the weapon.</p><p>Clip that loads like an ordinary clip: 10 units.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBatteryPack_GE": {
+      "fr": "<p>Source d'énergie des armes électriques, sans emplacement. Se recharge d'1 unité toutes les 30 minutes ; la dépense par tir est indiquée sur l'arme.</p><p>Sac de la taille d'une gourde, souvent à la ceinture, relié par un cordon : 20 unités. Brancher le cordon : action simple.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Power source for energy weapons; uses no slot. Regains 1 power unit every 30 minutes; the cost per shot is listed with the weapon.</p><p>Canteen-sized pack, usually on the belt, linked by a cord: 20 units. Plugging in the cord: Simple Action.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBayonet_GE": {
+      "fr": "<p>Se fixe dessus ou dessous sur une arme de la taille d'un fusil ou plus. Montée : Allonge 2 ; seule : Allonge 0 ; VD (FOR + 1)P, PA −1. Compétence : Armes tranchantes, montée ou non.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Fits the top or underneath slot of a rifle-sized weapon or larger. Mounted: Reach 2; on its own: Reach 0; DV (STR + 1)P, AP −1. Skill: Blades, mounted or not.</p><p><em>Run & Gun p. 50</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 50",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryBipod_GE": {
+      "fr": "<p>Sous le canon. Déployé, tireur couché ou assis : 2 points de compensation de recul. Fixer : 1 minute ; déployer ou replier : action simple (gratuite en sans fil) ; retirer : action complexe.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Underneath mount. Deployed, with the shooter prone or sitting: 2 points of recoil compensation. Attaching: 1 minute; deploying or folding: Simple Action (Free Action wireless); removing: Complex Action.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCapBall_GE": {
+      "fr": "<p>Arme à poudre noire chargée coup par coup (capacité notée « (ca) ») : 3 actions complexes par balle, et tout recommence si le chargement est interrompu. Dans Foundry, le bouton « Insérer des balles » coûte une action complexe par clic ; trois clics mettent une balle en place.</p><p><em>Gun H(e)aven 3 (VO) p. 3</em></p>",
+      "en": "<p>Black powder weapon loaded one shot at a time (capacity marked \"(ca)\"): 3 Complex Actions per round, starting over if loading is interrupted. In Foundry, the Insert rounds button costs one Complex Action per click; three clicks load one round.</p><p><em>Gun H(e)aven 3 p. 3</em></p>",
+      "source": "Gun H(e)aven 3 (VO) p. 3 ; EN : Gun H(e)aven 3 p. 3",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo1_GE": {
+      "fr": "<p>Indice 1. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −1. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 1. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −1. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo2_GE": {
+      "fr": "<p>Indice 2. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −2. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 2. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −2. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo3_GE": {
+      "fr": "<p>Indice 3. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −3. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 3. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −3. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo4_GE": {
+      "fr": "<p>Indice 4. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −4. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 4. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −4. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo5_GE": {
+      "fr": "<p>Indice 5. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −5. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 5. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −5. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCeramicPlasteelCompo6_GE": {
+      "fr": "<p>Indice 6. Les pièces métalliques laissent place à la céramique et au plastacier : le scanner DAM perd 1 dé par point d'indice (6 au plus) pour repérer l'arme, ici −6. Incompatible avec l'électronique lourde (smartgun, revêtement caméléon…). Coût : prix de base de l'arme × indice.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Rating 6. Metal parts are swapped for ceramic and plasteel: the MAD scanner loses 1 die per rating point (maximum 6) to find the weapon, here −6. Not compatible with heavy electronics (smartgun, chameleon coating…). Cost: base weapon cost × rating.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryChameleonCoating_GE": {
+      "fr": "<p>Revêtement en polymères de ruthénium : sans lui, le camouflage optique actif ne couvre pas une arme plus grosse qu'un pistolet lourd. Dissimulation −2 pour une arme à une main, −1 pour une arme à deux mains.</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Ruthenium polymer coating: without it, active optical camouflage does not cover a weapon larger than a heavy pistol. Concealability −2 for a one-handed weapon, −1 for a two-handed one.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryConcealableHolster_GE": {
+      "fr": "<p>Holster discret (cheville, avant-bras, creux des reins…) réservé aux pistolets et tasers : Dissimulation −1. Sans fil : −1 de plus, son tissu s'adaptant aux vêtements.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Discreet holster (ankle, forearm, small of the back…) for pistols and tasers only: Concealability −1. Wireless: a further −1 as its fabric blends in.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryConcealedQDHolster_GE": {
+      "fr": "<p>Dissimulation de l'arme −1 et seuil pour dégainer rapidement −1. N'occupe aucun emplacement.</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Weapon Concealability −1 and quick-draw threshold −1. Uses no slot.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryCustomLook_GE": {
+      "fr": "<p>Finitions de prestige (gravures, chrome, dorure, matériaux rares) : +1 dé aux tests d'Intimidation, mais +1 aux tests de Mémoire de qui cherche à se souvenir du porteur.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Prestige finish (engraving, chrome, gold plating, rare materials): +1 die on Intimidation Tests, but +1 on Memory Tests for anyone trying to remember the wielder.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryDeathInstrument_GE": {
+      "fr": "<p>Instrument de musique qui cache une arme. Coût : le double du prix de l'arme, plus l'instrument, dont la limite baisse de 1 par arme cachée. L'arme a Précision −1 et Disponibilité +2. Rien à dissimuler, mais qui veut deviner l'arme subit −4, comme face à un pistolet de poche ; hache, katana, bâton ou épée : sans modificateur.</p><p><em>No Future p. 152</em></p>",
+      "en": "<p>Musical instrument that hides a weapon. Cost: twice the weapon's price, plus the instrument, whose limit goes down by 1 per hidden weapon. The weapon gets Accuracy −1 and Availability +2. Nothing to conceal, but guessing it is a weapon takes −4, as with a hold-out pistol; axe, katana, staff or sword: no modifier.</p><p><em>No Future (French edition) p. 152</em></p>",
+      "source": "No Future p. 152 ; EN : No Future (French edition) p. 152",
+      "garder": false,
+      "note": "Pas de PDF VO de No Future sur le disque : page EN = page VF."
+    },
+    "SR5.AccessoryEasyBreakdownManual_GE": {
+      "fr": "<p>L'arme se démonte en éléments faciles à cacher (un fusil tient dans une grande mallette). Démonter ou remonter : 3 actions complexes. Version manuelle.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>The weapon breaks down into easy-to-hide parts (a rifle fits in a large briefcase). Taking it apart or putting it back together: 3 Complex Actions. Manual version.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryEasyBreakdownPowered_GE": {
+      "fr": "<p>L'arme se démonte en éléments faciles à cacher (un fusil tient dans une grande mallette). Démonter ou remonter : 2 actions complexes. Version motorisée.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>The weapon breaks down into easy-to-hide parts (a rifle fits in a large briefcase). Taking it apart or putting it back together: 2 Complex Actions. Powered version.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryElectronicFiring_GE": {
+      "fr": "<p>Mise à feu électrique : 1 point de compensation de recul (cumulable) et −1 dé aux tests de Perception auditive pour localiser le tireur. N'accepte plus que les munitions sans douille.</p><p><em>Run & Gun p. 71</em></p>",
+      "en": "<p>Electric ignition: 1 point of recoil compensation (stacks) and −1 die on hearing Perception Tests to locate the shooter. Takes caseless ammunition only.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Run & Gun p. 71 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": "Absent de Run & Gun VO : la VF le donne p. 71, la VO dans Hard Targets."
+    },
+    "SR5.AccessoryExplosiveClip_GE": {
+      "fr": "<p>Chargeur de rechange avec une micro-grenade dans le fond : il se lance avec Armes de jet et agit comme une grenade du même type, dégâts divisés par deux. Capacité du chargeur −2.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Spare clip with a micro-grenade in its base: thrown with Throwing Weapons, it acts as a grenade of the same type with half the damage. Clip capacity −2.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtendedBarrel_GE": {
+      "fr": "<p>Lest sous le canon : 1 point de compensation de recul en tir automatique (TA).</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Weight under the barrel: 1 point of recoil compensation in full-auto (FA) mode.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": "Nom VO : Underbarrel Weight."
+    },
+    "SR5.AccessoryExtendedClip1_GE": {
+      "fr": "<p>Indice 1 : capacité de l'arme +50 %. Dissimulation +1 par indice. Compte comme un accessoire : aucun emplacement de modification.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Rating 1: weapon capacity +50%. Concealability +1 per rating. Counts as an accessory: no modification slot used.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtendedClip2_GE": {
+      "fr": "<p>Indice 2 : capacité de l'arme +100 %. Dissimulation +1 par indice. Compte comme un accessoire : aucun emplacement de modification.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Rating 2: weapon capacity +100%. Concealability +1 per rating. Counts as an accessory: no modification slot used.</p><p><em>Hard Targets p. 180</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 180",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryExtremeEnvironment_GE": {
+      "fr": "<p>Niveau 1 : fonctionnement normal en climat désertique ou polaire. Niveau 2 : partout, sous l'eau comprise, mais portée divisée par deux en milieu normal et sous l'eau, et révision toutes les 100 munitions (500 ¥ et Armurerie + Logique [Mentale] (12, 1 heure)). Aucun emplacement ; pose en atelier.</p><p><em>Run & Gun p. 67</em></p>",
+      "en": "<p>Level 1: normal operation in desert or arctic conditions. Level 2: works anywhere, underwater included, but range is halved in normal conditions and underwater, and it needs servicing every 100 rounds (500¥ and Armorer + Logic [Mental] (12, 1 hour)). No slot; installation needs a shop.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 67 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlamethrower_GE": {
+      "fr": "<p>Inflige des dégâts de feu. Le tir de couverture lui est permis et consomme 20 unités (SR5 p. 181). Aspersion : une action complexe touche jusqu'à trois cibles à portée, distantes de 4 m au plus l'une de l'autre, pour 2 unités.</p><p><em>Gun H(e)aven 3 (VO) p. 3</em></p>",
+      "en": "<p>Deals fire damage. Suppressive fire is allowed and uses 20 units (SR5 p. 179). Fanning: one Complex Action hits up to three targets in range, each no more than 4 m from another, for 2 units.</p><p><em>Gun H(e)aven 3 p. 3</em></p>",
+      "source": "Gun H(e)aven 3 (VO) p. 3 ; EN : Gun H(e)aven 3 p. 3",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLightInfrared_GE": {
+      "fr": "<p>Éclaire dans l'axe de l'arme ; sa source est difficile à situer pour qui n'est pas dans le faisceau. Une personne prise dans le faisceau d'une lampe adaptée à sa vision subit un éblouissement faible (SR5 p. 175). Dessus, sur le côté ou sous le canon. Modèle infrarouge : pour les seuls personnages à vision thermographique, la pénalité de lumière baisse d'une ligne (SR5 p. 176).</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Lights up whatever the weapon points at; the source is hard to locate for anyone outside the beam. Someone caught in the beam of a lamp matched to their vision suffers light glare. Top, side, or underneath mount. Infrared model: for characters with thermographic vision only, the light penalty moves one row up.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLightLowLight_GE": {
+      "fr": "<p>Éclaire dans l'axe de l'arme ; sa source est difficile à situer pour qui n'est pas dans le faisceau. Une personne prise dans le faisceau d'une lampe adaptée à sa vision subit un éblouissement faible (SR5 p. 175). Dessus, sur le côté ou sous le canon. Modèle vision nocturne : pour les seuls personnages à vision nocturne, la pénalité de lumière baisse d'une ligne (SR5 p. 176).</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Lights up whatever the weapon points at; the source is hard to locate for anyone outside the beam. Someone caught in the beam of a lamp matched to their vision suffers light glare. Top, side, or underneath mount. Low-light model: for characters with low-light vision only, the light penalty moves one row up.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFlashLight_GE": {
+      "fr": "<p>Éclaire dans l'axe de l'arme ; sa source est difficile à situer pour qui n'est pas dans le faisceau. Une personne prise dans le faisceau d'une lampe adaptée à sa vision subit un éblouissement faible (SR5 p. 175). Dessus, sur le côté ou sous le canon. Modèle standard : lumière partielle.</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Lights up whatever the weapon points at; the source is hard to locate for anyone outside the beam. Someone caught in the beam of a lamp matched to their vision suffers light glare. Top, side, or underneath mount. Standard model: partial light.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryFoldingStock_GE": {
+      "fr": "<p>Occupe l'emplacement de crosse. Dépliée et calée à l'épaule : 1 point de compensation de recul. Plier ou déplier : action simple, gratuite pour la version motorisée.</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Takes the stock slot. Unfolded and braced on the shoulder: 1 point of recoil compensation. Folding or unfolding: Simple Action, Free Action for the motorized version.</p><p><em>Run & Gun p. 51</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 51",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryForegrip_GE": {
+      "fr": "<p>Poignée à l'avant de l'arme : 1 point de compensation de recul, Dissimulation +1. Sur le canon ou dessous ; aucun pistolet ne peut en recevoir.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Front handle: 1 point of recoil compensation, Concealability +1. Barrel or underneath mount; no pistol can take one.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemOne_GE": {
+      "fr": "<p>Monté sur le canon et impossible à retirer une fois posé : compensation de recul égale à l'indice, ici 1.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Barrel-mounted and permanent once installed: recoil compensation equal to its rating, here 1.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemThree_GE": {
+      "fr": "<p>Monté sur le canon et impossible à retirer une fois posé : compensation de recul égale à l'indice, ici 3.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Barrel-mounted and permanent once installed: recoil compensation equal to its rating, here 3.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGasVentSystemTwo_GE": {
+      "fr": "<p>Monté sur le canon et impossible à retirer une fois posé : compensation de recul égale à l'indice, ici 2.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Barrel-mounted and permanent once installed: recoil compensation equal to its rating, here 2.</p><p><em>SR5 p. 431</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 431",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGeckoGrip_GE": {
+      "fr": "<p>Crosse couverte de fibres adhésives : +6 dés à tout test pour garder l'arme en main. S'active par commande sans fil avec un smartgun, sinon en pressant deux boutons ensemble. Prend l'emplacement de crosse, mais se pose aussi sur une arme qui n'en a pas.</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Stock covered in adhesive fibers: +6 dice on any test to keep hold of the weapon. Toggled by wireless command with a smartgun, otherwise by pressing two buttons together. Takes the stock slot, but also fits weapons without one.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGuncam_GE": {
+      "fr": "<p>Enregistre tout ce que vise l'arme ; Indice d'appareil 2. Se monte dessus, sur le côté, sous le canon, sur le canon ou en interne.</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Records whatever the weapon points at; Device Rating 2. Top, side, underneath, barrel, or internal mount.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryGyroMount_GE": {
+      "fr": "<p>Harnais à bras stabilisé pour fusil d'assaut ou arme lourde : compense jusqu'à 6 points de recul ou de malus de déplacement. Fixer ou détacher l'arme : action simple ; enfiler le harnais : environ 5 minutes ; s'en libérer par l'ouverture rapide : action complexe (gratuite en sans fil).</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Harness with a stabilized arm for an assault rifle or heavy weapon: offsets up to 6 points of recoil or movement penalties. Attaching or detaching the weapon: Simple Action; putting on the harness: about 5 minutes; quick release: Complex Action (Free Action wireless).</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHiddenArmSlide_GE": {
+      "fr": "<p>Étui porté sous la manche pour pistolet de poche, pistolet léger, taser ou arme de même taille : seuil de 2 pour dégainer rapidement, Dissimulation −1. Sans fil : préparer l'arme est une action gratuite.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Sleeve rig for a hold-out pistol, light pistol, taser or similar-sized weapon: quick-draw threshold 2, Concealability −1. Wireless: readying the weapon is a Free Action.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHipPad_GE": {
+      "fr": "<p>Fait porter à la hanche une part de la charge : 1 point de compensation de recul ; prend l'emplacement de crosse.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Shifts part of the weapon's weight onto the hip: 1 point of recoil compensation; takes the stock slot.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryHolographicSight_GE": {
+      "fr": "<p>Mêmes effets qu'une visée laser, sans point lumineux qui trahisse le tireur ; affiche distance et munitions restantes sans RA. Son support gêne : dégainer rapidement demande 1 succès de plus (SR5 p. 167).</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Same effects as a laser sight, with no visible dot to give the shooter away; shows range and remaining ammo without AR. Its mount gets in the way: a quick draw needs 1 extra hit.</p><p><em>Hard Targets p. 181</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 181",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryImagingScope_GE": {
+      "fr": "<p>Sur la monture supérieure, posée ou ôtée en action simple. Micro-caméra et zoom ; Capacité 3 pour des améliorations de vision (SR5 p. 447). Sans fil : ce que voit la lunette peut être partagé avec l'équipe.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Top mount, attached or removed as a Simple Action. Micro-camera and zoom; Capacity 3 for vision enhancements. Wireless: the scope's view can be shared with the team.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryImprovedRangeFinder_GE": {
+      "fr": "<p>Réservé aux armes à smartgun, tout emplacement : si la distance est le facteur d'environnement le plus pénalisant, ce malus baisse d'1 dé. Ne se cumule pas avec un zoom.</p><p><em>Run & Gun p. 71</em></p>",
+      "en": "<p>Smartgun-equipped weapons only, any slot: when range is the dominant environmental modifier, that penalty drops by 1 die. Does not stack with a zoom function.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 71 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKick_GE": {
+      "fr": "<p>Coup porté avec les jambes, à mains nues. Les effets « Armes / VD » qui ciblent « Coup de pied » (ex. Jambes de satyre, +2) ne valent que pour les armes à mains nues dotées de ce trait.</p><p><em>Run Faster p. 83</em></p>",
+      "en": "<p>Unarmed strike with the legs. \"Weapons / DV\" effects targeting \"Kick\" (Satyr Legs, +2, for instance) apply only to unarmed weapons that carry this trait.</p><p><em>Run Faster p. 118</em></p>",
+      "source": "Run Faster p. 83 ; EN : Run Faster p. 118",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKrimePack_GE": {
+      "fr": "<p>Sac à dos qui alimente l'arme par une bande articulée : 2 500 cartouches (Krime Happiness, Gatling Krime…). Sans fil : agit comme un brouilleur de zone d'indice 2 (SR5 p. 443) qui, au lieu de brouiller, ramène à 0 l'indice des appareils (leur audio est saturé de « KRIME ! »).</p><p><em>Street Lethal p. 48</em></p>",
+      "en": "<p>Backpack feeding the weapon through an articulated belt: 2,500 rounds for weapons like the Krime Happiness or Krime Gatlings. Wireless: works as a Rating 2 area jammer that, instead of jamming, drops device ratings to 0 (their audio is flooded with \"KRIME!\").</p><p><em>Street Lethal p. 45</em></p>",
+      "source": "Street Lethal p. 48 ; EN : Street Lethal p. 45",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryKrimeStunONet_GE": {
+      "fr": "<p>Baïonnette électrifiée Krime, sous le canon : Précision 4, Allonge 1, VD 9E(e), PA −5. 10 charges ; branchée, elle en regagne une par minute.</p><p><em>Street Lethal p. 48</em></p>",
+      "en": "<p>Krime electrified bayonet, underneath mount: Accuracy 4, Reach 1, DV 9S(e), AP −5. 10 charges; when plugged in, it regains one per minute.</p><p><em>Street Lethal p. 46</em></p>",
+      "source": "Street Lethal p. 48 ; EN : Street Lethal p. 46",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLaserSight_GE": {
+      "fr": "<p>Projette un point laser visible sur la cible ; dessus ou sous le canon. Précision +1 (pas de cumul avec un smartlink). Allumer ou éteindre : action simple. Sans fil : +1 dé aux tests d'attaque (pas de cumul avec un smartlink) et allumer ou éteindre devient gratuit.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Puts a visible laser dot on the target; top or underneath mount. Accuracy +1 (does not stack with a smartlink). Turning it on or off: Simple Action. Wireless: +1 die on attack tests (does not stack with a smartlink) and switching becomes a Free Action.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLaserWeapon_GE": {
+      "fr": "<p>Pas de recul. La VD perd 1 par tranche de portée au-delà de la portée courte, et 1 par niveau de visibilité réduite (léger −1, moyen −2, dense −3) ; les deux pertes s'additionnent.</p><p><em>Run & Gun p. 64</em></p>",
+      "en": "<p>No recoil. DV goes down by 1 for each range band past short range, and by 1 per level of reduced visibility (light −1, moderate −2, heavy −3); the two losses add up.</p><p><em>Run & Gun p. 47</em></p>",
+      "source": "Run & Gun p. 64 ; EN : Run & Gun p. 47",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryLongbarrel_GE": {
+      "fr": "<p>Canon rallongé : Précision +1, Dissimulation +1.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Longer barrel: Accuracy +1, Concealability +1.</p><p><em>Hard Targets p. 181</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 181",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryMeleeHardening_GE": {
+      "fr": "<p>Renforce l'arme pour frapper et parer au corps à corps : sauf cas exceptionnel, elle n'est ni abîmée ni déclenchée par accident en mêlée.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Reinforces the weapon for striking and parrying in close combat: barring exceptional cases, it is neither damaged nor fired by accident in melee.</p><p><em>Hard Targets p. 181</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Hard Targets p. 181",
+      "garder": false,
+      "note": "Absent de Run & Gun VO : la VO le donne dans Hard Targets."
+    },
+    "SR5.AccessoryMountedCrossbow_GE": {
+      "fr": "<p>Arbalète montée sur un fusil d'assaut ou une arme longue ; occupe le canon et l'emplacement sous le canon ; tir avec Armes de trait. Profil : Précision 5, VD 7P, PA −2, CC, 1 carreau.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Crossbow mounted on an assault rifle or longarm; takes the barrel and underneath slots; fired with Archery. Profile: Accuracy 5, DV 7P, AP −2, SS, 1 bolt.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNarcojectDazzler_GE": {
+      "fr": "<p>Rayon qui aveugle (visible ou infrarouge, un seul à la fois). Première passe : éblouissement modéré, aveuglant avec la vision nocturne ; chaque passe de plus à regarder : un cran de plus ; une compensation anti-flash retire un cran. Après une passe en éblouissement aveuglant : Constitution sans augmentations [Physique] (4), sinon aveugle (4 − succès) heures. Pistolet lourd, ou accessoire du dessus (Dissimulation +4 ou plus). 10 tours ; 1 tour rechargé par 15 minutes.</p><p><em>Street Lethal p. 49</em></p>",
+      "en": "<p>Blinding beam (visible or infrared light, one spectrum at a time). First pass: moderate glare, blinding glare with low-light vision; each further pass spent looking: one step worse; flare compensation removes one step. After a pass at blinding glare, unaugmented Body [Physical] (4) Test; on a failure, blinded for (4 − hits) hours. Heavy-pistol format or top-mount accessory (weapon Concealability +4 or more). 10 Combat Turns; recharges 1 turn per 15 minutes.</p><p><em>Street Lethal p. 46</em></p>",
+      "source": "Street Lethal p. 49 ; EN : Street Lethal p. 46",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNetXL_GE": {
+      "fr": "<p>Filet taille troll. Une cible de taille normale prise dedans a −2 en Agilité pour s'en dégager ; une grande cible dans un filet standard a au contraire +2.</p><p><em>Run & Gun p. 28</em></p>",
+      "en": "<p>Troll-size net. Against a normal-size target, that target has −2 Agility to get free; conversely, a large target caught in a standard net gets +2.</p><p><em>Run & Gun p. 28</em></p>",
+      "source": "Run & Gun p. 28 ; EN : Run & Gun p. 28",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryNet_GE": {
+      "fr": "<p>Toute attaque réussie, même un effleurement, enveloppe la cible, alors maîtrisée (SR5 p. 195). Pour en sortir, elle dépense une action complexe en Évasion + Agilité ou Combat à mains nues + Agilité ; seuil : les succès excédentaires obtenus par l'attaquant. Portée : moitié de celle des couteaux de lancer ; compétence Arme à distance exotique (filet).</p><p><em>Run & Gun p. 25</em></p>",
+      "en": "<p>Any successful attack, even a graze, wraps the target up and leaves them subdued. To get out, they spend a Complex Action on Escape Artist + Agility or Unarmed Combat + Agility; threshold: the attacker's net hits. Range: half that of throwing knives; Exotic Ranged Weapon (net) skill.</p><p><em>Run & Gun p. 25</em></p>",
+      "source": "Run & Gun p. 25 ; EN : Run & Gun p. 25",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryOsmium_GE": {
+      "fr": "<p>Profil selon la Force. Force 4 ou moins : Précision 3, VD (FOR + 2)P. Force 7 ou plus : Précision 5, VD (FOR + 6)P. Force 5 ou 6 : Précision 4, VD (FOR + 4)P, comme sur la fiche.</p><p><em>The Complete Trog p. 177</em></p>",
+      "en": "<p>Profile depends on Strength. Strength 4 or less: Accuracy 3, DV (STR + 2)P. Strength 7 or more: Accuracy 5, DV (STR + 6)P. Strength 5 or 6: the listed profile, Accuracy 4, DV (STR + 4)P.</p><p><em>The Complete Trog p. 185</em></p>",
+      "source": "The Complete Trog p. 177 ; EN : The Complete Trog p. 185",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryOverclocked_GE": {
+      "fr": "<p>Armes de mêlée électriques seulement (modification illégale) : les dégâts deviennent physiques, VD −2. Sur un échec critique, l'isolation lâche et le porteur subit les dégâts de base de l'arme. Comme tout dommage physique, s'il ne dépasse pas l'Armure, il reste étourdissant.</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Electrical melee weapons only (illegal modification): damage becomes Physical, DV −2. On a critical glitch the insulation fails and the wielder takes the weapon's base damage. Like any Physical damage, if it does not exceed the Armor it stays Stun.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryPeriscope_GE": {
+      "fr": "<p>Viseur déporté sur la monture supérieure, Capacité 3 en améliorations de vision. Tirer à l'angle d'un mur coûte −2 dés au lieu de −3 ; sans fil : −1 dé.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Off-axis viewer on the top mount, Capacity 3 for vision enhancements. Shooting around a corner costs −2 dice instead of −3; wireless: −1 die.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryPersonalizedGrip_GE": {
+      "fr": "<p>Poignée moulée sur la main de son propriétaire, utile surtout aux très grands et très petits métatypes : Précision +1.</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Grip molded to its owner's hand, most useful for very large or very small metatypes: Accuracy +1.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryQuickDrawHolster_GE": {
+      "fr": "<p>Holster pour une arme jusqu'à la taille d'un pistolet-mitrailleur : seuil pour dégainer rapidement −1 (SR5 p. 167).</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Holster for a weapon up to submachine-gun size: quick-draw threshold −1.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryRedDotSight_GE": {
+      "fr": "<p>Point rouge projeté sur une lentille. Portée courte : Précision +1 et +1 dé ; portée moyenne : Précision +1 seulement ; aucun effet à longue et extrême portée. Incompatible avec smartlink, visée laser, viseur holographique et tout grossissement.</p><p><em>Street Lethal p. 49</em></p>",
+      "en": "<p>Red dot projected onto a lens. Short range: Accuracy +1 and +1 die; medium range: Accuracy +1 only; no effect at long and extreme range. Not compatible with smartlinks, laser sights, holographic sights or any magnification.</p><p><em>Street Lethal p. 47</em></p>",
+      "source": "Street Lethal p. 49 ; EN : Street Lethal p. 47",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryReducedWeight_GE": {
+      "fr": "<p>Matériaux allégés, solidité inchangée : quand le poids compte (lancer l'arme, par exemple), on le divise par deux.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Lighter materials, same toughness: whenever weight matters (throwing the weapon, for instance), halve it.</p><p><em>Run & Gun (French edition) p. 70</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun (French edition) p. 70",
+      "garder": false,
+      "note": "Introuvable dans les PDF VO (Run & Gun, Hard Targets, Street Lethal)."
+    },
+    "SR5.AccessoryRetractibleBayonet_GE": {
+      "fr": "<p>Fourreau sous le canon. Déployer la lame : action simple, gratuite en sans fil. Déployée : Allonge 2, VD (FOR + 1)P, PA −1.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Sheath under the barrel. Deploying the blade: Simple Action, Free Action wireless. Deployed: Reach 2, DV (STR + 1)P, AP −1.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySafeTargetSystemWithImage_GE": {
+      "fr": "<p>Verrouille la détente quand l'arme vise un point à moins d'1 m d'un allié reconnu (tags RFID / PAN ou coordonnées GPS : 10 profils, d'autres contre quelques nuyens). Très prudent : tout ce qui se trouve devant un allié reste interdit, sauf une cible énorme comme un immeuble. Tout emplacement sauf la crosse.</p><p>Option reconnaissance d'image (guncam ou smartgun requis) : 10 profils visuels de plus, du logo d'un gang au visage précis d'un coéquipier.</p><p><em>Run & Gun p. 71</em></p>",
+      "en": "<p>Locks the trigger when the weapon aims within 1 m of a recognized ally (RFID / PAN tags or GPS coordinates: 10 profiles, more for a few nuyen). Very cautious: anything in front of an ally stays off-limits unless it is huge, like a building. Any slot except the stock.</p><p>Image recognition option (requires a guncam or smartgun): 10 more visual profiles, from a gang logo to a teammate's exact face.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 71 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySafeTargetSystem_GE": {
+      "fr": "<p>Verrouille la détente quand l'arme vise un point à moins d'1 m d'un allié reconnu (tags RFID / PAN ou coordonnées GPS : 10 profils, d'autres contre quelques nuyens). Très prudent : tout ce qui se trouve devant un allié reste interdit, sauf une cible énorme comme un immeuble. Tout emplacement sauf la crosse.</p><p><em>Run & Gun p. 71</em></p>",
+      "en": "<p>Locks the trigger when the weapon aims within 1 m of a recognized ally (RFID / PAN tags or GPS coordinates: 10 profiles, more for a few nuyen). Very cautious: anything in front of an ally stays off-limits unless it is huge, like a building. Any slot except the stock.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 71 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySawedoffShortbarrel_GE": {
+      "fr": "<p>Pistolets lourds, fusils d'assaut et armes du groupe Fusils : VD −1, Dissimulation +1, plus de modification de canon possible. Avec la suppression de la crosse : Précision −1 en plus. Un fusil de chasse raccourci ne tire plus en dispersion étroite.</p><p><em>Hard Targets p. 180</em></p>",
+      "en": "<p>Heavy pistols, assault rifles and Longarms group weapons: DV −1, Concealability +1, no more barrel modifications. Combined with stock removal: Accuracy −1 as well.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 180 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": "La phrase sur la dispersion étroite n'est que dans Hard Targets VF."
+    },
+    "SR5.AccessoryShockNet_GE": {
+      "fr": "<p>Filet électrifié à deux charges : la première dès le contact (un effleurement suffit), puis la seconde quand commence le tour de combat suivant.</p><p><em>Run & Gun p. 28</em></p>",
+      "en": "<p>Electrified net with two charges: the first goes off on contact, even on a graze; the second when the next Combat Turn begins.</p><p><em>Run & Gun p. 28</em></p>",
+      "source": "Run & Gun p. 28 ; EN : Run & Gun p. 28",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryShockPad_GE": {
+      "fr": "<p>Rembourrage de crosse pour fusil, shotgun ou arme lourde : 1 point de compensation de recul.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Padding on the stock of a rifle, shotgun or heavy weapon: 1 point of recoil compensation.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySilencerSuppressor_GE": {
+      "fr": "<p>Sur le canon ; interdit aux revolvers et shotguns. −4 dés aux tests de Perception pour remarquer le tir ou localiser le tireur. Fixer ou ôter : action complexe. Sans fil : micro d'indice 2 qui prévient le tireur en RA quand quelqu'un d'assez proche réagit au tir.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Barrel mount; not for revolvers or shotguns. −4 dice on Perception Tests to notice the shot or locate the shooter. Attaching or removing: Complex Action. Wireless: a Rating 2 microphone warns the shooter in AR when someone close enough reacts to the shot.</p><p><em>SR5 p. 432</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 432",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySlideMount_GE": {
+      "fr": "<p>Dessus, sur le côté ou sous le canon : les accessoires s'y posent ou s'en retirent en une action simple.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Top, side or underneath: accessories go on or come off it as a Simple Action.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySling_GE": {
+      "fr": "<p>Garde l'arme attachée au porteur quand il court, plonge ou se fait désarmer : la reprendre est une action simple. Aucun emplacement.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Keeps the weapon tied to its wielder when running, diving or being disarmed: grabbing it again is a Simple Action. Uses no slot.</p><p><em>Run & Gun p. 52</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 52",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartFiringPlatform_GE": {
+      "fr": "<p>Trépied robotisé fixe (180° en rotation, 60° en inclinaison) pour une arme à smartgun, tirée par son autopilote (indice 3) avec l'autosoft Acquisition 3 ; d'autres autosofts peuvent s'ajouter. Sa configuration dit qui viser ou épargner (SR5 p. 271). Compensation de recul 5 ; seule, Initiative = Autopilote × 2 et 4 dés d'initiative. Sans fil : pilotable à distance comme un drone sans module de rigging ; utilisable en RV avec un smartlink implanté.</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Fixed robotic tripod (180° traverse, 60° elevation) for a smartgun weapon, fired by its Rating 3 pilot with a Rating 3 Targeting autosoft; more autosofts can be added. Its setup says whom to shoot or spare. Recoil compensation 5; acting alone, Initiative = Pilot × 2 with 4 Initiative Dice. Wireless: remote-controlled like a drone without a rigger interface; usable in VR with an implanted smartlink.</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartgunSystemExternal_GE": {
+      "fr": "<p>Relie l'arme au smartlink : caméra, télémètre laser, suivi des munitions et de l'état de l'arme. Avec un smartlink : Précision +2, tir commandé par la pensée, tir à l'angle d'un mur à −3 dés. Caméra de Capacité 1 (améliorations de vision). Sans fil : +1 dé à toutes les attaques (+2 avec un smartlink implanté) ; l'éjection du chargeur et le changement de mode passent en action gratuite.</p><p>Version externe : dessus ou sous le canon ; pose : Armurerie + Logique, test étendu (4, 1 heure).</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Links the weapon to a smartlink: camera, laser range finder, tracking of ammo, heat and wear. With a smartlink: Accuracy +2, firing by thought, shooting around corners at −3 dice. Camera with Capacity 1 (vision enhancements). Wireless: +1 die on every attack (+2 with an implanted smartlink); ejecting a clip and changing fire mode become Free Actions.</p><p>External version: top or underneath mount, installed with an Armorer + Logic (4, 1 hour) Extended Test.</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySmartgunSystemInternal_GE": {
+      "fr": "<p>Relie l'arme au smartlink : caméra, télémètre laser, suivi des munitions et de l'état de l'arme. Avec un smartlink : Précision +2, tir commandé par la pensée, tir à l'angle d'un mur à −3 dés. Caméra de Capacité 1 (améliorations de vision). Sans fil : +1 dé à toutes les attaques (+2 avec un smartlink implanté) ; l'éjection du chargeur et le changement de mode passent en action gratuite.</p><p>Version interne : prix de l'arme doublé, Disponibilité +2.</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Links the weapon to a smartlink: camera, laser range finder, tracking of ammo, heat and wear. With a smartlink: Accuracy +2, firing by thought, shooting around corners at −3 dice. Camera with Capacity 1 (vision enhancements). Wireless: +1 die on every attack (+2 with an implanted smartlink); ejecting a clip and changing fire mode become Free Actions.</p><p>Internal version: weapon cost doubled, Availability +2.</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpareClip_GE": {
+      "fr": "<p>Vendu vide ; même capacité que l'arme pour laquelle il est fait (un modèle par arme, prix identique pour toutes).</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Sold empty; holds as many rounds as the weapon it is made for (one model per weapon, same price for all).</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModAccuracy_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : Précision +1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: Accuracy +1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModArmorPenetration_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : PA −1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: AP −1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModConcealment_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : Dissimulation −1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: Concealability −1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModDamage_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : VD +1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: DV +1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModReach_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : Allonge +1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: Reach +1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpecialModRecoil_GE": {
+      "fr": "<p>Avantage Modifications spéciales (personnage non-Éveillé, 5 Karma par niveau, 2 niveaux au plus). Par niveau : VD +1, ou bien deux options prises parmi PA −1, Précision +1, recul compensé +1, chargeur +50 %, Dissimulation −1, Allonge +1. Rien qui n'existe pas déjà sur l'arme ; seul le personnage qui a payé le Karma en profite.</p><p>Cette entrée : compensation de recul +1.</p><p><em>Better Than Bad p. 145</em></p>",
+      "en": "<p>Special Modifications quality (mundane character, 5 Karma per level, 2 levels at most). Per level: DV +1, or else two picks among AP −1, Accuracy +1, +1 recoil compensation, ammo capacity +50%, Concealability −1, Reach +1. Nothing the weapon lacks to begin with; only the character who spent the Karma gets the benefit.</p><p>This entry: recoil compensation +1.</p><p><em>Better Than Bad p. 161</em></p>",
+      "source": "Better Than Bad p. 145 ; EN : Better Than Bad p. 161",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessorySpeedLoader_GE": {
+      "fr": "<p>Anneau propre à un revolver donné : recharge complète en une action complexe au lieu de balle par balle (SR5 p. 169).</p><p><em>SR5 p. 434</em></p>",
+      "en": "<p>Ring made for one specific revolver: full reload in one Complex Action instead of round by round.</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 434 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryStockRemoval_GE": {
+      "fr": "<p>Compensation de recul −1 et Dissimulation −1 ; plus aucune modification de crosse possible. Avec le canon scié : Précision −1 en plus.</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Recoil compensation −1 and Concealability −1; no more stock modifications. Combined with a sawed-off barrel: Accuracy −1 as well.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTracker_GE": {
+      "fr": "<p>Tag RFID à la fois de sécurité et furtif, pour retrouver l'arme égarée (règles des tags RFID, SR5 p. 443). Aucun emplacement.</p><p><em>Run & Gun p. 71</em></p>",
+      "en": "<p>RFID tag that is both a security and a stealth tag, to find the weapon again. Uses no slot.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 71 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTriggerRemoval_GE": {
+      "fr": "<p>Sans détente mécanique, l'arme ne tire plus que par smartlink ; elle doit avoir un smartgun. Aucun autre effet chiffré.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>With no mechanical trigger, the weapon only fires through a smartlink; it must have a smartgun system. No other game effect.</p><p><em>Run & Gun (French edition) p. 70</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun (French edition) p. 70",
+      "garder": false,
+      "note": "La VO (Hard Targets p. 182) donne en plus Précision +1 : la fiche suit la VF de Run & Gun."
+    },
+    "SR5.AccessoryTripod_GE": {
+      "fr": "<p>Sous le canon, tireur assis ou à genoux : 6 points de compensation de recul une fois déployé. Fixer : 1 minute ; déployer, replier ou retirer : action complexe (déployer ou replier : gratuite en sans fil).</p><p><em>SR5 p. 435</em></p>",
+      "en": "<p>Underneath mount, shooter sitting or kneeling: 6 points of recoil compensation once deployed. Attaching: 1 minute; deploying, folding or removing: Complex Action (deploying or folding: Free Action wireless).</p><p><em>SR5 p. 433</em></p>",
+      "source": "SR5 p. 435 ; EN : SR5 p. 433",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryTrollAdaptation_GE": {
+      "fr": "<p>Arme taillée pour la morphologie troll : inutilisable par les autres métatypes sans modification.</p><p><em>Run & Gun p. 67</em></p>",
+      "en": "<p>Weapon built for troll proportions: other metatypes cannot use it without modification.</p><p><em>Run & Gun (French edition) p. 67</em></p>",
+      "source": "Run & Gun p. 67 ; EN : Run & Gun (French edition) p. 67",
+      "garder": false,
+      "note": "Introuvable dans les PDF VO."
+    },
+    "SR5.AccessoryUnderbarrelBolaLauncher_GE": {
+      "fr": "<p>Monté sous le canon (arme hôte de taille fusil au moins) : tire des bolas (Run & Gun p. 26) comme lancés avec Force 5 ; portée des pistolets lourds ; compétence Arme à distance exotique (bolas).</p><p><em>Run & Gun p. 69</em></p>",
+      "en": "<p>Underneath mount on a rifle-sized weapon or larger: fires bolas as if thrown with Strength 5; heavy pistol ranges; Exotic Ranged Weapon (bola) skill.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 69 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelChainsaw_GE": {
+      "fr": "<p>Une tronçonneuse montée sous le canon (arme hôte de taille fusil au moins) ; maniement : Arme de mêlée exotique (tronçonneuse).</p><p><em>Run & Gun p. 73</em></p>",
+      "en": "<p>A chainsaw under the barrel of a rifle-sized weapon or larger; used with Exotic Melee Weapon (chainsaw).</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 73 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelFlamethrower_GE": {
+      "fr": "<p>Un lance-flammes, sauf mention contraire, monté sous le canon (arme hôte de taille fusil au moins) ; règles des lance-flammes : Run & Gun p. 65.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>A flamethrower, unless noted otherwise, under the barrel of a rifle-sized weapon or larger; flamethrower rules: Run & Gun p. 49.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelGrappleGun_GE": {
+      "fr": "<p>Un lance-grappin standard (SR5 p. 452) monté sous le canon (arme hôte de taille fusil au moins).</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>A standard grapple gun under the barrel of a rifle-sized weapon or larger.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelGrenadeLauncher_GE": {
+      "fr": "<p>Un lance-grenades (SR5 p. 182) monté sous le canon (arme hôte de taille fusil au moins).</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>A grenade launcher under the barrel of a rifle-sized weapon or larger.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelLaser_GE": {
+      "fr": "<p>Laser Ares dérivé du Redline, sous le canon et sur le côté ; rare. Profil sur la fiche : VD 5P, PA −10, SA, source d'énergie externe.</p><p><em>Hard Targets p. 181</em></p>",
+      "en": "<p>Ares laser derived from the Redline, underneath and side slots; rare. Profile on the item: DV 5P, AP −10, SA, external power source.</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 181 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryUnderbarrelShotgun_GE": {
+      "fr": "<p>Fusil à pompe ajouté sous le canon d'une arme longue, d'un fusil d'assaut ou d'une arme lourde. Profil : Précision 3, VD 9P, PA −1, CC, 14 (m).</p><p><em>Hard Targets p. 182</em></p>",
+      "en": "<p>Pump-action shotgun added under a longarm, assault rifle or heavy weapon. Profile: Accuracy 3, DV 9P, AP −1, SS, 14(m).</p><p><em>Hard Targets p. 182</em></p>",
+      "source": "Hard Targets p. 182 ; EN : Hard Targets p. 182",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryVintage_GE": {
+      "fr": "<p>Arme fermée à l'électronique moderne : jamais de mode sans fil, et ses accessoires et modifications coûtent le double.</p><p><em>Gun H(e)aven 3 (VO) p. 3</em></p>",
+      "en": "<p>Weapon closed to modern electronics: never wireless, and its accessories and modifications cost double.</p><p><em>Gun H(e)aven 3 p. 3</em></p>",
+      "source": "Gun H(e)aven 3 (VO) p. 3 ; EN : Gun H(e)aven 3 p. 3",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryWeaponCommlink_GE": {
+      "fr": "<p>Commlink intégré à l'arme, qui fait alors partie du PAN ; se loge dans la crosse ou en interne.</p><p><em>Run & Gun p. 68</em></p>",
+      "en": "<p>Commlink built into the weapon, which then joins the PAN; fits the stock or internal slot.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 68 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AccessoryWeaponPersonality_GE": {
+      "fr": "<p>Interface à personnalité artificielle qui commente visée et données de l'arme au lieu de simples chiffres. Aucun emplacement.</p><p><em>Run & Gun p. 70</em></p>",
+      "en": "<p>Artificial-personality interface that talks through aiming and weapon data instead of bare numbers. Uses no slot.</p><p><em>Run & Gun p. 53</em></p>",
+      "source": "Run & Gun p. 70 ; EN : Run & Gun p. 53",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.Anticoagulant_GE": {
+      "fr": "<p>Pouvoir de créature : les plaies ne coagulent plus. La victime subit 2 cases de dommages étourdissants par minute, sans résistance, jusqu'à un test de Premiers soins + Logique [Mentale] (3) avec un médikit ou mieux.</p><p><em>Howling Shadows p. 217</em></p>",
+      "en": "<p>Critter power: wounds stop clotting. The victim takes 2 boxes of Stun damage per minute, unresisted, until a First Aid + Logic [Mental] (3) Test with a medkit or better.</p><p><em>Howling Shadows p. 193</em></p>",
+      "source": "Howling Shadows p. 217 ; EN : Howling Shadows p. 193",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Antenna_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : plus de communications ni de sans fil.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: no more communications or wireless.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Axle_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : Vitesse ramenée à 1.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: Speed drops to 1.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_BleedOut_GE": {
+      "fr": "<p>Chaque action autre que Premiers soins coûte 1 case physique sans résistance, jusqu'à une réussite en Logique + Premiers soins [Mentale] (4) ou un sort de Soins qui guérit au moins 1 case.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Every action other than First Aid costs 1 box of Physical damage, unresisted, until a First Aid + Logic [Mental] (4) Test succeeds or a Heal spell removes at least 1 box.</p><p><em>Run & Gun p. 114</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 114",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Blinded_GE": {
+      "fr": "<p>Un œil : −4 dés aux actions qui demandent la vue. Deux yeux : −8 dés à tout et aucun test de Perception visuelle. Dure autant de tours de combat que la VD d'origine.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>One eye: −4 dice on actions that need sight. Both eyes: −8 dice on everything and no visual Perception Tests. Lasts as many Combat Turns as the original DV.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_BrokenGrip_GE": {
+      "fr": "<p>Ne peut plus rien tenir et lâche ce qu'il a en main, pendant autant de tours que la VD d'origine ; −1 dé par bras touché aux attaques pour maîtriser ou saisir.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Cannot hold anything and drops what is in hand, for as many Combat Turns as the original DV; −1 die per injured arm on Subduing or Clinching attacks.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Buckled_GE": {
+      "fr": "<p>Test de Constitution (VD) ; en cas d'échec, à terre pendant (VD − succès) tours de combat.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Body (DV) Test; on a failure, down on the ground for (DV − hits) Combat Turns.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Deafened_GE": {
+      "fr": "<p>Une oreille : −2 dés aux actions qui demandent l'ouïe. Deux oreilles : −4 dés à tout et aucun test de Perception auditive. Dure autant de tours de combat que la VD d'origine.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>One ear: −2 dice on actions that need hearing. Both ears: −4 dice on everything and no hearing Perception Tests. Lasts as many Combat Turns as the original DV.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_DirtyTrick_GE": {
+      "fr": "<p>Aucun dommage. Avec au moins 1 succès excédentaire : modificateur de {value} dés à la prochaine action de l'adversaire, distrait.</p><p><em>SR5 p. 196</em></p>",
+      "en": "<p>No damage. With at least 1 net hit, the opponent's next action takes a -{value} dice pool modifier (distraction); some ammo types make it worse.</p><p><em>SR5 p. 195</em></p>",
+      "source": "SR5 p. 196 ; EN : SR5 p. 195",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_DoorLock_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : cette porte reste fermée.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: that door stays shut.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_EngineBlock_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : le véhicule est immobilisé.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: the vehicle is disabled.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Entanglement_GE": {
+      "fr": "<p>Attaque de mêlée au fouet (pas monofilament), chaîne, corde, lasso… ; demande un art martial. Pas de dommages : l'Agilité de la cible baisse des succès excédentaires, et avec au moins 1 succès excédentaire elle ne peut s'éloigner au-delà de la portée de l'arme. À Agilité 0, elle ne fait que tenter de se libérer : action complexe, Évasion + Agilité [Physique], seuil = succès excédentaires.</p><p><em>Run & Gun p. 126</em></p>",
+      "en": "<p>Melee attack with a whip (not monofilament), chain, rope, lariat…; requires martial arts training. No damage: the target's Agility drops by the net hits, and with at least 1 net hit they cannot move farther away than the weapon's reach. At Agility 0 they can only try to break free: Complex Action, Escape Artist + Agility [Physical], threshold = net hits.</p><p><em>Run & Gun p. 111</em></p>",
+      "source": "Run & Gun p. 126 ; EN : Run & Gun p. 111",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Fatigued_GE": {
+      "fr": "<p>Second test de résistance, Constitution seule, contre des dommages étourdissants égaux à la moitié de la VD d'origine.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Second resistance test, Body alone, against Stun damage equal to half the original DV.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Feint_GE": {
+      "fr": "<p>Mêlée seulement. Fausse attaque sans dommages : lors de la vraie attaque, à la phase suivante, la défense de l'adversaire perd autant de dés que les succès excédentaires de la feinte. Les feintes ne s'additionnent pas : seule la dernière compte.</p><p><em>Run & Gun p. 126</em></p>",
+      "en": "<p>Close combat only. Fake attack with no damage: on the real attack, in the next Action Phase, the opponent's defense loses as many dice as the feint's net hits. Feints do not add up: only the last one counts.</p><p><em>Run & Gun p. 111</em></p>",
+      "source": "Run & Gun p. 126 ; EN : Run & Gun p. 111",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Flared_GE": {
+      "fr": "<p>Munition de détresse en plein visage : −8 dés à toutes les actions de la prochaine phase, et aucun test de Perception visuelle pendant 10 tours de combat (30 secondes).</p><p><em>Run & Gun p. 130</em></p>",
+      "en": "<p>Flare round in the face: −8 dice on every action in the next Action Phase, and no visual Perception Tests for 10 Combat Turns (30 seconds).</p><p><em>Run & Gun p. 116</em></p>",
+      "source": "Run & Gun p. 130 ; EN : Run & Gun p. 116",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_FuelTankBattery_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : le véhicule est immobilisé et perd carburant ou charge.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: the vehicle is disabled and leaks fuel or charge.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Knockdown_GE": {
+      "fr": "<p>Test de Force + Agilité (VD + 3), sinon chute ; la cible peut se relever dès sa phase suivante.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Strength + Agility (DV + 3) Test or fall prone; the target can get up as soon as their next Action Phase.</p><p><em>Run & Gun p. 114</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 114",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Nauseous_GE": {
+      "fr": "<p>Test de Constitution + Volonté (4) : chaque succès manquant vaut 1 tour de combat à vomir, avec −4 dés à toutes les actions.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Body + Willpower (4) Test: each missing hit means 1 Combat Turn spent vomiting, at −4 dice on every action.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_OnPinsAndNeedles_GE": {
+      "fr": "<p>Fléchettes semées au sol : terrain difficile (1 tir par m²). Pieds nus, la cible avance à moitié vitesse et subit 3P, résistés avec la Constitution.</p><p><em>Run & Gun p. 131</em></p>",
+      "en": "<p>Flechettes scattered on the ground: difficult terrain (1 shot per square meter). Barefoot, the target moves at half speed and takes 3P, resisted with Body.</p><p><em>Run & Gun p. 117</em></p>",
+      "source": "Run & Gun p. 131 ; EN : Run & Gun p. 117",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_OneArmBandit_GE": {
+      "fr": "<p>Bras hors d'usage pendant autant de tours de combat que la VD d'origine, puis −6 dés aux actions qui s'en servent jusqu'à ce qu'il soit soigné.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Arm out of action for as many Combat Turns as the original DV, then −6 dice on actions using it until it is healed.</p><p><em>Run & Gun p. 114</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 114",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Pin_GE": {
+      "fr": "<p>Arc ou arme de jet ; demande un art martial. Si la VD dépasse l'Armure des seuls vêtements, la cible est clouée : −2 dés en défense. Se dégager : action simple, Force + Constitution [Physique], seuil = succès excédentaires ; ou s'arracher en action gratuite contre 1 case physique non résistée par succès excédentaire. Si l'action simple échoue, l'écart s'ajoute aux dommages de l'arrachage.</p><p><em>Run & Gun p. 125</em></p>",
+      "en": "<p>Bow or throwing weapon; requires martial arts training. If the DV beats the Armor of the clothing alone, the target is pinned: −2 dice on defense. Breaking free: Simple Action, Strength + Body [Physical], threshold = net hits; or tearing loose as a Free Action for 1 unresisted Physical box per net hit. If the Simple Action fails, the shortfall adds to the tearing damage.</p><p><em>Run & Gun p. 112</em></p>",
+      "source": "Run & Gun p. 125 ; EN : Run & Gun p. 112",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Shaked_GE": {
+      "fr": "<p>Tir intimidant : test de Sang-froid (2), sinon −1 dé (cible ébranlée).</p><p><em>Run & Gun p. 131</em></p>",
+      "en": "<p>Intimidating shot: Composure (2) Test, or −1 die (target shaken).</p><p><em>Run & Gun p. 117</em></p>",
+      "source": "Run & Gun p. 131 ; EN : Run & Gun p. 117",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_SlowDeath_GE": {
+      "fr": "<p>Arme perçante et dommages physiques seulement : 2E non résistés chaque minute, jusqu'à réussir un test étendu (16, 1 minute) de Logique + Médecine ou de Logique + Premiers soins [Mentale], ou un sort de Soins qui guérit au moins 1 case.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Piercing weapon and Physical damage only: 2S unresisted every minute, until an Extended Test (16, 1 minute) of Logic + Medicine or Logic + First Aid [Mental] succeeds, or a Heal spell removes at least 1 box.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Slowed_GE": {
+      "fr": "<p>Vitesses de marche et de course divisées par deux ; pas de sprint.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Walk and run rates halved; no sprinting.</p><p><em>Run & Gun p. 112</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 112",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Stunned_GE": {
+      "fr": "<p>Test de Constitution + Volonté, sinon le score d'initiative baisse ; seuil et baisse dépendent de la zone touchée.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Body + Willpower Test, or the Initiative Score drops; threshold and drop depend on the location hit.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_TrickShot_GE": {
+      "fr": "<p>Tir d'adresse préparé, hors du feu de l'action : −4 dés en plus des modificateurs habituels, sans dommages. Ses succès s'ajoutent en dés au prochain test d'Intimidation du tireur ou d'un allié connu contre la cible.</p><p><em>SR5 p. 197</em></p>",
+      "en": "<p>Prepared show-off shot, outside the heat of combat: −4 dice on top of the usual modifiers, no damage. Its hits add as dice to the next Intimidation Test against the target by the shooter or a known ally.</p><p><em>SR5 p. 196</em></p>",
+      "source": "SR5 p. 197 ; EN : SR5 p. 196",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_UnableToSpeak_GE": {
+      "fr": "<p>Parole incompréhensible (grognements et gestes seulement) pendant 1 heure par point de VD.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>Speech comes out as gibberish (grunts and gestures only) for 1 hour per point of DV.</p><p><em>Run & Gun p. 114</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 114",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_WeakSide_GE": {
+      "fr": "<p>−1 dé à toutes les défenses de mêlée tant que durent Poigne brisée ou Bandit manchot.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>−1 die on all melee defenses while Broken Grip or One-arm Bandit lasts.</p><p><em>Run & Gun p. 113</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 113",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_Winded_GE": {
+      "fr": "<p>Aucune action complexe pendant autant de tours de combat que la VD d'origine.</p><p><em>Run & Gun p. 128</em></p>",
+      "en": "<p>No Complex Actions for as many Combat Turns as the original DV.</p><p><em>Run & Gun p. 112</em></p>",
+      "source": "Run & Gun p. 128 ; EN : Run & Gun p. 112",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.STATUSES_WindowMotor_GE": {
+      "fr": "<p>Tir ciblé sur un véhicule, effet appliqué seulement s'il subit des dommages après résistance : la vitre électrique est bloquée.</p><p><em>Run & Gun p. 129</em></p>",
+      "en": "<p>Vehicle called shot, effect applied only if the vehicle takes damage after its resistance test: the power window is stuck.</p><p><em>Run & Gun p. 115</em></p>",
+      "source": "Run & Gun p. 129 ; EN : Run & Gun p. 115",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectAgony_GE": {
+      "fr": "<p>Douleur extrême : si la Puissance restante dépasse la Volonté, la victime ne peut plus parler de façon cohérente et n'avance plus qu'en rampant.</p><p><em>Balles et pansements p. 20</em></p>",
+      "en": "<p>Overwhelming pain: if the remaining Power exceeds Willpower, the victim cannot speak coherently and can only crawl.</p><p><em>Bullets & Bandages p. 20</em></p>",
+      "source": "Balles et pansements p. 20 ; EN : Bullets & Bandages p. 20",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectArcaneInhibitor_GE": {
+      "fr": "<p>Venin : la Magie de la victime baisse de la Puissance du venin ; si la Puissance dépasse la Magie, plus aucune magie possible. La Magie revient à mesure que la Puissance diminue.</p><p><em>Howling Shadows p. 218</em></p>",
+      "en": "<p>Venom: the victim's Magic drops by the venom's Power; if Power exceeds Magic, no magic at all. Magic returns as the Power wears down.</p><p><em>Howling Shadows p. 194</em></p>",
+      "source": "Howling Shadows p. 218 ; EN : Howling Shadows p. 194",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectDisorientation_GE": {
+      "fr": "<p>−2 dés à toutes les actions pendant 10 minutes.</p><p><em>SR5 p. 410</em></p>",
+      "en": "<p>−2 dice on every action for 10 minutes.</p><p><em>SR5 p. 409</em></p>",
+      "source": "SR5 p. 410 ; EN : SR5 p. 409",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectManasphereCut_GE": {
+      "fr": "<p>Plus aucune magie (Magie à 0 : ni sorts ni pouvoirs d'adepte) pendant 12 − (Constitution ou Magie, la plus élevée) heures, 1 au minimum. Un être dual subit en plus −4 dés à tout. Exposition continue de plus de 24 h : mutations, puis décès.</p><p><em>Better Than Bad p. 141</em></p>",
+      "en": "<p>No magic at all (Magic at 0: no spells, no adept powers) for 12 − (Body or Magic, the higher) hours, 1 minimum. A dual-natured being also takes −4 dice on everything. Continuous exposure past 24 h: mutations, then death.</p><p><em>Better Than Bad p. 157</em></p>",
+      "source": "Better Than Bad p. 141 ; EN : Better Than Bad p. 157",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectNausea_GE": {
+      "fr": "<p>Si la Puissance après résistance dépasse la Volonté : incapable d'agir pendant 3 tours de combat (vomissements, vertiges). Dans tous les cas, modificateurs de blessure doublés pendant 10 minutes.</p><p><em>SR5 p. 410</em></p>",
+      "en": "<p>If Power after resistance exceeds Willpower: unable to act for 3 Combat Turns (vomiting, dizziness). Either way, wound modifiers are doubled for 10 minutes.</p><p><em>SR5 p. 409</em></p>",
+      "source": "SR5 p. 410 ; EN : SR5 p. 409",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.ToxinEffectParalysis_GE": {
+      "fr": "<p>Si la Puissance après résistance dépasse la Réaction : aucune action physique pendant 1 heure. Sinon, −2 dés pendant cette heure.</p><p><em>SR5 p. 410</em></p>",
+      "en": "<p>If Power after resistance exceeds Reaction: no physical actions for 1 hour. Otherwise, −2 dice for that hour.</p><p><em>SR5 p. 409</em></p>",
+      "source": "SR5 p. 410 ; EN : SR5 p. 409",
+      "garder": false,
+      "note": ""
+    }
+  }
+}

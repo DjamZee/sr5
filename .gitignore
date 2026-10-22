@@ -8,7 +8,7 @@
 /.trunk
 *.md
 !README.md
-!LICENCE.md
+!CREDITS.md
 !CONTRIBUTING.md
 !BUG_REPORT.md
 !RELEASE.md

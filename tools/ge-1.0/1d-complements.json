@@ -1,0 +1,404 @@
+{
+  "famille": "1d-complements",
+  "entrees": {
+    "SR5.AssensingResult1a": {
+      "fr": "Santé globale (bonne, blessé, malade…)",
+      "en": "Overall health (fine, hurt, sick…)",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult1b": {
+      "fr": "Humeur dominante (joie, tristesse, colère…)",
+      "en": "Prevailing mood (joy, sadness, anger…)",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2a": {
+      "fr": "Cyberware : présence et emplacement",
+      "en": "Cyberware: presence and location",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2b": {
+      "fr": "Catégorie d'un sujet magique (type d'esprit, de sort, de focus, de rituel…)",
+      "en": "Category of a magical subject (kind of spirit, spell, focus, ritual…)",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2c": {
+      "fr": "Reconnaître une aura déjà vue, malgré déguisement ou chirurgie",
+      "en": "Recognize an aura seen before, despite disguise or surgery",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3a": {
+      "fr": "Alphaware : présence et emplacement",
+      "en": "Alphaware: presence and location",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3b": {
+      "fr": "Essence, Magie et Puissance du sujet comparées aux vôtres (plus, moins, égal)",
+      "en": "Subject's Essence, Magic and Force compared to yours (more, less, equal)",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3c": {
+      "fr": "Maladie ou toxine : diagnostic sommaire",
+      "en": "Disease or toxin: rough diagnosis",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3d": {
+      "fr": "Signatures astrales portées par le sujet",
+      "en": "Astral signatures carried by the subject",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult4a": {
+      "fr": "Betaware et bioware : présence et emplacement",
+      "en": "Betaware and bioware: presence and location",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult4c": {
+      "fr": "Origine d'une signature astrale (catégorie de sort, préparation, type d'esprit…)",
+      "en": "Origin of an astral signature (spell category, preparation, spirit type…)",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5a": {
+      "fr": "Deltaware, génétique et nanotech : présence et emplacement",
+      "en": "Deltaware, genetech and nanotech: presence and location",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5b": {
+      "fr": "Maladie ou toxine : diagnostic exact",
+      "en": "Disease or toxin: exact diagnosis",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5c": {
+      "fr": "Le sujet est technomancien",
+      "en": "The subject is a technomancer",
+      "source": "SR5 p. 312",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AttackModFiringWithImagingDevice": {
+      "fr": "Tir à couvert, via un dispositif d'imagerie",
+      "en": "Shooting from cover through an imaging device",
+      "source": "SR5 p. 179",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CA_Maneuver_drillSergeant_Effect": {
+      "fr": "la cible subit −2 à son prochain test Leadership + Volonté opposé pour refuser vos ordres.",
+      "en": "the target takes −2 on its next opposed Leadership + Willpower test to refuse your orders.",
+      "source": "CA p. 153",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CA_Maneuver_hustle_Effect": {
+      "fr": "échec voulu : +2 dés quand vous retentez Négociation ou Escroquerie sur la même cible.",
+      "en": "deliberate failure: next Con or Negotiation test against that target at +2 dice.",
+      "source": "CA p. 153",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CFD_ScrubGlitch": {
+      "fr": "Complication du NanoScrub : les implants crâniens, oculaires et auriculaires de {actor} au coût de base en Essence sous {n} sont détruits. Implants touchés :",
+      "en": "NanoScrub glitch: {actor}'s head, eye and ear implants with a base Essence cost under {n} are destroyed. Implants hit:",
+      "source": "DTER p. 87",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_clear": {
+      "fr": "autoroute, rase campagne, haute mer, ciel libre",
+      "en": "freeway, open country, high seas, empty sky",
+      "source": "SR5 p. 201",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_limited": {
+      "fr": "petites rues, bois clairs, pentes caillouteuses, foule, hauts-fonds, ciel chargé, vol bas sur relief accidenté",
+      "en": "back streets, sparse woods, stony slopes, crowds, shallows, busy airspace, low flight over broken ground",
+      "source": "SR5 p. 201",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_normal": {
+      "fr": "boulevards, collines, quais et docks, ciel urbain",
+      "en": "boulevards, hills, docks and wharves, city airspace",
+      "source": "SR5 p. 201",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_restricted": {
+      "fr": "ruelles, forêt épaisse, pentes raides, marais, rapides, vol à hauteur de rue, canyons ventés",
+      "en": "alleys, thick forest, sheer slopes, marsh, rapids, street-level flight, gusty canyons",
+      "source": "SR5 p. 201",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Impossible": {
+      "fr": "vol au ras des toits en ville, mer d'ouragan, rouler dans les couloirs d'un bâtiment",
+      "en": "rooftop-level flight in a city, hurricane seas, driving inside a building",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Light": {
+      "fr": "grands axes urbains, collines, ports, ciel urbain",
+      "en": "main city roads, hills, ports, city airspace",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Obstructed": {
+      "fr": "vol bas sur relief accidenté, bouchons, courants dangereux",
+      "en": "low flight over broken ground, gridlock, dangerous currents",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Open": {
+      "fr": "autoroute, rase campagne, haute mer, ciel libre",
+      "en": "freeway, open country, high seas, empty sky",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Restricted": {
+      "fr": "petites rues, bois clairs, pentes caillouteuses, trafic moyen, hauts-fonds, ciel chargé",
+      "en": "back streets, sparse woods, stony slopes, medium traffic, shallows, busy airspace",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Tight": {
+      "fr": "ruelles, forêt épaisse, pentes raides, contresens, marais, rapides violents, vol entre falaises ou tours",
+      "en": "alleys, thick forest, sheer slopes, wrong-way driving, marsh, wild rapids, flight between cliffs or towers",
+      "source": "R5 p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CON_Step_evaluation_D": {
+      "fr": "Arnaque longue : Logique + Psychologie (Profilage), limitée par le Niveau de Renseignement et opposée à lui ; impossible si ce niveau vaut 0 ou moins (Cutting Aces p. 163).",
+      "en": "Long con: Logic + Psychology (Profiling), limited by the Intel Level and opposed by it; impossible if that level is 0 or less (Cutting Aces p. 163).",
+      "source": "CA p. 163",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HermeticElementalist_D": {
+      "fr": "Arcanes Interdites p. 175 : le trait Élémentaire s'applique à tous ses esprits de l'air, de l'eau, du feu et de la terre (attributs mentaux réduits, liens facilités). Ajustement de +6 à appliquer.",
+      "en": "Forbidden Arcana p. 175: their air, water, fire and earth spirits take the Elemental trait (lower mental attributes, easier binding). Apply the +6 adjustment.",
+      "source": "ARC p. 175",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSwapTwoPrograms": {
+      "fr": "Échanger deux programmes",
+      "en": "Swap Two Programs",
+      "source": "SR5 p. 229",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.PerceptionModFarAway": {
+      "fr": "Cible ou son lointain",
+      "en": "Distant object or sound",
+      "source": "SR5 p. 139",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.PerceptionModSpecificallyLooking": {
+      "fr": "Recherche active (regarde ou tend l'oreille)",
+      "en": "Actively searching (looking or listening)",
+      "source": "SR5 p. 139",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SETTINGS_CommcodeCipher_D": {
+      "fr": "Ajout hors livre (le livre de base ne chiffre pas les messages, SR5 p. 241). Coché : un message ou un fichier peut porter un chiffre à clé (genre Vigenère). On le pose comme une protection de fichier (succès = indice, SR5 p. 240) ; le destinataire lit avec la clé de son répertoire ; un intercepteur le casse comme Pirater un fichier (SR5 p. 242) et seul lui voit le clair. Le MJ voit toujours le clair. Décoché (défaut) : rien de plus que le livre.",
+      "en": "Off-book addition (the core book does not encrypt messages, SR5 p. 241). Checked: a message or file can carry a key cipher (Vigenère-like). It is set like file protection (hits = rating, SR5 p. 240); the recipient reads it with the key in their directory; an interceptor breaks it like Crack File (SR5 p. 242) and only they see the plain text. The GM always sees the plain text. Unchecked (default): nothing beyond the book.",
+      "source": "SR5 p. 240-242",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SETTINGS_WithdrawalModifier_D": {
+      "fr": "SR5 p. 417 prévoit un modificateur selon le degré d'addiction sans en donner la valeur. Aucun : réserve du test d'addiction seule. Malus du manque : Dévorante −6, Grave ou Modérée −4, Légère −2 (chiffres de SR5 p. 79).",
+      "en": "SR5 p. 417 calls for a modifier by addiction level without giving its value. None: the addiction test pool alone. Craving penalty: Burnout −6, Severe or Moderate −4, Mild −2 (figures from SR5 p. 79).",
+      "source": "SR5 p. 417",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneSpamMajorEvent": {
+      "fr": "Grand événement, matraquage publicitaire (3)",
+      "en": "Big event, ad saturation (3)",
+      "source": "SR5 p. 233",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneSpamMassiveGatering": {
+      "fr": "Foule immense, crise générale (6)",
+      "en": "Huge crowd, general crisis (6)",
+      "source": "SR5 p. 233",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneStaticRemotePlace": {
+      "fr": "Lieu isolé, satellite seulement (5)",
+      "en": "Isolated spot, satellite only (5)",
+      "source": "SR5 p. 233",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneStaticRuralArea": {
+      "fr": "Campagne, sous-sol désaffecté, forte pluie ou neige (3)",
+      "en": "Countryside, disused underground, heavy rain or snow (3)",
+      "source": "SR5 p. 233",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModAuthority": {
+      "fr": "Autorité manifeste",
+      "en": "Obvious authority",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModBadLook": {
+      "fr": "Tenue ou allure déplacée",
+      "en": "Wrong outfit or look",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModBlackmailed": {
+      "fr": "Moyen de chantage ou de pression",
+      "en": "Blackmail or leverage",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModEvaluateSituation": {
+      "fr": "La cible a le temps de réfléchir",
+      "en": "Subject has time to think",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModEvidence": {
+      "fr": "Preuves crédibles",
+      "en": "Credible proof",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModFan": {
+      "fr": "La cible admire le personnage",
+      "en": "Subject admires the character",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModLacksKnowledge": {
+      "fr": "Méconnaît le contexte",
+      "en": "Unaware of the context",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModNervous": {
+      "fr": "Nervosité visible",
+      "en": "Visibly nervous",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModObliviousToDanger": {
+      "fr": "La cible ne croit pas au danger",
+      "en": "Subject doesn't believe in the danger",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModOutnumber": {
+      "fr": "Supériorité numérique",
+      "en": "Characters outnumber the subject",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModOutnumberTarget": {
+      "fr": "Infériorité numérique",
+      "en": "Subjects outnumber the characters",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModReputation": {
+      "fr": "Réputation connue dans la rue",
+      "en": "Known street reputation",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModRomantic": {
+      "fr": "La cible est attirée par le personnage",
+      "en": "Subject is attracted to the character",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModStrata": {
+      "fr": "Milieu social différent de la cible",
+      "en": "Different social circle from the subject",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModTorture": {
+      "fr": "Douleur infligée à la cible (torture)",
+      "en": "Pain inflicted on the subject (torture)",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModWieldingWeapon": {
+      "fr": "Personnage armé ou magie visible",
+      "en": "Character armed or visibly using magic",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModWieldingWeaponTarget": {
+      "fr": "Cible armée ou magie visible",
+      "en": "Subject armed or visibly using magic",
+      "source": "SR5 p. 142",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.VehicleModSpecialSkill": {
+      "fr": "Pour terminer la modification : test {skill} + Logique [Logique], seuil 4",
+      "en": "To finish the mod: {skill} + Logic [Logic] test, threshold 4",
+      "source": "R5 p. 153",
+      "garder": false,
+      "note": ""
+    }
+  }
+}
