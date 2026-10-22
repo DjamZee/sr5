@@ -583,7 +583,12 @@ async function handleDumpshockDamage(rollData, actorData, chatData){
   rollData.dicePool.composition = actorData.matrix.resistances.dumpshock.modifiers
   //A bricked deck has no Firewall left: Willpower alone resists (SR5 p. 231)
   if (chatData?.damage?.bricked){
-    rollData.dicePool.composition = rollData.dicePool.composition.filter(m => m.type !== "matrixAttribute")
+    //Read on the character, not on the device in use: a brick the GM wrote for a player has already switched the deck
+    //off, and its pool with it (0 dice, measured on instance 10, 22/10)
+    const willpower = actorData.attributes?.willpower?.augmented?.value
+    rollData.dicePool.composition = willpower === undefined ? rollData.dicePool.composition.filter(m => m.type !== "matrixAttribute") : [{
+      source: game.i18n.localize("SR5.Willpower"), type: "linkedAttribute", value: willpower
+    }]
     rollData.dicePool.base = rollData.dicePool.composition.reduce((sum, m) => sum + (m.value || 0), 0)
   }
 

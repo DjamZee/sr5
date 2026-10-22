@@ -146,6 +146,8 @@ export class SR5_MatrixHelpers {
     SR5_EntityHelpers.updateValue(newItem.system.conditionMonitors.matrix.actual, 0, monitorSize)
     //An AI shares the matrix monitor of the device it is loaded on, and is dissipated when it fills (Data Trails p. 161)
     let aiDissipated = false
+    //The character thrown out of the Matrix by the brick of the device in use: the reboot's path follows (ejectBricked)
+    let ejected = false
     //A full swarm is no bricked deck: the Monad is not disconnected, the device stays as it is (Dark Terrors p. 88)
     if (!swarm && newItem.system.conditionMonitors.matrix.actual.value >= monitorSize){
       //No dumpshock for an AI: it is dissipated instead (decided by DjamZ, 04/10)
@@ -158,13 +160,21 @@ export class SR5_MatrixHelpers {
         bricked: true
       })){
         ui.notifications.info(`${targetActor.name} ${game.i18n.localize("SR5.INFO_IsDisconnected")}.`)
+        ejected = targetItem.system.isActive === true
       }
       newItem.system.isActive = false
       newItem.system.wirelessTurnedOn = false
     }
-    if (game.user?.isGM) targetItem.update({
-      system: newItem.system
-    })
+    if (game.user?.isGM) {
+      //Written before the reboot, which writes the character's items again
+      const written = targetItem.update({
+        system: newItem.system
+      })
+      if (ejected) {
+        await written
+        await SR5_ActorHelper.ejectBricked(targetActor)
+      }
+    }
     else SR5_SocketHandler.emitForGM("updateItem", {
       item: targetItem.uuid,
       info: newItem.system,
