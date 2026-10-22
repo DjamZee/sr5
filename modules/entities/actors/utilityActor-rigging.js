@@ -34,6 +34,13 @@ export function linkRiggingUtility(characterUtility) {
   SR5_CharacterUtility = characterUtility
 }
 
+/** The controller's Sneaking on a vehicle's test; untrained, the controller defaults: −1 die (SR5 p. 132, Sneaking defaults p. 135) */
+function addControlerSneaking(test, controlerData, controlMode) {
+  const rating = controlerData.skills.sneaking.rating.value
+  if (rating) SR5_EntityHelpers.updateModifier(test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, controlMode, rating)
+  else SR5_EntityHelpers.updateModifier(test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Defaulting')})`, controlMode, -1)
+}
+
 export class SR5_CharacterRiggingUtility {
 
   // Vehicle Skills Calculations
@@ -75,7 +82,7 @@ export class SR5_CharacterRiggingUtility {
           SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.DataProcessingLimit'), actorData.controlMode, mod)
         }
         //Through a controlled device: the skill and the attribute normally used, Sneaking + Agility (SR5 p. 239, arbitrage de DjamZ du 07/10)
-        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        addControlerSneaking(skills.sneaking.test, controlerData, actorData.controlMode)
         SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Agility')})`, actorData.controlMode, controlerData.attributes.agility.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         if (controlerData.matrix.attributes.dataProcessing.value < handlingMode) {
@@ -87,7 +94,7 @@ export class SR5_CharacterRiggingUtility {
         SR5_EntityHelpers.updateModifier(skills.perception.test, `${game.i18n.localize('SR5.Controler')}${game.i18n.localize('SR5.Colons')} ${controlerName}`, actorData.controlMode, controlerData.skills.perception.test.dicePool)
         SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.VehicleStat_SensorShort'), "linkedAttribute", attributes.sensor.augmented.value)
         //Driving by hand: the driver's Sneaking + Reaction [Handling] (Rigger 5.0 p. 180); no book text caps it at the piloting skill
-        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        addControlerSneaking(skills.sneaking.test, controlerData, actorData.controlMode)
         SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Reaction')})`, actorData.controlMode, controlerData.attributes.reaction.augmented.value)
         this.applyMetahumanAdaptation(actor, skills.sneaking.test)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
@@ -100,7 +107,7 @@ export class SR5_CharacterRiggingUtility {
         //Jumped in, the limits based on Sensor and Handling gain the control rig rating (SR5 p. 268 and errata)
         if (controlerData.specialProperties.controlRig.value) SR5_EntityHelpers.updateModifier(skills.perception.limit, game.i18n.localize('SR5.ControlRig'), "augmentations", controlerData.specialProperties.controlRig.value)
         //Jumped in: Sneaking + Intuition [Handling] (SR5 p. 272)
-        SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.SkillSneaking')})`, actorData.controlMode, controlerData.skills.sneaking.rating.value)
+        addControlerSneaking(skills.sneaking.test, controlerData, actorData.controlMode)
         SR5_EntityHelpers.updateModifier(skills.sneaking.test, `${game.i18n.localize('SR5.Controler')} (${game.i18n.localize('SR5.Intuition')})`, actorData.controlMode, controlerData.attributes.intuition.augmented.value)
         SR5_EntityHelpers.updateModifier(skills.sneaking.limit, handlingName, "linkedAttribute", handlingMode)
         if (controlerData.matrix.userMode === "hotsim") {
