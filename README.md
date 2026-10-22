@@ -94,3 +94,8 @@ Code under **GPL-3.0** ([LICENSE](LICENSE)). Fonts, icons and images: see [CREDI
 Shadowrun, Sixth World, and Matrix, and associated graphics and logos are registered trademarks and/or trademarks of
 The Topps Company, Inc. Catalyst Game Labs and the Catalyst Game Labs logo are trademarks of InMediaRes Productions,
 LLC. This system uses none of their logos or artwork.
+
+## Thanks
+
+Thanks to Karmaroms and deurk for the original system; to Moo Man, Atropos and the developers of the Foundry systems
+that inspired them; to the Ombres Portées v2 community; and to the players who test the alpha.
