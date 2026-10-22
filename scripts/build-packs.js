@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Compiles the system's compendiums from their JSON sources (src/packs/<name>) into the LevelDB folders that
-// system.json declares (packs/<name>). The LevelDB folders are not tracked by Git: Foundry writes into them
+// system.json declares (packs/<name>); a pack with no sources here must arrive compiled. The LevelDB folders are not tracked by Git: Foundry writes into them
 // as soon as it serves them, so every checkout builds its own, here or through `npm run check`.
 //
 // A pack is rebuilt only when its sources changed (fingerprint kept inside the LevelDB folder), so a checkout
@@ -38,7 +38,11 @@ function readStamp(dest) {
 async function buildPack(compilePack, pack) {
   const source = path.join(ROOT, 'src', 'packs', pack.name)
   const dest = path.join(ROOT, pack.path)
-  if (!fs.existsSync(source)) throw new Error(`${pack.name}: sources introuvables (${path.relative(ROOT, source)})`)
+  // A pack without JSON sources here is copied in already compiled: it only has to be there
+  if (!fs.existsSync(source)) {
+    if (fs.existsSync(path.join(dest, 'CURRENT'))) return console.log(`  ${pack.name}: compilé ailleurs, présent`)
+    throw new Error(`${pack.name}: ni sources (${path.relative(ROOT, source)}) ni compendium compilé (${pack.path})`)
+  }
   const sha = fingerprint(source)
   if (readStamp(dest) === sha) return console.log(`  ${pack.name}: à jour`)
 
