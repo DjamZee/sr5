@@ -65,6 +65,12 @@ describe('spiritImageType', () => {
     })
     expect(defaultSpiritImages('shedim', 8, baseOf)).toBeNull()
   })
+  it("l'anarch n'a que deux paliers : le second sert au-delà", () => {
+    expect(defaultSpiritImages('anarch', 2, baseOf).portrait).toBe(`${dir('anarch')}/portrait-1.webp`)
+    for (const force of [4, 7, 12]) expect(defaultSpiritImages('anarch', force, baseOf)).toEqual({
+      portrait: `${dir('anarch')}/portrait-2.webp`, token: `${dir('anarch')}/token-2.webp`,
+    })
+  })
 })
 
 describe('spiritImageChanges : ne jamais écraser', () => {
