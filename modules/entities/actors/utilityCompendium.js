@@ -48,7 +48,7 @@ export class SR5_CompendiumUtility extends Actor {
   }
 
   // Compendiums used to build actors: each one can be chosen by the GM in the system settings.
-  // "auto" reads the active Megapack first (full or Lite, every kind of item in one pack), then the
+  // "auto" reads the active Megapack first (full, Lite or the system's own, every kind of item in one pack), then the
   // sr5-compendiums packs of the world language as a fallback (arbitrage de DjamZ, séance H, H18).
   // Items are recognized by their systemEffects (KEY_CATEGORIES), never by their name.
   // With no Megapack active, the full one is named (the missing compendium warning asks for it).
@@ -161,7 +161,7 @@ export class SR5_CompendiumUtility extends Actor {
     if (chosen && chosen !== "auto") return [inActiveMegapack(chosen)]
     const ids = []
     const megapack = SR5_CompendiumUtility.MEGAPACK
-    if (game.modules?.get(megapack.module)?.active) ids.push(megapack.pack)
+    if (activeMegapackId()) ids.push(megapack.pack)
     const language = game.settings.get("core", "language")
     if (!language) SR5_SystemHelpers.srLog(0, "Could not determine core language used in getCompendiumIds()")
     return ids.concat(category.defaults.map(name => `sr5-compendiums.${language}_${name}`))

@@ -19,14 +19,19 @@ function pass(msg) {
   console.log(`  OK: ${msg}`)
 }
 
-function run(label, cmd) {
+function run(label, cmd, {
+  echo = false,
+} = {
+}) {
   try {
-    execSync(cmd, {
+    const output = execSync(cmd, {
       cwd: ROOT,
       stdio: 'pipe',
       // The default 1 MB cut a long failing test run short (ENOBUFS)
       maxBuffer: 64 * 1024 * 1024,
     })
+    // A step whose success can mean "skipped" says it
+    if (echo) for (const line of output.toString().trim().split('\n').filter(Boolean)) console.log(`    ${line}`)
     pass(label)
     return true
   } catch (err) {
@@ -63,6 +68,11 @@ console.log('\n[5/6] Validating system, dependencies, and templates...')
 run('system.json OK', 'npm run validate:system')
 run('Dependencies OK', 'npm run validate:dependencies')
 run('Templates OK', 'npm run validate:templates')
+// The Lite inside the system: its packs, built outside Git (npm run build:megapack), carry no book text nor Catalyst
+// image (the full Megapack's verify-lite); a checkout without them says so and passes
+run('Megapack Lite checked', 'npm run --silent verify:megapack', {
+  echo: true,
+})
 
 // --- 6. Version sync ---
 console.log('\n[6/6] Checking version sync...')

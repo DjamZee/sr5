@@ -3,6 +3,9 @@ import {
   runSourceModifiersMigration
 } from "../migration-source-modifiers.js"
 import {
+  MEGAPACK_LITE_ID
+} from "../system/megapack.js"
+import {
   runLegacyBiographyMigration
 } from "../migration-legacy-biography.js"
 import {
@@ -186,6 +189,12 @@ export function sr5HookReady() {
   if (newWorld) game.settings.set("sr5", "systemMigrationVersion", game.system.version)
   sr5RunMigrations(needsMigration)
 
+  // The Lite is inside the system now: the module can be turned off, its links and images then follow the system's
+  // copy (system/megapack.js, migrateMegapackLitePaths)
+  if (game.modules.get(MEGAPACK_LITE_ID)?.active) ui.notifications.info(game.i18n.localize("SR5.INFO_MegapackLiteInSystem"), {
+    permanent: true
+  })
+
   // Computed modifiers written in the source by a prepared copy: emptied once per world
   runSourceModifiersMigration().catch(err => console.error("SR5 | source modifiers migration failed", err))
 
@@ -238,4 +247,5 @@ export async function sr5RunMigrations(needsMigration) {
   await migration.migrateHeadcaseNanite()
   await migration.migrateFlashlightEffect()
   await migration.migrateContactCommcodes()
+  await migration.migrateMegapackLitePaths()
 }

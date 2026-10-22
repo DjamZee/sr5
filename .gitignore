@@ -20,3 +20,5 @@
 # Compendiums compilés (LevelDB) : Foundry y écrit dès qu'il les sert ; sources suivies dans src/packs, compilées par
 # npm run build:packs (et npm run check). Les captures du manuel (manuel/captures) sont suivies.
 /packs
+# La Lite du Mégapack dans le système : sources et médias construits par npm run build:megapack (hors Git)
+/megapack/
