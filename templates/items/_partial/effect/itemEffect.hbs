@@ -49,6 +49,10 @@
 					<option value="system.accuracy">{{localize 'SR5.Accuracy'}}</option>
 					<option value="system.reach">{{localize 'SR5.WeaponReach'}}</option>
                     {{/if}}
+					{{!-- A gear rolled on its rating: a bonus to its own test, as a weapon's dice pool --}}
+					{{#if (eq ../document.type 'itemGear')}}
+					<option value="system.test">{{localize 'SR5.DicePool'}}</option>
+					{{/if}}
 					<option value="system.conditionMonitors.matrix">{{localize 'SR5.ConditionMonitorMatrix'}}</option>
                     {{/select}}
 				</select>

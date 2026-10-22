@@ -33,5 +33,18 @@
 		</li>
 		{{/if}}
 		{{/each}}
+		{{!-- A grunt's profile prints its Initiative (SR5 p. 381): typed here, added to the physical initiative --}}
+		{{#if (eq actor.type 'actorGrunt')}}
+		<li class="grid">
+			<div class="col-8" data-helpTitle="{{localize 'SR5.InitiativeProfile'}}"
+			  data-helpMessage="{{localize 'SR5.HELP_InitiativeProfileMsg'}}">{{localize 'SR5.InitiativeProfile'}}</div>
+			<div class="col-2 SR-TextRight">
+				<input type="text" data-dtype="Number" class="input" name="system.profileInitiative.score" value="{{system.profileInitiative.score}}" onfocus="this.select()">
+			</div>
+			<div class="col-2 SR-TextRight">
+				<input type="text" data-dtype="Number" class="input" name="system.profileInitiative.dice" value="{{system.profileInitiative.dice}}" onfocus="this.select()">
+			</div>
+		</li>
+		{{/if}}
 	</ul>
 </div>
