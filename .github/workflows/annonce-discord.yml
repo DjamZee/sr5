@@ -1,6 +1,6 @@
-# Annonce sur Discord chaque release publiée du fork DjamZee/sr5.
+# Annonce sur Discord chaque release publiée du dépôt public DjamZee/sr5-unofficial (l'action est locale à ce dépôt).
 # Pour l'événement « release », GitHub lit ce fichier dans le commit tagué : il doit donc vivre dans l'alpha
-# et dans chaque publication. Pour le lancement manuel, il doit en plus exister sur la branche par défaut du fork.
+# et dans chaque publication. Pour le lancement manuel, il doit en plus exister sur la branche par défaut du dépôt.
 # Le secret DISCORD_WEBHOOK (adresse du webhook, sans « /github ») est rangé dans les secrets du dépôt.
 name: Annonce Discord
 
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag de la release à annoncer (ex. 13.0.0-djamz.13)
+        description: Tag de la release à annoncer (ex. v13.1.0)
         required: true
       a_blanc:
         description: À blanc (affiche le JSON sans rien envoyer)
@@ -22,8 +22,8 @@ permissions:
 
 jobs:
   annonce:
-    # Jamais chez shadowfoundry ni sur un autre fork.
-    if: github.repository == 'DjamZee/sr5'
+    # Seulement sur le dépôt public, jamais sur une copie.
+    if: github.repository == 'DjamZee/sr5-unofficial'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

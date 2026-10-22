@@ -1,11 +1,11 @@
 # Action composite réutilisable : annonce une release GitHub sur Discord (embed « shadowtalk »).
-# Depuis un autre dépôt (un module) :
-#   - uses: DjamZee/sr5/.github/actions/annonce-discord@dev
+# Depuis ce dépôt : - uses: ./.github/actions/annonce-discord (workflow annonce-discord.yml). Depuis un module privé :
+#   - uses: DjamZee/sr5-alpha/.github/actions/annonce-discord@dev
 #     with:
 #       tag: ${{ github.event.release.tag_name }}
 #       type: module
 #       webhook: ${{ secrets.DISCORD_WEBHOOK }}
-# Référence : la branche par défaut du fork, « dev » (voir la page de wiki « Annonces Discord »).
+# Référence : la branche par défaut du dépôt (voir la page de wiki « Annonces Discord »).
 # En type « module », aucun lien GitHub : le manifeste (Dropbox) et les dépendances viennent du module.json au tag.
 name: Annonce Discord d'une release
 description: Poste sur Discord un embed qui annonce une release GitHub, ou affiche le JSON en mode à blanc.
@@ -33,7 +33,7 @@ inputs:
     default: https://www.dropbox.com/scl/fi/n14eydrsyj6w02iz4cigb/.Valentina-GhostFrame-Nu-ez-Portrait.png?rlkey=v30p0a65098z1ip9k32wfbszq&raw=1
   thumbnail-url:
     description: Vignette de l'embed (vide = aucune)
-    default: https://www.dropbox.com/scl/fi/t59i0q6zbqlz47fawxwcl/SR5_Logo.png?rlkey=we8p99by44x7s3g91jm5n5qf0&raw=1
+    default: ''
   dry-run:
     description: « true » affiche le JSON au lieu de l'envoyer
     default: 'false'
