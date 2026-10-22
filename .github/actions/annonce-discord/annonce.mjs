@@ -1,5 +1,5 @@
 // Annonce Discord d'une release GitHub, en embed « shadowtalk ».
-// Sert au système (DjamZee/sr5) et peut servir aux modules : tout se règle par variables d'environnement.
+// Sert au système (DjamZee/sr5-unofficial) et peut servir aux modules : tout se règle par variables d'environnement.
 //
 //   REPO            dépôt GitHub « propriétaire/nom » (défaut : GITHUB_REPOSITORY)
 //   TAG             tag de la release à annoncer (obligatoire)
