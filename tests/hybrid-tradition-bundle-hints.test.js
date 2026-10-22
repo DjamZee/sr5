@@ -16,7 +16,7 @@ describe("Hybrid tradition help (Forbidden Arcana p. 98)", () => {
     expect(read("templates/items/blocks/tradition/tradition-stat.hbs")).toContain("SR5.TraditionHybridHint")
     expect(fr["SR5.TraditionHybridHint"]).toMatch(/Arcanes Interdites p\. 98/)
     expect(fr["SR5.TraditionHybridHint"]).toMatch(/drain/)
-    expect(en["SR5.TraditionHybridHint"]).toMatch(/Forbidden Arcana p\. 98/)
+    expect(en["SR5.TraditionHybridHint"]).toMatch(/Forbidden Arcana p\. 101/) // English book page (tools/pages-vo)
   })
 })
 

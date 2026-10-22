@@ -492,7 +492,8 @@ describe('A6: the host of an IC (SR5 p. 247-248)', () => {
     for (const lang of ['fr', 'en']) {
       const keys = JSON.parse(read(`../lang/${lang}.json`))
       expect(keys['SR5.DEVICE_IceHost']).toBeTruthy()
-      expect(keys['SR5.HELP_IceHostMsg']).toMatch(/p\. 247-248/)
+      // Page of each edition's book (tools/pages-vo)
+      expect(keys['SR5.HELP_IceHostMsg']).toMatch(lang === 'fr' ? /p\. 247-248/ : /p\. 246-247/)
     }
   })
 })
