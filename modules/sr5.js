@@ -18,7 +18,7 @@ import {
   sr5HookHotbarDrop 
 } from './hooks/hotbar-drop.js'
 import {
-  sr5HookRenderChatMessageHTML, sr5HookRenderChatLog 
+  sr5HookRenderChatMessageHTML, sr5HookRenderChatLog, sr5HookChatMessage
 } from './hooks/render-chat-message.js'
 import {
   sr5HookRenderPlayers,
@@ -220,6 +220,7 @@ Hooks.on('renderChatInput', sr5PlaceChatJumpToBottom)
 Hooks.on('hotbarDrop', sr5HookHotbarDrop)
 Hooks.on('renderPlayers', sr5HookRenderPlayers)
 Hooks.on('renderChatMessageHTML', sr5HookRenderChatMessageHTML)
+Hooks.on('chatMessage', sr5HookChatMessage)
 Hooks.on('renderFolderConfig', sr5HookRenderFolderConfig)
 Hooks.on('renderApplicationV2', sr5HookMarkForeignWindow)
 Hooks.on('renderApplication', sr5HookMarkForeignWindow)
