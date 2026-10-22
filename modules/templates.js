@@ -398,6 +398,7 @@ export const preloadHandlebarsTemplates = async function () {
     "systems/sr5/templates/items/_partial/editable/contact/age-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/contact/paymentMethod-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/contact/hobby-edit.hbs",
+    "systems/sr5/templates/items/_partial/editable/contact/commcode-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/contact/familySituation-edit.hbs",
     "systems/sr5/templates/items/_partial/editable/contact/items-edit.hbs",
 				

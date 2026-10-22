@@ -557,7 +557,7 @@ function playRing(){
   }
 }
 
-async function openFor(deviceUuid, focus){
+export async function openFor(deviceUuid, focus){
   const {
     SR5CommcodeWindow
   } = await import("./commcode-window.js")
@@ -671,17 +671,8 @@ export function registerCommcodeHooks(){
     })
   })
   Hooks.once("ready", () => {
+    // game.sr5.commcode (open, openDevice, cipherTool and the API pour CONTACTS) is set at init: commcode-api.js
     seen = new Map(readTraffic().entries.map(e => [e.id, stateKey(e)]))
-    if (game.sr5) game.sr5.commcode = {
-      open: () => import("./commcode-window.js").then(({
-        SR5CommcodeWindow
-      }) => SR5CommcodeWindow.openMine()),
-      openDevice: uuid => openFor(uuid),
-      // The gamemaster's cipher tool, for a riddle (lot 39)
-      cipherTool: () => import("./commcode-cipher-tool.js").then(({
-        SR5CipherTool
-      }) => SR5CipherTool.open()),
-    }
     scheduleSettle()
   })
   // A player who ciphers a file she holds knows its key (lot 39): the key she sets is the one she opens it with

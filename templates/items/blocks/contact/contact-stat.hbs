@@ -9,6 +9,8 @@
 		<div class="col-4">{{localize 'SR5.FACTION_Faction'}}{{localize 'SR5.Colons'}}</div>
 		<div class="col-8">{{#if contactFaction}}{{contactFaction}}{{else}}—{{/if}}</div>
 	</li>
+	<!-- Commcode -->
+	{{> systems/sr5/templates/items/_partial/editable/contact/commcode-edit.hbs}}
 	<!-- Loyality -->
 	{{> systems/sr5/templates/items/_partial/editable/contact/loyality-edit.hbs}}
 	<!-- Type -->

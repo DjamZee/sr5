@@ -237,4 +237,5 @@ export async function sr5RunMigrations(needsMigration) {
   if (needsMigration) await migration.migrateWorld()
   await migration.migrateHeadcaseNanite()
   await migration.migrateFlashlightEffect()
+  await migration.migrateContactCommcodes()
 }

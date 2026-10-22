@@ -19,6 +19,9 @@ import {
 import {
   activeDeviceOf
 } from "../canvas/pan-crown/pan-graph.js"
+import {
+  contactsOfCommcode, contactLabelOf
+} from "./contact-commcode.js"
 
 const {
   ApplicationV2, HandlebarsApplicationMixin 
@@ -313,8 +316,11 @@ export class SR5CommcodeWindow extends HandlebarsApplicationMixin(ApplicationV2)
     const label = end => end?.actorName ? `${end.actorName} (${end.commcode})` : end?.commcode
     const toLabel = entry => {
       const devices = entry.to?.devices ?? []
-      return devices.length ? `${devices.map(d => d.actorName).join(", ")} (${entry.to.commcode})` :
-        `${entry.to?.commcode} — ${game.i18n.localize("SR5.COMMCODE_NoSheet")}`
+      if (devices.length) return `${devices.map(d => d.actorName).join(", ")} (${entry.to.commcode})`
+      // A contact played without a sheet (API pour CONTACTS): its name, the gamemaster answering for it
+      const contacts = contactsOfCommcode(entry.to?.commcode)
+      if (contacts.length) return `${contacts.map(contactLabelOf).join(", ")} (${entry.to.commcode})`
+      return `${entry.to?.commcode} — ${game.i18n.localize("SR5.COMMCODE_NoSheet")}`
     }
     const entries = [...traffic.entries].sort((a, b) => (b.sentAt ?? 0) - (a.sentAt ?? 0)).slice(0, 150)
     return {
