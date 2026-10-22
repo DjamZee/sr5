@@ -7,7 +7,7 @@ import {
   readTraffic, requestCommcode, directoryFlagOf, setDirectory, openFor
 } from "./commcode-traffic.js"
 import {
-  directoryOf, generateCommcode, normalizeCommcode, withContact
+  directoryOf, entriesOfDevice, generateCommcode, normalizeCommcode, withContact
 } from "../system/commcode-rules.js"
 import {
   worldCommcodes
@@ -28,6 +28,22 @@ async function commcodeOfActor(actor){
 }
 
 /**
+ * The entries of the register this user sees: the gamemaster all of them; a player those the devices of her characters
+ * see in their own window (entriesOfDevice: all they sent, what they received once it reached them). The world setting
+ * stays readable by anyone: this is what a module shows, not a lock (decision of 06/10).
+ */
+export function visibleEntries(entries, user = game.user){
+  if (!user || user.isGM) return entries
+  const commcodes = new Set()
+  for (const actor of game.actors ?? []) {
+    if (actor.testUserPermission?.(user, "OWNER") !== true) continue
+    for (const item of actor.items ?? []) if (item.type === "itemDevice" && normalizeCommcode(item.system?.commcode)) commcodes.add(item.system.commcode)
+  }
+  const seen = new Set([...commcodes].flatMap(code => entriesOfDevice(entries, code).map(e => e.id)))
+  return entries.filter(e => seen.has(e.id))
+}
+
+/**
  * game.sr5.commcode:
  * - open(): the user's window (the gamemaster's: the whole traffic); openDevice(deviceUuid): a device's window;
  *   cipherTool(): the gamemaster's cipher tool (lot 39);
@@ -36,12 +52,15 @@ async function commcodeOfActor(actor){
  * - answer(entryId, {side}), refuse(entryId, {side}): side "to" (default) is the called end, "from" the caller. The
  *   gamemaster answers or refuses for a commcode no device carries (a contact); hangup(entryId, {side}) and
  *   say(entryId, text, {side}), a line of an answered call: the user's end when no side is given;
- * - entries(): a copy of the register's entries {id, kind, status, text, sentAt, from, to: {commcode, devices}};
- *   unanswered(): the calls ringing towards a commcode no device carries, those the gamemaster answers;
+ * - entries(): a copy of the register's entries {id, kind, status, text, sentAt, from, to: {commcode, devices}}, all
+ *   of them for the gamemaster, for a player only those of her characters' devices (visibleEntries); unanswered():
+ *   the calls ringing towards a commcode no device carries, those the gamemaster answers (same filter);
  * - directory.get(actor), directory.set(actor, list), directory.add(actor, {name, commcode}): the character's
  *   directory [{id, name, commcode, key}] (its owner writes it); add() renames a commcode already listed;
- * - commcodeOf(actor): the commcode the actor answers on, "" when none; generate(): a commcode no one in the
- *   world has yet (devices and contacts).
+ * - commcodeOf(actor): the commcode the actor answers on, "" when none; generate(): a commcode none of the devices
+ *   and contacts THIS USER can see has yet. For the gamemaster that is the whole world; a player does not see the
+ *   actors hidden from her, so the code may already be taken by one of them (far less than one chance in a billion per hidden code).
+ *   The system does not check it again when the code is written.
  */
 export const commcodeApi = () => Object.freeze({
   open: () => openWindow(),
@@ -85,8 +104,8 @@ export const commcodeApi = () => Object.freeze({
   }) => requestCommcode("line", {
     entryId, text, side
   }),
-  entries: () => copy(readTraffic().entries),
-  unanswered: () => copy(readTraffic().entries.filter(e => e.kind === "call" && e.status === "ringing" && !(e.to?.devices ?? []).length)),
+  entries: () => copy(visibleEntries(readTraffic().entries)),
+  unanswered: () => copy(visibleEntries(readTraffic().entries).filter(e => e.kind === "call" && e.status === "ringing" && !(e.to?.devices ?? []).length)),
   directory: Object.freeze({
     get: actor => directoryOf(directoryFlagOf(actor)),
     set: (actor, list) => setDirectory(actor, directoryOf(list)),
