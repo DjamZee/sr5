@@ -26,7 +26,8 @@ vi.mock('../modules/system/gm-ledger.js', () => ({
   updateLedger
 }))
 
-const read = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8')
+// Line endings of the checkout follow the machine (CRLF on Windows): compare in LF
+const read = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\r\n/g, '\n')
 const doc = read('../docs/API-publique.md')
 
 /** The keys of game.sr5 as init.js writes them, in order */
