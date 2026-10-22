@@ -152,6 +152,10 @@ export class SR5FactionRegistry {
  *   joined. The system does not check the rest: unique ids, a known faction in `enemies`, a reciprocal enmity are
  *   the module's to keep. Example, affiliate an NPC:
  *   update(d => d.factions.find(f => f.id === id).members.push(actorId)) — it leaves its former faction.
+ * `members` is the MAIN faction, never a list of allegiances: an actor is in the members of one faction at most
+ * (CA p. 156, an NPC "generally" has one faction; kept as is on purpose, 22/10). A secondary tie (a mole, a
+ * double agent, an old crew) is the module's to note elsewhere (its own data, the faction's note), not in `members`:
+ * a second push moves the actor, it does not add a faction.
  * Every read gives a copy, so a module never edits the setting's cache.
  */
 export const factionRegistryApi = () => {

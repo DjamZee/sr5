@@ -299,7 +299,8 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
 
   /**
    * An actor dragged from the sidebar onto a faction joins it, as a selected token would, without a token on the
-   * scene. Player characters are refused: their standing is the journal's, not a membership.
+   * scene. Player characters are refused: their standing is the journal's, not a membership. So is an actor from
+   * a compendium: its id is not a world actor's, the faction would list a member nobody can find.
    */
   async _onDropActor(event, factionId){
     event.preventDefault()
@@ -308,6 +309,10 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     if (data?.type !== "Actor" || !data.uuid) return false
     const actor = await fromUuid(data.uuid)
     if (!actor) return false
+    if (actor.pack || actor.inCompendium || actor.collection?.metadata){
+      ui.notifications.info(game.i18n.localize("SR5.FACTION_DropNoPack"))
+      return false
+    }
     if (actor.type === "actorPc"){
       ui.notifications.info(game.i18n.localize("SR5.FACTION_DropNoPc"))
       return false
