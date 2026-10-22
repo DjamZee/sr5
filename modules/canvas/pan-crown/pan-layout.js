@@ -401,18 +401,40 @@ function pickSpread(slots, n, inner = []){
     length: n
   }, (_, i) => slots[start + i * stride]))
   if (!inner.length) return candidates[0]
-  const clearance = angles => Math.min(...angles.flatMap(a => inner.map(b => Math.abs(a - b))))
-  return candidates.reduce((best, c) => clearance(c) > clearance(best) + 1e-9 ? c : best)
+  let best = candidates[0], bestClearance = clearanceOf(best, inner)
+  for (const c of candidates.slice(1)){
+    const clearance = clearanceOf(c, inner, bestClearance + 1e-9)
+    if (clearance > bestClearance + 1e-9) {
+      best = c
+      bestClearance = clearance
+    }
+  }
+  return best
+}
+
+/** The least angle between `angles` and the `inner` ones, given up once it is at or below `floor`: such a choice cannot
+ *  win. The copies of Math.min(...flatMap) cost 115 ms a build at 40 icons (mesure du 22/10, couronne à deux clients) */
+export function clearanceOf(angles, inner, floor = -Infinity){
+  let least = Infinity
+  for (const a of angles){
+    for (const b of inner){
+      const d = Math.abs(a - b)
+      if (d < least) {
+        least = d
+        if (least <= floor) return least
+      }
+    }
+  }
+  return least
 }
 
 // The opening and the turn of an arc, never wider than it may open, that keep its angles furthest from the angles of
 // the inner arcs (the least change when several are as good). Neighbours only move apart: the gap still holds.
 function staggerOf(n, spread, maxSpread, inner, evenly){
-  const clearance = angles => Math.min(...angles.flatMap(a => inner.map(b => Math.abs(a - b))))
   let best = {
     spread, angles: evenly(spread)
   }
-  let bestClearance = clearance(best.angles)
+  let bestClearance = clearanceOf(best.angles, inner)
   const openings = n === 1 ? [0] : Array.from({
     length: 9
   }, (_, k) => spread + (maxSpread - spread) * k / 8)
@@ -421,7 +443,7 @@ function staggerOf(n, spread, maxSpread, inner, evenly){
     const base = evenly(s)
     for (let k = -20; k <= 20; k++){
       const angles = base.map(a => a + limit * k / 20)
-      const c = clearance(angles)
+      const c = clearanceOf(angles, inner, bestClearance + 1e-9)
       if (c > bestClearance + 1e-9) {
         best = {
           spread: s, angles
