@@ -9,6 +9,9 @@
  *   - jetons    : ...\Esprits\TOKENS\PNG\<famille>\<Type> <N>.png (cadre rond sur fond transparent)
  * Une nouvelle famille (esprits sauvages, insectes…) = une entrée de FAMILLES et ses mots-clés dans TYPES ; le code
  * du système accepte déjà qu'un type n'ait pas d'image (SPIRIT_IMAGE_TYPES, spirit-default-image.js).
+ * Les entités de Howling Shadows (anarch…) sont rangées avec les PNJ : ...\PNJ\PORTRAITS\12.Entités extraplanaires\
+ * <Nom> <N>.png et ...\PNJ\TOKENS\12.Entités extraplanaires\<Nom> <N>.png ; seules celles d'ENTITES y sont lues, avec
+ * autant de paliers que DjamZ a fait d'images (SPIRIT_IMAGE_TIERS ; Eudoxie#6075, 22/10).
  *
  *   node tools/spirits-images.mjs [--racine <dossier Esprits>]
  *
@@ -28,7 +31,11 @@ const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.a
 const RACINE = arg("--racine") ?? "F:/FoundryVTT/Ressources Graphiques/Visuels/Esprits"
 // --familles "Esprits Toxiques,Esprits de l'Ombre" : ne refaire que celles-là. Les esprits nécrotiques (cadavre, carcasse,
 // détritus, feu pâle, pourriture) et l'esprit des os n'ont pas de type dans le système : leur dossier n'est pas lu.
-const FAMILLES = arg("--familles")?.split(",") ?? [".Esprits Naturels", "Esprits Toxiques", "Esprits de l'Ombre"]
+const ENTITES_PNJ = "12.Entités extraplanaires"
+const FAMILLES = arg("--familles")?.split(",") ?? [".Esprits Naturels", "Esprits Toxiques", "Esprits de l'Ombre", ENTITES_PNJ]
+// le dossier des entités porte aussi des esprits libres sans type d'acteur (blackjack, Alquitat « Homme Vert »…) : on n'y
+// lit que ces mots-clés, sans passer par TYPES (« homme » y donnerait l'esprit de l'homme)
+const ENTITES = [["anarch", "anarch"]]
 const CIBLE = "assets/img/spirits"
 const PORTRAIT = {
   taille: 400, qualite: 72 
@@ -64,9 +71,11 @@ let total = 0, n = 0
 const manque = []
 for (const famille of FAMILLES) {
   for (const [genre, dossier, reglage] of [["portrait", "PORTRAITS", PORTRAIT], ["token", "TOKENS", JETON]]) {
-    const src = join(RACINE, dossier, "PNG", famille)
+    const pnj = famille === ENTITES_PNJ
+    const src = pnj ? join(RACINE, "..", "PNJ", dossier, famille) : join(RACINE, dossier, "PNG", famille)
     for (const f of readdirSync(src).filter((x) => /\.png$/i.test(x))) {
-      const type = typeDe(f), palier = palierDe(f)
+      const type = pnj ? ENTITES.find(([k]) => new RegExp(`^${k}\\b`).test(norm(f)))?.[1] : typeDe(f), palier = palierDe(f)
+      if (pnj && !type) continue
       if (!type || !palier) { manque.push(`${dossier}/${f}`); continue }
       mkdirSync(join(CIBLE, type), {
         recursive: true 
