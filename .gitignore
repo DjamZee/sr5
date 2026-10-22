@@ -17,6 +17,6 @@
 /css
 /coverage
 /drk-doc
-# Manuel du fork : compendium compilé et captures, construits par le dépôt manuel-sr5 et copiés à la préparation de l'alpha
-/packs/manuel
-/manuel
+# Compendiums compilés (LevelDB) : Foundry y écrit dès qu'il les sert ; sources suivies dans src/packs, compilées par
+# npm run build:packs (et npm run check). Les captures du manuel (manuel/captures) sont suivies.
+/packs

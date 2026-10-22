@@ -1,0 +1,716 @@
+{
+  "_id": "eQD8W5rCT4vBEAW9",
+  "_key": "!journal!eQD8W5rCT4vBEAW9",
+  "name": "5. La Matrice",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 600000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "TJrVZVPmTcyGGVkz",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.TJrVZVPmTcyGGVkz",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie suit un hacker de la table : il ouvre la couronne du PAN d'un jeton pour voir ses appareils, pose des marks depuis le menu radial, choisit sa RA ou sa RV, surveille son Score de Surveillance, puis entre en contact avec un serveur, ses CI et ses fichiers. Le joueur ou la joueuse qui joue un decker ou un technomancien lit toute la partie ; les autres lisent au moins le chapitre 5.1 (leurs propres appareils sont dans la couronne, et un hacker ennemi les vise) ; le MJ lit aussi les chapitres 5.4 et 5.5.</p>\n<p>Le système applique les règles de la Matrice du livre de base (<em>Livre de base p. 214-265</em>), et, quand le MJ les coche, celles de <i>Kill Code</i> et de <i>Data Trails</i>. Ce manuel ne les recopie pas : il montre les fenêtres, dit ce que le système calcule seul et ce qui reste à la main du MJ. L'intérieur d'un serveur en carte, avec ses zones, ses CI au tour par tour et son spider, vient du module Matrice v1 (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.tAowbLWNFsHQ1YfZ]{sa fiche, 9.3}) ; sans lui, la Matrice suit le livre.</p><table><tbody><tr><td><p>@UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.roCaGRgpIh6p5piU]{Ouvrir la couronne}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Q0Ppif6abuXYvIW3]{Lire la couronne}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Dvy3JR8ZwZksZjFy]{Qui voit quoi}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.oJu88LfvGfS6meJI]{Ambiances, réglages et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.kLGj9n0tuvYDQjiX]{Lancer une action matricielle}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6bddQEK4ym9lhTWN]{Les marks}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.XO7AMcfgErCKAXxu]{La Perception matricielle}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.evin7gKCPk1ou1nK]{Le Score de Surveillance et la convergence}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.JrT55WdC2WYm2Wi5]{Ce que fait le système et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.pwKQGvtDwkMAQEWU]{Sans fil actif, mode silencieux, hors ligne}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.j84js2pYVuhpwnff]{RA, RV cold sim, RV hot sim}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.c5IFvqrOj73IR3VU]{Drones, caméras et portes}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.VW1KlagSzZvtmnw2]{Technomanciens, sprites, IA}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ppMeoTy8wgmHEQvi]{Messages et appels par commcode}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.kCvvmKYckRbQn14l]{Ce que fait le système et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.S3ddB7ic9Akyd4Ze]{Le serveur et son type}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.frqhYNV8RElbuSLp]{Les CI}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.uEgW7aWe3KemVueX]{Les fichiers}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Kdq8u0ywO4ofqeF2]{Avec le module Matrice v1}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.j5HXwozilYWhqu4x]{Ce que fait le système et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.Yp42aEcmdJIMaVyr]{5.5 Le verrou « Matrice »}</p></td><td><p>MJ</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "8tsTkRwzpFwEKJHE",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.8tsTkRwzpFwEKJHE",
+      "name": "5.1 La couronne du PAN",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>La couronne montre, sur la carte, le réseau personnel (PAN) d'un jeton : ses appareils en icônes, reliés par des traits. C'est par elle qu'on voit ce qui est connecté autour de soi, et c'est sur ses icônes qu'on clique pour agir dans la Matrice (@UUID[.6MQU6zP7BSpcxoxa]{le menu radial}). Chacun n'y voit que ce que son personnage a le droit de voir, selon les règles du livre (<em>Livre de base p. 236-238</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU}</p><p>@UUID[.roCaGRgpIh6p5piU]{Ouvrir la couronne} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "roCaGRgpIh6p5piU",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.roCaGRgpIh6p5piU",
+      "name": "Ouvrir la couronne",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : ouvrir et fermer une couronne</h4>\n<ol>\n<li><p>Faites un clic droit sur un jeton : son HUD s'ouvre. Cliquez sur le bouton <strong>Afficher ou masquer le PAN</strong> (①). La couronne se déploie autour du jeton.</p></li>\n<li><p>Cliquez de nouveau sur le même bouton pour la fermer. Une couronne fermée au bouton du HUD reste fermée jusqu'à la prochaine vue RA.</p></li>\n<li><p>Pour voir d'un coup les couronnes de <strong>tous les jetons visibles</strong>, appuyez sur <strong>M</strong> (la <strong>vue RA</strong>) ; appuyez de nouveau pour les masquer. La touche ne réagit pas quand vous écrivez dans le tchat ou dans une fiche ; elle se change dans <strong>Configurer les contrôles</strong>, ligne <strong>Vue RA : couronnes de PAN</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-hud.webp\" width=\"269\" alt=\"Le HUD d'un jeton : ① le bouton qui ouvre et ferme sa couronne du PAN.\" /><figcaption><strong>Figure 5.1.1</strong> — Le HUD d'un jeton : ① le bouton qui ouvre et ferme sa couronne du PAN.</figcaption></figure>\n\n<p>Chacun choisit pour soi comment les couronnes s'ouvrent (@UUID[.oJu88LfvGfS6meJI]{réglages}) : au survol du jeton (par défaut), au bouton du HUD seulement, ou toujours visibles. Dans les trois cas, le bouton du HUD verrouille la couronne ouverte, et la touche de la vue RA reste disponible.</p>\n<p>Un joueur ou une joueuse dont le personnage porte un commlink, un cyberdeck ou une console de rigger peut ouvrir le PAN d'un jeton qu'il ou elle voit : le HUD de ce jeton se réduit au bouton PAN, et son propre jeton reste sélectionné. Ce qu'il ou elle y lit suit les règles de visibilité ci-dessous. Le MJ a en plus, dans les outils des jetons, le bouton <strong>Afficher tous les PAN de la carte</strong>.</p>\n<p><strong>Pendant un déplacement</strong>, la couronne du jeton qui bouge se replie, puis se rouvre là où il s'arrête ; celles des jetons immobiles restent ouvertes, et leurs traits suivent le jeton qui bouge. C'est un choix de lisibilité (arbitrage de DjamZ, 08/10) : rien n'est recalculé pendant le trajet, ce qui est vu l'est de nouveau à l'arrêt.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN}</p><p>← @UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN} · @UUID[.Q0Ppif6abuXYvIW3]{Lire la couronne} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Q0Ppif6abuXYvIW3",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.Q0Ppif6abuXYvIW3",
+      "name": "Lire la couronne",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul class=\"legende\">\n<li><p><strong>① Le maître du PAN</strong> (commlink, cyberdeck ou console de rigger) est relié au jeton ; il porte un second anneau fin (<em>Livre de base p. 233-234</em>).</p></li>\n<li><p><strong>② Les esclaves</strong> sont reliés au maître et s'ouvrent en éventail autour de lui, du côté opposé au jeton. On asservit un appareil par <strong>Asservir à</strong>, dans le menu radial de son icône (@UUID[.kLGj9n0tuvYDQjiX]{les actions du propriétaire}).</p></li>\n<li><p><strong>③ Un appareil hors PAN</strong> (une arme dégainée, un implant sans fil allumé) est une icône à lui seul, reliée directement au jeton. Une couronne chargée ne se serre pas : au-delà d'un anneau plein, un second s'ouvre plus loin, tourné pour que ses traits passent entre les icônes du premier.</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/5-1-couronne.webp\" width=\"715\" alt=\"La couronne d'une samouraï des rues : ① son commlink, maître du PAN, relié au jeton ; ② l'un de ses quatre esclaves, relié au maître ; ③ un appareil allumé hors de son PAN, relié directement au jeton, sur le second anneau.\" /><figcaption><strong>Figure 5.1.2</strong> — La couronne d'une samouraï des rues : ① son commlink, maître du PAN, relié au jeton ; ② l'un de ses quatre esclaves, relié au maître ; ③ un appareil allumé hors de son PAN, relié directement au jeton, sur le second anneau.</figcaption></figure>\n<p>La couronne suit l'image du jeton <strong>telle qu'elle est affichée</strong> (échelle de l'image et anneau dynamique compris) et grandit avec lui, jusqu'au double pour un jeton de 3 × 3 cases. Les traits passent sous le jeton : ils en sortent au ras de son contour, et les icônes restent au-dessus d'eux. Le nom du jeton reste libre : aucune icône dessus, aucun trait en travers, et aucun trait ne traverse une autre icône. Avec beaucoup d'appareils, l'éventail du maître s'ouvre plus largement ; la couronne d'un grand jeton posé au bord de la scène se tourne vers l'intérieur. Limite connue : au coin d'une scène, les appareils hors PAN peuvent encore sortir du cadre.</p>\n\n<h4>Les traits et les couleurs</h4>\n<table>\n<thead><tr><th>Ce que vous voyez</th><th>Ce que cela veut dire</th></tr></thead>\n<tbody>\n<tr><td>Trait plein</td><td>l'appareil est en sans fil actif</td></tr>\n<tr><td>Trait pointillé</td><td>il est en mode silencieux (<em>Livre de base p. 236</em>)</td></tr>\n<tr><td>Trait gris, icône assombrie</td><td>il est hors ligne</td></tr>\n<tr><td>Icône verte</td><td>un appareil : commlink, cyberdeck, console, arme, armure, implant, drone, véhicule</td></tr>\n<tr><td>Icône orange</td><td>le décor : caméra, maglock, porte, capteur, tourelle, ascenseur, éclairage, terminal</td></tr>\n<tr><td>Icône cyan</td><td>la Matrice : persona, serveur, CI, sprite, agent, fichier</td></tr>\n<tr><td>Petits losanges violets au-dessus d'une icône</td><td>vos marks sur cet appareil, une par losange (@UUID[.6bddQEK4ym9lhTWN]{les marks})</td></tr>\n</tbody>\n</table>\n<p>Au survol d'une icône, son nom et son mode s'affichent. Le bioware, la génétique et les symbiotes n'ont pas d'icône : ils n'ont pas de fonction sans fil (<em>Livre de base p. 462</em>). Chaque appareil prend l'icône de sa catégorie ; sur la fiche d'un objet, le champ <strong>Icône du PAN</strong> (onglet de configuration) lui donne une image à lui, qui suit l'objet quand on le donne à un autre personnage.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN}</p><p>← @UUID[.roCaGRgpIh6p5piU]{Ouvrir la couronne} · @UUID[.Dvy3JR8ZwZksZjFy]{Qui voit quoi} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Dvy3JR8ZwZksZjFy",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.Dvy3JR8ZwZksZjFy",
+      "name": "Qui voit quoi",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Avec le réglage <strong>Visibilité des couronnes de PAN</strong> sur <strong>Règles du livre</strong> (par défaut) (<em>Livre de base p. 236-238</em>) :</p>\n<ul>\n<li><p>le propriétaire voit toujours tout son PAN, même hors ligne ; le MJ voit tout ;</p></li>\n<li><p>les autres, <strong>à condition d'avoir eux-mêmes un commlink ou un deck allumé</strong>, voient les appareils en sans fil actif à moins de 100 m, ceux qu'ils ont markés à toute distance, et ceux qu'ils ont repérés par une Perception matricielle (@UUID[.XO7AMcfgErCKAXxu]{la Perception matricielle}) ;</p></li>\n<li><p>un appareil hors ligne n'est vu que de son propriétaire et du MJ ; un appareil en mode silencieux non repéré n'apparaît pas ;</p></li>\n<li><p>celui qui regarde est le jeton que vous contrôlez, sinon votre personnage assigné ; ce qui est vu se recalcule à la fin de chaque déplacement, de n'importe quel jeton.</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-joueuse.webp\" width=\"1324\" alt=\"Côté joueuse, qui contrôle son decker : ① le commlink d'un garde à 12 m et ses implants, en sans fil actif ; ② le deck du decker, maître de sa propre couronne. L'électromatraque du garde, en mode silencieux, n'apparaît pas.\" /><figcaption><strong>Figure 5.1.3</strong> — Côté joueuse, qui contrôle son decker : ① le commlink d'un garde à 12 m et ses implants, en sans fil actif ; ② le deck du decker, maître de sa propre couronne. L'électromatraque du garde, en mode silencieux, n'apparaît pas.</figcaption></figure>\n\n<p>Avec <strong>Le MJ décide</strong>, le joueur ou la joueuse ne voit que sa propre couronne et les appareils que le MJ a dévoilés : ni la distance, ni les marks, ni le repérage n'entrent en compte. Dans les deux réglages, le menu radial du MJ porte <strong>Dévoiler à toute la table</strong> et <strong>Ne plus dévoiler</strong>. Avec le réglage <strong>Dévoilement d'un appareil par le MJ</strong> sur <strong>Joueur par joueur</strong>, l'entrée devient <strong>Dévoiler à…</strong> et le MJ coche les personnages à qui il montre l'appareil.</p>\n<p>Chez le MJ seulement, un <strong>contour jaune</strong> entoure les icônes qu'aucun joueur ni aucune joueuse ne voit. Un trait vers un jeton caché par le MJ n'est montré à personne d'autre que lui.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN}</p><p>← @UUID[.Q0Ppif6abuXYvIW3]{Lire la couronne} · @UUID[.oJu88LfvGfS6meJI]{Ambiances, réglages et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "oJu88LfvGfS6meJI",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.oJu88LfvGfS6meJI",
+      "name": "Ambiances, réglages et références",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>L'animation se règle selon sa machine, avec le réglage personnel <strong>Ambiance des couronnes de PAN</strong> :</p>\n<ul>\n<li><p><strong>Statique</strong> : aucune animation, aucun calcul par image ;</p></li>\n<li><p><strong>Sobre</strong> (par défaut) : la couronne se déploie depuis le jeton en une demi-seconde, et des impulsions courent le long des traits ;</p></li>\n<li><p><strong>Spectaculaire</strong> : en plus, un halo, un scintillement, et une pluie de code au-dessus d'une couronne ouverte seule.</p></li>\n</ul>\n<p>Le MJ fixe un plafond pour la table : au-dessus, les niveaux sont grisés dans les réglages des joueurs et des joueuses. La couronne reste statique si votre système demande de réduire les animations, ou si le mode de performance de Foundry est « Faible ».</p>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Couronne du PAN)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Visibilité des couronnes de PAN</strong></td><td>MJ, pour le monde</td><td>Règles du livre</td></tr>\n<tr><td><strong>Plafond d'ambiance des couronnes de PAN</strong></td><td>MJ, pour le monde</td><td>Spectaculaire</td></tr>\n<tr><td><strong>Dévoilement d'un appareil par le MJ</strong></td><td>MJ, pour le monde</td><td>À toute la table</td></tr>\n<tr><td><strong>Ouverture des couronnes de PAN</strong></td><td>chacun pour soi</td><td>Au survol</td></tr>\n<tr><td><strong>Touche de la vue RA</strong> (bascule ou maintien)</td><td>chacun pour soi</td><td>Bascule</td></tr>\n<tr><td><strong>Ambiance des couronnes de PAN</strong></td><td>chacun pour soi</td><td>Sobre</td></tr>\n</tbody>\n</table>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-reglages.webp\" width=\"792\" alt=\"L'onglet Couronne du PAN de la fenêtre Réglages Shadowrun, vu du MJ : deux réglages du monde, trois réglages personnels.\" /><figcaption><strong>Figure 5.1.4</strong> — L'onglet Couronne du PAN de la fenêtre Réglages Shadowrun, vu du MJ : deux réglages du monde, trois réglages personnels.</figcaption></figure>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il dessine le PAN de chaque jeton, drones et appareils de décor compris, et le redessine quand un appareil change.</p></li>\n<li><p>Il calcule, pour chaque personne, ce que son personnage voit : distance, marks, repérage, mode des appareils.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il dévoile ce que la table doit voir quand il a choisi « Le MJ décide ».</p></li>\n<li><p>Il donne une icône au décor dont le nom ne dit pas ce qu'il est (un acteur Appareil nommé « Boîtier » prend l'icône « autre appareil ») ; la couronne d'un jeton invisible (vision, brouillard) est invisible aussi.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>PAN, maître et esclaves : (<em>Livre de base p. 233-234</em>). Ce que l'on voit dans la Matrice, mode silencieux : (<em>Livre de base p. 235-237</em>). Esclave silencieux par son maître : (<em>Kill Code p. 39</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki : Couronne du PAN</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.8tsTkRwzpFwEKJHE]{5.1 La couronne du PAN}</p><p>← @UUID[.Dvy3JR8ZwZksZjFy]{Qui voit quoi} · @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6MQU6zP7BSpcxoxa",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.6MQU6zP7BSpcxoxa",
+      "name": "5.2 Le menu radial",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un clic sur une icône de la couronne ouvre autour d'elle un menu en deux colonnes : à droite les <strong>actions matricielles</strong> qui visent cet appareil, à gauche celles du <strong>propriétaire</strong> (mode, PAN), et, à l'écart et bordée de violet, celle du <strong>MJ</strong>. On lance ainsi une action sans chercher la cible dans une liste : l'appareil est déjà choisi, et le défenseur n'a plus à le désigner. On ferme le menu avec Échap ou d'un clic ailleurs.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU}</p><p>← @UUID[.oJu88LfvGfS6meJI]{Ambiances, réglages et références} · @UUID[.kLGj9n0tuvYDQjiX]{Lancer une action matricielle} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "kLGj9n0tuvYDQjiX",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.kLGj9n0tuvYDQjiX",
+      "name": "Lancer une action matricielle",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : viser le commlink d'un garde</h4>\n<ol>\n<li><p>Sélectionnez le jeton de votre hacker (c'est lui « qui regarde »), puis ouvrez la couronne du garde.</p></li>\n<li><p>Cliquez sur l'icône visée. Le menu liste les actions possibles sur cet appareil (<em>Livre de base p. 238-245</em>) : Perception matricielle, Hacker à la volée, Passer en force, Pic de données, Fureter, Contrôler un appareil, Formater, Rebooter, et les autres. Sur le maître du PAN, qui représente le persona (<em>Livre de base p. 236</em>), s'y ajoutent Traquer une icône, Planter un programme et, avec <i>Kill Code</i>, Détraquer.</p></li>\n<li><p>Le menu montre aussi le moniteur matriciel de l'appareil, range les actions par ordre alphabétique et explique chaque mode au survol. L'état s'y lit « Mode sans fil activé » ou « Mode silencieux activé ». Le moniteur reste réservé au propriétaire et au MJ, et au joueur ou à la joueuse dont une Perception matricielle l'a révélé (<em>Livre de base p. 237</em>).</p></li>\n<li><p>Une action <strong>grisée</strong> ne peut pas partir : survolez-la pour lire pourquoi (« Marks requises : 3 (posées : 1) », pas de commlink ni de deck allumé, action qui demande la Résonance).</p></li>\n<li><p>Cliquez sur une action active : la fenêtre de jet habituelle s'ouvre, le jeton du garde ciblé et l'appareil déjà choisi. Lancez.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-menu.webp\" width=\"771\" alt=\"Le menu radial sur le commlink d'un garde, ouvert par le decker : ① les actions matricielles, ② une action grisée faute de marks, avec sa raison au survol.\" /><figcaption><strong>Figure 5.2.1</strong> — Le menu radial sur le commlink d'un garde, ouvert par le decker : ① les actions matricielles, ② une action grisée faute de marks, avec sa raison au survol.</figcaption></figure>\n\n<p>Les mêmes actions se lancent depuis l'onglet Matrice de la fiche (bloc <strong>Actions matricielles</strong>, colonne <strong>RDD</strong>) : la colonne <strong>Mark</strong> dit combien de marks il faut, <strong>Limite</strong> l'attribut qui plafonne, <strong>Défense</strong> votre propre réserve pour vous défendre de cette action (un clic la lance), et l'icône de la colonne <strong>DIEU</strong> les actions illégales, qui font monter le Score de Surveillance. Lancée depuis la fiche, l'action laisse au défenseur la fenêtre de choix de l'appareil visé.</p>\n\n<h4>La défense matricielle</h4>\n<p>La carte du jet porte le bouton de défense. Le défenseur clique ; le système lance sa réserve contre l'appareil choisi par l'attaquant (<em>Livre de base p. 238-245</em>). Un appareil esclave se défend avec la réserve de son maître quand elle est meilleure ; en connexion directe, avec ses seuls indices (<em>Livre de base p. 234</em>). Les véhicules et drones dont le sans fil est allumé sont défendus comme des appareils : asservis, par leur maître ; sinon, avec leur Indice d'appareil, qui est celui de leur Autopilote (<em>Livre de base p. 270-271</em>). Un appareil hors ligne ne peut pas être visé sans fil.</p>\n\n<h4>Les actions du propriétaire</h4>\n<p>Sur ses propres icônes, le propriétaire trouve <strong>Passer en sans fil actif</strong>, <strong>Passer en mode silencieux</strong>, <strong>Passer hors ligne</strong>, <strong>Libérer du PAN</strong> sur un esclave, ou <strong>Asservir à</strong> sur un appareil libre, dans la limite d'Indice × 3 (<em>Livre de base p. 234</em>). Le détail de ces modes est au chapitre @UUID[.dwuTspp0fc03EWIz]{des appareils}.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p><p>← @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial} · @UUID[.6bddQEK4ym9lhTWN]{Les marks} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6bddQEK4ym9lhTWN",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.6bddQEK4ym9lhTWN",
+      "name": "Les marks",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une mark est une autorisation, réelle ou volée, sur une icône (<em>Livre de base p. 237</em>). On en pose par <strong>Hacker à la volée</strong> (discret) ou <strong>Passer en force</strong> (bruyant) ; on peut en viser deux d'un coup à −4 dés, ou trois à −10 (<em>Livre de base p. 240-242</em>). Trois marks au plus par icône. La plupart des actions en demandent : la table du livre dit combien (<em>Livre de base p. 238</em>).</p>\n<ul>\n<li><p>Une mark réussie se pose d'un clic sur le bouton de la carte. Posée sur un esclave, elle l'est aussi sur son maître (<em>Livre de base p. 234</em>).</p></li>\n<li><p>Pour <strong>Imiter un ordre</strong>, la mark se compte sur le maître du PAN, pas sur l'appareil visé (<em>Livre de base p. 241</em>).</p></li>\n<li><p>Posséder une icône vaut quatre marks (<em>Livre de base p. 238</em>) : les actions qui en demandent quatre (Remonter un rétrolien, Changer son icône, Inviter au markage, Changer de mode d'interface) sont réservées au propriétaire, qui passe aussi sans mark toutes les autres.</p></li>\n</ul>\n<h4>Qui est propriétaire</h4>\n<p>Le système reconnaît comme propriétaire : le personnage lui-même et ce qu'il porte ; le personnage qui a déployé un drone, lancé un agent ou compilé un sprite ; le personnage au PAN duquel un appareil est asservi ; et, avec le module Matrice v1, les spiders d'un serveur pour le serveur, ses CI et ses appareils (<em>Kill Code p. 51</em>). Tout autre personnage est refusé au nom du livre (famille Matrice des verrous levée : l'action part, et le MJ est prévenu). Quand le propriétaire est inconnu (appareil sans maître, drone sans créateur), l'action part et le MJ reçoit un mot pour arbitrer.</p>\n<p>Les actions sans jet (Changer son icône, Inviter au markage, Changer de mode d'interface) et <strong>Sauter vers une grille</strong> se cliquent dans la liste dépliée des actions matricielles de la fiche. Sauter vers une grille est une action complexe sans test vers une grille où l'on a accès ; sans accès, la fenêtre rappelle qu'il faut d'abord Hacker à la volée ou Passer en force contre la grille (<em>Livre de base p. 235, 244</em>). La <strong>Recherche matricielle</strong> a le type « cherchée dans son serveur », d'un temps de base d'une minute (<em>Livre de base p. 244</em>) ; le livre n'en donne pas le seuil, le système prend 3, celui des données privées.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-marks.webp\" width=\"548\" alt=\"Deux marks du decker sur la mitraillette implantée d'une samouraï : ① les losanges au-dessus de l'esclave, ② et au-dessus de son commlink, maître du PAN, qui les reçoit aussi. Seule la personne qui a posé les marks les voit.\" /><figcaption><strong>Figure 5.2.2</strong> — Deux marks du decker sur la mitraillette implantée d'une samouraï : ① les losanges au-dessus de l'esclave, ② et au-dessus de son commlink, maître du PAN, qui les reçoit aussi. Seule la personne qui a posé les marks les voit.</figcaption></figure>\n\n<p>La fiche les recense : <strong>Appareils markés</strong> (les marks que vous avez posées) et <strong>Marks</strong> (celles posées sur vous), en bas de l'onglet Matrice. Un redémarrage les efface toutes (<em>Livre de base p. 244</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p><p>← @UUID[.kLGj9n0tuvYDQjiX]{Lancer une action matricielle} · @UUID[.XO7AMcfgErCKAXxu]{La Perception matricielle} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "XO7AMcfgErCKAXxu",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.XO7AMcfgErCKAXxu",
+      "name": "La Perception matricielle",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Elle se lance depuis la fiche ou depuis le menu d'une icône (<em>Livre de base p. 236-237, 242</em>).</p>\n<ol>\n<li><p>Sur une icône qui n'est pas en mode silencieux, c'est un test simple. Sur une icône silencieuse, un test opposé (Logique + Corruption de la cible), et ce sont les succès excédentaires qui comptent.</p></li>\n<li><p>Sur la carte, cliquez sur <strong>Obtenir des informations</strong> : la liste du livre s'ouvre, et vous cochez au plus une information par succès.</p></li>\n<li><p>Les réponses arrivent dans un <strong>message privé</strong>, lu par vous et le MJ seulement. L'icône repérée apparaît dans votre couronne ; si vous avez lu son moniteur, une barre s'affiche sous elle, et si vous avez compté ses marks, un ◇ suivi du nombre.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-perception.webp\" width=\"632\" alt=\"La liste des informations, après une Perception matricielle à trois succès sur le commlink du garde.\" /><figcaption><strong>Figure 5.2.3</strong> — La liste des informations, après une Perception matricielle à trois succès sur le commlink du garde.</figcaption></figure>\n\n<p>Le système répond seul à tout ce qui se calcule (moniteur, programmes, indice, commcode, attributs, type d'icône, grille, dernière action, nombre de marks, icônes silencieuses à moins de 100 m) : la fenêtre du MJ ne s'ouvre que si une question lui revient, comme « une icône silencieuse dans ce serveur ? » ; il tape alors la réponse, puis <strong>Envoyer</strong> ou <strong>Refuser</strong>. Sur un fichier, les trois questions de fichier se calculent aussi (@UUID[.uEgW7aWe3KemVueX]{les fichiers}). Toute information obtenue repère l'icône, même silencieuse (<em>Livre de base p. 237</em>). Le repérage se perd quand l'icône ou l'observateur redémarre ou se débranche, et quand l'icône réussit <strong>Se cacher</strong> (<em>Livre de base p. 236</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p><p>← @UUID[.6bddQEK4ym9lhTWN]{Les marks} · @UUID[.evin7gKCPk1ou1nK]{Le Score de Surveillance et la convergence} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "evin7gKCPk1ou1nK",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.evin7gKCPk1ou1nK",
+      "name": "Le Score de Surveillance et la convergence",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Chaque action d'Attaque ou de Corruption fait monter le Score de Surveillance du hacker des succès du défenseur ; toutes les quinze minutes après le premier point, il monte encore de 2D6 jetés en secret par le MJ ; à 40, c'est la <strong>convergence</strong> (<em>Livre de base p. 233</em>).</p>\n<ul>\n<li><p><strong>Le chiffre</strong> est en bas de l'onglet Matrice (<strong>Score de surveillance</strong>). Le système le fait monter seul à chaque défense. Avec le réglage <strong>Score de Surveillance gardé par le MJ</strong> (coché par défaut), le joueur ou la joueuse ne voit pas le chiffre monter : il ou elle le connaît par l'action <strong>Vérifier son score de surveillance</strong> ou en faisant tourner le programme <strong>Surveillance</strong> (<em>Livre de base p. 233</em>).</p></li>\n<li><p><strong>Les 2D6 du quart d'heure</strong> sont à la main du MJ dans le système seul.</p></li>\n<li><p><strong>Le redémarrage</strong> (l'icône ↻ à côté du nom de l'appareil, en haut de l'onglet Matrice) remet le score à 0 et efface les marks posées par le hacker (<em>Livre de base p. 244</em>) ; un personnage sous verrouillage de connexion ne peut pas redémarrer, il doit d'abord se débrancher.</p></li>\n</ul>\n\n<h4>La convergence</h4>\n<p>Sur la grille, la convergence inflige 12 cases de dommages matriciels à résister normalement, force le persona à redémarrer (marks effacées, choc d'éjection s'il était en RV) et révèle sa position physique (<em>Livre de base p. 233</em>). Dans un serveur, il n'y a ni dommages ni éjection : le serveur pose 3 marks sur le persona et lance ses CI (<em>Livre de base p. 249</em>).</p>\n<p><strong>Le système seul ne déclenche pas la convergence</strong> : à 40, rien ne se passe, et le MJ l'applique à la main. Le module Matrice v1 la propose au MJ, par un bouton <strong>Appliquer la convergence</strong>, et c'est alors le système qui l'applique : la carte <strong>Convergence de la grille</strong> porte le bouton de résistance (VD 12), puis le redémarrage forcé et un seul choc d'éjection, même si les dommages grillent le deck.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-convergence.webp\" width=\"343\" alt=\"Un decker passe à 40 : ① le mot du module Matrice v1 au MJ, avec son bouton Appliquer la convergence ; ② la carte du système et sa résistance aux dommages matriciels (VD 12), à lancer par le joueur ou la joueuse ; ③ l'aparté du MJ : redémarrage forcé et position physique révélée.\" /><figcaption><strong>Figure 5.2.4</strong> — Un decker passe à 40 : ① le mot du module Matrice v1 au MJ, avec son bouton Appliquer la convergence ; ② la carte du système et sa résistance aux dommages matriciels (VD 12), à lancer par le joueur ou la joueuse ; ③ l'aparté du MJ : redémarrage forcé et position physique révélée.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Trois arbitrages de DjamZ sur la convergence (08/10)</p><p><strong>Pas de convergence sans appareil actif</strong> : une persona sans aucun appareil allumé (deck et commlink éteints) ne la subit pas ; « il faut être connecté à la Matrice pour en subir les foudres ». Le MJ reçoit un message qui le dit. La persona incarnée d'un technomancien compte comme un appareil, et une IA est toujours connectée.</p>\n<p><strong>Une convergence sous 40 confirmée par le MJ est acceptée</strong> : rare et volontaire, mais permise.</p>\n<p><strong>La convergence au retour en ligne</strong> : le score reste à 40 ou plus tant qu'on ne redémarre pas ; dès qu'un appareil se rallume sans redémarrage, la persona revient dans la Matrice et le module Matrice v1 propose aussitôt la convergence (<em>Livre de base p. 233</em>).</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p><p>← @UUID[.XO7AMcfgErCKAXxu]{La Perception matricielle} · @UUID[.JrT55WdC2WYm2Wi5]{Ce que fait le système et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JrT55WdC2WYm2Wi5",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.JrT55WdC2WYm2Wi5",
+      "name": "Ce que fait le système et références",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Onglet</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Score de Surveillance gardé par le MJ</strong></td><td>Matrice</td><td>coché</td></tr>\n<tr><td><strong>Utiliser les règles de Kill Code</strong> (actions de soutien : Calibrage, Déni de service, I Am the Firewall…)</td><td>Matrice</td><td>décoché</td></tr>\n<tr><td><strong>Utiliser les Grilles matricielles</strong> (malus de saut de grille)</td><td>Matrice</td><td>coché</td></tr>\n<tr><td><strong>Utiliser les actions matricielles de Rigger 5</strong> (guerre électronique dans le menu d'un drone, @UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.JFzulyGZ6eU8oCmU]{6.5})</td><td>Matrice</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il grise les actions dont les marks manquent, et dit pourquoi.</p></li>\n<li><p>Il lance le test, cible le jeton et l'appareil, et défend avec le bon appareil (maître, esclave, connexion directe).</p></li>\n<li><p>Il pose les marks sur l'appareil et sur son maître, et les dessine chez qui les a posées.</p></li>\n<li><p>Il reconnaît le propriétaire d'une icône et refuse aux autres les actions qui lui sont réservées.</p></li>\n<li><p>Il fait monter le Score de Surveillance des succès du défenseur, et l'efface au redémarrage.</p></li>\n<li><p>Il répond seul aux questions calculables de la Perception matricielle.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Les 2D6 du quart d'heure et la convergence, sans le module Matrice v1.</p></li>\n<li><p>Le refus des actions que le livre ne permet pas sur une cible hors ligne ou sur le persona d'un technomancien : le menu ne regarde pas le sans fil de la cible.</p></li>\n<li><p>Les réponses aux questions de Perception qui lui reviennent (« dans ce serveur », fichiers hors d'un objet Fichier).</p></li></ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Actions matricielles et leurs marks : (<em>Livre de base p. 238-245</em>). Marks : (<em>Livre de base p. 237-238</em>). Perception matricielle : (<em>Livre de base p. 236-237</em>). Score de Surveillance et convergence : (<em>Livre de base p. 233</em>) ; dans un serveur : (<em>Livre de base p. 249</em>). Actions de soutien de <i>Kill Code</i> : (<em>Kill Code p. 43-45</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki : Couronne du PAN</a> (menu, Perception), <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN,-API-pour-les-modules\">wiki : API pour les modules</a> (convergence).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.6MQU6zP7BSpcxoxa]{5.2 Le menu radial}</p><p>← @UUID[.evin7gKCPk1ou1nK]{Le Score de Surveillance et la convergence} · @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "dwuTspp0fc03EWIz",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.dwuTspp0fc03EWIz",
+      "name": "5.3 Appareils et modes",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Chaque appareil sans fil a son mode, chaque utilisateur de la Matrice son mode d'interface, et chaque sortie brutale de la RV a son prix. Ce chapitre montre où se règlent ces modes sur les fiches, ce que le système en fait, puis les cas particuliers : décor asservi à un serveur, technomanciens, IA.</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU}</p><p>← @UUID[.JrT55WdC2WYm2Wi5]{Ce que fait le système et références} · @UUID[.pwKQGvtDwkMAQEWU]{Sans fil actif, mode silencieux, hors ligne} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pwKQGvtDwkMAQEWU",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.pwKQGvtDwkMAQEWU",
+      "name": "Sans fil actif, mode silencieux, hors ligne",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une arme, une armure, un implant, un équipement, un appareil ou un véhicule a son propre mode : <strong>sans fil actif</strong>, <strong>mode silencieux</strong> ou <strong>hors ligne</strong> (<em>Livre de base p. 236-237</em>).</p>\n\n<h4>Pas à pas : passer un appareil en mode silencieux</h4>\n<ol>\n<li><p>Ouvrez la fiche de l'objet, porté par votre personnage. Trois boutons, dans son en-tête, donnent le mode ; celui en cours est allumé.</p></li>\n<li><p>Cliquez sur <strong>mode silencieux</strong>. En combat, entrer en mode silencieux ou en sortir coûte une <strong>action simple</strong> (<em>Livre de base p. 236</em>) ; couper ou rallumer le sans fil coûte ce qu'il coûte sur la fiche. Hors combat, rien n'est décompté.</p></li>\n<li><p>On peut aussi le faire depuis le menu radial de l'icône (@UUID[.kLGj9n0tuvYDQjiX]{les actions du propriétaire}), ou dans les listes de la fiche du personnage, par la petite icône de mode silencieux à côté de l'icône sans fil.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-objet-modes.webp\" width=\"690\" alt=\"L'en-tête de la fiche d'une arme : ① les trois boutons de mode, ici en sans fil actif.\" /><figcaption><strong>Figure 5.3.1</strong> — L'en-tête de la fiche d'une arme : ① les trois boutons de mode, ici en sans fil actif.</figcaption></figure>\n\n<ul>\n<li><p><strong>Héritage du maître</strong> : un esclave passe en silencieux quand son maître l'est (<em>Kill Code p. 39</em>) ; sa fiche l'écrit (« Silencieux par son maître »). <strong>Hors ligne passe avant tout</strong> : un appareil au sans fil coupé est hors de la Matrice, quel que soit son mode silencieux.</p></li>\n<li><p><strong>L'appareil en usage</strong> (le maître du PAN) passe en silencieux par la case <strong>Mode silencieux</strong> de l'onglet Matrice du personnage, que ses boutons cochent eux-mêmes : c'est cette case qui porte les −2 dés à toutes les actions matricielles (<em>Livre de base p. 236</em>).</p></li>\n<li><p><strong>Ce que voient les autres</strong> : un appareil passé en silencieux disparaît de la couronne de qui ne l'avait pas repéré ; un appareil déjà repéré le reste (<em>Livre de base p. 236</em>).</p></li>\n<li><p><strong>Couper le sans fil</strong> est toujours une action gratuite (<em>Livre de base p. 424</em>). L'allumer l'est aussi, sauf si le MJ coche <strong>Exiger une IND pour basculer le wifi en action gratuite</strong> : sans IND, c'est alors une action simple (<em>Livre de base p. 165, 167</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes} · @UUID[.j84js2pYVuhpwnff]{RA, RV cold sim, RV hot sim} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "j84js2pYVuhpwnff",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.j84js2pYVuhpwnff",
+      "name": "RA, RV cold sim, RV hot sim",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le mode d'interface se choisit dans l'onglet Matrice du personnage, liste <strong>Mode utilisateur</strong> : <strong>Réalité augmentée</strong>, <strong>Réalité virtuelle cold sim</strong> ou <strong>Réalité virtuelle hot sim</strong> (<em>Livre de base p. 231-232</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-fiche-matrice.webp\" width=\"311\" alt=\"L'onglet Matrice d'un decker : ① l'appareil en usage et son bouton de redémarrage, ② la case Mode silencieux, ③ le mode utilisateur, ④ les résistances matricielles, dont le biofeedback et le choc d'éjection, ⑤ le Score de Surveillance.\" /><figcaption><strong>Figure 5.3.2</strong> — L'onglet Matrice d'un decker : ① l'appareil en usage et son bouton de redémarrage, ② la case Mode silencieux, ③ le mode utilisateur, ④ les résistances matricielles, dont le biofeedback et le choc d'éjection, ⑤ le Score de Surveillance.</figcaption></figure>\n\n<table>\n<thead><tr><th>Mode</th><th>Initiative</th><th>Ce que le système change</th></tr></thead>\n<tbody>\n<tr><td><strong>Réalité augmentée</strong></td><td>celle du corps</td><td>aucun biofeedback, aucun choc d'éjection</td></tr>\n<tr><td><strong>Réalité virtuelle cold sim</strong></td><td>Traitement de données + Intuition, 3D6</td><td>biofeedback et choc d'éjection étourdissants</td></tr>\n<tr><td><strong>Réalité virtuelle hot sim</strong></td><td>Traitement de données + Intuition, 4D6</td><td>+2 dés à toutes les actions matricielles ; biofeedback et choc d'éjection physiques</td></tr>\n</tbody>\n</table>\n\n<h4>Le biofeedback</h4>\n<p>Une attaque qui inflige du biofeedback (une CI Noire, par exemple) ne touche que la RV : étourdissant en cold sim, physique en hot sim, résisté avec Volonté + Firewall (<em>Livre de base p. 230</em>). La ligne <strong>Dommages de biofeedback</strong> des résistances matricielles donne la réserve.</p>\n\n<h4>Le choc d'éjection</h4>\n<p>Quitter la Matrice depuis la RV sans repasser d'abord en RA déclenche le choc d'éjection : 6E en cold sim, 6P en hot sim, résisté avec Volonté + Firewall, puis −2 dés à toutes les actions pendant (10 − Volonté) minutes (<em>Livre de base p. 231</em>). Le système ouvre la fenêtre <strong>Résister au Choc d'éjection</strong> chez le joueur ou la joueuse quand :</p>\n<ul>\n<li><p>le personnage se débranche, ou redémarre par le bouton de la fiche (y compris une convergence ou un redémarrage forcé par une CI) ;</p></li>\n<li><p>son deck grille (moniteur matriciel plein) : le Firewall n'existant plus, il résiste avec sa Volonté seule (<em>Livre de base p. 231</em>) ;</p></li>\n<li><p>il éteint sur la fiche l'appareil par lequel il est connecté, ou en équipe un autre.</p></li>\n</ul>\n<p>Couper le sans fil d'un appareil ne déconnecte pas. Pour quitter proprement, repassez en <strong>Réalité augmentée</strong>, puis éteignez. Le rigger plongé dans un drone a les mêmes règles, décrites au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.ufJtw5rziXVWG2Ax]{de la RV du rigger}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Se débrancher sous verrouillage</p><p>Sans verrouillage de connexion, <strong>Se débrancher</strong> réussit d'office. Sous verrouillage, le joueur ou la joueuse lance l'action ; le MJ clique <strong>Résistance à la déconnexion</strong> sur sa carte, et chaque verrou se compare au même jet : seuls les verrous battus tombent (<em>Livre de base p. 244, 246</em>).</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.pwKQGvtDwkMAQEWU]{Sans fil actif, mode silencieux, hors ligne} · @UUID[.c5IFvqrOj73IR3VU]{Drones, caméras et portes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "c5IFvqrOj73IR3VU",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.c5IFvqrOj73IR3VU",
+      "name": "Drones, caméras et portes",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Un drone déployé</strong> est relié par un trait au maître du PAN de son rigger, de jeton à jeton ; un drone coché <strong>Appareil asservi</strong> passe en silencieux avec ce maître et compte dans ses places, qu'il s'agisse d'un commlink, d'un cyberdeck ou d'une console (<em>Livre de base p. 234, 269</em>). Le reste est au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.AtuZz9Pwqg0xLguA]{de la console de rigger}.</p></li>\n<li><p><strong>Un appareil de décor</strong> (caméra, porte à maglock, tourelle) est un acteur <strong>Appareil</strong> posé sur la carte. Sur sa fiche, onglet Matrice, le champ <strong>Asservi à</strong> choisit son maître : un serveur du monde, ou l'appareil maître d'un personnage. La couronne trace alors le trait entre eux, et l'appareil se défend avec la réserve de son maître quand elle est meilleure (<em>Livre de base p. 234</em>).</p></li>\n<li><p>Un serveur asservit autant d'appareils qu'il veut, sans distance ; un commlink ou un deck en asservit au plus Indice × 3 (<em>Livre de base p. 234</em>).</p></li>\n<li><p><strong>Un drone coupé</strong> : le joueur ou la joueuse propriétaire rallume son sans-fil depuis sa fiche, au coût d'action du livre (<em>Livre de base p. 234, 424</em>).</p></li>\n</ul>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Serveurs asservis à d'autres serveurs (« nodes »)</p><p>Le livre n'asservit jamais un serveur à un serveur (<em>Livre de base p. 234</em>). Le réglage <strong>Serveurs asservis à d'autres serveurs (« nodes »)</strong>, onglet Matrice, est décoché par défaut. Coché, la fiche d'un serveur propose les autres serveurs dans <strong>Maître du PAN</strong> (ni lui-même, ni un serveur qui remonte déjà jusqu'à lui) ; le serveur asservi s'accroche à la couronne de son maître et se défend avec lui quand le maître est le plus fort, comme un appareil.</p></div>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-porte.webp\" width=\"1229\" alt=\"La fiche d'une porte à maglock (acteur Appareil) : ① le champ Asservi à, ici un serveur ; ② sa couronne, reliée au jeton du serveur sur la carte.\" /><figcaption><strong>Figure 5.3.3</strong> — La fiche d'une porte à maglock (acteur Appareil) : ① le champ Asservi à, ici un serveur ; ② sa couronne, reliée au jeton du serveur sur la carte.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.j84js2pYVuhpwnff]{RA, RV cold sim, RV hot sim} · @UUID[.VW1KlagSzZvtmnw2]{Technomanciens, sprites, IA} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VW1KlagSzZvtmnw2",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.VW1KlagSzZvtmnw2",
+      "name": "Technomanciens, sprites, IA",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Le persona incarné</strong> d'un technomancien est le maître de sa couronne, avec sa propre antenne tant que le personnage est éveillé (<em>Livre de base p. 253</em>). Il n'a pas de PAN, sauf avec le trait <strong>Fusion avec la matrice</strong> (<em>Kill Code p. 107</em>). Il passe en silencieux comme tout persona, par la case de la fiche ou le menu de la couronne. Ses dommages matriciels se cochent en étourdissants (<em>Livre de base p. 229-230</em>). Sa partie Résonance est au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.QHApoxYSA0Sqrblk]{des technomanciens}.</p></li>\n<li><p><strong>Sous couverture</strong> : un technomancien qui équipe un commlink apparaît aux autres comme un utilisateur de commlink ordinaire (<em>Livre de base p. 253</em>) ; il ne peut alors plus se servir de son persona (<em>Data Trails p. 63</em>). Son persona n'est montré, en gris, qu'à son joueur ou sa joueuse et au MJ.</p></li>\n<li><p><strong>Un sprite compilé</strong> est un persona à part entière, dessiné là où se tient le technomancien ; le trait qui les relie n'est montré qu'au joueur ou à la joueuse et au MJ (<em>Livre de base p. 256</em>).</p></li>\n<li><p><strong>Une IA</strong> est une fiche de personnage dont la Profondeur est active. Hors de tout appareil, elle se défend avec sa Volonté ou son Intuition (réglage <strong>IA hors appareil</strong>), agit toujours par Émuler, et n'a ni verrouillage ni redémarrage (<em>Data Trails p. 157, 159</em>). Quand l'appareil qui la porte grille, elle est dissipée : le MJ reçoit une carte <strong>Dissipation de …</strong> qu'il résout d'un clic (<em>Data Trails p. 161</em>).</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-techno.webp\" width=\"440\" alt=\"La couronne d'un technomancien : ① son persona incarné, maître de la couronne ; ② un de ses appareils sans fil, relié directement au jeton : le persona incarné n'a pas de PAN.\" /><figcaption><strong>Figure 5.3.4</strong> — La couronne d'un technomancien : ① son persona incarné, maître de la couronne ; ② un de ses appareils sans fil, relié directement au jeton : le persona incarné n'a pas de PAN.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.c5IFvqrOj73IR3VU]{Drones, caméras et portes} · @UUID[.ppMeoTy8wgmHEQvi]{Messages et appels par commcode} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ppMeoTy8wgmHEQvi",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.ppMeoTy8wgmHEQvi",
+      "name": "Messages et appels par commcode",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le commcode d'un commlink, d'un cyberdeck ou d'une console de rigger (champ de sa fiche) sert à écrire et à appeler (<em>Livre de base p. 241</em>). Un tel appareil posé sur un personnage reçoit aussitôt son commcode, au format <strong>#XX-XXXX-XXXX-XX</strong>, et les appareils déjà dans le monde reçoivent le leur au démarrage. Le joueur ou la joueuse peut le changer <strong>une fois</strong> (le champ se verrouille ensuite) ; le MJ, autant qu'il veut (arbitrage de DjamZ).</p>\n<h4>Pas à pas : envoyer un message</h4>\n<ol>\n<li><p>Ouvrez la messagerie, par l'un de ces chemins : l'icône de bulle à droite du champ <strong>Commcode</strong> de la fiche de l'appareil ; la ligne de l'appareil dans l'onglet <strong>Matrice</strong> de la fiche du personnage ; le bouton de la barre d'outils du jeton ; ou l'entrée <strong>Messagerie (commcode)</strong> du menu de l'appareil dans la couronne. Seuls son propriétaire et le MJ la voient.</p></li>\n<li><p>Onglet <strong>Messages</strong> : tapez le commcode du correspondant, ou choisissez un contact du <strong>Répertoire</strong>. Entrée envoie, Maj+Entrée va à la ligne.</p></li>\n<li><p>Pour appeler, cliquez sur le combiné. Chez la personne appelée, la fenêtre s'ouvre et sonne : <strong>Décrocher</strong> ou <strong>Refuser</strong>. Pendant l'appel, on peut taper les répliques ; <strong>Raccrocher</strong> y met fin.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/5-3-messagerie.webp\" width=\"728\" alt=\"La messagerie commcode d'un commlink : à gauche les conversations, à droite celle qui est ouverte, avec un commcode sans fiche tenu par le MJ.\" /><figcaption><strong>Figure 5.3.5</strong> — La messagerie commcode d'un commlink : à gauche les conversations, à droite celle qui est ouverte, avec un commcode sans fiche tenu par le MJ.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — messages et fichiers chiffrés à clé</p><p>Le livre ne connaît pas de chiffrement à clé des messages (<em>Livre de base p. 241</em>). Le réglage de monde <strong>Cryptage des messages commcode (règle maison)</strong>, onglet <strong>Autres</strong>, décoché par défaut, en ajoute un. Coché, une conversation gagne une rangée <strong>clé</strong> (qu'on peut garder au répertoire pour ce correspondant) et un cadenas à côté du message :</p>\n<ul>\n<li><p>Cadenas coché, le message part chiffré, protégé comme un fichier : les succès d'Informatique + Logique [Traitement de données] sont son indice (<em>Livre de base p. 240</em>).</p></li>\n<li><p>Le destinataire lit le clair si sa clé pour ce correspondant est la bonne ; sinon, il voit le chiffré.</p></li>\n<li><p>Qui intercepte le message par Fureter peut le <strong>Pirater</strong> comme un fichier, Hacking + Logique [Attaque] contre indice × 2 (<em>Livre de base p. 242</em>) : un succès excédentaire montre le clair à ce pirate seul.</p></li>\n<li><p>Le MJ lit toujours le clair. Le même chiffrement se pose sur un fichier, dont le contenu s'affiche chiffré sans la clé.</p></li>\n</ul>\n<p>Hors du réglage, le bouton <strong>Chiffrer un texte</strong> de la fenêtre <strong>Trafic commcode</strong> du MJ chiffre ou déchiffre n'importe quel texte, pour une énigme de table, et peut publier le chiffré dans le tchat.</p></div>\n\n<h4>Le répertoire</h4>\n<p>Le <strong>Répertoire</strong> liste les commcodes que le personnage connaît, avec un nom, et les personnages des joueurs et des joueuses. Le bouton <strong>Jeton ciblé</strong> ajoute le commcode du jeton que vous ciblez. Pour un PNJ, une demande part au MJ, qui l'accepte ou la refuse : accepté, le contact entre dans le répertoire ; dans les deux cas, un message privé vous prévient.</p>\n<p>Un appareil hors ligne, brouillé ou hors service n'envoie et ne reçoit rien (<em>Livre de base p. 424, 443, 229</em>) ; un message attend son retour (« En attente »), un appel en cours est coupé. Le mode silencieux n'empêche pas de communiquer. Le MJ voit tout le trafic dans la fenêtre <strong>Trafic commcode</strong>, et y parle au nom d'un commcode qu'aucune fiche ne porte (un M. Johnson). Un <strong>Fureter</strong> réussi propose sur sa carte <strong>Intercepter les communications de …</strong>, valable tant que la mark reste (<em>Livre de base p. 241</em>) ; un <strong>Traquer une icône</strong> réussi propose <strong>Localiser …</strong> (<em>Livre de base p. 246</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.VW1KlagSzZvtmnw2]{Technomanciens, sprites, IA} · @UUID[.kCvvmKYckRbQn14l]{Ce que fait le système et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "kCvvmKYckRbQn14l",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.kCvvmKYckRbQn14l",
+      "name": "Ce que fait le système et références",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Onglet</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Exiger une IND pour basculer le wifi en action gratuite</strong></td><td>Matrice</td><td>décoché</td></tr>\n<tr><td><strong>IA hors appareil : attribut qui remplace la Logique en défense et en résistance</strong></td><td>Matrice</td><td>la plus haute des deux</td></tr>\n<tr><td><strong>Serveurs asservis à d'autres serveurs (« nodes »)</strong> (règle maison)</td><td>Matrice</td><td>décoché</td></tr>\n<tr><td><strong>Cryptage des messages commcode</strong> (règle maison)</td><td>Autres</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il tient le mode de chaque appareil, l'héritage du maître, et le coût de l'action en combat.</p></li>\n<li><p>Il applique le mode utilisateur : initiative, +2 dés en hot sim, nature du biofeedback et du choc d'éjection.</p></li>\n<li><p>Il ouvre le choc d'éjection chez le bon joueur ou la bonne joueuse, une seule fois par sortie.</p></li>\n<li><p>Il crée le persona incarné d'un technomancien qui n'en a pas (MJ connecté).</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>La connexion directe à un drone au sans fil coupé, quand son propriétaire ne l'a pas rallumé.</p></li>\n<li><p>Le flux du Machiniste au-delà de la console de rigger, et le réglage <strong>Fusion avec la matrice</strong> sur la fiche du persona quand le trait ne porte pas son effet.</p></li>\n<li><p>Le second verrou d'une CI sur une cible déjà verrouillée. (Un redémarrage forcé, ou choisi si le MJ a levé la famille Matrice des verrous, retire de lui-même l'effet « Connexion verrouillée » (<em>Livre de base p. 231</em>).)</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Modes utilisateur : (<em>Livre de base p. 231-232</em>). Biofeedback : (<em>Livre de base p. 230</em>). Choc d'éjection : (<em>Livre de base p. 231</em>). Mode silencieux : (<em>Livre de base p. 236</em>). Persona incarné : (<em>Livre de base p. 253</em>) ; sprites : (<em>Livre de base p. 256</em>). IA : (<em>Data Trails p. 157-161</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki : Matrice, IA, appareils et véhicules</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Fiche-de-personnage\">wiki : Fiche de personnage</a> (onglet Matrice).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.dwuTspp0fc03EWIz]{5.3 Appareils et modes}</p><p>← @UUID[.ppMeoTy8wgmHEQvi]{Messages et appels par commcode} · @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rJewOtLgsDBgljKR",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.rJewOtLgsDBgljKR",
+      "name": "5.4 Serveurs, CI, fichiers",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Un serveur, une CI et un fichier sont des documents que le MJ prépare avant la partie. Ce chapitre montre leurs fiches : le système calcule les attributs d'un serveur depuis son type, prête ces attributs à ses CI, et joue les actions du livre sur les fichiers. L'intérieur du serveur en carte, l'alerte et les CI au tour par tour viennent du module Matrice v1 (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.tAowbLWNFsHQ1YfZ]{9.3}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU}</p><p>← @UUID[.kCvvmKYckRbQn14l]{Ce que fait le système et références} · @UUID[.S3ddB7ic9Akyd4Ze]{Le serveur et son type} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "S3ddB7ic9Akyd4Ze",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.S3ddB7ic9Akyd4Ze",
+      "name": "Le serveur et son type",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un serveur est un acteur <strong>Appareil</strong> de type serveur. Le Mégapack en livre des modèles prêts, par type et par indice.</p>\n\n<h4>Pas à pas : régler un serveur</h4>\n<ol>\n<li><p>Ouvrez la fiche du serveur. Réglez son <strong>Indice d'appareil</strong>.</p></li>\n<li><p>Choisissez son <strong>Type de serveur</strong> (<em>Kill Code p. 48-52</em>) : données, industriel, destination, obsolète, hors ligne ou renégat. Les quatre attributs matriciels se calculent ; la bulle de chacun dit s'il est « fixé par le type » ou « réparti par le type ».</p></li>\n<li><p>Pour réarranger les attributs que le type laisse au choix, échangez-les sur la fiche, comme ceux d'un deck. Changer l'indice ou le type redistribue dans l'ordre par défaut.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-serveur.webp\" width=\"868\" alt=\"La fiche d'un serveur : ① le type de serveur, ② ses attributs matriciels calculés, ③ les fichiers qu'il porte.\" /><figcaption><strong>Figure 5.4.1</strong> — La fiche d'un serveur : ① le type de serveur, ② ses attributs matriciels calculés, ③ les fichiers qu'il porte.</figcaption></figure>\n\n<ul>\n<li><p><strong>Aucun</strong> (par défaut) garde la saisie manuelle. Un serveur sans type que le MJ n'a jamais arrangé reçoit l'ordre du livre : Attaque = indice, Corruption +1, Traitement de données +2, Firewall +3 (<em>Livre de base p. 248</em>).</p></li>\n<li><p>Un type remplace cette collection par la sienne (arbitrage de DjamZ) ; un attribut que le livre mettrait à 0 passe à 1. Le comportement propre à chaque type (CI, alertes, connexions directes) n'est pas automatisé par le système seul.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p><p>← @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers} · @UUID[.frqhYNV8RElbuSLp]{Les CI} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "frqhYNV8RElbuSLp",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.frqhYNV8RElbuSLp",
+      "name": "Les CI",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une CI est un acteur <strong>Appareil</strong> de type CI. Sur sa fiche, le champ <strong>Serveur</strong> (MJ seul) choisit le serveur où elle tourne (<em>Livre de base p. 247-248</em>).</p>\n<ul>\n<li><p>Rattachée, elle prend l'Attaque, la Corruption, le Traitement de données et le Firewall de son serveur (<em>Livre de base p. 249</em>), et les suit quand il change (indice, type, arrangement), copies posées sur la scène comprises. Sa couronne trace le trait vers le serveur.</p></li>\n<li><p>Son indice, qui donne sa réserve d'attaque (indice × 2), reste celui de sa fiche : donnez-lui l'indice du serveur. Le module Matrice v1 le recopie seul.</p></li>\n<li><p>Les CI sont toujours en RV hot sim, 4D6 d'initiative (<em>Livre de base p. 249</em>). Leur attaque se lance de leur fiche ; la carte porte les effets propres à chaque type (verrouillage, reboot forcé, mark posée).</p></li>\n<li><p><strong>La Détective</strong> : chaque mark qu'elle a posée sur un avatar donne +2 dés à la Perception matricielle et à la Recherche matricielle qui visent cet avatar, pour l'utilisateur légitime : le serveur, ses autres CI et son spider (arbitrage de DjamZ du 08/10) (<em>Kill Code p. 74</em>). Le bonus s'affiche dans la fenêtre de jet, ligne <strong>Marks de la CI Détective</strong> ; avec le module Matrice v1, le spider le reçoit aussi (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.tAowbLWNFsHQ1YfZ]{9.3}).</p></li>\n<li><p><strong>La Blue Goo</strong> n'explose qu'une fois (<em>Kill Code p. 74</em>) : bouton <strong>Explosion de la CI</strong> (MJ), sur sa carte de résistance ou sur la défense de l'avatar qui l'a blessée ; VD égale à son Attaque, puis verrou et mark proposés ; la CI passe hors de combat.</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-ci.webp\" width=\"868\" alt=\"La fiche d'une CI Patrouilleuse : ① le champ Serveur, ② ses attributs, repris du serveur.\" /><figcaption><strong>Figure 5.4.2</strong> — La fiche d'une CI Patrouilleuse : ① le champ Serveur, ② ses attributs, repris du serveur.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p><p>← @UUID[.S3ddB7ic9Akyd4Ze]{Le serveur et son type} · @UUID[.uEgW7aWe3KemVueX]{Les fichiers} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "uEgW7aWe3KemVueX",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.uEgW7aWe3KemVueX",
+      "name": "Les fichiers",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un fichier est un objet porté par un serveur, un personnage, un drone ou un appareil. C'est une icône de la Matrice comme une autre (<em>Livre de base p. 237</em>) : on le perçoit, on le marke, on l'édite, on le pirate, on le piège.</p>\n\n<h4>Pas à pas : créer un fichier piégé</h4>\n<ol>\n<li><p>Sur la fiche du serveur (onglet Matrice), bloc <strong>Fichiers</strong>, cliquez sur <strong>+</strong>, ou déposez un objet Fichier sur la fiche.</p></li>\n<li><p>Dans l'onglet de configuration du fichier, réglez sa <strong>Protection</strong> (0 = aucune) et, MJ seul, sa <strong>Bombe matricielle</strong> : son indice, si elle efface le fichier en explosant, qui l'a posée. Le <strong>Contenu</strong> (MJ seul) dit ce que le fichier contient.</p></li>\n<li><p>La <strong>Dernière édition</strong> se remplit seule quand on l'édite en jeu (date du monde, auteur ou autrice).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-fichier.webp\" width=\"718\" alt=\"La fiche d'un fichier : ① la protection, ② la bombe matricielle, vue du MJ seul, ③ la dernière édition.\" /><figcaption><strong>Figure 5.4.3</strong> — La fiche d'un fichier : ① la protection, ② la bombe matricielle, vue du MJ seul, ③ la dernière édition.</figcaption></figure>\n\n<p>Le fichier n'a aucun indice : il se défend avec ceux de l'acteur qui le porte, et ne subit pas de dommages matriciels (<em>Livre de base p. 228, 230</em>). Dans la couronne, il est accroché à l'appareil maître de son porteur ; son menu radial propose <strong>Éditer un fichier</strong>, <strong>Pirater un fichier</strong>, <strong>Poser une bombe matricielle</strong> et <strong>Désamorcer une bombe matricielle</strong> (<em>Livre de base p. 240-243</em>).</p>\n<table>\n<thead><tr><th>Action</th><th>Marks</th><th>Ce que fait le système</th></tr></thead>\n<tbody>\n<tr><td><strong>Pirater un fichier</strong></td><td>1</td><td>le MJ clique <strong>Le fichier s'oppose</strong> ; un succès excédentaire brise la protection</td></tr>\n<tr><td><strong>Poser une bombe matricielle</strong></td><td>1</td><td>le joueur ou la joueuse choisit l'indice (au plus les succès excédentaires) ; une seule bombe par fichier</td></tr>\n<tr><td><strong>Désamorcer une bombe matricielle</strong></td><td>0</td><td>un succès excédentaire l'efface ; sinon elle explose</td></tr>\n<tr><td><strong>Éditer un fichier</strong></td><td>1</td><td>bouton <strong>Appliquer au fichier</strong> : une bombe sans mot de passe explose d'abord ; un fichier protégé refuse ; sinon la dernière édition s'écrit</td></tr>\n</tbody>\n</table>\n<p>Une bombe qui explose inflige (indice)D6 dommages matriciels à l'icône qui l'a déclenchée, puis s'efface, avec le fichier si elle était réglée ainsi (<em>Livre de base p. 243</em>). Le mot de passe d'une bombe est connu de qui l'a posée et du propriétaire du fichier ; la bombe passe avant la protection (arbitrages de DjamZ, le livre ne tranche pas).</p><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p><p>← @UUID[.frqhYNV8RElbuSLp]{Les CI} · @UUID[.Kdq8u0ywO4ofqeF2]{Avec le module Matrice v1} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Kdq8u0ywO4ofqeF2",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.Kdq8u0ywO4ofqeF2",
+      "name": "Avec le module Matrice v1",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le système seul joue un serveur comme le livre : une icône, ses CI, ses fichiers. Le module Matrice v1 (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.tAowbLWNFsHQ1YfZ]{sa fiche, 9.3}) en fait une carte qu'on parcourt. Ce qu'il ajoute aux fiches de ce chapitre :</p>\n<ul>\n<li><p><strong>Monter le serveur</strong> : la couronne du serveur propose <strong>Monter le serveur…</strong> ; la console du spider, <strong>Nouveau serveur…</strong>, qui crée, type et monte d'un coup. Le serveur reçoit une scène découpée en zones, et ses nids (serveurs imbriqués, chacun avec son type) (<em>Kill Code p. 48-52</em>).</p></li>\n<li><p><strong>Les CI</strong> se lancent depuis la console du spider, naissent dans leur zone et avancent vers l'intrus à chaque tour ; leur indice est recopié du serveur. Chaque mark qu'une CI pose retient le serveur qui l'a lancée : la Détective ne donne ses dés qu'à l'utilisateur légitime de ce serveur (<em>Kill Code p. 74</em>).</p></li>\n<li><p><strong>Les spiders</strong> désignés sur le serveur en sont les propriétaires : ils commandent ses CI et ses appareils sans mark (<em>Kill Code p. 51</em>) (@UUID[.6bddQEK4ym9lhTWN]{voir 5.2}).</p></li>\n<li><p><strong>Les fichiers</strong> sont rangés dans une zone (le Coffre par défaut) et ne se visent que depuis elle.</p></li>\n<li><p><strong>L'alerte</strong> du serveur et l'alarme du site se mettent dans la couronne ou la console ; le module propose la convergence au MJ à 40, et c'est le système qui l'applique (@UUID[.evin7gKCPk1ou1nK]{voir 5.2}).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p><p>← @UUID[.uEgW7aWe3KemVueX]{Les fichiers} · @UUID[.j5HXwozilYWhqu4x]{Ce que fait le système et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "j5HXwozilYWhqu4x",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.j5HXwozilYWhqu4x",
+      "name": "Ce que fait le système et références",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule les attributs d'un serveur depuis son indice et son type, et les prête à ses CI.</p></li>\n<li><p>Il joue les quatre actions sur les fichiers, les explosions de bombe, la dernière édition, et répond aux questions de Perception sur un fichier.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Sans le module Matrice v1 : l'alerte du serveur, le lancement des CI à chaque tour, la convergence dans le serveur, l'entrée et la sortie des personas.</p></li>\n<li><p>Le transfert de points d'un serveur renégat, qui ne se saisit pas sur la fiche.</p></li>\n<li><p>Le programme Détonateur (<em>Data Trails p. 61</em>), les formes complexes contre les bombes et le cryptage (<em>Kill Code p. 104</em>), la récupération d'un fichier effacé (<em>Data Trails p. 60</em>).</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Serveurs, attributs, CI : (<em>Livre de base p. 247-251</em>). Types de serveurs : (<em>Kill Code p. 48-52</em>). Fichiers et actions sur eux : (<em>Livre de base p. 228, 237, 240-243</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki : Matrice, IA, appareils et véhicules</a> (type de serveur, CI), <a href=\"https://github.com/DjamZee/sr5/wiki/Fichiers\">wiki : Fichiers</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU} &gt; @UUID[.rJewOtLgsDBgljKR]{5.4 Serveurs, CI, fichiers}</p><p>← @UUID[.Kdq8u0ywO4ofqeF2]{Avec le module Matrice v1} · @UUID[.Yp42aEcmdJIMaVyr]{5.5 Le verrou « Matrice »} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Yp42aEcmdJIMaVyr",
+      "_key": "!journal.pages!eQD8W5rCT4vBEAW9.Yp42aEcmdJIMaVyr",
+      "name": "5.5 Le verrou « Matrice »",
+      "type": "text",
+      "sort": 2600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Comme pour les autres familles (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{les verrous de règles}), le système refuse au nom du livre certaines actions matricielles. Une table qui joue plus librement lève ces refus en décochant la famille <strong>Matrice</strong> : l'action part, les calculs restent ceux du livre, et le MJ reçoit un murmure.</p>\n\n<h4>Ce que la famille couvre</h4>\n<ul>\n<li><p>une action de Résonance sans Résonance (<em>Livre de base p. 240</em>) ;</p></li>\n<li><p>un drone au sans fil coupé visé par une action matricielle, une CI, une forme complexe ou une action de Résonance (<em>Livre de base p. 424</em>) ;</p></li>\n<li><p>des marks insuffisantes sur la cible ou sur un fichier, depuis la fiche comme depuis la couronne (<em>Livre de base p. 238</em>) ;</p></li>\n<li><p>une action réservée au propriétaire, tentée par un autre personnage (<em>Livre de base p. 238</em>) ;</p></li>\n<li><p>le redémarrage sous verrouillage de connexion (<em>Livre de base p. 231, 244</em>) ;</p></li>\n<li><p>l'Émulation au-delà de la Profondeur d'une IA (<em>Data Trails p. 159</em>) ;</p></li>\n<li><p><strong>I Am the Firewall</strong> au-delà du Traitement de données, et <strong>S'interposer</strong> pour plus d'un allié (<em>Kill Code p. 43-44</em>) ;</p></li>\n<li><p>l'Espionnage sans mark pour voir par un appareil (<em>Livre de base p. 241</em>) ;</p></li>\n<li><p>un PAN plein au-delà d'Indice × 3 (<em>Livre de base p. 234</em>).</p></li>\n</ul>\n\n<h4>Pas à pas : lever la famille</h4>\n<ol>\n<li><p>Ouvrez <strong>Réglages Shadowrun</strong>, onglet <strong>Préréglages</strong>, bouton <strong>Régler les verrous</strong>.</p></li>\n<li><p>Décochez <strong>Matrice</strong> ; le préréglage passe à <strong>Personnalisé</strong>. Enregistrez.</p></li>\n<li><p>Dans le menu radial, les actions grisées faute de marks, de Résonance ou de propriété redeviennent actives ; leur raison reste au survol.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-5-leve.webp\" width=\"771\" alt=\"Famille Matrice levée : le même menu radial que plus haut, ① les actions redevenues actives, ② leur raison gardée au survol.\" /><figcaption><strong>Figure 5.5.1</strong> — Famille Matrice levée : le même menu radial que plus haut, ① les actions redevenues actives, ② leur raison gardée au survol.</figcaption></figure>\n\n<h4>Ce que la levée change, et ce qu'elle ne change pas</h4>\n<ul>\n<li><p>Une action de Résonance part avec la Résonance de la fiche (0 dé) ; l'Émulation garde l'indice saisi, et la limite et le malus le suivent ; le drone au sans fil coupé se défend et résiste ; l'Espionnage dure sans mark tant que la famille reste levée ; le PAN accepte un appareil de plus que son maximum.</p></li>\n<li><p>Le murmure au MJ dit que l'action est partie, et le refus habituel en motif, une fois par personnage et par tour. Le joueur ou la joueuse ne le voit pas.</p></li>\n<li><p>Restent fermés, même levée : un appareil en mode silencieux non repéré (il n'a pas d'icône à cliquer), et toute action quand le personnage n'a ni commlink ni deck allumé.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Les verrous de toutes les familles : @UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{8.2}. Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki : Réglages du système</a> (Verrous de règles).</p></li>\n<li><p>Marks requises : (<em>Livre de base p. 238</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.TJrVZVPmTcyGGVkz]{MENU}</p><p>← @UUID[.j5HXwozilYWhqu4x]{Ce que fait le système et références}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

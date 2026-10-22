@@ -1,0 +1,581 @@
+{
+  "_id": "QOnlNlLLjtaxDQDL",
+  "_key": "!journal!QOnlNlLLjtaxDQDL",
+  "name": "2. La fiche et les jets",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 300000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "W4YZQ8PPGj7HhE7R",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.W4YZQ8PPGj7HhE7R",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie est celle que le joueur ou la joueuse lit avant sa première séance : la fiche du personnage, la fenêtre qui prépare un jet, la carte qui en donne le résultat, puis ce que le système fait des limites, de la Chance, des objets, des effets et des blessures.</p>\n<p>Le MJ y trouve aussi ce qui reste à sa main : le système compte et propose, mais c'est toujours le MJ qui arbitre une circonstance que le système ne connaît pas.</p><table><tbody><tr><td><p>@UUID[.uPiIl81gApKkaXG9]{2.1 La fiche de personnage}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.H9GxqX4hq2iS0Ypl]{Remplir et ranger la fiche}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.5bzs5e5PrDr8spbo]{Les autres fiches}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.LrN5cahHh75Udn62]{Les modificateurs}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6O0V9NuUfyp01Ma6]{L'attribut du jet}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.lymbfm73zByvM0gB]{Les tests étendus}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.89rfIha7WYNddZJY]{Les tests sociaux de Cutting Aces}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.qVwaxKhvT1ma91YW]{Les faveurs des contacts}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.pIZ5PdWNa4Igw9e4]{La limite}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WBkvQR6bo7E1QiI5]{Dépenser la Chance}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OlTGGyI0LL4OF1Of]{Complications et échecs critiques}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.F8d6We4z43WtV5nV]{2.4 Lire une carte de tchat}</p></td><td><p>Tous</p></td></tr><tr><td><p>@UUID[.Ee1s20qevgGEbUjG]{2.5 Les objets}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.OZcdTfyObgov0hHv]{Armurerie, Personnalisation, Clinique, Établi}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.fCp8Rvf37p9bhUCL]{Stocker, enfermer, cacher}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.waObcY2cn3mPk14F]{2.6 Les effets}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.JFcBqUkpLrr84dbl]{Effets circonstanciels et effets sur les autres}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.8M53gzMBMO1fPrZ3]{2.7 Moniteurs de condition et blessures}</p></td><td><p>Tous</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "uPiIl81gApKkaXG9",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.uPiIl81gApKkaXG9",
+      "name": "2.1 La fiche de personnage",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>La fiche rassemble tout ce que le personnage est et possède. Presque chaque ligne se clique : un attribut, une compétence, une arme lancent leur jet. Ce chapitre vous en fait faire le tour, puis présente les fiches des autres acteurs : la brute, l'esprit, le drone.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-1-fiche-zones.webp\" width=\"940\" alt=\"La fiche d'un personnage joueur. Les numéros renvoient à la liste ci-dessous.\" /><figcaption><strong>Figure 2.1.1</strong> — La fiche d'un personnage joueur. Les numéros renvoient à la liste ci-dessous.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Le portrait et le nom.</strong> Cliquez sur le portrait pour changer d'image ; le nom se modifie sur place.</p></li>\n<li><p><strong>② Les onglets latéraux</strong> (à gauche du trait) : <strong>Attributs</strong>, <strong>Dérivés</strong>, <strong>Magie</strong>, <strong>Matrice</strong>, <strong>Qualités</strong>. Le nom de chaque onglet s'affiche au survol de son icône.</p></li>\n<li><p><strong>③ Les onglets principaux</strong> (à droite du trait) : <strong>Compétences</strong>, <strong>Combat</strong>, <strong>Équipement</strong>, <strong>Stockage</strong>, <strong>Augmentations</strong>, <strong>Magicien</strong>, <strong>Technomancien</strong>, <strong>Matrice</strong>, <strong>Social</strong>, <strong>Biographie</strong>.</p></li>\n<li><p><strong>④ La barre de titre</strong> : le cadenas (mode jeu ou mode édition), la clé à molette pour personnaliser l'affichage, et les trois points pour les autres commandes de Foundry.</p></li>\n<li><p><strong>⑤ Le panneau latéral</strong> : attributs, résistances, défenses et initiatives. Chaque ligne se clique pour lancer son jet.</p></li>\n<li><p><strong>⑥ Le panneau principal</strong> : le contenu de l'onglet choisi.</p></li>\n<li><p><strong>⑦ Les moniteurs</strong>, toujours visibles en bas, quel que soit l'onglet (@UUID[.8M53gzMBMO1fPrZ3]{les moniteurs de condition}).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>@UUID[.H9GxqX4hq2iS0Ypl]{Remplir et ranger la fiche} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "H9GxqX4hq2iS0Ypl",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.H9GxqX4hq2iS0Ypl",
+      "name": "Remplir et ranger la fiche",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : passer en mode édition</h4>\n<ol>\n<li><p>Cliquez sur le cadenas de la barre de titre. Ouvert, la fiche est en <strong>mode édition</strong> : les valeurs se modifient. Fermé, elle est en <strong>mode jeu</strong> : on clique pour lancer les jets sans rien dérégler.</p></li>\n<li><p>Le mode est retenu pour chaque fiche et chaque utilisateur : votre MJ peut garder la fiche fermée pendant que vous l'éditez.</p></li>\n</ol>\n\n<h4>Pas à pas : ajouter un objet</h4>\n<ol>\n<li><p>Glissez l'objet depuis un compendium, la barre latérale <strong>Objets</strong> ou une autre fiche, et lâchez-le sur la fiche.</p></li>\n<li><p>Le système le range tout seul dans le bon onglet : une arme dans <strong>Combat</strong>, un sort dans <strong>Magicien</strong>, un contact dans <strong>Social</strong>… (@UUID[.Ee1s20qevgGEbUjG]{les objets}).</p></li>\n</ol>\n\n<h4>Pas à pas : personnaliser l'affichage</h4>\n<ol>\n<li><p>Passez en mode édition, puis cliquez sur la clé à molette de la barre de titre.</p></li>\n<li><p>Glissez les blocs d'un onglet à l'autre, changez leur largeur (simple, double, triple), créez vos propres onglets.</p></li>\n<li><p>La disposition est enregistrée pour ce personnage ; un bouton rend la disposition d'origine.</p></li>\n</ol>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Une fiche trop petite ?</p><p>Agrandissez-la par son coin inférieur droit : elle retient sa taille d'une ouverture à l'autre, pour chaque type de fiche et sur votre poste seulement. Elle ne descend jamais sous sa taille d'origine.</p></div>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule les réserves de dés affichées (attribut, compétence, bonus des objets et des effets) et applique le malus de blessure à tous les jets.</p></li>\n<li><p>Le métatype, choisi en bas de la fiche, pose la vision du personnage (<em>Livre de base p. 68</em>). Les bonus d'attributs du métatype restent à la charge de la création.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.uPiIl81gApKkaXG9]{2.1 La fiche de personnage}</p><p>← @UUID[.uPiIl81gApKkaXG9]{2.1 La fiche de personnage} · @UUID[.5bzs5e5PrDr8spbo]{Les autres fiches} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "5bzs5e5PrDr8spbo",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.5bzs5e5PrDr8spbo",
+      "name": "Les autres fiches",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Chaque type d'acteur a sa fiche. Elles se ressemblent ; voici ce qui change.</p>\n\n<h4>La brute (« Brute ou créature »)</h4>\n<p>Pour les PNJ de second plan et les créatures. Trois différences avec un personnage joueur : le <strong>Professionnalisme</strong> remplace la Chance, l'équipement ne gère pas l'argent, et la biographie ne tient pas de Karma.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-1-brute.webp\" width=\"912\" alt=\"La fiche d'une brute : le Professionnalisme à la place de la Chance.\" /><figcaption><strong>Figure 2.1.2</strong> — La fiche d'une brute : le Professionnalisme à la place de la Chance.</figcaption></figure>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Gagner du temps</p><p>Réglez une brute type (un garde de la sécurité, un ganger), puis dupliquez-la : chaque copie est un nouvel adversaire prêt à jouer.</p></div>\n\n<h4>L'esprit</h4>\n<p>En tête de fiche : la <strong>Puissance</strong>, la case <strong>lié</strong> et l'interrupteur de <strong>matérialisation</strong>. Le propriétaire peut modifier la Puissance. Le MJ dispose en plus de la case <strong>Esprit libre</strong>, qui donne à l'esprit sa propre Chance (<em>Livre de base p. 306-307</em>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-1-esprit.webp\" width=\"912\" alt=\"La fiche d'un esprit : Puissance, lien et matérialisation en tête.\" /><figcaption><strong>Figure 2.1.3</strong> — La fiche d'un esprit : Puissance, lien et matérialisation en tête.</figcaption></figure>\n<p>Un esprit au service d'un invocateur peut dépenser la Chance de celui-ci tant qu'il lui en reste (<em>Livre de base p. 306</em>) : la fenêtre de jet de l'esprit la propose d'elle-même.</p>\n\n<h4>Le drone ou le véhicule</h4>\n<p>La fiche d'un drone porte son <strong>Mode de contrôle</strong> (avec la case <strong>Connexion directe au rigger</strong> et la <strong>Vitesse actuelle</strong>), son bloc d'appareil matriciel, et des onglets propres : <strong>Modifications</strong> et <strong>Atelier</strong>. Le rigging a sa propre partie (@UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.AtuZz9Pwqg0xLguA]{la console de rigger}, @UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.4cWCYgWvhAX7eaYv]{l'Atelier}).</p>\n\n<h4>Le sprite</h4>\n<p>En tête de fiche : le <strong>niveau</strong> et la case <strong>inscrit</strong>, que le propriétaire peut modifier (@UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.QHApoxYSA0Sqrblk]{les technomanciens}).</p>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Fiche-de-personnage\">wiki : Fiche de personnage</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Grunt\">wiki : Grunt</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Barres-moniteurs-et-fenetres\">wiki : barres, moniteurs et fenêtres</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.uPiIl81gApKkaXG9]{2.1 La fiche de personnage}</p><p>← @UUID[.H9GxqX4hq2iS0Ypl]{Remplir et ranger la fiche} · @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WaLBTAKjsQMiyGQN",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.WaLBTAKjsQMiyGQN",
+      "name": "2.2 Lancer un jet",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un jet se fait toujours en trois temps : vous cliquez sur ce que vous voulez tester, une fenêtre vous montre la réserve de dés et ses modificateurs, puis une carte de tchat donne le résultat. Le système compte presque tout ; vous ajoutez ce qu'il ne peut pas deviner.</p>\n\n<h4>Pas à pas : un test de compétence</h4>\n<ol>\n<li><p>Sur la fiche, onglet <strong>Compétences</strong>, cliquez sur la réserve de dés de la compétence (le nombre et l'icône de dé de la colonne <strong>RDD</strong>, par exemple sur la ligne <strong>Perception</strong>). La fenêtre du jet s'ouvre, avec l'attribut associé déjà compté.</p></li>\n<li><p>Vérifiez la <strong>Réserve de dés de base</strong> : la flèche à côté déplie son détail.</p></li>\n<li><p>Dépliez <strong>Modificateurs</strong> avec sa flèche pour voir ce que le système a ajouté, cochez ce qui s'applique, et saisissez au besoin une valeur dans <strong>Modificateurs divers</strong>.</p></li>\n<li><p>Cliquez sur <strong>Lancer les dés</strong> : le nombre entre parenthèses est la réserve finale. Ou cliquez sur <strong>Repousser les limites</strong> pour dépenser un point de Chance (@UUID[.sHrMMlpzQsHhMNRd]{voir le chapitre suivant}).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-2-fenetre-jet.webp\" width=\"462\" alt=\"La fenêtre d'un test de Perception lancé depuis la réserve : le détail de la réserve, le menu Attribut du jet et la ligne des modificateurs divers.\" /><figcaption><strong>Figure 2.2.1</strong> — La fenêtre d'un test de Perception lancé depuis la réserve : le détail de la réserve, le menu Attribut du jet et la ligne des modificateurs divers.</figcaption></figure>\n\n<p>Fermer la fenêtre sans lancer annule tout : rien n'est dépensé, ni munition ni Chance.</p>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Le nom ou la réserve ?</p><p>Cliquer sur le <strong>nom</strong> de la compétence ouvre un test sans attribut : la réserve ne compte que la compétence, et vous choisissez l'attribut dans la ligne <strong>Attribut secondaire</strong> des modificateurs. Cliquer sur la <strong>réserve</strong> (colonne <strong>RDD</strong>) lance compétence + attribut associé, le cas le plus courant.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.5bzs5e5PrDr8spbo]{Les autres fiches} · @UUID[.LrN5cahHh75Udn62]{Les modificateurs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "LrN5cahHh75Udn62",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.LrN5cahHh75Udn62",
+      "name": "Les modificateurs",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Les lignes grisées</strong> sont calculées par le système : blessures, effets actifs, environnement de la scène, recul, défenses déjà faites dans le tour. Pour en changer une, changez sa cause (soignez, retirez l'effet…).</p></li>\n<li><p><strong>La ligne <strong>Modificateurs divers</strong></strong> est toujours là : le joueur ou la joueuse, ou le MJ, y saisit une circonstance que le système ne connaît pas.</p></li>\n<li><p><strong>Les lignes propres au test</strong> apparaissent selon ce que vous lancez : spécialisation, portée et mode de tir pour une arme, Puissance pour un sort, seuil de Perception…</p></li>\n<li><p><strong>Les effets circonstanciels</strong> (« +2 dés contre les esprits ») sont proposés décochés : cochez-les quand la circonstance est là (@UUID[.waObcY2cn3mPk14F]{les effets}).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p><p>← @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet} · @UUID[.6O0V9NuUfyp01Ma6]{L'attribut du jet} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6O0V9NuUfyp01Ma6",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.6O0V9NuUfyp01Ma6",
+      "name": "L'attribut du jet",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une compétence ne se lance pas toujours avec son attribut associé (<em>Livre de base p. 130</em>). Pour un test lancé depuis la réserve (colonne <strong>RDD</strong>) et pour une connaissance, la fenêtre propose sous la réserve un menu <strong>Attribut du jet</strong>, réglé d'office sur l'attribut associé.</p>\n<ol>\n<li><p>Dépliez la <strong>Réserve de dés de base</strong> et choisissez l'attribut dans le menu (Gymnastique + Force pour l'escalade, par exemple).</p></li>\n<li><p>Pour garder ce choix sur cette compétence, cochez <strong>Garder cet attribut pour cette compétence</strong> : la fiche affiche alors l'attribut retenu, en grisé, à côté de la compétence.</p></li>\n</ol>\n<p>La limite ne change pas avec l'attribut (<em>Livre de base p. 138</em>). Le joueur ou la joueuse propose, le MJ arbitre. Le menu n'existe pas pour les tests opposés, les langues, les drones, les agents et les sprites.</p><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p><p>← @UUID[.LrN5cahHh75Udn62]{Les modificateurs} · @UUID[.lymbfm73zByvM0gB]{Les tests étendus} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lymbfm73zByvM0gB",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.lymbfm73zByvM0gB",
+      "name": "Les tests étendus",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cochez <strong>Test étendu</strong> dans la fenêtre. La carte propose alors <strong>Nouveau jet</strong> : chaque relance a un dé de moins, et les succès s'additionnent. Un échec critique met fin au test étendu, et le bouton disparaît (<em>Livre de base p. 51</em>). Chaque relance relit la fiche : un personnage blessé ou soigné entre deux intervalles lance avec ses blessures du moment (<em>Livre de base p. 171</em>), et le malus des sorts maintenus compte aussi.</p><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p><p>← @UUID[.6O0V9NuUfyp01Ma6]{L'attribut du jet} · @UUID[.89rfIha7WYNddZJY]{Les tests sociaux de Cutting Aces} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "89rfIha7WYNddZJY",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.89rfIha7WYNddZJY",
+      "name": "Les tests sociaux de Cutting Aces",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Quand le MJ laisse coché <strong>Règles sociales de Cutting Aces</strong> (le défaut), la fenêtre d'un test social offre deux lignes de plus. Rien ne s'applique sans être choisi ; décoché, les tests sociaux restent ceux du livre de base.</p>\n<ul>\n<li><p><strong>Manœuvre sociale</strong> : les manœuvres qui vont avec le test (Prestation charmante en Représentation, Diversion ou Rouler la cible en Escroquerie, Faux pas en Étiquette…). Elles coûtent 4 dés sauf mention contraire, et une action gratuite de plus (<em>Cutting Aces p. 153-154</em>). Ce qu'une manœuvre laisse pour un test suivant, le MJ l'applique d'un bouton de la carte ; la fenêtre de jet suivante l'offre alors sur une ligne <strong>Manœuvre : …</strong>, cochée d'office, et l'effet est dépensé au jet.</p></li>\n<li><p><strong>Étape d'arnaque</strong> : quand le MJ a ouvert une arnaque où votre personnage est escroc, Poser l'appât, Renforcer le mensonge et Sortie en douceur se lancent depuis la fiche, par un test d'Escroquerie + Charisme (<em>Cutting Aces p. 162-164</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.WsdsU4MlUP0QztsL]{voir le suivi des arnaques}).</p></li>\n</ul>\n<p>Le bouton en forme de poignée de main des contrôles de jeton ouvre la fenêtre <strong>Marchandage</strong>, pour toute la table : une calculatrice qui donne la valeur négociée d'une offre selon les succès excédentaires, le tableau de négociation (équipement, contact, service, information) et ce que l'Intimidation obtient (<em>Cutting Aces p. 160-162, 164</em>). Elle n'écrit rien : le prix convenu se paie ensuite comme d'habitude.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-2-manoeuvre-sociale.webp\" width=\"462\" alt=\"La fenêtre d'un test d'Escroquerie : la ligne « Manœuvre sociale », dans les modificateurs.\" /><figcaption><strong>Figure 2.2.2</strong> — La fenêtre d'un test d'Escroquerie : la ligne « Manœuvre sociale », dans les modificateurs.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/2-2-marchandage.webp\" width=\"568\" alt=\"La fenêtre Marchandage : une offre, les succès excédentaires et le tableau de négociation.\" /><figcaption><strong>Figure 2.2.3</strong> — La fenêtre Marchandage : une offre, les succès excédentaires et le tableau de négociation.</figcaption></figure>\n\n<h4>Les traits sociaux</h4>\n<p>Plusieurs qualités de Cutting Aces agissent d'elles-mêmes une fois posées sur la fiche : <strong>Il a la classe et il le sait</strong> ignore 2 points de malus sociaux, <strong>Oreille compatissante</strong> fait lancer l'Étiquette avec l'Intuition, <strong>Maître débatteur</strong> l'Intimidation, le Leadership et la Négociation avec la Logique (<em>Cutting Aces p. 149-152</em>). Le Mégapack pose aussi les effets de Cynique, Alibi, Apparence anodine et Trouble d'anxiété sociale. Le Logiciel Subacoustiques Subliminaux arrive décoché dans la fenêtre de jet des personnes de sa zone, avec sa condition en libellé : elles le cochent quand leur action va contre l'émotion suscitée (<em>Cutting Aces p. 146</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p><p>← @UUID[.lymbfm73zByvM0gB]{Les tests étendus} · @UUID[.qVwaxKhvT1ma91YW]{Les faveurs des contacts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "qVwaxKhvT1ma91YW",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.qVwaxKhvT1ma91YW",
+      "name": "Les faveurs des contacts",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Chaque contact a un onglet <strong>Faveurs</strong> (icône de poignée de main) : un solde de jetons, vert quand le contact doit au personnage, rouge quand le personnage lui doit (<em>Run Faster p. 170-172</em>). La liste des contacts de la fiche montre le même solde en pastille à côté du nom. Le MJ et le joueur ou la joueuse propriétaire du personnage tiennent ces jetons.</p>\n<ol>\n<li><p>Ouvrez le contact depuis l'onglet <strong>Social</strong> de la fiche, puis son onglet <strong>Faveurs</strong>.</p></li>\n<li><p>Cliquez sur <strong>Demander une faveur</strong> et donnez son indice. Jusqu'à la Loyauté, le contact accepte (<em>Livre de base p. 391</em>) ; au-delà, la fenêtre de Négociation s'ouvre avec la Loyauté du contact en dés (<em>Livre de base p. 388</em>) et les jetons dépensés (+1 dé chacun, +4 au plus), déjà cochés.</p></li>\n<li><p>Une fois la faveur faite, cliquez sur <strong>Faveur obtenue</strong> : le contact gagne ses jetons. Un coup de main rendu au contact se note par <strong>Service rendu</strong>.</p></li>\n</ol>\n<p>Les autres boutons : <strong>Rembourser</strong> (le contact demande le double), <strong>Améliorer la relation</strong> (la Loyauté monte d'un cran), <strong>Intimider</strong> (−1 Loyauté, sans jeton), <strong>Corriger</strong> (à la main, avec un motif). La nature de la relation, <strong>Famille</strong> ou <strong>Chantage</strong>, change les coûts (<em>Run Faster p. 172</em>). L'historique garde les douze derniers mouvements. Les tests de Loyauté d'une dette en retard restent au MJ.</p>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il compte les blessures, les effets, le recul, les munitions, les réactifs, l'initiative dépensée par les défenses et les actions consommées.</p></li>\n<li><p>Il applique la limite et signale les complications.</p></li>\n</ul>\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il saisit dans la ligne personnalisée toute circonstance que le système ne connaît pas, et arbitre l'attribut du jet quand un joueur ou une joueuse en propose un autre.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Manœuvres sociales : (<em>Cutting Aces p. 153-154</em>) ; négociation et intimidation avancées : (<em>Cutting Aces p. 160-162, 164</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Anatomie-d-un-jet\">wiki : Anatomie d'un jet</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Modificateurs-de-jet\">wiki : Modificateurs et fenêtre de jet</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Attribut-du-jet\">wiki : Attribut du jet</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Social-de-Cutting-Aces\">wiki : Le social de Cutting Aces</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.WaLBTAKjsQMiyGQN]{2.2 Lancer un jet}</p><p>← @UUID[.89rfIha7WYNddZJY]{Les tests sociaux de Cutting Aces} · @UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "sHrMMlpzQsHhMNRd",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.sHrMMlpzQsHhMNRd",
+      "name": "2.3 Limites, Chance, complications et échecs critiques",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le système applique la limite, compte les 1 pour signaler une complication ou un échec critique, et tient le compte de la Chance quand vous la dépensez par un bouton. La conséquence d'une complication reste au MJ.</p><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.qVwaxKhvT1ma91YW]{Les faveurs des contacts} · @UUID[.pIZ5PdWNa4Igw9e4]{La limite} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pIZ5PdWNa4Igw9e4",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.pIZ5PdWNa4Igw9e4",
+      "name": "La limite",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>La limite vient de l'onglet <strong>Dérivés</strong> (limites physique, mentale, sociale), de la Précision d'une arme, de la Puissance d'un sort, de l'attribut matriciel… La carte de résultat affiche les succès retenus et les succès obtenus : « 3 / 5 » veut dire que 5 succès ont été obtenus et 3 retenus. Les tests de résistance aux dommages, de Drain et de Dissipation n'ont pas de limite.</p><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques}</p><p>← @UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques} · @UUID[.WBkvQR6bo7E1QiI5]{Dépenser la Chance} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WBkvQR6bo7E1QiI5",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.WBkvQR6bo7E1QiI5",
+      "name": "Dépenser la Chance",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Repousser les limites</strong>, dans la fenêtre du jet ou sur la carte après coup : la limite saute et les 6 explosent (<em>Livre de base p. 58</em>). Le système retire le point de Chance et le signale sur la carte. Le bouton n'apparaît que s'il vous reste de la Chance.</p></li>\n<li><p><strong>Seconde chance</strong>, sur la carte : relance les dés ratés. Le résultat reste plafonné par la limite (<em>Livre de base p. 58</em>) ; la complication reste celle du premier jet, et un échec critique le reste.</p></li>\n<li><p><strong>Les autres usages de la Chance</strong> (gagner l'initiative, se mettre à couvert…) se font à la main : décochez un point sur le moniteur de Chance, en bas de la fiche.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Et pour un test étendu ?</p><p>Repousser les limites ne se fait qu'au premier jet d'un test étendu : la Chance entre dans la réserve de départ. Seconde chance n'est pas permise en test étendu. Si le MJ a levé le verrou « Actions et initiative », le système laisse faire et le prévient par un message discret.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques}</p><p>← @UUID[.pIZ5PdWNa4Igw9e4]{La limite} · @UUID[.OlTGGyI0LL4OF1Of]{Complications et échecs critiques} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OlTGGyI0LL4OF1Of",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.OlTGGyI0LL4OF1Of",
+      "name": "Complications et échecs critiques",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p>Le système compte les 1 et affiche « (Complication) » ou « (Échec critique) » sur la carte, en mettant les dés en cause en évidence (<em>Livre de base p. 47</em>).</p></li>\n<li><p>Les 1 obtenus en relançant des 6 ne comptent pas pour la complication : seul le premier jet compte. Le livre ne tranche pas ce point ; le système fait ce choix.</p></li>\n<li><p>La conséquence est décidée par le MJ, sauf pour les premiers soins et la guérison, où le système tire lui-même les cases perdues (<em>Livre de base p. 207-208</em>).</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td>Famille <strong>Actions et initiative</strong> des verrous de règles (<strong>Préréglages</strong>)</td><td>MJ, pour le monde</td><td>cochée (préréglage Livre)</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Limites, Chance, complications : (<em>Livre de base p. 47, 58</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Limites-Chance-et-complications\">wiki : Limites, Chance et complications</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.sHrMMlpzQsHhMNRd]{2.3 Limites, Chance, complications et échecs critiques}</p><p>← @UUID[.WBkvQR6bo7E1QiI5]{Dépenser la Chance} · @UUID[.F8d6We4z43WtV5nV]{2.4 Lire une carte de tchat} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "F8d6We4z43WtV5nV",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.F8d6We4z43WtV5nV",
+      "name": "2.4 Lire une carte de tchat",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Chaque jet donne une carte dans le tchat. Elle montre les dés et le résultat, puis propose les boutons de la suite : se défendre, encaisser, relancer avec la Chance, appliquer un effet. C'est par elle que l'attaque d'un personnage devient la défense d'un autre.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-4-carte.webp\" width=\"308\" alt=\"La carte d'un test de Perception, détail déplié : les dés, la réserve, la limite, puis le résultat ; en bas, le crayon du MJ et les icônes de Chance.\" /><figcaption><strong>Figure 2.4.1</strong> — La carte d'un test de Perception, détail déplié : les dés, la réserve, la limite, puis le résultat ; en bas, le crayon du MJ et les icônes de Chance.</figcaption></figure>\n\n<h4>Ce que montre la carte</h4>\n<ul>\n<li><p><strong>L'en-tête</strong> : cliquez sur le titre pour replier ou déplier le détail.</p></li>\n<li><p><strong>Les dés</strong>, en couleur : les succès (5 et 6), les échecs, les 1 d'une complication mis en évidence, les dés explosés par la Chance.</p></li>\n<li><p><strong>Le détail</strong> : la réserve et ses modificateurs, la limite (succès retenus / obtenus), le seuil, et pour une attaque les dommages et les actions consommées. Un malus spécial dit d'où il vient, par exemple <strong>Effet spécial (Tir de couverture)</strong>.</p></li>\n</ul>\n<p>Les cartes que le système écrit sans jet (échéances, rappels du calendrier, fin d'effets, drogues, maladies, perception matricielle, poursuite…) ont la même allure : un bandeau de titre, un liseré de couleur par famille (ambre pour le calendrier, bleu-vert pour la santé, vert pour la Matrice, rouge pour le reste) et les mêmes boutons sombres. Aucune carte du système n'affiche plus la ligne de ses destinataires (« À : … ») ; un message chuchoté tapé au tchat (<strong>/w</strong>) la garde. Les renvois aux pages des livres disparaissent de toutes les cartes quand le MJ décoche <strong>Rappel des règles</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.tHfGIndtHWUOiSaA]{voir 0.4}).</p>\n\n<h4>Pas à pas : l'enchaînement d'une attaque</h4>\n<ol>\n<li><p>L'attaquant cible son adversaire (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.Q9ZjuGii7Dk9qSH6]{le HUD du jeton}), puis lance l'attaque.</p></li>\n<li><p>Sur la carte de l'attaque, le propriétaire de la cible clique sur <strong>Se défendre</strong> : sa fenêtre de défense s'ouvre.</p></li>\n<li><p>Si l'attaque touche, la carte de la défense propose le bouton de résistance (<strong>Encaisser</strong>…), puis le système coche les cases du moniteur.</p></li>\n</ol>\n\n<h4>Les boutons et qui peut les cliquer</h4>\n<ul>\n<li><p><strong>Seconde chance</strong> et <strong>Repousser les limites</strong>, les deux icônes en bas à droite de la carte : à l'auteur du jet, s'il lui reste de la Chance.</p></li>\n<li><p><strong>Se défendre</strong> et la résistance : au propriétaire de la cible ; une seule défense par cible et par attaque. Le MJ peut toujours cliquer, et rouvrir une défense.</p></li>\n<li><p><strong>Nouveau jet</strong> : la suite d'un test étendu.</p></li>\n<li><p>Les boutons d'application (poser un effet, appliquer des dommages, l'effet d'une attaque ciblée) : un bouton déjà utilisé ne se rejoue pas.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>L'icône en forme de crayon, en bas à gauche de la carte, modifie le nombre de succès, pour une circonstance que le système ne connaît pas ou une erreur.</p></li>\n<li><p>Quand un joueur ou une joueuse veut infliger des dommages au personnage d'un autre, le MJ reçoit une demande à confirmer.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Messages-de-chat\">wiki : Lire un message de chat</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.OlTGGyI0LL4OF1Of]{Complications et échecs critiques} · @UUID[.Ee1s20qevgGEbUjG]{2.5 Les objets} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Ee1s20qevgGEbUjG",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.Ee1s20qevgGEbUjG",
+      "name": "2.5 Les objets",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Armes, armures, équipement, augmentations, sorts, contacts : tout ce qu'un personnage possède est un objet. Le système le range dans le bon onglet, applique ses bonus quand il est équipé, et sait le stocker, l'enfermer ou le cacher sur soi.</p>\n\n<h4>Pas à pas : équiper un objet</h4>\n<ol>\n<li><p>Glissez l'objet sur la fiche (depuis un compendium, la barre latérale ou la boutique) : il arrive dans son onglet.</p></li>\n<li><p>Cochez sa case <strong>équipé</strong> sur sa ligne : ses bonus et ses effets s'appliquent.</p></li>\n<li><p>Cliquez sur son nom pour ouvrir sa fiche et le régler (munitions, accessoires, effets…).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-5-equipement.webp\" width=\"912\" alt=\"L'onglet Équipement d'un personnage : chaque objet, son état et ses boutons.\" /><figcaption><strong>Figure 2.5.1</strong> — L'onglet Équipement d'un personnage : chaque objet, son état et ses boutons.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.F8d6We4z43WtV5nV]{2.4 Lire une carte de tchat} · @UUID[.OZcdTfyObgov0hHv]{Armurerie, Personnalisation, Clinique, Établi} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OZcdTfyObgov0hHv",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.OZcdTfyObgov0hHv",
+      "name": "Armurerie, Personnalisation, Clinique, Établi",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un objet qui reçoit des pièces a, sur sa fiche, un onglet où l'on compose l'objet complet : <strong>Armurerie</strong> pour une arme à distance, <strong>Personnalisation</strong> pour une armure, <strong>Clinique</strong> pour un implant à Capacité (cybermembre, cyberyeux), <strong>Établi</strong> pour un autre objet à Capacité (lunettes, casque). Un véhicule ou un drone a son <strong>Atelier</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.4cWCYgWvhAX7eaYv]{voir 6.2}). Une arme de mêlée, une grenade, un commlink n'en ont pas.</p>\n<p>L'onglet montre les emplacements de l'arme (un cadre par emplacement : la pièce posée, « libre » ou « absent sur ce type d'arme ») (<em>Run & Gun p. 67</em>), ou la jauge de Capacité (<em>Livre de base p. 418</em>) ; le prix de l'objet, de ses pièces et du tout ; la Disponibilité du tout ; les pièces posées et celles de l'inventaire prêtes à poser. Avec le Mégapack, une bannière de ses vendeurs coiffe l'onglet. L'onglet d'atelier se repère dans la barre des onglets de la fiche : blanc au repos, rouge avec une lueur quand il est ouvert ; son contenu est un encadré au style du Concepteur.</p>\n<h4>Pas à pas : poser une pièce</h4>\n<ol>\n<li><p>Ouvrez la fiche de l'arme (ou de l'armure, de l'implant…) et son onglet <strong>Armurerie</strong>.</p></li>\n<li><p>Glissez la pièce sur l'onglet. Depuis votre inventaire, elle est posée tout de suite. Depuis un compendium ou la boutique, une fenêtre donne son prix sur cet objet, sa Disponibilité et sa place : cliquez sur <strong>Acheter pour … et poser</strong> (<strong>Prendre (création) et poser</strong> à la création). L'achat passe par la caisse de la boutique (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.KCwO9LeINSJYoROJ]{voir 7.1}) ; une modification dont le prix dépend de l'arme est facturée sur cette arme.</p></li>\n<li><p>En jeu, un accessoire de crosse, de canon, interne, ou une modification, est posé <strong>à installer</strong> : il ne fonctionne qu'après le test étendu Armurerie + Logique [Mentale] (<em>Run & Gun p. 67</em>). Cliquez sur le dé de sa ligne, réglez seuil et intervalle, puis <strong>Installer</strong> quand le seuil est atteint. Au-dessus, sur le côté ou sous le canon, la pièce marche tout de suite. À la création, le test n'est jamais exigé.</p></li>\n<li><p>La corbeille d'une pièce posée la retire et la rend à l'inventaire.</p></li>\n</ol>\n<p>Une pièce est refusée avant tout paiement si c'est un trait d'origine de l'arme, si son emplacement est déjà pris ou absent sur ce type d'arme, ou si elle dépasse la Capacité restante. Le MJ a en plus <strong>Poser directement</strong>, sans paiement ni test.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-5-armurerie.webp\" width=\"658\" alt=\"L'onglet Armurerie d'un pistolet lourd : les emplacements, le prix et la Disponibilité du tout, les pièces prêtes à poser.\" /><figcaption><strong>Figure 2.5.2</strong> — L'onglet Armurerie d'un pistolet lourd : les emplacements, le prix et la Disponibilité du tout, les pièces prêtes à poser.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/2-5-acheter-et-poser.webp\" width=\"541\" alt=\"Un accessoire glissé depuis la boutique : son prix sur cette arme, sa place, et « Acheter pour … et poser ».\" /><figcaption><strong>Figure 2.5.3</strong> — Un accessoire glissé depuis la boutique : son prix sur cette arme, sa place, et « Acheter pour … et poser ».</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.Ee1s20qevgGEbUjG]{2.5 Les objets}</p><p>← @UUID[.Ee1s20qevgGEbUjG]{2.5 Les objets} · @UUID[.fCp8Rvf37p9bhUCL]{Stocker, enfermer, cacher} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fCp8Rvf37p9bhUCL",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.fCp8Rvf37p9bhUCL",
+      "name": "Stocker, enfermer, cacher",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : ranger dans un stockage</h4>\n<ol>\n<li><p>Onglet <strong>Stockage</strong>, cliquez sur le <strong>+</strong> de l'en-tête : choisissez le <strong>Type de stockage</strong> (Planque, Coffre, Paquetage, Cache, Garage) et sa <strong>Capacité</strong> (0 pour illimitée).</p></li>\n<li><p>Le <strong>+</strong> en bout de ligne ouvre la liste des objets à ranger : cochez-les. La croix les ressort.</p></li>\n</ol>\n<p>Un objet rangé ne compte plus : il disparaît des onglets Combat, Matrice et Magie, et reste grisé ailleurs avec la mention « rangé dans… ». Il ressort intact. Un garage n'accueille qu'un véhicule, et demande un style de vie suffisant (<em>Run Faster p. 216</em>). Un personnage joueur créé dans le monde reçoit d'office un <strong>Sac à dos</strong> (Paquetage) et un <strong>Casier</strong> (Planque) (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.qk2XJEf1NvKmaJ6R]{dotation de départ, 7.3}). La fiche d'un PNJ ou d'un vendeur liste ses stockages comme celle d'un personnage.</p>\n\n<h4>Les contenants verrouillés</h4>\n<p>Un coffre a un bloc <strong>Verrou</strong> : type (serrure mécanique ou maglock), indice, protection anti-effraction. Son propriétaire l'ouvre d'un clic sur la clé ; les autres voient le coffre mais pas son contenu, et peuvent tenter de <strong>Crocheter</strong> ou de <strong>Pirater</strong> (<em>Livre de base p. 365-366</em>).</p>\n\n<h4>Cacher sur soi</h4>\n<p>Le bouton <strong>Cacher sur soi</strong> lance le test, et l'objet garde ses succès tant qu'on ne le sort pas. Depuis la ligne de Perception, un autre personnage peut chercher l'objet ou fouiller au corps le jeton ciblé (<em>Livre de base p. 135</em>).</p>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Le crochetage exige un kit de serrurerie</strong> (Verrous de règles, famille Objets)</td><td>MJ, pour le monde</td><td>coché</td></tr>\n<tr><td><strong>Vérifier le Niveau de vie des garages</strong> (Verrous de règles, famille Objets)</td><td>MJ, pour le monde</td><td>coché</td></tr>\n<tr><td><strong>Laisser une dépouille à la mort</strong> (Pillage et butin)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Emplacements et installation des accessoires d'arme : (<em>Run & Gun p. 67</em>) ; Capacité : (<em>Livre de base p. 418</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Panorama-des-objets\">wiki : Panorama des objets</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki : Boutique et fourgue (les ateliers des objets)</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Stockage-et-rangement\">wiki : Stockage et rangement</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Verrou-des-contenants\">wiki : Verrou des contenants</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.Ee1s20qevgGEbUjG]{2.5 Les objets}</p><p>← @UUID[.OZcdTfyObgov0hHv]{Armurerie, Personnalisation, Clinique, Établi} · @UUID[.waObcY2cn3mPk14F]{2.6 Les effets} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "waObcY2cn3mPk14F",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.waObcY2cn3mPk14F",
+      "name": "2.6 Les effets",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un effet est ce qu'un objet change sur un personnage : +1 en Réaction, +2 dés en Perception, une limite relevée. Le système applique les effets des objets équipés, propose ceux qui ne valent qu'en certaines circonstances, et sait faire porter un effet sur les jets des autres. Ce chapitre sert surtout au MJ qui crée du contenu.</p>\n\n<h4>Pas à pas : voir les effets d'un objet</h4>\n<ol>\n<li><p>Ouvrez la fiche de l'objet et passez en mode édition.</p></li>\n<li><p>Les effets se rangent en trois sections : <strong>Effets sur le propriétaire</strong>, <strong>Effets sur l'objet</strong>, <strong>Effets sur le système</strong>. Le <strong>+</strong> en bout de ligne en ajoute un.</p></li>\n<li><p>Pour chaque effet, choisissez sa <strong>Catégorie</strong>, sa <strong>Propriété</strong> et son <strong>Type</strong> (Valeur, Indice, Succès…), puis sa valeur.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-6-effets-objet.webp\" width=\"662\" alt=\"Les effets d'un objet : catégorie, propriété, type et valeur, ligne par ligne.\" /><figcaption><strong>Figure 2.6.1</strong> — Les effets d'un objet : catégorie, propriété, type et valeur, ligne par ligne.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.fCp8Rvf37p9bhUCL]{Stocker, enfermer, cacher} · @UUID[.JFcBqUkpLrr84dbl]{Effets circonstanciels et effets sur les autres} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JFcBqUkpLrr84dbl",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.JFcBqUkpLrr84dbl",
+      "name": "Effets circonstanciels et effets sur les autres",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Circonstanciel</strong> : cochez la case <strong>Circonstanciel</strong> d'un effet et décrivez la circonstance dans <strong>Quand ?</strong>. L'effet quitte la fiche et apparaît, décoché, dans la fenêtre des jets concernés : le joueur ou la joueuse le coche quand la circonstance est là.</p></li>\n<li><p><strong>Sur les jets des autres</strong> : la catégorie <strong>Jets des autres</strong> fait porter l'effet sur qui cible le porteur, ou sur une zone autour de lui (avec un rayon et un camp : tout le monde, alliés ou ennemis). L'effet arrive déjà coché dans la fenêtre des autres, avec le nom de son porteur.</p></li>\n</ul>\n\n<h4>Trois cibles d'effet pour le combat</h4>\n<p>Elles ne changent rien tant qu'aucun effet ne les pose ; le module Arts martiaux révisés s'en sert (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.NDHhxHQPTq63Zsd8]{9.10}).</p>\n<ul>\n<li><p><strong>Armes / Allonge</strong> : ajoute à l'allonge des armes de mêlée d'un type (mains nues, lames, contondantes, exotiques) ou des seuls coups de pied. L'allonge modifiée se lit sur la carte d'attaque, dans la portée de mêlée et dans le modificateur d'allonge de la défense. Elle doit être un effet permanent : posée en effet circonstanciel, aucun jet ne la lit.</p></li>\n<li><p><strong>Défenses / [Succès non limités]</strong> (esquive, blocage, parade) : quand le défenseur choisit cette défense active, la limite physique saute ; la fenêtre l'écrit (<strong>Succès non limités</strong>) et la carte ne montre plus de limite.</p></li>\n<li><p><strong>Arts martiaux / [Modificateur]</strong> peut nommer les compétences dont il allège la pénalité de tir ciblé (<strong>Combat à mains nues</strong>, <strong>Attaques armées</strong> ou une compétence de combat) ; sans choix, toutes les attaques, comme avant.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Pour le MJ qui crée du contenu</p><p>Le réglage <strong>Effets des objets écrits par le MJ seul</strong> (onglet Outils du MJ) réserve l'écriture des effets au MJ. Décoché, le MJ est prévenu quand un joueur ou une joueuse ajoute un objet à effets.</p></div>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Effets des objets écrits par le MJ seul</strong> (Outils du MJ)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n<tr><td><strong>Effets portés par la cible ou par une zone</strong> (Interface)</td><td>chacun pour soi</td><td>nom de l'effet et de son porteur</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Ajouter-un-effet-via-un-Item\">wiki : Ajouter un effet via un objet</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Effets-circonstanciels\">wiki : Effets circonstanciels</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Effets-sur-les-jets-des-autres\">wiki : Effets sur les jets des autres</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU} &gt; @UUID[.waObcY2cn3mPk14F]{2.6 Les effets}</p><p>← @UUID[.waObcY2cn3mPk14F]{2.6 Les effets} · @UUID[.8M53gzMBMO1fPrZ3]{2.7 Moniteurs de condition et blessures} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "8M53gzMBMO1fPrZ3",
+      "_key": "!journal.pages!QOnlNlLLjtaxDQDL.8M53gzMBMO1fPrZ3",
+      "name": "2.7 Moniteurs de condition et blessures",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Les moniteurs tiennent les dommages, la Chance et l'état du personnage. Le système les coche à l'encaissement, en tire le malus de blessure et sait quand un personnage tombe ; vous pouvez toujours les corriger d'un clic.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-7-moniteurs.webp\" width=\"906\" alt=\"Les moniteurs en bas de la fiche : Étourdissant, Physique et Chance.\" /><figcaption><strong>Figure 2.7.1</strong> — Les moniteurs en bas de la fiche : Étourdissant, Physique et Chance.</figcaption></figure>\n\n<h4>Pas à pas : corriger un moniteur</h4>\n<ol>\n<li><p>Cliquez sur une case pour la cocher ou la décocher.</p></li>\n<li><p>Faites un clic droit sur le nom du moniteur (<strong>Physique</strong>, <strong>Étourdissant</strong>…) pour le remettre à zéro ; un clic gauche sur ce nom lance le test de guérison naturelle.</p></li>\n</ol>\n<p>Les cases grisées sont celles que le personnage n'a pas. Le moniteur <strong>Matriciel</strong> apparaît pour un personnage qui a un appareil, et le Physique a ses cases de débordement.</p>\n\n<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il applique le malus de blessure à tous les jets.</p></li>\n<li><p>À l'encaissement, il coche les cases et reporte l'excédent sur le moniteur suivant.</p></li>\n<li><p>Moniteur plein : le personnage tombe inconscient (<em>Livre de base p. 171</em>), l'esprit est dissipé (<em>Livre de base p. 305</em>), la brute est hors de combat (<em>Livre de base p. 381</em>). Un personnage assommé se réveille quand ses cases redescendent.</p></li>\n<li><p>Seules les attaques renversent (armes, grenades, attaques matricielles…) ; une drogue, le Drain ou une toxine ne renversent pas.</p></li>\n<li><p>Les blessures aggravées sont marquées sur la case et annoncées dans le tchat (<em>Howling Shadows p. 213</em>) ; un clic droit sur la case retire la marque.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Un état <strong>Inconscient</strong> posé à la main reste en place ; les morts restent morts (<em>Livre de base p. 209</em>).</p></li>\n<li><p>Les soins se font par le bouton <strong>Soigner</strong> des premiers soins ou de la magie : le patient est le jeton ciblé, sinon le jeton sélectionné (<em>Livre de base p. 207</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.cMWglwIpg0jkWqZp]{après le combat}).</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Soins sous le feu ennemi (Balles et Pansements)</strong> (Corps, santé et augmentations)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n<tr><td><strong>Médikits avancés (Balles et Pansements)</strong> (Corps, santé et augmentations)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki : Moniteurs de condition</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.W4YZQ8PPGj7HhE7R]{MENU}</p><p>← @UUID[.JFcBqUkpLrr84dbl]{Effets circonstanciels et effets sur les autres}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}
