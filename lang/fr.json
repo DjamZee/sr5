@@ -2961,7 +2961,7 @@
 	"SR5.LifeStyleAddComforts": "+1 Conforts et nécessités",
 	"SR5.LifeStyleAddComforts_GE": "<p>Ajoute un point de Style de vie au Confort et nécessités</p><p>Dépense 1 point de style de vie pour monter Confort &amp; Nécessités d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
 	"SR5.LifeStyleAddNeighborhood": "+1 Quartier",
-	"SR5.LifeStyleAddNeighborhood_GE": "<p>Ajoute un point de Style de vie au Confort et nécessités</p><p>Dépense 1 point de style de vie pour monter le Quartier d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
+	"SR5.LifeStyleAddNeighborhood_GE": "<p>Ajoute un point de Style de vie au Quartier</p><p>Dépense 1 point de style de vie pour monter le Quartier d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
 	"SR5.LifeStyleAddSecurity": "+1 Sécurité",
 	"SR5.LifeStyleAddSecurity_GE": "<p>Dépense 1 point de style de vie pour monter la Sécurité d'un niveau, dans la limite de la catégorie ; le loyer augmente de 10 % du coût de base.</p><p><em>Run Faster p. 210</em></p>",
 	"SR5.LifestyleBoltHole": "Refuge",
