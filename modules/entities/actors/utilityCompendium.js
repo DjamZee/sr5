@@ -279,6 +279,9 @@ export class SR5_CompendiumUtility extends Actor {
       baseItems = await SR5_CompendiumUtility.findBaseItemInCompendium(baseItems, spritePowers, actorSubType)
       // A type registered by a module may name its own powers (sprite-types.js), wherever they are kept
       baseItems = baseItems.concat(await SR5_CompendiumUtility.givenSpritePowers(actorSubType, baseItems))
+      // The Generalist sprite has no power of its own, only two optional ones chosen at compilation (Kill Code
+      // p. 110): nothing found in a compendium that does hold sprite powers is the book, not a missing reference
+      if (!baseItems.length && spritePowers.length) return baseItems
     }
 
     // A spirit or a sprite that comes with nothing at all is almost always a
