@@ -1222,6 +1222,10 @@ export class SR5Actor extends Actor {
     //A reboot leaves the host the persona was in, back to its grid (S3, SR5 p. 240, 244)
     const previousHost = actorData.matrix.currentHost || null
     exitHostInPlace(actorData.matrix)
+    //A reboot cuts the connection: a character in VR is thrown out of it (SR5 p. 231, 244) and, back online, is in AR;
+    //going back into VR is the Simple action Switch Interface Mode (p. 239). No second dumpshock at the next reboot
+    //(Delphin#2947, 23/10). An AI lives in the Matrix and keeps its mode
+    if (["coldsim", "hotsim"].includes(actorData.matrix.userMode) && !SR5_CharacterUtility.isDepthActive(this)) actorData.matrix.userMode = "ar"
     //The marks placed on an AI's persona go too, with their trace on the decks of those who placed them (SR5 p. 244)
     if (SR5_CharacterUtility.isDepthActive(this)) {
       await SR5_MarkHelpers.clearPersonaMarks(this)

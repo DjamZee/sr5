@@ -357,8 +357,8 @@ async function handleNormalPhysicalDamage(rollData, actor, chatData, armor){
 
   //Check if damage must be converted to stun
   if (rollData.damage.base < (armor + chatData.combat.armorPenetration) && chatData.combat.calledShot.name !== "splittingDamage"){
-    rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamage")} ${game.i18n.localize(SR5.damageTypes[rollData.damage.type])} (${rollData.damage.base})`
     rollData.damage.type = "stun"
+    rollData.test.title = `${game.i18n.localize("SR5.TakeOnDamage")} ${game.i18n.localize(SR5.damageTypes[rollData.damage.type])} (${rollData.damage.base})`
     ui.notifications.info(`${game.i18n.format("SR5.INFO_ArmorGreaterThanDVSoStun", {
       armor: armor + chatData.combat.armorPenetration, damage:rollData.damage.base
     })}`) 
@@ -589,7 +589,8 @@ async function handleDumpshockDamage(rollData, actorData, chatData){
 
   //Determine damage type & value
   //A rigger ejected while his sheet says AR was in VR all the same (SR5 p. 268): cold sim unless hot sim is set
-  rollData.damage.type = (actorData.matrix.userMode === "hotsim") ? "physical" : "stun"
+  //The mode at the ejection, when the card carries it: the reboot has put the sheet back in AR since (rebootDeck)
+  rollData.damage.type = ((chatData?.damage?.ejectedMode ?? actorData.matrix.userMode) === "hotsim") ? "physical" : "stun"
   rollData.damage.base = 6
 
   //Add others informations

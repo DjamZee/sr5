@@ -804,6 +804,8 @@ export class SR5_ActorHelper {
     let dumpshockData = SR5_PrepareRollTest.getBaseRollData(null, actor)
     dumpshockData.damage.resistanceType = "dumpshock"
     if (bricked) dumpshockData.damage.bricked = true
+    //The mode the character was thrown out of: the reboot puts the sheet back in AR before the test is rolled (rebootDeck)
+    dumpshockData.damage.ejectedMode = userMode
     SR5_ActorHelper.rollForOwner(actor, "resistanceCard", dumpshockData)
     return true
   }
