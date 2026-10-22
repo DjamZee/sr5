@@ -52,6 +52,9 @@ import {
   registerIceHostHooks
 } from './system/ice-host.js'
 import {
+  registerDepartedMarkerHooks
+} from './system/departed-marker.js'
+import {
   registerOverwatchHook
 } from './system/matrix-hooks.js'
 import {
@@ -341,6 +344,8 @@ registerAgilityZeroHooks()
 registerNativeEffectWarningHooks()
 // An IC uses its host's matrix attributes (SR5 p. 249): prepared again once the host is, or when it changes
 registerIceHostHooks()
+// SR5 p. 236: an actor deleted, or an unlinked token removed, takes its marks with it out of the Matrix
+registerDepartedMarkerHooks()
 // S4 C5: the modules hear an Overwatch Score change (sr5.overwatchChanged)
 registerOverwatchHook()
 // The convergence (SR5 p. 233): the threshold crossed, told to the GM with its button, unless the module Matrice tells it
