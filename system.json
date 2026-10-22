@@ -110,18 +110,6 @@
       }
     }
   ],
-  "packFolders": [
-    {
-      "name": "Mégapack SR5 Lite",
-      "sorting": "m",
-      "packs": [
-        "sr5-megapack-items",
-        "sr5-megapack-actors",
-        "sr5-megapack-tables",
-        "sr5-megapack-macros"
-      ]
-    }
-  ],
   "socket": true,
   "url": "https://github.com/shadowfoundry/sr5",
   "manifest": "https://github.com/shadowfoundry/sr5/releases/latest/download/system.json",
