@@ -24,6 +24,9 @@ const actors = {
   'Actor.pc': {
     id: 'pc', type: 'actorPc', isToken: false
   },
+  'Compendium.megapack.actors.Actor.vendor': {
+    id: 'vendor', type: 'actorGrunt', isToken: false, pack: 'megapack.actors', inCompendium: true
+  },
   'Scene.s.Token.t.Actor.vendor': {
     id: 'vendor', type: 'actorGrunt', isToken: true, token: {
       actorId: 'vendor'
@@ -121,6 +124,14 @@ describe('dropping an actor on a faction', () => {
     await SR5FactionsApp.prototype._onDropActor(drop('Actor.pc'), 'mafia')
     expect(saved).toBeNull()
     expect(info).toHaveBeenCalledWith('SR5.FACTION_DropNoPc')
+  })
+
+  // Relecture de Fabrice#6075 (22/10): a compendium actor's id is not a world actor's
+  it('an actor dragged from a compendium is refused, with a word', async () => {
+    setUser(true)
+    await SR5FactionsApp.prototype._onDropActor(drop('Compendium.megapack.actors.Actor.vendor'), 'mafia')
+    expect(saved).toBeNull()
+    expect(info).toHaveBeenCalledWith('SR5.FACTION_DropNoPack')
   })
 
   it('what is not an actor changes nothing', async () => {
