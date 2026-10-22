@@ -123,6 +123,20 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
     expect(warn).not.toHaveBeenCalled()
   })
 
+  it("a sprite type with no power of its own (Generalist, Kill Code p. 110) is not reported", async () => {
+    SR5_CompendiumUtility._warnedEmptyBaseItems.clear()
+    expect(await SR5_CompendiumUtility.getBaseItems("actorSprite", "generalist", 3)).toEqual([])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it("a sprite with no sprite power anywhere is reported", async () => {
+    SR5_CompendiumUtility._warnedEmptyBaseItems.clear()
+    megapackActive = false
+    game.packs.delete(sprites.collection)
+    expect(await SR5_CompendiumUtility.getBaseItems("actorSprite", "machine", 3)).toEqual([])
+    expect(warn).toHaveBeenCalled()
+  })
+
   it("an inactive Megapack is not read", async () => {
     megapackActive = false
     expect(await watcherPowers()).toEqual(["c-astralForm", "c-sapience", "c-search"])
