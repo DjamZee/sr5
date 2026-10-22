@@ -20,3 +20,6 @@
 # Manuel du fork : compendium compilé et captures, construits par le dépôt manuel-sr5 et copiés à la préparation de l'alpha
 /packs/manuel
 /manuel
+# La Lite du Mégapack dans le système : packs compilés, sources et médias construits par npm run build:megapack (hors Git)
+/packs/sr5-megapack-*
+/megapack/

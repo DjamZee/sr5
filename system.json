@@ -45,6 +45,81 @@
         "PLAYER": "OBSERVER",
         "ASSISTANT": "OWNER"
       }
+    },
+    {
+      "name": "sr5-megapack-items",
+      "label": "SR5 - Objets",
+      "path": "packs/sr5-megapack-items",
+      "type": "Item",
+      "system": "sr5",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {
+        "sr5": {
+          "build": "megapack"
+        }
+      }
+    },
+    {
+      "name": "sr5-megapack-actors",
+      "label": "SR5 - Acteurs",
+      "path": "packs/sr5-megapack-actors",
+      "type": "Actor",
+      "system": "sr5",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {
+        "sr5": {
+          "build": "megapack"
+        }
+      }
+    },
+    {
+      "name": "sr5-megapack-tables",
+      "label": "SR5 - Tables",
+      "path": "packs/sr5-megapack-tables",
+      "type": "RollTable",
+      "system": "sr5",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {
+        "sr5": {
+          "build": "megapack"
+        }
+      }
+    },
+    {
+      "name": "sr5-megapack-macros",
+      "label": "SR5 - Macros",
+      "path": "packs/sr5-megapack-macros",
+      "type": "Macro",
+      "ownership": {
+        "PLAYER": "NONE",
+        "ASSISTANT": "OWNER"
+      },
+      "flags": {
+        "sr5": {
+          "build": "megapack"
+        }
+      }
+    }
+  ],
+  "packFolders": [
+    {
+      "name": "Mégapack SR5 Lite",
+      "sorting": "m",
+      "packs": [
+        "sr5-megapack-items",
+        "sr5-megapack-actors",
+        "sr5-megapack-tables",
+        "sr5-megapack-macros"
+      ]
     }
   ],
   "socket": true,

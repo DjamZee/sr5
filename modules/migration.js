@@ -5,7 +5,7 @@ import {
   updateLedger
 } from "./system/gm-ledger.js"
 import {
-  MEGAPACK_IDS
+  MEGAPACK_IDS, MEGAPACK_SYSTEM_ID, MEGAPACK_LITE_ID, litePathUpdate
 } from "./system/megapack.js"
 import {
   contactCommcodeFromFlag
@@ -15,8 +15,8 @@ export default class Migration {
 
   // Modules whose compendiums are kept up to date at their source, for the current system: the migration
   // leaves them alone instead of unlocking and rewriting them in each world (Megapack: arbitrage de DjamZ,
-  // séance H, H19), in both its editions
-  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", ...MEGAPACK_IDS]
+  // séance H, H19), in its three editions; the system's own packs (the Lite, the manual) are rebuilt with it
+  static SOURCE_MAINTAINED_PACKAGES = ["sr5-compendiums", ...MEGAPACK_IDS, MEGAPACK_SYSTEM_ID]
 
   static isMaintainedAtSource(pack) {
     return Migration.SOURCE_MAINTAINED_PACKAGES.includes(pack?.metadata?.packageName)
@@ -207,6 +207,70 @@ export default class Migration {
       }
     }
     if (written) SR5_SystemHelpers.srLog(2, `Contact commcodes taken from the Landing Page's flags: ${written}`)
+    return written
+  }
+
+  /* -------------------------------------------- */
+
+  // The embedded collections a document's Lite media are looked for in, each updated as documents of their own
+  static LITE_EMBEDDED = {
+    Actor: {
+      items: "Item", effects: "ActiveEffect" 
+    },
+    Item: {
+      effects: "ActiveEffect" 
+    },
+    RollTable: {
+      results: "TableResult" 
+    },
+    Scene: {
+      tokens: "Token" 
+    },
+    Macro: {
+    },
+  }
+
+  /**
+   * The Lite inside the system (arbitrage de DjamZ, 23/10): the images of the documents drawn from the Lite module
+   * (modules/megapack-sr5-lite/…) are sent to the system's copy (systems/sr5/megapack/…), the same files. Their links
+   * need nothing: they follow CONFIG.compendium.uuidRedirects (system/megapack.js). Left alone while the Lite module is
+   * active, it still serves its files. At each load, idempotent: a world without such a path writes nothing.
+   */
+  async migrateMegapackLitePaths() {
+    if (!game.user?.isActiveGM || game.modules?.get(MEGAPACK_LITE_ID)?.active) return 0
+    let written = 0
+    const fix = async (doc, skip = []) => {
+      const update = litePathUpdate(doc.toObject(), skip)
+      if (foundry.utils.isEmpty(update)) return
+      await doc.update(update, {
+        render: false 
+      })
+      written++
+    }
+    const collections = [["Actor", game.actors], ["Item", game.items], ["RollTable", game.tables], ["Macro", game.macros],
+      ["Scene", game.scenes]]
+    for (const [type, collection] of collections) {
+      const embedded = Migration.LITE_EMBEDDED[type]
+      for (const doc of collection?.contents ?? []) {
+        try {
+          await fix(doc, Object.keys(embedded))
+          for (const [field, embeddedType] of Object.entries(embedded)) {
+            const updates = (doc[field]?.contents ?? []).map(e => ({
+              _id: e.id, ...litePathUpdate(e.toObject(), ["effects", "delta"])
+            })).filter(u => Object.keys(u).length > 1)
+            if (!updates.length) continue
+            await doc.updateEmbeddedDocuments(embeddedType, updates, {
+              render: false 
+            })
+            written += updates.length
+          }
+        } catch (err) {
+          err.message = `Failed sr5 Megapack Lite paths migration for ${type} ${doc.name}: ${err.message}`
+          console.error(err)
+        }
+      }
+    }
+    if (written) SR5_SystemHelpers.srLog(2, `Megapack Lite images sent to the system's copy: ${written}`)
     return written
   }
 

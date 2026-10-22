@@ -5,7 +5,7 @@ import {
   updateLedger
 } from "../system/gm-ledger.js"
 import {
-  isMegapackPackage
+  isMegapackPack
 } from "../system/megapack.js"
 import {
   formatDateTime
@@ -106,7 +106,7 @@ export class SR5NegotiationRepair extends foundry.applications.api.HandlebarsApp
   }) {
     // The Megapack first (arbitrage de DjamZ, séance H, H18): its contacts carry the same ids and names as
     // those of sr5-compendiums, whose Negotiation can be lost (0) where the Megapack's is right
-    const isMegapack = pack => isMegapackPackage(pack?.metadata?.packageName ?? pack?.metadata?.package)
+    const isMegapack = pack => isMegapackPack(pack)
     itemPacks = [...itemPacks.filter(isMegapack), ...itemPacks.filter(pack => !isMegapack(pack))]
     const indexes = new Map()
     const indexOf = async pack => {

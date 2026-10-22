@@ -13,7 +13,7 @@
  * Pure data, no Foundry: the tests read it as it is.
  */
 import {
-  MEGAPACK_FULL_ID
+  MEGAPACK_FULL_ID, megapackRoot
 } from '../system/megapack.js'
 
 /** Families, in the order of the menu. */
@@ -101,9 +101,9 @@ export function templateAccent(template) {
   return template?.accent ?? FAMILY_ACCENTS[template?.family] ?? ''
 }
 
-/** Where a Megapack ships the banners (assets/banners-shop): both editions keep the same layout. */
+/** Where a Megapack ships the banners (assets/banners-shop): every edition keeps the same layout. */
 export function megapackBannerFolder(megapackId) {
-  return `modules/${megapackId}/assets/banners-shop`
+  return `${megapackRoot(megapackId)}/assets/banners-shop`
 }
 export const MEGAPACK_BANNER_FOLDER = megapackBannerFolder(MEGAPACK_FULL_ID)
 

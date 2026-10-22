@@ -1,4 +1,7 @@
 import {
+  installSystemMegapack
+} from "../system/megapack.js"
+import {
   registerSheetSizeSetting
 } from "../interface/sheet-size.js"
 import {
@@ -370,6 +373,9 @@ import {
 } from "../entities/actors/sprite-types.js"
 
 export async function sr5HookInit() {
+  //The Lite inside the system: its packs taken out when a Megapack module is active, the other editions' links sent
+  //to the active one; first, before the settings that name the active Megapack and before Foundry builds game.packs
+  installSystemMegapack()
   SR5_SystemHelpers.registerSystemSettings()
   //"Rappel des règles" unchecked: the page references leave the texts, before the actors are prepared (their
   //modifiers' labels are written then)
