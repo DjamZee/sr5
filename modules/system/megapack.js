@@ -10,6 +10,18 @@ export function activeMegapackId(modules = globalThis.game?.modules) {
   return MEGAPACK_IDS.find(id => modules?.get(id)?.active) ?? null
 }
 
+/**
+ * A compendium chosen in one edition of the Megapack, read in the active one when only the other is active: the packs
+ * share their names. A world moved from the full Megapack to the Lite one kept the full one in its settings, and its
+ * spirits came without a weapon or a power (manual 2.1.3, 21/10). Any other compendium is returned as it is.
+ */
+export function inActiveMegapack(collection, modules = globalThis.game?.modules) {
+  const [packageId, ...rest] = String(collection ?? "").split(".")
+  if (!rest.length || !isMegapackPackage(packageId) || modules?.get(packageId)?.active) return collection
+  const active = activeMegapackId(modules)
+  return active ? [active, ...rest].join(".") : collection
+}
+
 /** Whether a package id is one of the two Megapacks. */
 export function isMegapackPackage(id) {
   return MEGAPACK_IDS.includes(id)

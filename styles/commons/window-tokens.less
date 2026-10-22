@@ -17,6 +17,8 @@
   --srw-heading: #00566b;
   --srw-border: #8ba0b4;
   --srw-border-strong: #4c6680;
+  // The fields: white without an outline in the light set (DjamZ, 21/10, manual 8.4.2); outlined on the dark ground
+  --srw-field-border: transparent;
   --srw-accent: #00809e;
   --srw-track: #c0cdd8;
   --srw-sel-bg: #c6eaf4;
@@ -51,6 +53,7 @@
   --srw-heading: #5ee6ff;
   --srw-border: #1e3350;
   --srw-border-strong: #5580b5;
+  --srw-field-border: var(--srw-border-strong);
   --srw-accent: #3fe0ff;
   --srw-track: #13243a;
   --srw-sel-bg: #062a3a;
@@ -146,7 +149,7 @@
 .srw-field() {
   color: var(--srw-text);
   background-color: var(--srw-field);
-  border: 1px solid var(--srw-border-strong);
+  border: 1px solid var(--srw-field-border);
   border-radius: 0;
   box-shadow: none;
   font-family: var(--srw-font-body);

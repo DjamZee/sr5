@@ -14,7 +14,7 @@ import {
   spriteGivenPowers
 } from "./sprite-types.js"
 import {
-  MEGAPACK_FULL_ID, activeMegapackId
+  MEGAPACK_FULL_ID, activeMegapackId, inActiveMegapack
 } from "../../system/megapack.js"
 import {
   insectRacePowers
@@ -158,7 +158,7 @@ export class SR5_CompendiumUtility extends Actor {
   static getMainCompendiumIds(categoryKey) {
     const category = SR5_CompendiumUtility.CATEGORIES[categoryKey]
     const chosen = game.settings.get("sr5", category.setting)
-    if (chosen && chosen !== "auto") return [chosen]
+    if (chosen && chosen !== "auto") return [inActiveMegapack(chosen)]
     const ids = []
     const megapack = SR5_CompendiumUtility.MEGAPACK
     if (game.modules?.get(megapack.module)?.active) ids.push(megapack.pack)

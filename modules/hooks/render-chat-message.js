@@ -64,13 +64,14 @@ import {
 
 /**
  * A card posted by the system or a module, as opposed to a line typed in the chat (/w): flags of its own,
- * or markup that a typed message does not carry.
+ * or markup that a typed message does not carry. A paragraph too: the GM's notices are bare <p> lines without flags
+ * (convergence, blood magic, tacnet…), and Foundry keeps a typed line as plain text (manual 5.2.4, DjamZ 21/10).
  */
 export function isSystemCard(message) {
   const flags = Object.keys(message.flags ?? {
   }).filter(k => k !== "core")
   if (flags.length) return true
-  return /<(div|section|table|button|header|h[1-6])\b/i.test(message.content ?? "")
+  return /<(div|section|table|button|header|h[1-6]|p)\b/i.test(message.content ?? "")
 }
 
 export function sr5HookRenderChatMessageHTML(message, html, _data) {
