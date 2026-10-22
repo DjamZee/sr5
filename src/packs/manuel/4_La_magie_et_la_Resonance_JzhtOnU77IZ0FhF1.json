@@ -1,0 +1,689 @@
+{
+  "_id": "JzhtOnU77IZ0FhF1",
+  "_key": "!journal!JzhtOnU77IZ0FhF1",
+  "name": "4. La magie et la Résonance",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 500000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "2pyDBUVFZ7zB5mGw",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.2pyDBUVFZ7zB5mGw",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie suit un personnage Éveillé ou Émergé de la fiche à la carte de tchat : lancer un sort, invoquer et lier un esprit, passer dans l'astral, mener un rituel, s'initier, puis, pour les technomanciens et les technomanciennes, tisser une forme complexe et compiler un sprite. Elle s'adresse au joueur ou à la joueuse qui incarne un magicien, un adepte ou un technomancien, et au MJ qui veut savoir ce que le système vérifie seul et ce qui lui reste à trancher.</p>\n<p>Les règles elles-mêmes restent dans le livre : chaque chapitre donne la page où les lire. Ce que le système automatise au-delà du livre de base (suppléments, options) est signalé par sa source.</p><table><tbody><tr><td><p>@UUID[.9ouEQLH2RNX4qCQ8]{4.1 Lancer un sort}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.aFtR1eDU4YXAqWnq]{Sorts de zone}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.RYEdMSfVfVNjndZ7]{Maintenir un sort, focus et contresort}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.oQrYuRlYf29VjWPQ]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.q2f4GouqDwB2SRkR]{L'esprit sur la fiche, puis sur la scène}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.0M8EeoCcfnpyv3FZ]{Ce que le MJ règle sur un esprit}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.gQiqvYd1gyNgI6e3]{Types d'esprit personnalisés et entités}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.l7vbghHkPb0XzekW]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.9L677CfXvbtg0omT]{Le champ magique d'une scène (MJ)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ktZFsp1qXoSagKNU]{Mana gris et blight}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.s7OtL9Yqz2az7hjZ]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.3OoIzJgnMIfvN89u]{Préparations alchimiques}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.aYLDSXuD5wyCSeSc]{Réactifs}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OJz811T960f43YBz]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.fdMNG8aU98mNwupo]{4.5 Initiation}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.JuSWTLS2dO9lWhMi]{Le grade et les métamagies}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.cgStAyGATe3C9X6W]{L'esprit mentor}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WFMdyMBaC7ZU1PTz]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.QHApoxYSA0Sqrblk]{4.6 Technomanciens}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.pRdcZuZisGwS5XdO]{Persona incarné, submersion et flux}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.GW6wc83BZN782NUv]{Réglages liés et références}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9ouEQLH2RNX4qCQ8",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.9ouEQLH2RNX4qCQ8",
+      "name": "4.1 Lancer un sort",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Lancer un sort tient en trois gestes : un clic sur la réserve de dés du sort, un choix de Puissance dans la fenêtre de jet, puis les boutons de la carte de tchat (résister au Drain, faire défendre ou résister la cible, appliquer l'effet). Le système calcule la réserve, la Limite et le Drain, tient compte des focus actifs, des sorts maintenus et des réactifs, et propose la suite au bon personnage.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-onglet-magie.webp\" width=\"944\" alt=\"L'onglet de la magie d'une fiche de magicienne. Les numéros renvoient à la liste ci-dessous.\" /><figcaption><strong>Figure 4.1.1</strong> — L'onglet de la magie d'une fiche de magicienne. Les numéros renvoient à la liste ci-dessous.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Type de magie et grade d'initiation</strong> : <strong>Magicien</strong>, <strong>Adepte</strong>, <strong>Adepte mystique</strong> ou <strong>Magicien spécialisé</strong>. Tant que ce champ reste sur <strong>Aucun(e)</strong>, la fiche ne montre ni tradition ni résistance au Drain : réglez-le en premier.</p></li>\n<li><p><strong>② La tradition</strong> : l'objet <strong>Tradition magique</strong> donne l'attribut de résistance au Drain et les types d'esprit des cinq catégories de sorts (@UUID[.6VCTWlecs7yI8OaO]{les esprits}).</p></li>\n<li><p><strong>③ Le plan astral</strong> : perception astrale, <strong>Résistance au drain</strong>, défense astrale… (@UUID[.Hk5PosiqIYLbH6U9]{l'astral}).</p></li>\n<li><p><strong>④ Les réactifs</strong> : votre stock de drachmes, et le bouton qui sert à en récolter (@UUID[.6UtCp5nLJZZuB81E]{rituels, préparations, réactifs}).</p></li>\n<li><p><strong>⑤ Les sorts</strong> : cliquez sur le chiffre de la colonne <strong>RDD</strong> (réserve de dés) pour lancer le sort.</p></li>\n<li><p><strong>⑥ Puissance et succès</strong> du dernier lancer (colonnes <strong>P</strong> et <strong>S</strong>) : le système les remplit au jet ; vous pouvez les corriger d'un clic (clic droit pour augmenter, clic gauche pour diminuer).</p></li>\n<li><p><strong>⑦ Maintenir</strong> (colonne <strong>Dur.</strong>) : l'icône allume ou éteint le maintien d'un sort à durée maintenue.</p></li>\n<li><p><strong>⑧ Les focus</strong> : l'épingle <strong>Équiper</strong> active un focus ; son indice se règle d'un clic.</p></li>\n<li><p><strong>⑨ Les métamagies</strong> : l'épingle <strong>Activer la Métamagie</strong> met ses effets en jeu (@UUID[.fdMNG8aU98mNwupo]{initiation}).</p></li>\n</ul>\n\n<h4>Pas à pas : lancer un sort</h4>\n<ol>\n<li><p>Si le sort vise quelqu'un, ciblez d'abord son jeton (clic droit sur le jeton, puis <strong>Basculer l'état de cible</strong>, voir @UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.Q9ZjuGii7Dk9qSH6]{le HUD du jeton}).</p></li>\n<li><p>Sur la fiche, ouvrez l'onglet de la magie et cliquez sur la réserve de dés du sort, dans la colonne <strong>RDD</strong>. La fenêtre <strong>Lancer le sort …</strong> s'ouvre.</p></li>\n<li><p>Choisissez la <strong>Puissance</strong> avec les boutons − et +. Elle part de votre Magie ; la <strong>Limite</strong> et le <strong>Drain final</strong>, en bas de la fenêtre, suivent aussitôt (<em>Livre de base p. 283-284</em>).</p></li>\n<li><p>Cochez au besoin les options : <strong>Lancement de sort précipité</strong> (le Drain monte de 3), <strong>Réactifs</strong> (le nombre de drachmes remplace la Limite), <strong>Façonnage de sort</strong> pour un sort de zone si vous avez la métamagie.</p></li>\n<li><p>Cliquez sur <strong>Lancer les dés</strong>. La carte du sort arrive dans le tchat avec vos succès.</p></li>\n<li><p>Cliquez sur <strong>Résister au drain</strong> sur la carte : le chiffre entre parenthèses est le Drain à résister. Le système lance votre résistance et coche les cases, étourdissantes ou physiques selon la règle (<em>Livre de base p. 284</em>).</p></li>\n<li><p>La cible fait ensuite sa part depuis la même carte : <strong>Se défendre</strong> contre un sort indirect, <strong>Résister (sort direct)</strong> contre un sort direct, ou rien du tout pour un sort qui n'est pas résisté. Pour un sort qui pose un effet (une augmentation, une armure…), cliquez sur <strong>Appliquer l'effet</strong>.</p></li>\n</ol>\n<p>Les sorts <strong>Aura de [élément]</strong> (Aura de feu, d'électricité…) posent deux effets sur leur sujet : ses attaques de mêlée gagnent +1 VD par succès et deviennent élémentaires, et qui le touche en mêlée encaisse une VD égale aux succès, dans l'élément (<em>Grimoire des ombres p. 114</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-fenetre-sort.webp\" width=\"538\" alt=\"La fenêtre de lancement d'un sort de zone, chez une initiée qui connaît le Façonnage de sorts.\" /><figcaption><strong>Figure 4.1.2</strong> — La fenêtre de lancement d'un sort de zone, chez une initiée qui connaît le Façonnage de sorts.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Réserve de dés de base</strong> et <strong>② Modificateurs</strong> : dépliez-les (la flèche) pour voir le détail, focus et malus compris.</p></li>\n<li><p><strong>③ Puissance</strong> : le seul choix obligatoire.</p></li>\n<li><p><strong>④ Options de lancement</strong> : sort précipité, réactifs, façonnage.</p></li>\n<li><p><strong>⑤ Drain final</strong> et <strong>⑥ Limite</strong> : recalculés à chaque changement.</p></li>\n<li><p><strong>⑦ Lancer les dés</strong>, ou <strong>⑧ Repousser les limites</strong> pour dépenser un point de Chance avant le jet (<em>Livre de base p. 58</em>).</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-carte-sort.webp\" width=\"340\" alt=\"La carte d'un sort de zone direct : ① le gabarit à poser, ② les succès, ③ la résistance au Drain, ④ la résistance de la cible.\" /><figcaption><strong>Figure 4.1.3</strong> — La carte d'un sort de zone direct : ① le gabarit à poser, ② les succès, ③ la résistance au Drain, ④ la résistance de la cible.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>@UUID[.aFtR1eDU4YXAqWnq]{Sorts de zone} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aFtR1eDU4YXAqWnq",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.aFtR1eDU4YXAqWnq",
+      "name": "Sorts de zone",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un sort de zone affiche sa portée avec un <strong>(Z)</strong> et, après le lancer, son rayon en mètres. Sur la carte, l'icône en forme de cible pose le gabarit sur la scène : c'est lui qui dit qui est touché. Pour un sort de détection, le rayon vaut la Puissance multipliée par votre Magie, et dix fois plus à portée étendue (<em>Livre de base p. 287</em>).</p>\n<p>Un sort de Combat indirect de zone se lance comme une grenade, avec un seuil de 3 (<em>Livre de base p. 285</em>). Sans aucun succès, il échoue. Avec un ou deux succès, il dévie : la carte porte le bouton <strong>Déviation</strong>, qui déplace le gabarit, et personne ne se défend. À partir de trois succès, la cible se défend normalement et la VD tient compte des succès excédentaires.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Façonnage de sorts : les bulles</p><p>La ligne <strong>Façonnage de sort</strong> n'apparaît que si la métamagie est active sur la fiche. Elle a deux champs, <strong>rayon supplémentaire</strong> et <strong>personnages épargnés</strong>, qui se partagent un plafond égal à votre Magie, focus de Façonnage compris (<em>Livre de base p. 329, 323</em>) ; les dés sont retirés de votre réserve. Sur la carte, un bouton désigne les jetons épargnés (ciblés ou sélectionnés) : ils n'ont ni défense, ni résistance, ni effet du sort. Quand vos cibles et votre sélection diffèrent, une fenêtre vous fait cocher les personnages à épargner.</p>\n<p>Une bulle d'un mètre ne se dessine pas sur une grille : le système compte « un point épargne un personnage ». Ce taux est un réglage du MJ, <strong>Façonnage de sorts : coût d'une bulle</strong> (onglet Magie), car le livre ne donne aucune conversion.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.9ouEQLH2RNX4qCQ8]{4.1 Lancer un sort}</p><p>← @UUID[.9ouEQLH2RNX4qCQ8]{4.1 Lancer un sort} · @UUID[.RYEdMSfVfVNjndZ7]{Maintenir un sort, focus et contresort} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "RYEdMSfVfVNjndZ7",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.RYEdMSfVfVNjndZ7",
+      "name": "Maintenir un sort, focus et contresort",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un sort à durée maintenue (<strong>M</strong> dans la colonne <strong>Dur.</strong>) se maintient d'un clic sur son icône ; un second clic le relâche. Tant qu'il est maintenu, le système compte le malus de maintien sur vos jets (<em>Livre de base p. 284</em>). Pour qu'un autre que vous le maintienne, un focus de Maintien fait l'affaire : choisissez le sort dans sa fiche.</p>\n<p>Un focus n'agit que s'il est <strong>Équipé</strong> (l'épingle de sa ligne). Le système ajoute alors son indice là où il compte : un focus de Lancement de sorts aux sorts de sa catégorie, un focus de Pouvoir à votre Magie, donc à toutes vos réserves de magie (<em>Livre de base p. 321-323</em>). Il n'en retient qu'un seul par usage, le plus puissant, à une exception près : un focus de Pouvoir se cumule avec un focus de sort, sans que son bonus compte deux fois dans un même test (arbitrage de DjamZ). La liaison des focus (le Karma dépensé) se tient sur la fiche, à la main.</p>\n<p>La ligne <strong>Contresort</strong> de vos compétences porte deux chiffres : à gauche, la <strong>Réserve de Défense contre les sorts</strong> que vous avez constituée (clic droit pour l'augmenter, clic gauche pour la diminuer), à droite le plafond que vous donne la compétence (<em>Livre de base p. 297</em>). Ces dés se dépensent ensuite à la main, quand un allié ou vous-même résistez à un sort. Un focus de Contresort y ajoute sa Puissance. Le MJ retire le bonus dans la fenêtre de jet si la catégorie du sort ne correspond pas à celle du focus.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Bloqué par le système ?</p><p>Quand le système refuse un geste (un sort sous Blight, un façonnage au-delà de votre Magie…), c'est un <strong>verrou de règles</strong> de la famille Magie. Le MJ peut le lever dans <strong>Réglages Shadowrun</strong>, onglet <strong>Préréglages</strong>, bouton <strong>Régler les verrous</strong> : l'action passe alors, et le MJ en est prévenu (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{les verrous de règles}).</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.9ouEQLH2RNX4qCQ8]{4.1 Lancer un sort}</p><p>← @UUID[.aFtR1eDU4YXAqWnq]{Sorts de zone} · @UUID[.oQrYuRlYf29VjWPQ]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "oQrYuRlYf29VjWPQ",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.oQrYuRlYf29VjWPQ",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule la réserve (Lancement de sorts + Magie), la Limite (la Puissance) et le Drain, avec les focus actifs, le malus des sorts maintenus et les blessures.</p></li>\n<li><p>Il choisit des dommages physiques ou étourdissants pour le Drain selon vos succès et votre Magie.</p></li>\n<li><p>Il propose à la cible la bonne riposte (défense ou résistance), et le gabarit d'un sort de zone.</p></li>\n<li><p>Il retire les drachmes dépensées et ne laisse jamais le stock passer sous 0.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>La place du gabarit agrandi par le façonnage, et la liaison des focus.</p></li>\n<li><p>La complication d'un lancer, quand le livre lui laisse le choix de ses effets (<em>Livre de base p. 284</em>).</p></li>\n<li><p>Le bonus d'un focus de Contresort d'une autre catégorie que le sort, à retirer dans la fenêtre de jet.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Règles des réactifs</strong> (Magie)</td><td>MJ, pour le monde</td><td>Livre de base</td></tr>\n<tr><td><strong>Façonnage de sorts : coût d'une bulle</strong> (Magie)</td><td>MJ, pour le monde</td><td>1 (un point épargne un personnage)</td></tr>\n<tr><td>Famille <strong>Magie</strong> (Verrous de règles)</td><td>MJ, pour le monde</td><td>cochée (le système refuse)</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Lancement de sort, Drain, sort précipité : (<em>Livre de base p. 283-284</em>) ; sorts de zone et de Combat indirects : (<em>Livre de base p. 285</em>) ; détection : (<em>Livre de base p. 287</em>) ; contresort : (<em>Livre de base p. 297</em>) ; focus : (<em>Livre de base p. 321-323</em>) ; façonnage : (<em>Livre de base p. 329</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki : Sorts de zone, résistance et contresort</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.9ouEQLH2RNX4qCQ8]{4.1 Lancer un sort}</p><p>← @UUID[.RYEdMSfVfVNjndZ7]{Maintenir un sort, focus et contresort} · @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6VCTWlecs7yI8OaO",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.6VCTWlecs7yI8OaO",
+      "name": "4.2 Les esprits",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le système suit un esprit de son invocation à son départ : il lance le test d'Invocation et la résistance de l'esprit, compte les services, crée l'esprit sur la fiche du magicien, puis, d'un clic, l'acteur qui le joue sur la scène. Le lien et le bannissement suivent le même chemin. Le MJ garde la main sur ce que le livre lui confie : la réputation auprès des esprits, les esprits libres, les esprits sauvages.</p>\n\n<h4>Pas à pas : invoquer un esprit</h4>\n<ol>\n<li><p>Sur la fiche, onglet des <strong>Compétences actives</strong>, cliquez sur la réserve de dés (colonne <strong>RDD</strong>) de la compétence <strong>Invocation</strong>.</p></li>\n<li><p>Dans la fenêtre, sous <strong>Options d'invocation</strong>, choisissez la <strong>Puissance</strong> et le <strong>Type d'esprit</strong> : la liste propose les cinq types de votre tradition (<em>Livre de base p. 303</em>).</p></li>\n<li><p>Cliquez sur <strong>Lancer les dés</strong>. La carte de tchat montre vos succès et le bouton <strong>Résistance de l'esprit</strong>, que seul le MJ voit.</p></li>\n<li><p>Le MJ clique dessus : la résistance de l'esprit se lance (sa Puissance en dés), puis une seconde carte apparaît avec <strong>Résister au drain</strong> et, si vous avez au moins un succès net, <strong>Invoquer l'esprit</strong> ; sinon elle affiche <strong>Invocation échouée</strong>.</p></li>\n<li><p>Cliquez sur <strong>Résister au drain</strong>, puis sur <strong>Invoquer l'esprit</strong>. Un message confirme l'invocation, et l'esprit rejoint le bloc <strong>Esprits invoqués</strong> de l'onglet de la magie, avec autant de services que de succès nets (<em>Livre de base p. 303</em>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-2-fenetre-invocation.webp\" width=\"510\" alt=\"La fenêtre d'Invocation : ① l'attribut du jet (la Magie), ② la Puissance, ③ le type d'esprit, parmi ceux de la tradition.\" /><figcaption><strong>Figure 4.2.1</strong> — La fenêtre d'Invocation : ① l'attribut du jet (la Magie), ② la Puissance, ③ le type d'esprit, parmi ceux de la tradition.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Le nom ou la réserve ?</p><p>Sur la ligne d'une compétence, le <strong>nom</strong> ouvre un test où vous choisissez l'attribut ; le <strong>chiffre de la colonne RDD</strong> ouvre le test complet, avec l'attribut du livre (Magie pour les compétences de Conjuration). Pour invoquer, lier ou bannir, cliquez sur le chiffre.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>← @UUID[.oQrYuRlYf29VjWPQ]{Réglages liés et références} · @UUID[.q2f4GouqDwB2SRkR]{L'esprit sur la fiche, puis sur la scène} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "q2f4GouqDwB2SRkR",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.q2f4GouqDwB2SRkR",
+      "name": "L'esprit sur la fiche, puis sur la scène",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<figure><img src=\"systems/sr5/manuel/captures/4-2-esprits-invoques.webp\" width=\"594\" alt=\"Le bloc Esprits invoqués : ① les services restants, ② l'esprit appelé sur la scène (le même bouton le rappelle), ③ lié ou non.\" /><figcaption><strong>Figure 4.2.2</strong> — Le bloc Esprits invoqués : ① les services restants, ② l'esprit appelé sur la scène (le même bouton le rappelle), ③ lié ou non.</figcaption></figure>\n<p>Chaque ligne du bloc <strong>Esprits invoqués</strong> porte le type et la Puissance de l'esprit. Les <strong>Services</strong> se décomptent d'un clic (clic gauche pour en retirer un, clic droit pour en ajouter). Le bouton <strong>Appeler l'esprit</strong> crée l'acteur de l'esprit, avec ses attributs, ses compétences et ses pouvoirs calculés sur sa Puissance et son type ; posez son jeton sur la scène depuis l'onglet des acteurs. Le même bouton, devenu <strong>Rappeler l'esprit</strong>, supprime cet acteur quand l'esprit s'en va.</p>\n<p>Quand vous jouez l'esprit, sa fenêtre de jet vous propose votre propre Chance, tant qu'il vous en reste : l'invocateur ou l'invocatrice peut la dépenser pour les tests de ses esprits (<em>Livre de base p. 306</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-2-fiche-esprit.webp\" width=\"944\" alt=\"La fiche d'un esprit invoqué : son type et sa Puissance en tête, à côté des icônes de la matérialisation et du lien ; en bas, ③ la Magie de l'invocateur et les services.\" /><figcaption><strong>Figure 4.2.3</strong> — La fiche d'un esprit invoqué : son type et sa Puissance en tête, à côté des icônes de la matérialisation et du lien ; en bas, ③ la Magie de l'invocateur et les services.</figcaption></figure>\n<p>Dans l'en-tête, l'icône <strong>Esprit lié</strong> se place à côté de celle de la matérialisation, avec son infobulle. La disposition par défaut d'une fiche d'esprit affiche les blocs <strong>Traits</strong> et <strong>Types de vision</strong> ; un esprit dont le MJ a personnalisé l'affichage garde le sien, et le MJ y ajoute le bloc Traits s'il manque.</p>\n\n<h4>Pas à pas : lier un esprit</h4>\n<ol>\n<li><p>Ciblez le jeton de l'esprit à lier.</p></li>\n<li><p>Cliquez sur la réserve de dés de la compétence <strong>Lien d'esprit</strong>. La fenêtre coche les <strong>Réactifs</strong> et propose Puissance × 25 drachmes (<em>Livre de base p. 304</em>) ; si votre stock ne suffit pas, un avertissement le dit.</p></li>\n<li><p>Lancez les dés. Le MJ clique sur <strong>Résistance de l'esprit</strong> : l'esprit résiste avec deux fois sa Puissance.</p></li>\n<li><p>Sur la carte de résistance, cliquez sur <strong>Lier l'esprit</strong> : la colonne <strong>Lié</strong> passe à « Oui » et les services gagnés s'ajoutent. Résistez ensuite au Drain depuis votre carte.</p></li>\n</ol>\n<p>Bannir suit le même chemin : ciblez l'esprit, cliquez sur la réserve de <strong>Bannissement</strong>, et le MJ fait résister l'esprit depuis la carte (<em>Livre de base p. 304</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits}</p><p>← @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits} · @UUID[.0M8EeoCcfnpyv3FZ]{Ce que le MJ règle sur un esprit} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "0M8EeoCcfnpyv3FZ",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.0M8EeoCcfnpyv3FZ",
+      "name": "Ce que le MJ règle sur un esprit",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le bloc <strong>Traits</strong> de la fiche d'esprit porte cinq cases que seul le MJ voit et coche : <strong>Élémentaire</strong>, <strong>Sauvage</strong>, <strong>Domaine</strong>, <strong>Pacte de magie</strong> et <strong>Esprit libre</strong>. Elles étaient dans l'en-tête, où elles cachaient presque le nom.</p>\n<ul>\n<li><p><strong>Esprit libre</strong> donne à l'esprit sa propre Chance (par défaut la moitié de sa Puissance, arrondie au supérieur), que le MJ ajuste (<em>Livre de base p. 306-307</em>) ; avec <strong>Pacte de magie</strong>, il peut encore puiser dans celle de son ancien invocateur ou de son ancienne invocatrice (<em>Grimoire des ombres p. 133</em>).</p></li>\n<li><p><strong>Élémentaire</strong> baisse ses attributs mentaux et lui ajoute un service ; <strong>Sauvage</strong> et <strong>Domaine</strong> changent sa résistance au bannissement et certains pouvoirs (<em>Arcanes interdites p. 170-175</em>).</p></li>\n</ul>\n<p>Sur la fiche du magicien, le bloc <strong>Réputation astrale</strong> (index spirituel, ajustement) et le bloc <strong>Réputation sauvage</strong> sont tenus par le MJ ; le joueur ou la joueuse ne les voit pas. La Réputation astrale retire ses dés aux tests d'Invocation, de Lien et de Bannissement ; la case est cochée d'office dans la fenêtre de jet, et seul le MJ peut la décocher (<em>Grimoire des ombres p. 207</em>). La Réputation sauvage donne ses dés pour appeler un esprit sauvage ou traiter avec lui (<em>Arcanes interdites p. 170</em>).</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Option du livre : la laisse des esprits</p><p>Le réglage <strong>Laisse des esprits</strong> (onglet <strong>Magie</strong> de <strong>Réglages Shadowrun</strong>) est décoché par défaut. Coché, une icône de chaîne apparaît à côté de chaque esprit invoqué : la laisse tendue compte comme un sort maintenu, et un esprit qui obtient beaucoup de succès propose au MJ de <strong>Tester la laisse</strong> (<em>Arcanes interdites p. 176</em>).</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits}</p><p>← @UUID[.q2f4GouqDwB2SRkR]{L'esprit sur la fiche, puis sur la scène} · @UUID[.gQiqvYd1gyNgI6e3]{Types d'esprit personnalisés et entités} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "gQiqvYd1gyNgI6e3",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.gQiqvYd1gyNgI6e3",
+      "name": "Types d'esprit personnalisés et entités",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un esprit que le livre ne décrit pas (un esprit de brume, une variante propre à un mentor) se crée comme un objet : onglet des objets, <strong>Créer un objet</strong>, type <strong>Type d'esprit</strong>. Le nouveau type rejoint aussitôt la liste des types, à l'invocation comme dans les traditions.</p>\n<ol>\n<li><p>Ouvrez l'onglet de configuration de l'objet (l'icône d'engrenage).</p></li>\n<li><p>Choisissez le type officiel dont il hérite dans <strong>Basé sur</strong> : il en reprend les attributs, les compétences, l'initiative et les pouvoirs.</p></li>\n<li><p>Saisissez seulement les écarts : un <strong>Modificateur</strong> s'ajoute à l'attribut, une <strong>Valeur imposée</strong> le remplace ; ajoutez des compétences et des pouvoirs.</p></li>\n<li><p>Vérifiez le bloc <strong>Ce que donne ce type</strong>, en bas : il montre l'esprit tel qu'il serait invoqué à une Puissance de 4.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-2-type-esprit.webp\" width=\"804\" alt=\"La configuration d'un type d'esprit : ① le type dont il hérite, ② la case Invocable (MJ), ③ un modificateur et une valeur imposée.\" /><figcaption><strong>Figure 4.2.4</strong> — La configuration d'un type d'esprit : ① le type dont il hérite, ② la case Invocable (MJ), ③ un modificateur et une valeur imposée.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/4-2-type-apercu.webp\" width=\"497\" alt=\"Le bloc « Ce que donne ce type » : l'esprit de brume à Puissance 4, héritage de l'esprit de l'air compris.\" /><figcaption><strong>Figure 4.2.5</strong> — Le bloc « Ce que donne ce type » : l'esprit de brume à Puissance 4, héritage de l'esprit de l'air compris.</figcaption></figure>\n<p>La case <strong>Invocable par la compétence Invocation</strong>, réservée au MJ, retire un type de la liste d'invocation. C'est ainsi que se posent les <strong>entités extraplanaires</strong> (une Érinye, un Kappa, un shedim) : le MJ crée un acteur Esprit de ce type et choisit sa Puissance, sans invocation (<em>Howling Shadows p. 128</em>). Le Mégapack livre ces types tout faits (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.fRv6Sd5vjaHLoIFV]{le Mégapack}).</p>\n<h4>Les esprits insectes et le pouvoir Compétence</h4>\n<p>La fiche d'un esprit insecte, et l'objet Esprit, ont une liste <strong>Race</strong> : elle donne à la caste les pouvoirs, les compétences et le bonus de résistance de sa race (termite souterraine +2, Goliath +4), le reste en note au survol (<em>Dark Terrors p. 22-34</em>). Le pouvoir d'esprit <strong>Compétence</strong> porte la compétence qu'il accorde (<em>Aetherologie p. 39</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits}</p><p>← @UUID[.0M8EeoCcfnpyv3FZ]{Ce que le MJ règle sur un esprit} · @UUID[.l7vbghHkPb0XzekW]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "l7vbghHkPb0XzekW",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.l7vbghHkPb0XzekW",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il lance la résistance de l'esprit, compte les services, crée l'esprit et son acteur, lui donne ses pouvoirs depuis le compendium choisi par le MJ.</p></li>\n<li><p>Il retire les réactifs du lien et la Réputation astrale des tests de Conjuration.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il tient l'index spirituel et décide des esprits libres, sauvages ou élémentaires.</p></li>\n<li><p>Il arbitre ce que fait un esprit sans service, et les interactions sociales avec les esprits.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Laisse des esprits</strong> (Magie)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n<tr><td><strong>Esprits : attribut de résistance au Drain d'un sort inné</strong> (Magie)</td><td>MJ, pour le monde</td><td>Charisme</td></tr>\n<tr><td><strong>Compendium des pouvoirs de créatures</strong> (Outils du MJ)</td><td>MJ, pour le monde</td><td>le Mégapack s'il est actif</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Invocation, lien, bannissement, services, esprits et Chance : (<em>Livre de base p. 302-307</em>) ; réputation astrale : (<em>Grimoire des ombres p. 207</em>) ; esprits sauvages, élémentaires, laisse : (<em>Arcanes interdites p. 169-176</em>) ; esprits insectes : (<em>Dark Terrors p. 22-34</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Esprits-laisse-et-reputation\">wiki : Esprits, laisse et réputation</a> et <a href=\"https://github.com/DjamZee/sr5/wiki/Types-d-esprit-personnalises\">wiki : Types d'esprit personnalisés</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6VCTWlecs7yI8OaO]{4.2 Les esprits}</p><p>← @UUID[.gQiqvYd1gyNgI6e3]{Types d'esprit personnalisés et entités} · @UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Hk5PosiqIYLbH6U9",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.Hk5PosiqIYLbH6U9",
+      "name": "4.3 L'astral",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un magicien ou une magicienne peut regarder le plan astral (la perception astrale) ou y partir tout entier (la projection). Le système bascule la vision du jeton, change l'initiative et refuse ce qu'on ne peut pas faire depuis l'astral. Le MJ règle de son côté le champ magique de chaque scène, qui pèse sur tous les jets de magie qui s'y font.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-3-plan-astral.webp\" width=\"287\" alt=\"Le bloc Plan astral de la fiche, perception astrale allumée : ① l'épingle de la perception, ② la résistance au Drain, ③ les tests astraux d'un clic.\" /><figcaption><strong>Figure 4.3.1</strong> — Le bloc Plan astral de la fiche, perception astrale allumée : ① l'épingle de la perception, ② la résistance au Drain, ③ les tests astraux d'un clic.</figcaption></figure>\n\n<h4>Pas à pas : passer en perception astrale</h4>\n<ol>\n<li><p>Sur la fiche, onglet de la magie, cliquez sur l'épingle de la ligne <strong>Perception astrale</strong>, dans le bloc <strong>Plan astral</strong>.</p></li>\n<li><p>L'épingle s'allume. Votre jeton passe en vision <strong>Perception astrale</strong> et porte l'état du même nom : vous voyez le plan astral dans la portée réglée par le MJ (<em>Livre de base p. 315-316</em>).</p></li>\n<li><p>Cliquez de nouveau sur l'épingle pour revenir à la vision normale.</p></li>\n</ol>\n<p>La même épingle se trouve dans le bloc <strong>Types de vision</strong> de la fiche, ligne <strong>Perception astrale</strong>, pour qui perçoit l'astral ; elle est toujours allumée pour un esprit (<em>Livre de base p. 304</em>). Ce que la perception astrale montre à l'écran, et ce qu'elle change aux dés : @UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.6Ua0ZNEOepATqdbF]{voir 3.2}.</p>\n\n<h4>Pas à pas : se projeter</h4>\n<ol>\n<li><p>Ouvrez l'onglet des attributs de la fiche (l'icône <strong>A</strong>) et descendez au bloc <strong>Initiatives</strong>.</p></li>\n<li><p>Cliquez sur l'épingle de la ligne <strong>Astrale</strong>. Votre initiative devient l'initiative astrale, et l'effet <strong>Initiative astrale</strong> s'affiche sur le jeton (<em>Livre de base p. 316</em>).</p></li>\n<li><p>En combat, le changement coûte une action complexe ; si vous n'en avez plus, le système le refuse.</p></li>\n<li><p>Pour revenir dans votre corps, cliquez sur l'épingle de la ligne <strong>Physique</strong>.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-3-initiatives.webp\" width=\"287\" alt=\"Le bloc Initiatives : l'épingle allumée désigne l'initiative en cours, ici l'initiative astrale.\" /><figcaption><strong>Figure 4.3.2</strong> — Le bloc Initiatives : l'épingle allumée désigne l'initiative en cours, ici l'initiative astrale.</figcaption></figure>\n<p>En projection, les tests qui demandent un corps sont refusés avec le message <strong>Vous ne pouvez pas effectuer de Test en projection Astrale.</strong> Les tests astraux restent dans le bloc <strong>Plan astral</strong> : <strong>Défense astrale</strong>, <strong>Franchir barrière mana</strong>, <strong>Pistage astral</strong> ; le combat astral se lance depuis la compétence <strong>Combat astral</strong> (<em>Livre de base p. 318-319</em>). Un focus d'arme se manie aussi en combat astral : l'option se règle sur sa ligne, dans la liste des armes de la fiche.</p><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>← @UUID[.l7vbghHkPb0XzekW]{Réglages liés et références} · @UUID[.9L677CfXvbtg0omT]{Le champ magique d'une scène (MJ)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9L677CfXvbtg0omT",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.9L677CfXvbtg0omT",
+      "name": "Le champ magique d'une scène (MJ)",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le champ magique se règle par scène : <strong>Configurer la scène</strong>, onglet <strong>Champ magique</strong>. La valeur s'affiche ensuite en bas à gauche de l'écran, à côté du bruit matriciel (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.UL8RBpRELYtP4Sop]{l'écran en un coup d'œil}).</p>\n<figure><img src=\"systems/sr5/manuel/captures/4-3-champ-magique.webp\" width=\"606\" alt=\"L'onglet Champ magique de la configuration de scène : ① le phénomène astral, ② l'indice, ③ l'alignement. Les rituels de Flux et de Creux mana en cours s'inscrivent en dessous.\" /><figcaption><strong>Figure 4.3.3</strong> — L'onglet Champ magique de la configuration de scène : ① le phénomène astral, ② l'indice, ③ l'alignement. Les rituels de Flux et de Creux mana en cours s'inscrivent en dessous.</figcaption></figure>\n<ul>\n<li><p><strong>Indice de Champ magique</strong>, de −24 à +24. Positif, c'est un domaine : la tradition de l'<strong>Alignement</strong> gagne la valeur en Limite, toutes les autres la perdent en dés. Négatif, c'est un reflux ou un vide de mana : tout le monde perd la valeur en dés, quelle que soit sa tradition (<em>Aetherologie p. 9-10</em>) et (<em>Aetherologie p. 34</em>).</p></li>\n<li><p><strong>Phénomène astral</strong> (Brume, Voile, Vide, faille astrale…) : la liste remplit l'indice et l'alignement d'un clic, au milieu de la fourchette du livre ; vous pouvez ensuite les modifier. L'infobulle de l'indicateur rappelle ce que le système laisse au MJ (<em>Aetherologie p. 33-35</em>).</p></li>\n<li><p>Un sort ou une préparation de zone peut porter son propre champ magique sur son gabarit ; il ne compte que sur la scène où le gabarit est posé.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral}</p><p>← @UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral} · @UUID[.ktZFsp1qXoSagKNU]{Mana gris et blight} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ktZFsp1qXoSagKNU",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.ktZFsp1qXoSagKNU",
+      "name": "Mana gris et blight",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Deux objets du livre <i>Better Than Bad</i> coupent de la magie, et le système les applique tout seul (<em>Better Than Bad p. 140-141</em>) :</p>\n<ul>\n<li><p><strong>Le mana gris</strong> (accessoire d'armure ou tatouage) ajoute son indice aux dés pour résister aux sorts, mais un Éveillé qui le porte perd autant de dés sur ses jets de magie.</p></li>\n<li><p><strong>Le blight</strong>, une toxine, pose l'effet <strong>Coupé de la manasphère</strong> : plus de sorts, de rituels, de conjuration ni d'astral tant qu'il dure. Quand il frappe, les sorts maintenus prennent fin, les focus s'éteignent et un personnage projeté revient dans son corps. À la fin de l'effet, rien ne revient seul : rallumez vos focus. Les refus du blight sont un verrou de la famille Magie, que le MJ peut lever.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral}</p><p>← @UUID[.9L677CfXvbtg0omT]{Le champ magique d'une scène (MJ)} · @UUID[.s7OtL9Yqz2az7hjZ]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "s7OtL9Yqz2az7hjZ",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.s7OtL9Yqz2az7hjZ",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il bascule la vision et l'initiative du jeton, et décompte l'action complexe de la projection en combat.</p></li>\n<li><p>Il applique le champ magique de la scène et des gabarits à chaque jet de magie.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Le temps qu'un projeté passe hors de son corps, le Gardien du Seuil, les barrières mana posées par un rituel.</p></li>\n<li><p>Les effets d'un phénomène astral que l'infobulle rappelle (malus de Perception, test de Sang-froid, déviation des sorts).</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Portée de la Perception astrale</strong> (Perception et vision)</td><td>MJ, pour le monde</td><td>300 m</td></tr>\n<tr><td>Famille <strong>Magie</strong> (Verrous de règles)</td><td>MJ, pour le monde</td><td>cochée</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Le monde astral, perception, projection, combat astral, barrières mana : (<em>Livre de base p. 315-319</em>) ; phénomènes astraux : (<em>Aetherologie p. 33-35</em>) ; mana gris et blight : (<em>Better Than Bad p. 140-141</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Monde-astral\">wiki : Monde astral</a> et <a href=\"https://github.com/DjamZee/sr5/wiki/Configuration-de-scene\">wiki : Configuration de scène</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.Hk5PosiqIYLbH6U9]{4.3 L'astral}</p><p>← @UUID[.ktZFsp1qXoSagKNU]{Mana gris et blight} · @UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6UtCp5nLJZZuB81E",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.6UtCp5nLJZZuB81E",
+      "name": "4.4 Rituels, préparations, réactifs",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un rituel se mène à plusieurs : le système ouvre une carte de préparation où chacun s'annonce, additionne l'aide du groupe au jet du leader, puis donne à chaque participant son propre bouton de Drain. Une préparation se fabrique depuis un sort marqué comme formule alchimique, garde son Potentiel et le perd avec le temps du monde. Les réactifs se comptent sur la fiche, se dépensent dans la fenêtre de jet et se récoltent d'un clic.</p>\n\n<h4>Pas à pas : mener un rituel (le leader)</h4>\n<ol>\n<li><p>Vérifiez votre stock de <strong>Réactifs</strong> : sans réactifs, le système refuse avec <strong>Vous n'avez plus de réactifs !</strong>.</p></li>\n<li><p>Dans le bloc <strong>Rituels</strong> de l'onglet de la magie, cliquez sur la réserve de dés du rituel. La fenêtre <strong>Réaliser le rituel</strong> demande la <strong>Puissance</strong> : choisissez-la, puis <strong>Confirmer</strong>. Elle est fixée avant que quiconque lance les dés (<em>Livre de base p. 298</em>).</p></li>\n<li><p>La carte <strong>Rituel en préparation</strong> arrive dans le tchat, avec <strong>Participer</strong> (pour tout le monde) et <strong>Sceller</strong> (pour vous et le MJ).</p></li>\n<li><p>Quand tout le monde a rejoint, cliquez sur <strong>Sceller</strong> : plus personne ne peut entrer, et la fenêtre de jet s'ouvre avec l'aide du groupe (<em>Livre de base p. 299</em>) et (<em>Livre de base p. 51</em>).</p></li>\n<li><p>Lancez les dés. Le MJ clique sur <strong>Résistance du rituel</strong> ; la carte de résistance donne ensuite <strong>un bouton de Drain par personne</strong> (<strong>Résister au drain</strong> suivi du nom) et dit si le rituel réussit.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-4-carte-rituel.webp\" width=\"340\" alt=\"La carte d'un rituel en préparation : ① Participer, ② Sceller (le leader et le MJ seulement).\" /><figcaption><strong>Figure 4.4.1</strong> — La carte d'un rituel en préparation : ① Participer, ② Sceller (le leader et le MJ seulement).</figcaption></figure>\n\n<h4>Pas à pas : se joindre à un rituel (les participants)</h4>\n<ol>\n<li><p>Sélectionnez le jeton de votre personnage sur la scène (sinon, c'est le personnage qui vous est attribué qui participe).</p></li>\n<li><p>Cliquez sur <strong>Participer</strong> sur la carte du rituel. Votre jet d'aide (Magie rituelle + Magie) se lance tout seul, et une carte annonce votre participation.</p></li>\n<li><p>La carte vous prévient des cas particuliers : <strong>Tradition différente de celle du leader : -2 dés</strong> ; sans la compétence Magie rituelle, vous n'apportez aucun dé mais subissez quand même le Drain (<em>Livre de base p. 298</em>).</p></li>\n<li><p>Après le scellement, résistez au Drain avec <strong>votre</strong> bouton sur la carte de résistance.</p></li>\n</ol>\n<p>Deux mots-clés de rituel changent le déroulé (<em>Grimoire des ombres p. 122</em>) : un rituel <strong>Adepte</strong> se lance seul, sans carte de préparation ; un rituel <strong>Contractuel</strong> refuse le scellement tant qu'aucun participant n'a rejoint. Les rituels <strong>Flux mana</strong> et <strong>Creux mana</strong> ajoutent au MJ un bouton qui rapproche de 0 le champ magique de la scène pendant [Puissance] heures de jeu (<em>Shadow Spells p. 25</em>) (@UUID[.9L677CfXvbtg0omT]{le champ magique}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>← @UUID[.s7OtL9Yqz2az7hjZ]{Réglages liés et références} · @UUID[.3OoIzJgnMIfvN89u]{Préparations alchimiques} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "3OoIzJgnMIfvN89u",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.3OoIzJgnMIfvN89u",
+      "name": "Préparations alchimiques",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<figure><img src=\"systems/sr5/manuel/captures/4-4-fiche-preparation.webp\" width=\"694\" alt=\"La configuration d'une préparation : ① le Potentiel, ② Potentiel plein (× 2, × 3 ou × 4), ③ Perte de Potentiel (par heure, ou par jour avec la Fixation).\" /><figcaption><strong>Figure 4.4.2</strong> — La configuration d'une préparation : ① le Potentiel, ② Potentiel plein (× 2, × 3 ou × 4), ③ Perte de Potentiel (par heure, ou par jour avec la Fixation).</figcaption></figure>\n<ol>\n<li><p>Ouvrez la fiche du sort (l'icône d'édition de sa ligne) et cochez <strong>Formule alchimique</strong>. Le sort passe sous l'intertitre <strong>Formules alchimiques</strong> de la liste des sorts.</p></li>\n<li><p>Cliquez sur sa réserve de dés : la fenêtre <strong>Créer préparation</strong> s'ouvre (Alchimie + Magie). Choisissez la <strong>Puissance</strong> et le <strong>Déclencheur</strong> (<strong>Commande</strong>, <strong>Contact</strong> ou <strong>Délai</strong>) (<em>Livre de base p. 307-308</em>).</p></li>\n<li><p>Lancez les dés, résistez au Drain. Le MJ clique sur <strong>Résistance de la préparation</strong>, puis vous cliquez sur <strong>Créer préparation</strong> : la préparation rejoint le bloc <strong>Préparations</strong>, avec son <strong>Potentiel</strong> égal à vos succès nets (<em>Livre de base p. 309</em>).</p></li>\n<li><p>Pour la déclencher, cliquez sur sa réserve de dés dans le bloc <strong>Préparations</strong>.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-4-fenetre-preparation.webp\" width=\"510\" alt=\"La fenêtre de création d'une préparation : ① la Puissance, ② le déclencheur, ③ les réactifs, ④ le Drain.\" /><figcaption><strong>Figure 4.4.3</strong> — La fenêtre de création d'une préparation : ① la Puissance, ② le déclencheur, ③ les réactifs, ④ le Drain.</figcaption></figure>\n<p>Une préparation garde tout son Potentiel pendant (Potentiel × 2) heures de jeu, puis perd 1 point par heure ; le système le baisse quand le MJ avance l'horloge, et une préparation à 0 ne se déclenche plus (<em>Livre de base p. 309</em>). Le MJ peut allonger ces durées sur la fiche de la préparation, onglet de configuration (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.yffYD7ZgnKUfBP2o]{l'horloge}) :</p>\n<ul>\n<li><p><strong>Potentiel plein</strong> : × 3 pour la maîtrise Préparations durables ou certaines traditions, × 4 pour d'autres (<em>Arcanes interdites p. 39, 71</em>) et (<em>Arcanes interdites p. 127</em>).</p></li>\n<li><p><strong>Perte de Potentiel</strong> : <strong>1 par jour (Fixation)</strong> avec la métamagie Fixation (<em>Livre de base p. 329</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs}</p><p>← @UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs} · @UUID[.aYLDSXuD5wyCSeSc]{Réactifs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aYLDSXuD5wyCSeSc",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.aYLDSXuD5wyCSeSc",
+      "name": "Réactifs",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le stock se tient dans le bloc <strong>Réactifs</strong> de l'onglet de la magie : clic gauche pour en retirer une drachme, clic droit pour en ajouter, Maj pour dix à la fois. Dans la fenêtre d'un jet de magie, la case <strong>Réactifs</strong> ouvre le nombre de drachmes à dépenser : il remplace la Limite, et le stock baisse au lancer (<em>Livre de base p. 319-321</em>). La case <strong>Réactifs d'une autre tradition (moitié)</strong> divise par deux les drachmes comptées.</p>\n<h4>Pas à pas : récolter</h4>\n<ol>\n<li><p>Cliquez sur la pousse verte du bloc <strong>Réactifs</strong> (<strong>Récolter des réactifs</strong>).</p></li>\n<li><p>Choisissez la <strong>Zone</strong> : propre à votre tradition (1 drachme pour 2 succès) ou non (1 pour 4) (<em>Livre de base p. 320</em>).</p></li>\n<li><p>Lancez les dés (Alchimie + Magie [Mentale]), puis cliquez sur <strong>Mettre à jour les réactifs</strong> sur la carte : la récolte s'ajoute au stock.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-4-recolter.webp\" width=\"466\" alt=\"La fenêtre de récolte : la zone fixe le rendement.\" /><figcaption><strong>Figure 4.4.4</strong> — La fenêtre de récolte : la zone fixe le rendement.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Options du livre : les règles des réactifs</p><p>Le réglage <strong>Règles des réactifs</strong> (onglet <strong>Magie</strong> de <strong>Réglages Shadowrun</strong>) reste par défaut sur le <strong>Livre de base</strong>. <strong>Shadow Spells</strong> ajoute des stocks de réactifs raffinés, radicaux et d'orichalque, et le raffinage (<em>Shadow Spells p. 18</em>) et (<em>Grimoire des ombres p. 209-211</em>) ; <strong>Arcanes Interdites</strong> y ajoute un bonus de Limite et de Drain selon le palier (<em>Arcanes interdites p. 180-184</em>). Le changer recharge le monde ; les stocks déjà remplis deviennent les réactifs bruts.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs}</p><p>← @UUID[.3OoIzJgnMIfvN89u]{Préparations alchimiques} · @UUID[.OJz811T960f43YBz]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OJz811T960f43YBz",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.OJz811T960f43YBz",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il tient la liste des participants d'un rituel, le malus de tradition, l'aide du groupe et un Drain par personne.</p></li>\n<li><p>Il crée la préparation, en suit le Potentiel avec l'horloge et refuse une préparation éteinte.</p></li>\n<li><p>Il retire les drachmes dépensées et ajoute la récolte.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>La complication du leader et l'échec d'un rituel en cours de route (un participant qui quitte la fondation) (<em>Livre de base p. 299</em>).</p></li>\n<li><p>Ce qui accélère la perte de Potentiel (fovéa, cercle de dispersion), et le temps de repousse d'une zone récoltée.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Règles des réactifs</strong> (Magie)</td><td>MJ, pour le monde</td><td>Livre de base</td></tr>\n<tr><td>Famille <strong>Magie</strong> (Verrous de règles)</td><td>MJ, pour le monde</td><td>cochée</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Magie rituelle : (<em>Livre de base p. 298-301</em>) ; test d'équipe : (<em>Livre de base p. 51</em>) ; alchimie et préparations : (<em>Livre de base p. 307-309</em>) ; réactifs : (<em>Livre de base p. 319-321</em>) ; mots-clés de rituel : (<em>Grimoire des ombres p. 122</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Rituels\">wiki : Rituels</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Reactifs\">wiki : Réactifs</a> et <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki : préparations</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.6UtCp5nLJZZuB81E]{4.4 Rituels, préparations, réactifs}</p><p>← @UUID[.aYLDSXuD5wyCSeSc]{Réactifs} · @UUID[.fdMNG8aU98mNwupo]{4.5 Initiation} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fdMNG8aU98mNwupo",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.fdMNG8aU98mNwupo",
+      "name": "4.5 Initiation",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un Éveillé qui s'initie gagne un grade et choisit une métamagie ; beaucoup suivent un esprit mentor. Le système tient le grade, applique les métamagies et les maîtrises qu'il sait automatiser, et donne au mentor ses bonus, son désavantage et le test pour y résister. Le coût en Karma de l'initiation et l'ordalie restent à la table (<em>Livre de base p. 328</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>← @UUID[.OJz811T960f43YBz]{Réglages liés et références} · @UUID[.JuSWTLS2dO9lWhMi]{Le grade et les métamagies} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JuSWTLS2dO9lWhMi",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.JuSWTLS2dO9lWhMi",
+      "name": "Le grade et les métamagies",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ol>\n<li><p>Dans l'onglet de la magie, colonne de gauche, réglez le <strong>Grade d'initiation</strong> : clic droit pour l'augmenter, clic gauche pour le baisser (voir la figure du chapitre @UUID[.9ouEQLH2RNX4qCQ8]{4.1}, repère ①).</p></li>\n<li><p>Ajoutez la métamagie choisie avec le <strong>+</strong> du bloc <strong>Métamagies</strong>, ou glissez-la depuis un compendium (le Mégapack en livre une large sélection).</p></li>\n<li><p>Cliquez sur son épingle, <strong>Activer la Métamagie</strong> : tant qu'elle n'est pas activée, ses effets ne jouent pas.</p></li>\n</ol>\n<p>Ce que le système fait d'une métamagie active : le <strong>Façonnage de sorts</strong> ajoute sa ligne à la fenêtre des sorts de zone (@UUID[.aFtR1eDU4YXAqWnq]{sorts de zone}) ; la <strong>Fixation</strong> se règle sur la préparation (@UUID[.3OoIzJgnMIfvN89u]{préparations}) ; le <strong>Lancement de sorts structuré</strong> retire 1 au Drain des sorts, en échange de la Chance et des réactifs qui ne lèvent plus la Limite ; la <strong>Défense harmonieuse</strong> donne une réserve de défense contre les sorts visible dans le bloc <strong>Plan astral</strong> (<em>Arcanes interdites p. 42-45</em>). Les métamagies qui relèvent du jugement du MJ restent en texte sur leur fiche.</p>\n<p>Les <strong>maîtrises magiques</strong> d'<i>Arcanes Interdites</i> (Chasseur de mage, Semeur de mort, Illusionniste…) sont des qualités : posez-la, cochez-la active, et son niveau est son indice (<em>Arcanes interdites p. 30-41</em>). Celles qui s'automatisent ajoutent une case ou une ligne dans la fenêtre du sort concerné (par exemple <strong>Chasseur de mage</strong>, décochée par défaut).</p>\n<h4>Ce que la magie des suppléments ajoute</h4>\n<ul>\n<li><p><strong>Maître du lancement de sorts précipité</strong> : un lancement précipité sans majoration du Drain, un usage par jour et par niveau, compté sur la fiche (« 1/2 aujourd'hui ») ; <strong>Électro mage</strong> : l'Initiative de la cible baisse de la moitié des succès excédentaires, après sa résistance ; <strong>Gourou</strong> : la fenêtre du rituel accepte des participants ordinaires (<em>Arcanes interdites p. 35-38</em>).</p></li>\n<li><p>Métamagies <strong>Forme astrale améliorée</strong> et <strong>Astralnaute</strong> : la durée de projection s'affiche sur la fiche ; <strong>Invocation nécrotique précipitée</strong> : Drain d'invocation de 4 au moins (<em>Arcanes interdites p. 43-44</em>).</p></li>\n<li><p>Pouvoirs d'adepte <strong>Aptitude mystique</strong> et <strong>État de pureté</strong> (<em>Better Than Bad p. 143</em>) ; la tradition <strong>Magie des Ténèbres</strong> est reconnue (<em>Dark Terrors p. 169</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.fdMNG8aU98mNwupo]{4.5 Initiation}</p><p>← @UUID[.fdMNG8aU98mNwupo]{4.5 Initiation} · @UUID[.cgStAyGATe3C9X6W]{L'esprit mentor} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cgStAyGATe3C9X6W",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.cgStAyGATe3C9X6W",
+      "name": "L'esprit mentor",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le mentor vit dans <strong>deux objets</strong> : la qualité <strong>Esprit mentor</strong> (l'avantage à 5 Karma qui s'achète, <em>Livre de base p. 76</em>) et un objet <strong>Esprit mentor</strong> qui porte les bonus, le désavantage et le test de résistance. La qualité désigne l'objet dans son champ de lien ; ce sont les effets de l'objet qui jouent.</p>\n<h4>Pas à pas : donner un mentor à un personnage</h4>\n<ol>\n<li><p>Dans le bloc <strong>Esprits mentors</strong> de l'onglet de la magie, cliquez sur le <strong>+</strong> : un objet <strong>Nouvel esprit mentor</strong> apparaît. Vous pouvez aussi glisser un mentor depuis le Mégapack, qui les livre tout faits (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.fRv6Sd5vjaHLoIFV]{le Mégapack}).</p></li>\n<li><p>Ouvrez la qualité <strong>Esprit mentor</strong> du personnage et liez-la à cet objet. Tant qu'elles ne sont pas liées, la fiche l'écrit en clair : <strong>Avantage Esprit mentor manquant</strong> ou <strong>Esprit mentor : choisir un mentor</strong>.</p></li>\n<li><p>Sur la fiche de l'objet, onglet de configuration, réglez le <strong>Seuil de résistance</strong>, les <strong>Attributs du test de résistance</strong> (Charisme + Volonté par défaut, le test que demandent la plupart des mentors du livre (<em>Livre de base p. 324-327</em>)) et, pour un adepte, les <strong>Points de pouvoir offerts</strong>. Un adepte mystique choisit une fois pour toutes la <strong>Voie de l'adepte mystique</strong> (<em>Livre de base p. 324</em>).</p></li>\n<li><p>Dans l'onglet des effets, rangez chaque bonus dans son <strong>Bloc du mentor</strong> : tous, magicien, adepte ou désavantage. Un bonus « +2 si… » se coche <strong>Circonstanciel</strong> : il sera proposé en case dans la fenêtre du jet concerné.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-fiche.webp\" width=\"694\" alt=\"L'objet Esprit mentor, onglet de configuration : ① la voie de l'adepte mystique, ② le seuil et ③ les attributs du test de résistance, ④ les points de pouvoir offerts à un adepte.\" /><figcaption><strong>Figure 4.5.1</strong> — L'objet Esprit mentor, onglet de configuration : ① la voie de l'adepte mystique, ② le seuil et ③ les attributs du test de résistance, ④ les points de pouvoir offerts à un adepte.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-effets.webp\" width=\"694\" alt=\"Ses effets : chacun dit à qui il s'applique (① Bloc du mentor) et s'il ne vaut que dans certaines conditions (② Circonstanciel).\" /><figcaption><strong>Figure 4.5.2</strong> — Ses effets : chacun dit à qui il s'applique (① Bloc du mentor) et s'il ne vaut que dans certaines conditions (② Circonstanciel).</figcaption></figure>\n<p>Pour résister au désavantage, cliquez sur le dé de la ligne du mentor, dans le bloc <strong>Esprits mentors</strong> : le test se lance contre le seuil, et la carte dit <strong>Désavantage surmonté</strong> ou non.</p>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-ligne.webp\" width=\"317\" alt=\"Le bloc Esprits mentors : ① le dé du test de résistance au désavantage.\" /><figcaption><strong>Figure 4.5.3</strong> — Le bloc Esprits mentors : ① le dé du test de résistance au désavantage.</figcaption></figure>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Vos anciens mentors en qualité (MJ)</p><p>Une ancienne qualité « Esprit mentor (Ours) [Magicien] » qui porte ses propres effets fonctionne encore. Pour passer au modèle à deux objets, le MJ lance la commande de conversion : une fenêtre propose <strong>L'acteur sélectionné</strong> ou <strong>Tous les acteurs du monde</strong> ; la conversion crée l'objet mentor, y range les effets, lie la qualité et chuchote un résumé au MJ, sans rien supprimer. Le Mégapack livre la macro toute faite (compendium des macros du MJ), avec celle qui annule la conversion. Le détail et les commandes : <a href=\"https://github.com/DjamZee/sr5/wiki/Mentors-metamagies-et-maitrises\">wiki : Mentors, métamagies et maîtrises</a>.</p></div>\n\n<p>Le système ne retient qu'un seul mentor (le premier) et rend le mentor inerte, désavantage compris, quand la Magie tombe à 0 (<em>Livre de base p. 76</em>) et (<em>Livre de base p. 324</em>).</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Option du livre : le Masque du mentor</p><p>Le réglage <strong>Masque du mentor</strong> (onglet <strong>Magie</strong> de <strong>Réglages Shadowrun</strong>) est décoché par défaut. Coché, une case <strong>Masque</strong> apparaît sur l'objet mentor : un magicien réduit alors tous ses Drains de 1 (jamais sous 2), un adepte gagne 1 point de pouvoir (<em>Arcanes interdites p. 176</em>). Arbitrage de DjamZ : un adepte mystique qui a choisi la voie Adepte a aussi le −1 au Drain quand il lance un sort.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.fdMNG8aU98mNwupo]{4.5 Initiation}</p><p>← @UUID[.JuSWTLS2dO9lWhMi]{Le grade et les métamagies} · @UUID[.WFMdyMBaC7ZU1PTz]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WFMdyMBaC7ZU1PTz",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.WFMdyMBaC7ZU1PTz",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il applique les métamagies et maîtrises actives qu'il sait automatiser, et les bonus du mentor selon le type de magie.</p></li>\n<li><p>Il signale un mentor sans qualité, une qualité sans mentor, ou des bonus comptés deux fois.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Le coût en Karma de l'initiation, l'ordalie, le choix des métamagies laissées en texte.</p></li>\n<li><p>Le seuil « −3 pour remarquer la magie » du Masque, et ce que fait un personnage qui cède à son désavantage.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Masque du mentor</strong> (Magie)</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Initiation et métamagies : (<em>Livre de base p. 328-330</em>) ; esprits mentors : (<em>Livre de base p. 76</em>) et (<em>Livre de base p. 323-327</em>) ; métamagies et maîtrises d'<i>Arcanes Interdites</i> : (<em>Arcanes interdites p. 30-45</em>) ; Masque : (<em>Arcanes interdites p. 176</em>) ; Aptitude mystique et État de pureté : (<em>Better Than Bad p. 143</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Mentors-metamagies-et-maitrises\">wiki : Mentors, métamagies et maîtrises</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Magie-des-supplements\">wiki : Magie des suppléments</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.fdMNG8aU98mNwupo]{4.5 Initiation}</p><p>← @UUID[.cgStAyGATe3C9X6W]{L'esprit mentor} · @UUID[.QHApoxYSA0Sqrblk]{4.6 Technomanciens} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QHApoxYSA0Sqrblk",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.QHApoxYSA0Sqrblk",
+      "name": "4.6 Technomanciens",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le technomancien ou la technomancienne agit dans la Matrice sans appareil, par la Résonance. Le système lui donne un persona incarné, lance le tissage des formes complexes avec leur technodrain, compile et inscrit les sprites, et applique le flux choisi. Ce chapitre couvre la Résonance ; ce qui relève de la Matrice elle-même (marks, actions matricielles, couronne du PAN) est décrit à la partie 5 (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.8tsTkRwzpFwEKJHE]{la couronne du PAN}).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-6-onglet-resonance.webp\" width=\"630\" alt=\"L'onglet des actions de Résonance : ① les actions de Résonance, ② les formes complexes et ③ leur technodrain, ④ les sprites compilés, ⑤ les échos.\" /><figcaption><strong>Figure 4.6.1</strong> — L'onglet des actions de Résonance : ① les actions de Résonance, ② les formes complexes et ③ leur technodrain, ④ les sprites compilés, ⑤ les échos.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Actions de Résonance</strong> : compiler, décompiler, inscrire un sprite, tuer une forme complexe, effacer une signature de résonance ; un clic sur la réserve lance le test (<em>Livre de base p. 252</em>).</p></li>\n<li><p><strong>② Formes complexes</strong> : la réserve tisse la forme ; les colonnes <strong>N</strong> (niveau) et <strong>S</strong> (succès) se remplissent au jet.</p></li>\n<li><p><strong>③ Technodrain</strong> : la valeur de la forme au niveau affiché, flux compris.</p></li>\n<li><p><strong>④ Sprites compilés</strong> : tâches restantes, niveau, inscrit ou non.</p></li>\n<li><p><strong>⑤ Échos</strong> : comme une métamagie, un écho se pose dans ce bloc et s'active par son épingle.</p></li>\n</ul>\n\n<h4>Pas à pas : tisser une forme complexe</h4>\n<ol>\n<li><p>Ciblez au besoin le jeton visé, puis cliquez sur la réserve de dés de la forme complexe. La fenêtre <strong>Tisser …</strong> s'ouvre.</p></li>\n<li><p>Choisissez le <strong>Niveau</strong> : le <strong>Technodrain final</strong>, en bas, suit aussitôt (<em>Livre de base p. 253-254</em>). La <strong>Distance de la cible</strong> se règle seule d'après les jetons, et son bruit compte dans la réserve.</p></li>\n<li><p>Lancez les dés. La carte propose de résister au technodrain, et à la cible de se défendre quand la forme le demande.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-6-fenetre-forme.webp\" width=\"510\" alt=\"La fenêtre de tissage : ① la distance de la cible et son bruit, ② le niveau, ③ le technodrain final.\" /><figcaption><strong>Figure 4.6.2</strong> — La fenêtre de tissage : ① la distance de la cible et son bruit, ② le niveau, ③ le technodrain final.</figcaption></figure>\n<p>Le technodrain ne descend jamais sous 2 (<em>Livre de base p. 254</em>). Il est étourdissant, et physique quand les succès dépassent votre Résonance (<em>Livre de base p. 254</em>).</p>\n\n<h4>Pas à pas : compiler un sprite</h4>\n<ol>\n<li><p>Cliquez sur la réserve de dés de <strong>Compiler un sprite</strong>. Dans la fenêtre, choisissez le <strong>Niveau</strong> et le <strong>Type de Sprite</strong> (Compagnon, Coursier, Cracker, Données, Erreur, Généraliste, Machine).</p></li>\n<li><p>Lancez les dés. Le MJ clique sur <strong>Résistance du sprite</strong> : le sprite résiste avec son niveau.</p></li>\n<li><p>Sur la carte de résistance, résistez au technodrain (deux fois les succès du sprite, 2 au minimum (<em>Livre de base p. 256-257</em>)), puis cliquez sur <strong>Compiler le sprite</strong>. Le sprite rejoint le bloc <strong>Sprites compilés</strong> avec autant de tâches que de succès nets.</p></li>\n<li><p>Le bouton <strong>Appeler le sprite</strong> de sa ligne crée l'acteur du sprite, comme pour un esprit (@UUID[.q2f4GouqDwB2SRkR]{les esprits}). <strong>Inscrire un sprite</strong> et <strong>Décompiler un sprite</strong> se lancent depuis les actions de Résonance (<em>Livre de base p. 258-259</em>), le sprite ciblé. L'inscription est limitée par le Niveau du sprite ciblé (sans cible, la Résonance), la décompilation par votre limite Sociale (<em>Livre de base p. 252</em>). Les effets qui modifient la limite du tissage, de la compilation ou de l'inscription (un parangon, « Marqué par la dissonance ») s'y ajoutent, et la carte les affiche (<em>Kill Code p. 110, 114-115</em>).</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-6-fenetre-sprite.webp\" width=\"510\" alt=\"La fenêtre de compilation d'un sprite : ① le niveau, ② le type de sprite. Une technochamane y trouve aussi la case Forme majeure, propre à son flux.\" /><figcaption><strong>Figure 4.6.3</strong> — La fenêtre de compilation d'un sprite : ① le niveau, ② le type de sprite. Une technochamane y trouve aussi la case Forme majeure, propre à son flux.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU}</p><p>← @UUID[.WFMdyMBaC7ZU1PTz]{Réglages liés et références} · @UUID[.pRdcZuZisGwS5XdO]{Persona incarné, submersion et flux} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pRdcZuZisGwS5XdO",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.pRdcZuZisGwS5XdO",
+      "name": "Persona incarné, submersion et flux",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Le persona incarné</strong> : tout technomancien en a un, sous forme d'appareil de la fiche, dont l'indice est la Résonance ; le MJ connecté le crée s'il manque, et il ne se supprime pas (<em>Livre de base p. 253</em>). Il sert de maître à la couronne du PAN, et ses dommages matriciels se cochent en étourdissants sur la fiche (<em>Livre de base p. 229-230</em>).</p></li>\n<li><p><strong>Le grade de submersion</strong> se règle dans l'onglet de l'appareil de la colonne de gauche (<strong>Grade de Submersion</strong>, clic droit ou gauche) ; les échos se posent dans le bloc <strong>Échos</strong>.</p></li>\n<li><p><strong>Les flux</strong> de <i>Kill Code</i> (Cyberadepte, Machiniste, Sourcier, Technochaman, et les flux dissonants) sont des traits (<em>Kill Code p. 99-103</em>) et (<em>Kill Code p. 145-146</em>). Le système en applique les effets : technodrain réduit de 2 pour les formes que le flux connaît (il peut alors descendre à 1), +2 dés pour compiler et décompiler deux types de sprites, et le « démon » du flux selon le grade de submersion. Le persona incarné d'un Machiniste sert de console de rigger (@UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.AtuZz9Pwqg0xLguA]{la console de rigger}), mais ne partage que les autosofts qu'un de ses échos <strong>[Programme] de résonance</strong> copie ; l'écho porte le nom du programme copié (<em>Livre de base p. 261, Kill Code p. 101</em>).</p></li>\n<li><p><strong>Les sprites de forme majeure</strong> : la fenêtre de compilation d'une Technochamane, et d'elle seule, porte la case <strong>Forme majeure</strong>. Cochée, le technodrain de la compilation double, et le sprite porte dans sa description le pouvoir de son type ; ce pouvoir se joue depuis ce texte (<em>Kill Code p. 102-103</em>).</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Où trouver les flux ?</p><p>Un flux n'agit que s'il porte son effet système (catégorie <strong>Cas spécial</strong>, valeur <strong>Flux : …</strong>). Les traits de flux du Mégapack le portent dans ses versions récentes ; sur un trait plus ancien, le MJ l'ajoute dans l'onglet des effets. Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki : Matrice, IA, appareils et véhicules</a>.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.QHApoxYSA0Sqrblk]{4.6 Technomanciens}</p><p>← @UUID[.QHApoxYSA0Sqrblk]{4.6 Technomanciens} · @UUID[.GW6wc83BZN782NUv]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "GW6wc83BZN782NUv",
+      "_key": "!journal.pages!JzhtOnU77IZ0FhF1.GW6wc83BZN782NUv",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule le technodrain de chaque forme et de chaque compilation, flux compris, et en choisit le type de dommages.</p></li>\n<li><p>Il lance la résistance des sprites, compte leurs tâches, crée le sprite et son acteur.</p></li>\n<li><p>Il tient le persona incarné et applique les effets des flux.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Les pouvoirs de forme majeure, joués depuis la description du sprite ; la submersion elle-même (Karma, épreuve).</p></li>\n<li><p>Le choix de réserver une forme complexe de flux au bon flux : les formes de flux sont des objets du compendium, le système ne vérifie pas qui les achète.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Compendium des pouvoirs de sprites</strong> (Outils du MJ)</td><td>MJ, pour le monde</td><td>le Mégapack s'il est actif</td></tr>\n<tr><td>Famille <strong>Matrice</strong> (Verrous de règles)</td><td>MJ, pour le monde</td><td>cochée</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Technomanciens, Résonance, persona incarné, tissage, technodrain, formes complexes : (<em>Livre de base p. 251-256</em>) ; sprites : (<em>Livre de base p. 256-259</em>) ; flux et forme majeure : (<em>Kill Code p. 99-103</em>) et (<em>Kill Code p. 145-146</em>).</p></li>\n<li><p>Le détail, exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki : Matrice, IA, appareils et véhicules</a> et <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki : Couronne du PAN</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.2pyDBUVFZ7zB5mGw]{MENU} &gt; @UUID[.QHApoxYSA0Sqrblk]{4.6 Technomanciens}</p><p>← @UUID[.pRdcZuZisGwS5XdO]{Persona incarné, submersion et flux}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

@@ -1,0 +1,1229 @@
+{
+  "_id": "gOUR40WhFA46CDwQ",
+  "_key": "!journal!gOUR40WhFA46CDwQ",
+  "name": "3. Combattre",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 400000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "iGhwGsUFJdjVdP2f",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.iGhwGsUFJdjVdP2f",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie suit un combat de la première initiative au dernier pansement : qui agit quand, comment tirer, lancer une grenade ou frapper, comment se défendre et encaisser, puis comment soigner, empoisonner ou désintoxiquer, et enfin comment faire les poches de quelqu'un ou courir. Chaque chapitre se lit seul ; le MJ et le joueur ou la joueuse y trouvent chacun les gestes qui les concernent.</p>\n<p>Un principe traverse toute la partie : <strong>presque tout se joue depuis la carte de tchat précédente</strong>. L'attaque pose le bouton de défense, la défense pose celui de l'encaissement, l'encaissement celui des dommages. Avant d'attaquer, ciblez votre adversaire (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.Q9ZjuGii7Dk9qSH6]{le HUD du jeton}) : sans cible, la carte n'a personne à qui proposer la riposte.</p><table><tbody><tr><td><p>@UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.l2M39znYUiVouMmv]{Les passes d'initiative}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.uG5pbd46kdsDq1et]{Les compteurs d'actions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.4A2E6QmJUX4kvVeN]{Le menu du combattant : Chance, retard, remise à neuf}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WTL8yVUIxTMPy2bB]{Ce qui coûte de l'initiative}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.5e1C8XEIw7wax8Xr]{Le verrou « Actions et initiative » (MJ)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.b9kcQQZ87uW3LuMI]{Les options de combat de Run &amp; Gun (MJ)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.JA4RfvyqwtUSOKlZ]{Les manœuvres d'escouade}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.P7UG1SZXmOMjTYFQ]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.fGrnOdqehQhKghMK]{La portée}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.CUv00lq1BDtc4Xz2]{La lumière, la visibilité, le vent}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6Ua0ZNEOepATqdbF]{Ce que voit le tireur}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.xYgTd1DObv6NFWHh]{Modes de tir, rafales et recul}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.H9Pl8ybmfCqEygux]{Munitions et rechargement}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.n0zV2hQW044s9o9l]{Les attaques ciblées}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.DP7k08JIbDxNjXLb]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.NvdeRXKQIg1Ib7g7]{La déviation}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.cngH5oC2u0qXDBiC]{Le souffle}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OL1dEjSdeKM22pHX]{Les charges explosives}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.0raLuicgiUKCRdPk]{Les sorts de zone qui dévient}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Q4dIR4lxZsez1CqB]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.77xTNupE37NwfpBY]{L'allonge}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.7qCUSkFPmKxXFb5Y]{Les arts martiaux}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Furt5pGAM7POWl01]{La lutte}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.NlikAZfrRDjmvgiN]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.9B72deS2DMTZJXcr]{Les options de la défense}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.DhsZ2lyi4mQkj3bN]{Encaisser et appliquer les dommages}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OLdrBmiY89HDufSP]{Les dommages continus}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.dewehQUwKvn8IrqL]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.NIj3usHwtzKVum1g]{Premiers soins et guérison}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.X6unsHjfCp87f8H3]{Toxines}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.sneZmBmW54FdOUCY]{Drogues}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WpuWMtNv2DsbWRHl]{SFC et infectés (MJ)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.iJ6roO23hOx1fRZn]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.uELsXBep1MNE2fvn]{Cacher un objet, fouiller quelqu'un}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.VIRXDUiWWCUFHS4c]{Le vol à la tire}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.m50arlfBcQAALNG7]{La course}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OXlUYXRSwK6LwAlj]{Réglages liés et références}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "jWfPWabTAgzEg8yB",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.jWfPWabTAgzEg8yB",
+      "name": "3.1 L'initiative et les actions",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>À Shadowrun, un personnage rapide agit plusieurs fois par tour de combat, et chaque action qu'il dépense se décompte (<em>Livre de base p. 161-164</em>). Le suivi des rencontres de Foundry le fait pour vous : il range les combattants par score d'initiative, passe d'une passe d'initiative à la suivante, et tient pour chacun le compte de ses actions gratuites, simples et complexes. Le MJ y garde la main : il corrige un compteur d'un clic, rend ses actions à un personnage, et choisit jusqu'où le système fait respecter la règle.</p>\n\n<h4>Pas à pas : lancer un combat (MJ)</h4>\n<ol>\n<li><p>Sélectionnez les jetons des combattants, faites un clic droit sur l'un d'eux et cliquez sur <strong>Basculer l'état de combat</strong> : ils rejoignent la rencontre de la scène.</p></li>\n<li><p>Ouvrez l'onglet <strong>Combat</strong> de la barre latérale (les deux épées croisées).</p></li>\n<li><p>Cliquez sur <strong>Lancer pour tous</strong> (l'icône de groupe, ①) ou sur <strong>Lancer pour tous les PNJ</strong>, juste à côté, si les joueurs et les joueuses lancent eux-mêmes. Chacun lance l'initiative qui correspond à ce qu'il fait : physique, astrale ou matricielle, le système choisit tout seul.</p></li>\n<li><p>Cliquez sur <strong>Commencer la rencontre</strong>. La première passe d'initiative s'ouvre (②) et le combattant au plus haut score (④) prend la main.</p></li>\n<li><p>Quand un combattant a fini, cliquez sur <strong>Tour suivant</strong> (la flèche en bas à droite du suivi).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-suivi.webp\" width=\"330\" alt=\"Le suivi des rencontres pendant la première passe : ① lancer l'initiative de tous, ② la passe en cours, ③ les compteurs d'actions (gratuite, simples, complexe), ④ le score d'initiative.\" /><figcaption><strong>Figure 3.1.1</strong> — Le suivi des rencontres pendant la première passe : ① lancer l'initiative de tous, ② la passe en cours, ③ les compteurs d'actions (gratuite, simples, complexe), ④ le score d'initiative.</figcaption></figure>\n\n<p>Survoler une ligne du suivi surligne le jeton du combattant, sans ouvrir sa couronne du PAN. Le dé d'initiative de chaque ligne passe au rouge au survol. Un combattant que le MJ cache reste dans la liste du MJ, grisé, à sa place dans l'ordre du tour ; les joueurs et les joueuses ne le voient pas. Sur la scène, le jeton du combattant qui a la main porte le marqueur de tour du système, l'ouroboros de DjamZ ; un marqueur choisi dans les paramètres de combat de Foundry passe avant lui.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>@UUID[.l2M39znYUiVouMmv]{Les passes d'initiative} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "l2M39znYUiVouMmv",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.l2M39znYUiVouMmv",
+      "name": "Les passes d'initiative",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Sous le numéro du tour (le <strong>Round</strong> de Foundry), le suivi affiche la <strong>Passe d'initiative</strong> en cours. Quand tout le monde a joué, le système ouvre la passe suivante (<em>Livre de base p. 162</em>) :</p>\n<ul>\n<li><p>il retire 10 à chaque score d'initiative ;</p></li>\n<li><p>seuls les combattants dont le score reste au-dessus de 0 rejouent ; les autres ont fini leur tour de combat ;</p></li>\n<li><p>il rend leurs actions à ceux qui rejouent ;</p></li>\n<li><p>il décompte les effets dont la durée se compte en passes.</p></li>\n</ul>\n<p>Au tour de combat suivant, l'initiative est relancée et les dépenses de Chance du tour précédent sont oubliées. Chaque nouveau tour avance aussi l'horloge du monde de trois secondes (<em>Livre de base p. 51</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.yffYD7ZgnKUfBP2o]{l'horloge}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions} · @UUID[.uG5pbd46kdsDq1et]{Les compteurs d'actions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "uG5pbd46kdsDq1et",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.uG5pbd46kdsDq1et",
+      "name": "Les compteurs d'actions",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Sur chaque ligne du suivi, trois chiffres (③) : de gauche à droite les actions <strong>gratuites</strong>, <strong>simples</strong> et <strong>complexes</strong> qui restent au combattant dans la passe. Ils baissent tout seuls quand le personnage agit depuis sa fiche : un tir prend une action simple, un sort une action complexe, et une notification dit ce qui a été pris et pourquoi.</p>\n<p>Simples et complexe sont liées : par passe, on a droit à deux actions simples <strong>ou</strong> une action complexe, plus une action gratuite (<em>Livre de base p. 164</em>). Une action simple dépensée retire donc l'action complexe, et une action complexe retire les deux simples.</p>\n\n<h4>Pas à pas : corriger un compteur (MJ)</h4>\n<ol>\n<li><p>Cliquez sur un chiffre pour retirer une action de ce type.</p></li>\n<li><p>Maintenez la touche Maj et cliquez pour en rendre une.</p></li>\n</ol>\n<p>Le système signale que l'ajustement est manuel. Pour tout rendre d'un coup, passez par le menu du clic droit (plus bas).</p>\n\n<h4>Ce que coûtent quelques gestes</h4>\n<table>\n<thead><tr><th>Geste</th><th>Coût en combat</th></tr></thead>\n<tbody>\n<tr><td>Tirer au coup par coup ou en semi-automatique, lancer une arme</td><td>une action simple (<em>Livre de base p. 167</em>)</td></tr>\n<tr><td>Tirer en rafale ou en automatique, attaquer en mêlée, sprinter</td><td>une action complexe (<em>Livre de base p. 169</em>)</td></tr>\n<tr><td>Lancer un sort, utiliser une compétence dans sa propre phase</td><td>une action complexe (<em>Livre de base p. 169</em>)</td></tr>\n<tr><td>Basculer le sans-fil d'un appareil</td><td>une action gratuite (<em>Livre de base p. 165</em>) ; une action simple sans interface neurale directe si le MJ l'exige (réglage ci-dessous) (<em>Livre de base p. 167</em>)</td></tr>\n<tr><td>Recharger, éjecter un chargeur</td><td>selon l'arme et le chargeur, d'après la table du livre (<em>Livre de base p. 169</em>)</td></tr>\n<tr><td>Redémarrer son appareil depuis la fiche</td><td>une action complexe</td></tr>\n<tr><td>Courir</td><td>une action gratuite par passe où l'on se déplace en course (<em>Livre de base p. 164</em>) (@UUID[.m50arlfBcQAALNG7]{la course})</td></tr>\n<tr><td>Se défendre, résister à des dommages ou à un sort</td><td>rien : ce n'est pas une action</td></tr>\n<tr><td>Une Perception demandée par le MJ pendant la phase d'un autre</td><td>rien : c'est une réaction</td></tr>\n</tbody>\n</table>\n<p>Hors combat, rien n'est décompté : activer un focus, basculer un sans-fil ou redémarrer avant la bagarre ne fait pas descendre les compteurs.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Les PNJ à jetons non liés : jouez depuis le jeton</p><p>La fiche ouverte depuis l'onglet des acteurs est celle de l'acteur de base, qui n'est aucun de ses jetons : ses jets ne décomptent pas d'actions et ne touchent pas à l'initiative. Pour un garde, un ganger ou tout PNJ en plusieurs exemplaires, ouvrez la fiche par un double clic sur <strong>son jeton</strong>.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.l2M39znYUiVouMmv]{Les passes d'initiative} · @UUID[.4A2E6QmJUX4kvVeN]{Le menu du combattant : Chance, retard, remise à neuf} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4A2E6QmJUX4kvVeN",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.4A2E6QmJUX4kvVeN",
+      "name": "Le menu du combattant : Chance, retard, remise à neuf",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un clic droit sur une ligne du suivi ouvre le menu du combattant. Le système y ajoute ses propres entrées à celles de Foundry.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-menu.webp\" width=\"323\" alt=\"Le menu du clic droit sur un combattant : ① Prendre l'initiative et ② Blitz dépensent un point de Chance, ③ rend toutes ses actions au combattant, ④ le fait retarder son action.\" /><figcaption><strong>Figure 3.1.2</strong> — Le menu du clic droit sur un combattant : ① Prendre l'initiative et ② Blitz dépensent un point de Chance, ③ rend toutes ses actions au combattant, ④ le fait retarder son action.</figcaption></figure>\n\n<ul>\n<li><p><strong>Prendre l'initiative</strong> : le personnage passe en tête de l'ordre ; <strong>Blitz</strong> : son initiative est relancée avec cinq dés (<em>Livre de base p. 163</em>). Les deux coûtent un point de Chance, et le système refuse en le disant quand il n'en reste plus.</p></li>\n<li><p><strong>-1</strong>, <strong>-5</strong>, <strong>-10 au score d'initiative</strong> : pour appliquer à la main un coût que le système ne connaît pas.</p></li>\n<li><p><strong>Remettre ses actions à neuf</strong> (MJ seul) : le combattant retrouve sa gratuite, ses deux simples et sa complexe, comme au début d'une passe.</p></li>\n<li><p><strong>Retarder son action</strong> : le combattant sort de l'ordre et reprend la main quand il le décide (<em>Livre de base p. 163</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.uG5pbd46kdsDq1et]{Les compteurs d'actions} · @UUID[.WTL8yVUIxTMPy2bB]{Ce qui coûte de l'initiative} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WTL8yVUIxTMPy2bB",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.WTL8yVUIxTMPy2bB",
+      "name": "Ce qui coûte de l'initiative",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Certains choix ne prennent pas une action mais des points d'initiative, que le suivi retire aussitôt (<em>Livre de base p. 170</em>) :</p>\n<table>\n<thead><tr><th>Choix</th><th>Coût</th></tr></thead>\n<tbody>\n<tr><td>Défense totale (case de la fenêtre de défense)</td><td>−10</td></tr>\n<tr><td>Défense active : esquive, blocage, parade</td><td>selon la défense (@UUID[.LmUKMVXr8d1K0AVr]{se défendre})</td></tr>\n<tr><td>Action d'interruption</td><td>le plus souvent −5, parfois −10</td></tr>\n</tbody>\n</table>\n<p>Défense totale et défense active se paient ensemble : le score doit dépasser leur coût cumulé, au sens strict (11 ou plus pour la défense totale seule). Deux interruptions jouées d'un même geste additionnent leurs coûts. Quand le score ne suffit pas, le système refuse le choix et dit lequel des deux chiffres manque.</p>\n<p>Les blessures, elles, baissent le score d'initiative de leur modificateur, une fois par blessure, et le rendent quand elles guérissent (<em>Livre de base p. 171</em>). Pour le hacker qui interrompt une action grâce à une mark Watchdog, voir @UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.6MQU6zP7BSpcxoxa]{le menu radial}.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.4A2E6QmJUX4kvVeN]{Le menu du combattant : Chance, retard, remise à neuf} · @UUID[.5e1C8XEIw7wax8Xr]{Le verrou « Actions et initiative » (MJ)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "5e1C8XEIw7wax8Xr",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.5e1C8XEIw7wax8Xr",
+      "name": "Le verrou « Actions et initiative » (MJ)",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Par défaut, le système suit le livre : une action simple ou complexe se joue dans sa propre phase (<em>Livre de base p. 164</em>), et un score de 0 ou moins ne laisse qu'une action gratuite (<em>Livre de base p. 162</em>). Ce qu'il fait d'une action qu'on n'a plus se règle dans la fenêtre des <strong>Verrous de règles</strong>.</p>\n\n<h4>Pas à pas : régler le verrou des actions</h4>\n<ol>\n<li><p>Ouvrez <strong>Réglages Shadowrun</strong> (onglet <strong>Paramètres</strong>, <strong>Configurer les paramètres</strong>, <strong>Ouvrir les réglages</strong>), onglet <strong>Préréglages</strong>, puis cliquez sur <strong>Régler les verrous</strong>.</p></li>\n<li><p>Cochez vous-même famille par famille. Pour tout cocher ou tout décocher d'un coup, passez par le menu Préréglages (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.SdMk8BrzKmOhEBa1]{voir 8.1}).</p></li>\n<li><p>La famille <strong>Actions et initiative</strong> (②) couvre le rechargement sans l'action nécessaire, l'interruption sans assez d'initiative, la parade ou le blocage sans la compétence et la Chance pendant un test étendu.</p></li>\n<li><p>La case <strong>Bloquer une action qu'on n'a plus</strong> (③) ne vise que les actions manquantes : coché, une action simple ou complexe sans action disponible, ou à 0 d'initiative ou moins, est refusée sans rien dépenser.</p></li>\n<li><p>Cliquez sur <strong>Enregistrer</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-verrous.webp\" width=\"590\" alt=\"La fenêtre des verrous de règles : ① ce que veut dire une case cochée ou décochée, ② la famille « Actions et initiative », ③ la case qui bloque une action qu'on n'a plus.\" /><figcaption><strong>Figure 3.1.3</strong> — La fenêtre des verrous de règles : ① ce que veut dire une case cochée ou décochée, ② la famille « Actions et initiative », ③ la case qui bloque une action qu'on n'a plus.</figcaption></figure>\n\n<p>Une famille décochée ne change aucun calcul : l'action part, les compteurs descendent comme d'habitude, et le MJ reçoit un murmure, une fois par personnage et par tour de combat. Hors de sa phase, il n'y a jamais qu'un avertissement, même case cochée. Le détail des autres familles est au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{des verrous de règles}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Le monde neuf pose la question une fois</p><p>Au premier chargement d'un monde neuf, une fenêtre demande au MJ son automatisation : <strong>Avancée</strong> (le livre, toutes les cases cochées), <strong>Légère</strong> (tout décoché) ou <strong>Personnalisée</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.qQYev8qvHFHEaMmF]{le premier lancement}). Un monde mis à jour depuis une version plus ancienne garde le choix qu'il avait : la case ③ y reste décochée.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.WTL8yVUIxTMPy2bB]{Ce qui coûte de l'initiative} · @UUID[.b9kcQQZ87uW3LuMI]{Les options de combat de Run &amp; Gun (MJ)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "b9kcQQZ87uW3LuMI",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.b9kcQQZ87uW3LuMI",
+      "name": "Les options de combat de Run &amp; Gun (MJ)",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Run &amp; Gun propose six règles pour accélérer ou durcir le combat (<em>Run & Gun p. 121-125</em>). Ce sont six réglages de monde de l'onglet <strong>Combat</strong>, décochés par défaut comme le veut le livre :</p>\n<table>\n<thead><tr><th>Réglage</th><th>Coché, le système…</th></tr></thead>\n<tbody>\n<tr><td><strong>RG1</strong> : sans limite d'attaques par phase</td><td>note le choix (le système ne comptait déjà pas les attaques par phase).</td></tr>\n<tr><td><strong>RG2</strong> : taille de la cible</td><td>ajoute ou retire des dés à l'attaque selon la Force + Constitution de la cible (un troll à 20 donne +2 dés).</td></tr>\n<tr><td><strong>RG3</strong> : vitesse de déplacement</td><td>retire des dés à l'attaque contre un personnage qui a bougé, et à sa propre défense, selon les mètres parcourus.</td></tr>\n<tr><td><strong>RG4</strong> : initiative alternative</td><td>fait agir le plus haut score, qui perd aussitôt 10 ; l'ordre se refait après chaque action.</td></tr>\n<tr><td><strong>RG5</strong> : armure en malus à l'attaque</td><td>retire l'armure de la cible (moins la PA) à la réserve d'attaque, et ne la compte plus à l'encaissement.</td></tr>\n<tr><td><strong>RG6</strong> : VD accrue</td><td>augmente la VD quand la réserve de défense tombe sous 0.</td></tr>\n</tbody>\n</table>\n<p>Chaque ligne apparaît dans la fenêtre d'attaque ou de défense quand elle joue, et reste modifiable. Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki : Tracker d'initiative (RG4)</a>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.5e1C8XEIw7wax8Xr]{Le verrou « Actions et initiative » (MJ)} · @UUID[.JA4RfvyqwtUSOKlZ]{Les manœuvres d'escouade} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JA4RfvyqwtUSOKlZ",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.JA4RfvyqwtUSOKlZ",
+      "name": "Les manœuvres d'escouade",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une petite équipe entraînée coordonne ses gestes par des manœuvres de combat : 11 de Run &amp; Gun et 5 de <i>Street Lethal</i> (<em>Run & Gun p. 112-119</em>). Le chef les lance depuis sa connaissance <strong>Tactiques d'escouade</strong>.</p>\n<ol>\n<li><p>Sur la fiche du chef, cliquez sur la connaissance <strong>Tactiques d'escouade</strong> : la fenêtre <strong>Manœuvre de combat</strong> s'ouvre.</p></li>\n<li><p>Choisissez la manœuvre. Le seuil du livre est proposé ; le MJ peut en mettre un autre selon la préparation de l'équipe (<em>Run & Gun p. 113</em>).</p></li>\n<li><p>Cochez <strong>L'équipe doit recevoir des explications</strong> si la manœuvre est nouvelle : une action complexe, simple avec un réseau tactique (RP-Tac) II ou III (<em>Run & Gun p. 119</em>). Cliquez sur <strong>Lancer la manœuvre</strong>.</p></li>\n<li><p>Sur la carte, chaque membre sélectionne son jeton et clique sur <strong>Participer</strong> : Tactiques d'escouade, ou Intuition − 1 sans la compétence, plus le bonus du RP-Tac. Puis le chef lance son <strong>Test du chef</strong>, avec le bonus d'équipe déjà compté (<em>Livre de base p. 51</em>).</p></li>\n</ol>\n<p>Le MJ lit le résultat. Réussie, la manœuvre donne son bonus à tous jusqu'à la fin du tour de combat ; ratée, tous ont un malus en défense pour la passe, pour tout le tour sur un échec critique. Ces bonus et malus arrivent déjà cochés dans les fenêtres de jet des membres ; l'initiative d'une manœuvre et celle du réseau tactique (+5 ; +10 / +5 / +5) s'ajoutent tout de suite. <strong>Terminer la manœuvre</strong> retire ses effets. Les effets sur les adversaires, la surprise et la contre-manœuvre sont écrits sur la carte et restent au MJ.</p>\n<figure><img src=\"systems/sr5/manuel/captures/3-1-manoeuvre.webp\" width=\"556\" alt=\"La fenêtre Manœuvre de combat : la manœuvre choisie, son seuil et ses explications.\" /><figcaption><strong>Figure 3.1.4</strong> — La fenêtre Manœuvre de combat : la manœuvre choisie, son seuil et ses explications.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.b9kcQQZ87uW3LuMI]{Les options de combat de Run &amp; Gun (MJ)} · @UUID[.P7UG1SZXmOMjTYFQ]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "P7UG1SZXmOMjTYFQ",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.P7UG1SZXmOMjTYFQ",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il décompte les actions dépensées depuis la fiche, ouvre les passes et rend les actions à ceux qui rejouent.</p></li>\n<li><p>Il retire le coût en initiative de la défense totale, des défenses actives et des interruptions, et le malus des blessures.</p></li>\n<li><p>Il avertit d'une action jouée hors de sa phase ou à 0 d'initiative, y compris pour un PNJ joué par le MJ.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il fait respecter le décompte quand la case <strong>Bloquer une action qu'on n'a plus</strong> est décochée.</p></li>\n<li><p>Il retire l'initiative des coûts que le système ne connaît pas (menu du clic droit) et décide de la surprise.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions et initiative</strong></td><td>Verrous de règles</td><td>coché</td></tr>\n<tr><td><strong>Bloquer une action qu'on n'a plus</strong></td><td>Verrous de règles</td><td>coché avec l'automatisation avancée, décoché avec la légère</td></tr>\n<tr><td><strong>Exiger une IND pour basculer le wifi en action gratuite</strong></td><td>Réglages Shadowrun, onglet Matrice</td><td>décoché</td></tr>\n<tr><td><strong>Calendrier : le combat avance l'heure</strong></td><td>Réglages Shadowrun, onglet Calendrier</td><td>coché</td></tr>\n<tr><td>Options <strong>RG1</strong> à <strong>RG6</strong> de Run &amp; Gun</td><td>Réglages Shadowrun, onglet Combat</td><td>décochées</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Initiative, passes, Chance et retard : (<em>Livre de base p. 161-163</em>) ; actions : (<em>Livre de base p. 164-170</em>) ; Chance : (<em>Livre de base p. 58</em>) ; options de Run &amp; Gun : (<em>Run & Gun p. 121-125</em>).</p></li>\n<li><p>Le détail, cas limites compris : <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki : Tracker d'initiative</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.jWfPWabTAgzEg8yB]{3.1 L'initiative et les actions}</p><p>← @UUID[.JA4RfvyqwtUSOKlZ]{Les manœuvres d'escouade} · @UUID[.io7ka0umuvT3WySP]{3.2 Tirer} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "io7ka0umuvT3WySP",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.io7ka0umuvT3WySP",
+      "name": "3.2 Tirer",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un tir à Shadowrun dépend de la distance, de la lumière, du brouillard, du vent, de ce que voit le tireur et du recul de son arme. Le système mesure la distance entre les deux jetons, lit les conditions de la scène et la vision allumée sur la fiche, compte les balles et le recul, puis remplit la fenêtre d'attaque : il ne vous reste qu'à vérifier et à lancer.</p>\n\n<h4>Pas à pas : tirer sur un adversaire</h4>\n<ol>\n<li><p>Sélectionnez votre jeton, puis ciblez l'adversaire (clic droit sur son jeton, puis la cible du HUD, ou la touche T en le survolant). Une seule cible à la fois : avec deux, le tir est refusé.</p></li>\n<li><p>Ouvrez votre fiche à l'onglet des armes et cliquez sur le chiffre de la colonne <strong>RDD</strong> (réserve de dés) de l'arme.</p></li>\n<li><p>La fenêtre <strong>Attaquer avec…</strong> s'ouvre, déjà remplie. Vérifiez le mode de tir, la portée et les modificateurs ; dépliez une section en cliquant sur son titre pour voir le détail.</p></li>\n<li><p>Cliquez sur <strong>Lancer les dés</strong>. La carte de l'attaque arrive dans le tchat avec le bouton <strong>Se défendre</strong> pour la cible (@UUID[.LmUKMVXr8d1K0AVr]{se défendre et encaisser}).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-tir.webp\" width=\"494\" alt=\"La fenêtre d'attaque d'un pistolet lourd, cible à 7,5 m sous une lumière partielle : ① l'environnement de la scène, ② le mode de tir, ③ la portée, ④ le recul, ⑤ les attaques ciblées, ⑥ les munitions restantes.\" /><figcaption><strong>Figure 3.2.1</strong> — La fenêtre d'attaque d'un pistolet lourd, cible à 7,5 m sous une lumière partielle : ① l'environnement de la scène, ② le mode de tir, ③ la portée, ④ le recul, ⑤ les attaques ciblées, ⑥ les munitions restantes.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.P7UG1SZXmOMjTYFQ]{Réglages liés et références} · @UUID[.fGrnOdqehQhKghMK]{La portée} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fGrnOdqehQhKghMK",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.fGrnOdqehQhKghMK",
+      "name": "La portée",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le système mesure la distance avec la règle de Foundry, la ramène en mètres (une scène en pieds est comprise), puis la compare aux quatre portées de l'arme (<em>Livre de base p. 186</em>) :</p>\n<table>\n<thead><tr><th>Portée</th><th>Malus</th></tr></thead>\n<tbody>\n<tr><td>Courte</td><td>—</td></tr>\n<tr><td>Moyenne</td><td>−1</td></tr>\n<tr><td>Longue</td><td>−3</td></tr>\n<tr><td>Extrême</td><td>−6</td></tr>\n<tr><td>Au-delà de l'extrême</td><td>tir refusé</td></tr>\n</tbody>\n</table>\n<p>Les bornes sont incluses : une cible pile à 5 m d'un pistolet lourd est à portée courte. Les armes à feu ont des portées fixes ; celles des arcs, des arbalètes et des armes de jet dépendent de la Force de qui les tient : lisez-les sur la fiche de l'arme, elles changent d'un personnage à l'autre. Dans la fenêtre, la ligne <strong>Portée (cumulée avec l'environnement)</strong> (③) propose le palier mesuré ; vous pouvez en choisir un autre.</p>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Quelle taille de case ?</p><p>Les portées du livre sont en mètres : le système convertit toute seule la grille de la scène. Pour une carte tactique, gardez le réglage de Foundry, 1,5 m par case (5 pieds) : c'est ce que supposent la plupart des cartes du commerce (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.69OkRSC6h7elrvhm]{les scènes}).</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.io7ka0umuvT3WySP]{3.2 Tirer} · @UUID[.CUv00lq1BDtc4Xz2]{La lumière, la visibilité, le vent} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "CUv00lq1BDtc4Xz2",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.CUv00lq1BDtc4Xz2",
+      "name": "La lumière, la visibilité, le vent",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Chaque scène porte quatre conditions, que le MJ règle dans la configuration de la scène.</p>\n\n<h4>Pas à pas : régler l'environnement d'une scène (MJ)</h4>\n<ol>\n<li><p>Dans l'onglet <strong>Scènes</strong>, faites un clic droit sur la scène et choisissez <strong>Configurer</strong>.</p></li>\n<li><p>Ouvrez l'onglet <strong>Modificateurs environnementaux</strong>.</p></li>\n<li><p>Choisissez la <strong>Visibilité</strong> (①), la <strong>Lumière</strong> (②), l'<strong>Éblouissement</strong> (③) et le <strong>Vent</strong> (④), puis cliquez sur <strong>Sauvegarder</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-scene.webp\" width=\"576\" alt=\"La configuration de la scène, onglet Modificateurs environnementaux : ① visibilité, ② lumière, ③ éblouissement, ④ vent.\" /><figcaption><strong>Figure 3.2.2</strong> — La configuration de la scène, onglet Modificateurs environnementaux : ① visibilité, ② lumière, ③ éblouissement, ④ vent.</figcaption></figure>\n\n<p>Le système retient la condition la plus pénalisante, et monte d'un cran quand plusieurs sont aussi sévères (<em>Livre de base p. 176</em>). La portée compte comme une condition de plus : une portée moyenne (−1) sous une lumière partielle (−1) donne −3, et non −2. La fenêtre garde la ligne <strong>Modificateurs environnementaux</strong> (①) et n'ajoute sur la ligne de portée que ce que la portée change.</p>\n<table>\n<thead><tr><th>Jet</th><th>Ce qui compte</th></tr></thead>\n<tbody>\n<tr><td>Tir</td><td>visibilité, lumière et éblouissement, vent, portée</td></tr>\n<tr><td>Défense contre un tir</td><td>visibilité, lumière et éblouissement, vus par le défenseur (ni le vent ni la portée)</td></tr>\n<tr><td>Mêlée</td><td>visibilité, lumière et éblouissement (pas le vent)</td></tr>\n<tr><td>Perception visuelle</td><td>visibilité, lumière et éblouissement</td></tr>\n</tbody>\n</table>\n<p>La scène lue est celle qui est affichée à l'écran. Lumière et éblouissement forment une seule colonne de la table : le système prend la pire des deux, il ne les additionne pas.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.fGrnOdqehQhKghMK]{La portée} · @UUID[.6Ua0ZNEOepATqdbF]{Ce que voit le tireur} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6Ua0ZNEOepATqdbF",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.6Ua0ZNEOepATqdbF",
+      "name": "Ce que voit le tireur",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Les visions atténuent surtout la ligne de lumière. Le personnage les allume lui-même sur sa fiche, et son jeton voit aussitôt la scène autrement.</p>\n\n<h4>Pas à pas : allumer une vision</h4>\n<ol>\n<li><p>Ouvrez la fiche à l'onglet des qualités : le bloc <strong>Types de vision</strong> liste les visions dont dispose le personnage.</p></li>\n<li><p>Cliquez sur l'épingle de la vision voulue : elle s'allume et éteint les autres. <strong>Vision naturelle</strong> (①) éteint tout et rend la vue ordinaire.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-vision.webp\" width=\"331\" alt=\"Le bloc des visions d'un samouraï aux yeux cybernétiques : ① la vision naturelle, allumée, ② la vision nocturne, éteinte. En dessous, ce que les visions retirent des conditions de la scène.\" /><figcaption><strong>Figure 3.2.3</strong> — Le bloc des visions d'un samouraï aux yeux cybernétiques : ① la vision naturelle, allumée, ② la vision nocturne, éteinte. En dessous, ce que les visions retirent des conditions de la scène.</figcaption></figure>\n\n<table>\n<thead><tr><th>Vision allumée</th><th>Effet sur les modificateurs</th></tr></thead>\n<tbody>\n<tr><td>Vision nocturne</td><td>lumière partielle et faible comptent comme une pleine lumière ; rien en obscurité totale (<em>Livre de base p. 177</em>)</td></tr>\n<tr><td>Vision thermographique</td><td>lumière et visibilité remontent d'un cran : l'obscurité totale ne coûte plus que −3 (<em>Livre de base p. 177</em>)</td></tr>\n<tr><td>Vision ultrasonique</td><td>lumière remontée de trois crans, visibilité d'un cran</td></tr>\n<tr><td>Perception astrale</td><td>tout remonte de quatre crans ; basculer vers elle coûte une action simple</td></tr>\n</tbody>\n</table>\n<p>Des yeux cybernétiques remplacent la vision du métatype : un elfe à cyberyeux perd sa vision nocturne, sauf s'il l'a rachetée en amélioration (<em>Livre de base p. 96</em>). Une lampe torche montée sur l'arme ne vaut que pour les tirs faits avec cette arme : elle fournit une lumière partielle, et la version à vision nocturne ramène l'obscurité totale à −3 pour qui voit dans la pénombre (<em>Run & Gun p. 69</em>). Allumée, elle éblouit aussi la cible du tir : celle-ci se défend avec au moins un éblouissement faible, si la lampe convient à sa vision, moins sa compensation anti-flash (<em>Run & Gun p. 69, Livre de base p. 176</em>). Le détail des visions sur la carte, dont l'ultrason qui perce l'invisibilité : <a href=\"https://github.com/DjamZee/sr5/wiki/Types-de-vision\">wiki : Types de vision</a>.</p>\n\n<h4>L'écran et les dés : deux choses distinctes</h4>\n<ul>\n<li><p><strong>Ce que Foundry montre</strong> dépend des sources de lumière posées sur la scène (lampes, lumières d'ambiance) et de l'obscurité de la scène, un réglage de Foundry.</p></li>\n<li><p><strong>Ce que le système compte aux dés</strong>, ce sont les conditions de l'onglet <strong>Modificateurs environnementaux</strong> de la scène, corrigées par la vision épinglée sur la fiche.</p></li>\n</ul>\n<p>Les deux ne se parlent pas : l'obscurité réglée dans Foundry ne remplit pas la ligne Lumière des jets, et la ligne Lumière ne change pas l'image. Réglez les deux quand vous préparez une scène de nuit.</p>\n<table>\n<thead><tr><th>Vision</th><th>À l'écran</th></tr></thead>\n<tbody>\n<tr><td>Vision naturelle</td><td>on voit ce qui est éclairé ; dans le noir complet, rien</td></tr>\n<tr><td>Vision nocturne</td><td>la pénombre devient pleine lumière : le halo faible d'une lampe devient aussi clair que son centre. Dans le noir complet, elle ne change rien, à l'écran comme aux dés (<em>Livre de base p. 177, 447</em>)</td></tr>\n<tr><td>Vision thermographique</td><td>voit la chaleur, dans le noir aussi, jusqu'à 30 m par défaut (réglable)</td></tr>\n<tr><td>Ultrasons</td><td>« voit » les formes jusqu'à 50 m, révèle l'invisible, s'arrête aux murs</td></tr>\n<tr><td>Perception astrale</td><td>une image grisée et bleutée de toute la scène, jusqu'à 300 m par défaut, qui montre les auras ; basculer coûte une action simple</td></tr>\n</tbody>\n</table>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">« Ma vision nocturne ne sert à rien »</p><p>Sur une scène toute noire, sans aucune lampe, un samouraï à vision nocturne ne voit pas mieux qu'un autre : c'est la règle, pas une panne. Posez quelques lumières faibles (lune, néons lointains, réverbères) : la vision nocturne a alors quelque chose à amplifier.</p></div>\n<ul>\n<li><p>Une vision que le personnage possède mais qu'il n'a pas <strong>épinglée</strong> ne donne ni l'image ni la correction des dés.</p></li>\n<li><p>Un jeton <strong>non lié</strong> ne suit que sa propre fiche : ouvrez la fiche depuis le jeton pour épingler sa vision.</p></li>\n<li><p>Un Éveillé qui perçoit l'astral trouve aussi <strong>Perception astrale</strong> dans le bloc <strong>Types de vision</strong> : c'est la même épingle que dans le bloc <strong>Plan astral</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.Hk5PosiqIYLbH6U9]{voir 4.3}). Pour un esprit, elle est toujours allumée (<em>Livre de base p. 304</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.CUv00lq1BDtc4Xz2]{La lumière, la visibilité, le vent} · @UUID[.xYgTd1DObv6NFWHh]{Modes de tir, rafales et recul} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "xYgTd1DObv6NFWHh",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.xYgTd1DObv6NFWHh",
+      "name": "Modes de tir, rafales et recul",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>La liste <strong>Mode de tir</strong> (②) ne propose que les modes de l'arme : coup par coup, semi-automatique, rafale semi-automatique, rafale, tir automatique, tir de couverture (<em>Livre de base p. 180-181</em>). Le nombre de balles est écrit à côté du mode, et le coût suit le livre : action simple pour le coup par coup, le semi-automatique et une rafale courte, action complexe pour les rafales longues et le tir automatique (<em>Livre de base p. 167, 169</em>). Un tir de couverture demande 20 balles dans l'arme (<em>Livre de base p. 181</em>).</p>\n<p>Le recul se cumule tant que le tireur ne s'arrête pas de tirer (<em>Livre de base p. 178</em>) : la ligne <strong>Recul</strong> (④) montre la compensation de l'arme et des accessoires et les balles déjà tirées, et la réserve affichée en tient compte. Il retombe à zéro dès que le tireur consacre une action à autre chose (<em>Livre de base p. 178</em>) ; l'icône aux deux flèches, sous la ligne <strong>Recul</strong> dépliée, le remet à zéro à la main. Changer de mode de tir dans la fenêtre se paie au moment du tir ; fermer la fenêtre sans tirer ne coûte rien.</p>\n<p>Un fusil à pompe a en plus la liste <strong>Dispersion</strong> : petite, moyenne ou grande (<em>Livre de base p. 182</em>). Sans choix, l'arme est en petite dispersion, comme l'affiche sa fiche (le livre ne donne pas de défaut, c'est un arbitrage de DjamZ). Un lance-flammes propose, lui, le <strong>Tir d'aspersion</strong>.</p>\n\n<h4>Les traits d'arme</h4>\n<p>Sur la fiche d'une arme, quelques traits changent ses chiffres d'office :</p>\n<ul>\n<li><p><strong>Instrument de mort</strong> : Précision −1, Disponibilité +2, prix doublé (<em>No Future</em>, p. 152-153).</p></li>\n<li><p><strong>Modification spéciale</strong> (VD +1, PA −1, Précision +1, compensation de recul +1, Dissimulation −1, Allonge +1) : cumulables, pour l'avantage de Better Than Bad (<em>Better Than Bad p. 145</em>).</p></li>\n<li><p><strong>Filet</strong>, <strong>Filet XL</strong>, <strong>ShockNet</strong> : l'arme lance un filet (@UUID[.9B72deS2DMTZJXcr]{voir 3.5}). Les filets du compendium sont reconnus à leur nom.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.6Ua0ZNEOepATqdbF]{Ce que voit le tireur} · @UUID[.H9Pl8ybmfCqEygux]{Munitions et rechargement} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "H9Pl8ybmfCqEygux",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.H9Pl8ybmfCqEygux",
+      "name": "Munitions et rechargement",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>La fiche tient le compte des balles : chaque tir retire celles du mode choisi, et le système refuse un mode qui demande plus de balles qu'il n'en reste.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-armes.webp\" width=\"602\" alt=\"Le bloc des armes à distance : la colonne Mun. donne les balles restantes sur la capacité du chargeur ; à droite, l'icône aux deux flèches recharge l'arme.\" /><figcaption><strong>Figure 3.2.4</strong> — Le bloc des armes à distance : la colonne Mun. donne les balles restantes sur la capacité du chargeur ; à droite, l'icône aux deux flèches recharge l'arme.</figcaption></figure>\n\n<h4>Pas à pas : recharger</h4>\n<ol>\n<li><p>Rangez sur la fiche des munitions du bon type (bloc <strong>Munitions</strong>, sous les armes).</p></li>\n<li><p>Cliquez sur les deux flèches (<strong>Recharger l'arme</strong>) au bout de la ligne de l'arme. Le système puise dans vos munitions et décompte l'action que demande l'arme.</p></li>\n<li><p>Pour un chargeur amovible, un clic gauche sur la colonne <strong>Mun.</strong> insère un chargeur, un clic droit le retire.</p></li>\n</ol>\n<p>Le coût suit la table du livre (<em>Livre de base p. 169</em>) : insérer ou retirer un chargeur, action simple ; remplir un chargeur, un barillet ou un magasin interne, action complexe pour (Agilité) balles ; encocher une flèche, action simple. Avec le sans-fil de l'arme actif, éjecter le chargeur et changer de mode de tir deviennent des actions gratuites (<em>Livre de base p. 427, 435</em>) ; si le MJ coche <strong>Exiger une IND pour basculer le wifi en action gratuite</strong>, seulement pour un personnage relié par interface neurale directe. Une arme pleine le dit, et rien n'est dépensé.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Recharger sans dépenser d'action (règle maison)</strong>, onglet Combat des Réglages Shadowrun, décoché par défaut. Coché, recharger en combat ne coûte aucune action quand les munitions du bon type sont dans l'inventaire, et le remplissage complet d'un chargeur devient possible. Éjecter seul un chargeur garde son coût.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.xYgTd1DObv6NFWHh]{Modes de tir, rafales et recul} · @UUID[.n0zV2hQW044s9o9l]{Les attaques ciblées} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "n0zV2hQW044s9o9l",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.n0zV2hQW044s9o9l",
+      "name": "Les attaques ciblées",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>La liste <strong>Attaques ciblées</strong> (⑤) propose les options de Run &amp; Gun : arracher des mains, cible spécifique (une localisation précise), coup en traître, ébranler, viser un point vital, tir transperçant, rafale dans le mille… (<em>Run & Gun p. 125-131</em>). Le système applique le malus, puis propose les effets sur la carte (sonné, renversé…). Les techniques d'arts martiaux qui réduisent un malus le réduisent ici d'office (@UUID[.dQ3e5i0smJlXOWCx]{la mêlée}). Le réglage <strong>Utiliser les règles d'attaques ciblées</strong> (onglet Combat, coché par défaut) retire la liste quand on le décoche.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.H9Pl8ybmfCqEygux]{Munitions et rechargement} · @UUID[.DP7k08JIbDxNjXLb]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DP7k08JIbDxNjXLb",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.DP7k08JIbDxNjXLb",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il mesure la distance en mètres et choisit le palier de portée ; il refuse un tir au-delà de la portée extrême.</p></li>\n<li><p>Il applique la pire condition de la scène, cran supplémentaire compris, corrigée par la vision allumée du tireur, puis celle du défenseur pour sa défense.</p></li>\n<li><p>Il décompte les balles, cumule le recul et décompte l'action du tir et du rechargement.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il ajoute les circonstances que la scène ne porte pas (fumée thermique, verre devant un senseur à ultrasons) dans <strong>Modificateurs divers</strong>.</p></li>\n<li><p>Il juge de la ligne de vue : le système mesure la distance, pas les obstacles.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Portée et cibles</strong></td><td>Verrous de règles</td><td>coché (tir au-delà de l'extrême et cibles multiples refusés)</td></tr>\n<tr><td><strong>Munitions et armes</strong></td><td>Verrous de règles</td><td>coché</td></tr>\n<tr><td><strong>Utiliser les règles d'attaques ciblées</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>coché</td></tr>\n<tr><td><strong>Recharger sans dépenser d'action (règle maison)</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>décoché</td></tr>\n<tr><td><strong>Les yeux cybernétiques remplacent la vision naturelle</strong></td><td>Réglages Shadowrun, onglet Perception et vision</td><td>coché</td></tr>\n<tr><td><strong>Portée de la vision thermographique</strong></td><td>Réglages Shadowrun, onglet Perception et vision</td><td>30 m (le livre n'en donne pas)</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Environnement et visions : (<em>Livre de base p. 176-177</em>) ; recul et modes de tir : (<em>Livre de base p. 178-181</em>) ; dispersion : (<em>Livre de base p. 182</em>) ; portées : (<em>Livre de base p. 186</em>) ; rechargement : (<em>Livre de base p. 169</em>) ; attaques ciblées : (<em>Run & Gun p. 125-131</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Portees-couvert-environnement\">wiki : Portées, couvert et environnement</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Types-de-vision\">wiki : Types de vision</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Plafond-des-augmentations-et-rechargement\">wiki : rechargement</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.io7ka0umuvT3WySP]{3.2 Tirer}</p><p>← @UUID[.n0zV2hQW044s9o9l]{Les attaques ciblées} · @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "l2kcMvt1ZtbjZ95v",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.l2kcMvt1ZtbjZ95v",
+      "name": "3.3 Grenades, gabarits, déviation",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Une grenade ne vise pas un adversaire : elle vise un point, et elle peut le manquer. Le système pose sur la scène un gabarit de la taille du souffle, fait lancer le dé de déviation quand le lanceur rate son point de chute, déplace le gabarit d'autant de mètres dans la bonne direction, puis propose à chaque personne prise dans le souffle d'encaisser, avec des dommages qui baissent à mesure qu'on s'éloigne du centre (<em>Livre de base p. 182-184</em>).</p>\n\n<h4>Pas à pas : lancer une grenade</h4>\n<ol>\n<li><p>Sélectionnez votre jeton. Sur la fiche, onglet des armes, cliquez sur la réserve de la grenade (bloc <strong>Grenades</strong>).</p></li>\n<li><p>Le gabarit du souffle apparaît au bout de la souris : amenez-le sur le point visé et cliquez sur la carte pour le poser.</p></li>\n<li><p>La fenêtre <strong>Attaquer avec…</strong> s'ouvre : la portée y est calculée d'après la Force de qui lance, comme pour une arme de jet. Lancez : c'est Armes de jet + Agilité [Physique], au seuil 3, en une action simple (<em>Livre de base p. 182</em>).</p></li>\n<li><p>Avec 3 succès ou plus, la grenade tombe où vous l'avez voulu. Sinon, la carte porte le bouton <strong>Déviation</strong> : cliquez dessus (pas à pas suivant).</p></li>\n<li><p>Chaque personne prise dans le souffle clique sur <strong>Encaisser</strong>, avec son propre personnage sélectionné ; pour les PNJ, le MJ sélectionne leur jeton. On ne se défend pas d'un souffle : on l'encaisse.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-3-carte.webp\" width=\"334\" alt=\"La carte d'une grenade qui a manqué son point de chute : ① le résultat du lancer, ② le bouton Déviation, ③ l'icône qui retire le gabarit. Le bouton Encaisser sert à chaque personne prise dans le souffle.\" /><figcaption><strong>Figure 3.3.1</strong> — La carte d'une grenade qui a manqué son point de chute : ① le résultat du lancer, ② le bouton Déviation, ③ l'icône qui retire le gabarit. Le bouton Encaisser sert à chaque personne prise dans le souffle.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.DP7k08JIbDxNjXLb]{Réglages liés et références} · @UUID[.NvdeRXKQIg1Ib7g7]{La déviation} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NvdeRXKQIg1Ib7g7",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.NvdeRXKQIg1Ib7g7",
+      "name": "La déviation",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : faire dévier la grenade</h4>\n<ol>\n<li><p>Cliquez sur <strong>Déviation</strong> sur la carte du lancer (le lanceur ou le MJ).</p></li>\n<li><p>Le système tire la distance, 1D6 mètres moins les succès pour une grenade standard, et la direction au 2D6 sur le diagramme du livre, orienté du lanceur vers le point visé : un 7 part au-delà de la cible, un 2 ou un 12 revient vers le lanceur (<em>Livre de base p. 183</em>).</p></li>\n<li><p>Le gabarit de ce lancer se déplace d'autant de mètres, et la carte affiche <strong>Déviation : N m</strong>.</p></li>\n</ol>\n\n<table>\n<thead><tr><th>Projectile</th><th>Déviation</th></tr></thead>\n<tbody>\n<tr><td>Grenade standard</td><td>1D6 − succès, en mètres</td></tr>\n<tr><td>Grenade aérodynamique</td><td>2D6 − succès</td></tr>\n<tr><td>Lance-grenades</td><td>3D6 − succès</td></tr>\n</tbody>\n</table>\n<p>À 0 succès, la grenade dévie de toute la distance tirée. La déviation se compte en mètres, pas en cases : sur une grille à 1,5 m, 3 mètres font deux cases. Seul celui qui a posé le gabarit, ou le MJ, peut le dévier ou le retirer. Si le gabarit a été retiré, l'encaissement est refusé : sans gabarit, il n'y a plus de point d'où mesurer.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p><p>← @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation} · @UUID[.cngH5oC2u0qXDBiC]{Le souffle} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cngH5oC2u0qXDBiC",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.cngH5oC2u0qXDBiC",
+      "name": "Le souffle",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le rayon du gabarit est celui du livre, en mètres, quelle que soit l'unité de la scène. Les dommages baissent avec la distance au centre, du nombre indiqué dans la colonne <strong>Souffle</strong> de la fiche (« 16 / −2 » : 16 au centre, 2 de moins par mètre) (<em>Livre de base p. 184</em>). Une personne trop loin pour subir le moindre dommage n'a rien à encaisser : le bouton le dit.</p>\n<p>Le lance-grenades suit le même chemin, avec Armes lourdes + Agilité [Précision], une déviation de 3D6 et pas de bouton <strong>Se défendre</strong> (<em>Livre de base p. 182-183</em>). Un tir au-delà de la portée extrême est refusé, et son gabarit retiré.</p>\n<p>Les grenades à rayon fixe (flashbang, gaz, fumigène) n'atteignent personne au-delà de leurs 10 m (<em>Livre de base p. 437</em>). Le programmateur d'explosion en vol retire 2 m de déviation par succès, sans-fil activé (<em>Livre de base p. 434</em>). La grenade à peinture ne fait aucun dommage, dans un rayon de 10 m (<em>Run & Gun p. 116</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-3-deviation.webp\" width=\"680\" alt=\"Une grenade qui dévie : ① le point visé, sur le garde, ② le centre du gabarit après la déviation.\" /><figcaption><strong>Figure 3.3.2</strong> — Une grenade qui dévie : ① le point visé, sur le garde, ② le centre du gabarit après la déviation.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p><p>← @UUID[.NvdeRXKQIg1Ib7g7]{La déviation} · @UUID[.OL1dEjSdeKM22pHX]{Les charges explosives} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OL1dEjSdeKM22pHX",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.OL1dEjSdeKM22pHX",
+      "name": "Les charges explosives",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un objet d'équipement devient un explosif quand on choisit son <strong>Explosif</strong> dans sa fiche : dix composés (plastic, ANFO, dynamite, TNT…) (<em>Run & Gun p. 202</em>), une quantité en kilos (ou en litres) et la case <strong>Artisanal</strong> pour un lot du marché noir.</p>\n<ol>\n<li><p>Dans l'inventaire, cliquez sur l'icône de bombe de la ligne : la fenêtre <strong>Charge explosive</strong> s'ouvre.</p></li>\n<li><p>Réglez les kilos employés, les succès du test d'Explosifs (chacun monte ou baisse l'indice effectif de 1), la pose (libre, contre la cible ×2, bourrée ×4), le souffle (circulaire ou directionnel), l'indice du détonateur (<em>Run & Gun p. 188-190, 206-207</em>).</p></li>\n<li><p>Lisez la VD (indice effectif × racine carrée des kilos, arrondi au supérieur (<em>Run & Gun p. 188</em>)), la portée du souffle, le champ magique créé à partir de 35P, et, avec <strong>Comparer à</strong>, les seuils des matériaux et des véhicules (<em>Run & Gun p. 191</em>).</p></li>\n<li><p>Cliquez sur <strong>Placer le souffle et faire exploser</strong>, posez le gabarit : le MJ calcule l'explosion et poste la carte. Chaque personnage pris dedans sélectionne son jeton et clique sur <strong>Encaisser le souffle</strong>, à sa distance, comme pour une grenade.</p></li>\n</ol>\n<p>Un détonateur bas de gamme peut rater ; un lot artisanal a un écart secret, réglé et vu par le MJ seul (<em>Run & Gun p. 189</em>). Le cordon détonant, les explosions simultanées ou en espace confiné et l'abattage d'un bâtiment restent au MJ (<em>Livre de base p. 184</em>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/3-3-charge.webp\" width=\"468\" alt=\"La fenêtre Charge explosive : la charge, la pose, le souffle, puis la VD calculée.\" /><figcaption><strong>Figure 3.3.3</strong> — La fenêtre Charge explosive : la charge, la pose, le souffle, puis la VD calculée.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p><p>← @UUID[.cngH5oC2u0qXDBiC]{Le souffle} · @UUID[.0raLuicgiUKCRdPk]{Les sorts de zone qui dévient} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "0raLuicgiUKCRdPk",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.0raLuicgiUKCRdPk",
+      "name": "Les sorts de zone qui dévient",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un sort de combat indirect de zone se lance comme une grenade : Lancement de sorts + Magie [Puissance], au seuil 3, et il dévie de 2D6 mètres moins les succès quand le seuil est manqué (<em>Livre de base p. 285</em>). La carte du sort porte alors le même bouton <strong>Déviation</strong>, qui déplace le gabarit de ce lancer. Avec 3 succès ou plus, la cible se défend normalement. À 0 succès, le sort échoue et rien ne part (arbitrage de DjamZ). Le lancement lui-même est décrit avec la magie (@UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.9ouEQLH2RNX4qCQ8]{lancer un sort}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p><p>← @UUID[.OL1dEjSdeKM22pHX]{Les charges explosives} · @UUID[.Q4dIR4lxZsez1CqB]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Q4dIR4lxZsez1CqB",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.Q4dIR4lxZsez1CqB",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il pose le gabarit à la taille du souffle, convertit les mètres dans l'unité de la scène et calcule la portée d'après la Force.</p></li>\n<li><p>Il tire la distance et la direction de la déviation, déplace le gabarit du lancer concerné et calcule les dommages de chacun selon sa distance au centre.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il juge des murs et des obstacles qui arrêtent un souffle : le gabarit n'en tient pas compte.</p></li>\n<li><p>Il fait encaisser les PNJ pris dans le souffle, en sélectionnant leur jeton.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Portée et cibles</strong> (portée extrême)</td><td>Verrous de règles</td><td>coché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Grenades, déviation et souffle : (<em>Livre de base p. 182-184</em>) ; sorts de zone indirects : (<em>Livre de base p. 285</em>) ; explosifs : (<em>Run & Gun p. 183-208</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Portees-couvert-environnement\">wiki : Portées, couvert et environnement</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki : Sorts de zone et contresort</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Manoeuvres-et-explosifs\">wiki : Manœuvres d'escouade et explosifs</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.l2kcMvt1ZtbjZ95v]{3.3 Grenades, gabarits, déviation}</p><p>← @UUID[.0raLuicgiUKCRdPk]{Les sorts de zone qui dévient} · @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "dQ3e5i0smJlXOWCx",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.dQ3e5i0smJlXOWCx",
+      "name": "3.4 La mêlée, les arts martiaux, la lutte",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Une attaque de mêlée se lance comme un tir, depuis la ligne de l'arme, mais elle coûte une action complexe (<em>Livre de base p. 169</em>) et dépend de l'allonge plutôt que de la portée. Le système vérifie que la cible est à portée de bras, propose les modificateurs de la mêlée et les attaques ciblées, applique les techniques d'arts martiaux que connaît le personnage et, si le MJ l'active, suit une lutte : qui tient qui, la valeur de la prise et la façon d'en sortir.</p>\n\n<h4>Pas à pas : frapper un adversaire</h4>\n<ol>\n<li><p>Sélectionnez votre jeton et ciblez l'adversaire, sur une case voisine (ou plus loin si l'arme a de l'allonge).</p></li>\n<li><p>Sur la fiche, onglet des armes, cliquez sur la réserve de l'arme de mêlée (bloc <strong>Armes de mêlée</strong> ; <strong>Mains nues</strong> pour un coup de poing).</p></li>\n<li><p>Dans la fenêtre <strong>Attaquer avec…</strong>, cochez ce qui s'applique dans les <strong>Modificateurs</strong> et choisissez une attaque ciblée si besoin, puis cliquez sur <strong>Lancer les dés</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-melee.webp\" width=\"494\" alt=\"La fenêtre d'une attaque au katana, modificateurs dépliés : ① la charge, ② la position avantageuse, ③ les amis dans la mêlée, ④ les attaques ciblées de mêlée.\" /><figcaption><strong>Figure 3.4.1</strong> — La fenêtre d'une attaque au katana, modificateurs dépliés : ① la charge, ② la position avantageuse, ③ les amis dans la mêlée, ④ les attaques ciblées de mêlée.</figcaption></figure>\n\n<p>Les cases suivent la table des modificateurs de mêlée (<em>Livre de base p. 188</em>) : <strong>Charge</strong> (+2, et le −2 de la course ne s'applique pas), <strong>Position avantageuse</strong> (+2), <strong>Amis dans la mêlée</strong>, <strong>Adversaire étendu</strong>, <strong>Arme dans la mauvaise main</strong>, <strong>Attaque uniquement pour toucher</strong>… La case <strong>En course</strong> se coche seule quand le jeton court (@UUID[.m50arlfBcQAALNG7]{la course}). Lumière et visibilité comptent en mêlée comme au tir, le vent non (@UUID[.CUv00lq1BDtc4Xz2]{l'environnement}).</p>\n<p>Une arme à mains nues peut porter le trait <strong>Coup de pied</strong> : un effet « Armes / VD » qui vise <strong>Coup de pied</strong> ne s'ajoute alors qu'à elle, sans toucher aux coups de poing. C'est ce qu'il faut aux Jambes de satyre, +2 aux attaques par coup de pied (<em>Run Faster p. 83</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.Q4dIR4lxZsez1CqB]{Réglages liés et références} · @UUID[.77xTNupE37NwfpBY]{L'allonge} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "77xTNupE37NwfpBY",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.77xTNupE37NwfpBY",
+      "name": "L'allonge",
+      "type": "text",
+      "sort": 2600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le livre ne donne aucune distance de mêlée : l'allonge y modifie la défense (<em>Livre de base p. 187</em>). Pour décider qui est à portée sur la carte, le système suit une convention simple : <strong>une cible sur une case voisine est toujours à portée, et chaque point d'allonge ajoute une case</strong>. La diagonale compte comme voisine ; un gros jeton se mesure depuis sa case la plus proche.</p>\n<table>\n<thead><tr><th>Arme</th><th>Portée d'attaque</th></tr></thead>\n<tbody>\n<tr><td>Mains nues, couteau (allonge —)</td><td>la case voisine</td></tr>\n<tr><td>Matraque télescopique, bâton (allonge 1)</td><td>deux cases</td></tr>\n<tr><td>Hache de combat (allonge 2)</td><td>trois cases</td></tr>\n</tbody>\n</table>\n<p>Un troll ajoute son allonge naturelle de 1 à celle de son arme. Au-delà, un avertissement orange « La cible est trop éloignée » s'affiche et le jet ne part pas. Sans cible, l'attaque part sans contrôle de distance. La portée de mêlée suit l'échelle de la scène : sur une carte de ville à grandes cases, elle devient généreuse.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte}</p><p>← @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte} · @UUID[.7qCUSkFPmKxXFb5Y]{Les arts martiaux} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "7qCUSkFPmKxXFb5Y",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.7qCUSkFPmKxXFb5Y",
+      "name": "Les arts martiaux",
+      "type": "text",
+      "sort": 2700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Les techniques des arts martiaux de Run &amp; Gun (dans le Mégapack, dossier des arts martiaux) se glissent sur la fiche comme un objet ; elles rejoignent le bloc <strong>Arts martiaux</strong> de l'onglet des armes, avec leur style dans la colonne <strong>Style</strong>. Une table qui joue les arts martiaux révisés de DjamZ les prend dans un module à part (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.NDHhxHQPTq63Zsd8]{voir 9.10}).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-arts-martiaux.webp\" width=\"602\" alt=\"Le bloc Arts martiaux d'un adepte : ses techniques, et dans l'en-tête ① l'Évasion et ② la Saisie (lutte activée).\" /><figcaption><strong>Figure 3.4.2</strong> — Le bloc Arts martiaux d'un adepte : ses techniques, et dans l'en-tête ① l'Évasion et ② la Saisie (lutte activée).</figcaption></figure>\n\n<ul>\n<li><p><strong>Une technique apprise s'applique d'office</strong> : elle réduit le malus de l'attaque ciblée qu'elle couvre, en général de 1 (<em>Run & Gun p. 125, 148-151</em>). Ainsi Dim Mak réduit le malus d'un coup au genou, et Griffes libératrices celui de Désarmer. La réduction ne compte que si l'attaque ciblée correspondante est choisie dans la fenêtre.</p></li>\n<li><p>Les techniques qui sont un choix au moment du jet, comme <strong>Attaque à outrance</strong> ou <strong>Balestra</strong> (<em>Run & Gun p. 134</em>), deviennent une case à cocher de la fenêtre de jet.</p></li>\n<li><p>Pour viser un endroit précis, choisissez <strong>Cible spécifique</strong> puis l'endroit : le malus de la localisation (de −6 à −10) remplace celui de l'attaque ciblée, réduit par la technique qui la couvre (<em>Run & Gun p. 126-128</em>). Les effets de la localisation restent à appliquer par le MJ.</p></li>\n</ul>\n\n<h4>Pas à pas : se libérer d'une saisie ou d'une immobilisation</h4>\n<ol>\n<li><p>Dans l'en-tête du bloc <strong>Arts martiaux</strong>, cliquez sur l'icône <strong>Évasion (saisie ou immobilisation)</strong> (①) : c'est une action complexe, Combat à mains nues + Force [Physique] (<em>Run & Gun p. 135</em>).</p></li>\n<li><p>Le seuil est la valeur de la prise. Avec la lutte activée, il se remplit seul ; sinon, tapez-le dans la fenêtre.</p></li>\n<li><p>Lancez. La carte dit « libéré » ou « toujours saisi ou immobilisé ». Avec la technique <strong>Contre-prise</strong>, une évasion réussie propose aussi de renverser la situation (<em>Run & Gun p. 148-149</em>).</p></li>\n</ol><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte}</p><p>← @UUID[.77xTNupE37NwfpBY]{L'allonge} · @UUID[.Furt5pGAM7POWl01]{La lutte} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Furt5pGAM7POWl01",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.Furt5pGAM7POWl01",
+      "name": "La lutte",
+      "type": "text",
+      "sort": 2800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le suivi de la lutte est une option du livre que le MJ active dans <strong>Réglages Shadowrun</strong>, onglet <strong>Combat</strong> : <strong>Utiliser le système de lutte</strong> (décoché par défaut, la page se recharge). Décochée, rien ne change : l'évasion garde son seuil à saisir, et le MJ suit la lutte à la main.</p>\n\n<h4>Pas à pas : saisir un adversaire (lutte activée)</h4>\n<ol>\n<li><p>Sélectionnez votre jeton, ciblez l'adversaire au contact, puis cliquez sur l'icône <strong>Saisie</strong> (②) du bloc Arts martiaux : Agilité + Gymnastique [Physique] contre Réaction + Intuition (<em>Run & Gun p. 133</em>).</p></li>\n<li><p>Sur la carte, le défenseur clique sur <strong>Se défendre</strong>. Pour un PNJ, le MJ <strong>sélectionne d'abord le jeton du défenseur</strong> : la défense contre une saisie part du jeton sélectionné.</p></li>\n<li><p>Si l'attaquant l'emporte d'au moins un succès, la carte de défense propose <strong>Saisir (prise : N)</strong> : cliquez. Les deux jetons portent l'état de la prise (<strong>Saisit un adversaire</strong> et <strong>Saisi</strong>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-prise.webp\" width=\"334\" alt=\"La carte de prise : ① ce que la prise change (seuil d'évasion, position avantageuse, allonge, malus d'armes), ② le bouton pour lâcher la prise.\" /><figcaption><strong>Figure 3.4.3</strong> — La carte de prise : ① ce que la prise change (seuil d'évasion, position avantageuse, allonge, malus d'armes), ② le bouton pour lâcher la prise.</figcaption></figure>\n\n<p>La prise vaut les succès excédentaires du test qui l'a posée ; c'est le seuil de l'évasion. Pendant une saisie, celui qui saisit a la position avantageuse (+2, cochée seule), l'allonge est annulée entre les deux, et chacun subit un malus avec ses armes : l'allonge de l'arme en mêlée, la valeur de la prise avec une arme qui tire (<em>Run & Gun p. 133-134</em>).</p>\n<ul>\n<li><p><strong>Maîtriser (lutte)</strong> : avec une attaque à mains nues, cette attaque ciblée sans malus n'inflige aucun dommage ; si la Force et les succès excédentaires dépassent la limite Physique du défenseur, la carte propose <strong>Immobiliser</strong> (<em>Livre de base p. 195</em>). L'immobilisé compte comme étendu au sol pour qui l'attaque.</p></li>\n<li><p><strong>Renforcer la prise (lutte)</strong>, contre son partenaire : les succès excédentaires s'ajoutent à la prise, ou la réduisent si le défenseur l'emporte (<em>Livre de base p. 196</em>).</p></li>\n<li><p><strong>Frapper</strong> et <strong>Lâcher la prise</strong> : boutons de la carte de prise, visibles du MJ et de qui tient. Frapper inflige des dommages étourdissants égaux à la Force, sans test.</p></li>\n<li><p><strong>Renverser la situation</strong> : avec la technique, le personnage tenu tente le renversement ; réussi, les rôles s'échangent (<em>Run & Gun p. 126</em>). Les techniques Contre-prise et Renversement de situation viennent du Mégapack.</p></li>\n</ul>\n<p>La prise se défait toute seule quand l'un des deux est inconscient ou mort, à la fin du combat, ou quand un jeton disparaît. Une prise affaiblie jusqu'à 0 reste en place : seule l'évasion libère (arbitrage de DjamZ).</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte}</p><p>← @UUID[.7qCUSkFPmKxXFb5Y]{Les arts martiaux} · @UUID[.NlikAZfrRDjmvgiN]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NlikAZfrRDjmvgiN",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.NlikAZfrRDjmvgiN",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 2900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il refuse une attaque hors d'allonge et décompte l'action complexe de l'attaque.</p></li>\n<li><p>Il applique la réduction des techniques connues et coche la position avantageuse dans une prise.</p></li>\n<li><p>Avec la lutte, il pose les états liés, calcule la prise et le seuil d'évasion, et défait la prise si l'un tombe.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Le maintien de la prise (une action complexe à chaque phase), que la carte rappelle sans le décompter.</p></li>\n<li><p>Les reprises et renversements en interruption, le déplacement commun des lutteurs, le −1 par bras blessé, les projections (<em>Run & Gun p. 128, 132-133, 138</em>).</p></li>\n<li><p>Les effets d'une localisation (sonné, ralenti…).</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Utiliser le système de lutte</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>décoché</td></tr>\n<tr><td><strong>Mêlée : ignorer l'environnement s'il est égal pour les deux</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>décoché (option du MJ (<em>Livre de base p. 188</em>))</td></tr>\n<tr><td><strong>Utiliser les règles d'attaques ciblées</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>coché</td></tr>\n<tr><td><strong>Portée et cibles</strong> (allonge)</td><td>Verrous de règles</td><td>coché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Mêlée, allonge et modificateurs : (<em>Livre de base p. 187-188</em>) ; maîtriser et position avantageuse : (<em>Livre de base p. 195-196</em>) ; attaques ciblées et localisations : (<em>Run & Gun p. 125-128</em>) ; saisie et évasion : (<em>Run & Gun p. 133-135</em>) ; techniques : (<em>Run & Gun p. 148-151</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Arts-martiaux\">wiki : Arts martiaux</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Lutte\">wiki : Lutte</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.dQ3e5i0smJlXOWCx]{3.4 La mêlée, les arts martiaux, la lutte}</p><p>← @UUID[.Furt5pGAM7POWl01]{La lutte} · @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "LmUKMVXr8d1K0AVr",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.LmUKMVXr8d1K0AVr",
+      "name": "3.5 Se défendre et encaisser",
+      "type": "text",
+      "sort": 3000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Une attaque se résout en trois cartes de tchat : l'attaque, la défense de la cible, puis l'encaissement des dommages. Chaque carte porte le bouton de la suivante, réservé à qui doit cliquer : le ou la propriétaire du personnage visé, ou le MJ pour un PNJ. Au bout, un dernier bouton coche les cases du moniteur, et le système en tire les conséquences : malus de blessure, initiative, projection au sol, inconscience.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-5-enchainement.webp\" width=\"335\" alt=\"L'enchaînement dans le tchat : ① l'attaque et son bouton Se défendre, ② la défense de la cible, ③ l'encaissement et son bouton Appliquer les dommages.\" /><figcaption><strong>Figure 3.5.1</strong> — L'enchaînement dans le tchat : ① l'attaque et son bouton Se défendre, ② la défense de la cible, ③ l'encaissement et son bouton Appliquer les dommages.</figcaption></figure>\n\n<h4>Pas à pas : se défendre puis encaisser</h4>\n<ol>\n<li><p>Sur la carte de l'attaque, cliquez sur <strong>Se défendre</strong>. La fenêtre <strong>Test de défense</strong> s'ouvre avec Réaction + Intuition et les modificateurs connus.</p></li>\n<li><p>Choisissez au besoin une défense active, un couvert ou la défense totale (voir plus bas), puis cliquez sur <strong>Lancer les dés</strong>.</p></li>\n<li><p>Si l'attaquant l'emporte, la carte de défense affiche <strong>Encaisser VD : …</strong> avec la valeur de dommages et la pénétration : cliquez. La fenêtre d'encaissement compte la Constitution et l'armure, réduite par la pénétration (<em>Livre de base p. 171-174</em>).</p></li>\n<li><p>Lancez, puis cliquez sur <strong>Appliquer les dommages</strong> sur la carte d'encaissement. Les cases se cochent, et la carte affiche « … dommages appliqués ».</p></li>\n</ol>\n<p>Si la défense l'emporte, la carte dit <strong>Défense réussie</strong> et l'échange s'arrête là. Une cible ne se défend qu'une fois contre la même attaque : le bouton reste pour les autres cibles, et le MJ peut rouvrir une défense en cliquant lui-même. Le bouton d'un PNJ revient au MJ ; il est réservé au joueur ou à la joueuse pour son personnage.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.NlikAZfrRDjmvgiN]{Réglages liés et références} · @UUID[.9B72deS2DMTZJXcr]{Les options de la défense} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9B72deS2DMTZJXcr",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.9B72deS2DMTZJXcr",
+      "name": "Les options de la défense",
+      "type": "text",
+      "sort": 3100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<figure><img src=\"systems/sr5/manuel/captures/3-5-defense.webp\" width=\"494\" alt=\"La défense d'un garde contre un coup de katana : ① la défense cumulative, ② la défense active (blocage, esquive, parade), ③ la défense totale.\" /><figcaption><strong>Figure 3.5.2</strong> — La défense d'un garde contre un coup de katana : ① la défense cumulative, ② la défense active (blocage, esquive, parade), ③ la défense totale.</figcaption></figure>\n\n<ul>\n<li><p><strong>Défense cumulative</strong> (①) : chaque défense déjà faite dans le tour de combat retire un dé à la suivante (<em>Livre de base p. 190</em>). Le système compte tout seul ; l'icône aux flèches remet le compteur à zéro.</p></li>\n<li><p><strong>Défense active</strong> (②) : en mêlée, <strong>Bloquer</strong> (Combat à mains nues, mains vides), <strong>Esquiver</strong> (Gymnastique) ou <strong>Parer</strong> avec une arme contondante ou tranchante ajoute la compétence à la réserve ; contre un tir, seule l'esquive est possible. Chacune coûte 5 points d'initiative et ne vaut que pour ce test (<em>Livre de base p. 189, 191</em>).</p></li>\n<li><p><strong>Couvert</strong> : <strong>Couvert partiel</strong> ou <strong>Bon couvert</strong>, à choisir selon la scène ; à égalité, la cible est touchée à travers son couvert (<em>Livre de base p. 189-191</em>).</p></li>\n<li><p><strong>Défense totale</strong> (③) : la Volonté s'ajoute à toutes les défenses du personnage jusqu'à la fin du tour de combat, pour 10 points d'initiative (<em>Livre de base p. 170, 191</em>). L'effet est posé sur le jeton et les points retirés dans le suivi.</p></li>\n</ul>\n<p>Le système refuse une défense active ou totale que le score d'initiative ne permet plus de payer (le coût cumulé doit être dépassé), et une parade ou un blocage sans la compétence, tant que la famille <strong>Actions et initiative</strong> des verrous est cochée (@UUID[.WTL8yVUIxTMPy2bB]{ce qui coûte de l'initiative}). Les cases <strong>Étendu</strong>, <strong>En course</strong> et <strong>Réception de charge</strong> suivent l'état du défenseur ; les malus d'un tir en rafale ou d'un fusil à pompe s'appliquent d'eux-mêmes selon le mode de tir de l'attaque (<em>Livre de base p. 191</em>) ; la carte nomme le malus de rafale.</p>\n\n<h4>Sous un tir de couverture : se jeter au sol</h4>\n<p>La carte d'un tir de couverture porte, à côté de <strong>Se défendre</strong>, le bouton <strong>Se jeter au sol</strong> : au lieu du test de Réaction + Chance, le personnage se jette au sol par son action gratuite s'il lui en reste une, sinon par l'interruption « Manger la poussière » (−5 d'initiative) (<em>Livre de base p. 170, 182</em>). Il est étendu (se relever coûte une action simple) et subit quand même le malus de la zone. Un personnage déjà au sol qui clique <strong>Se défendre</strong> ne lance rien.</p>\n\n<h4>Pris dans un filet</h4>\n<p>Un filet atterrit sur toute attaque réussie, effleurement compris : la carte de défense porte <strong>Appliquer : pris dans le filet (seuil N)</strong>, N étant les succès excédentaires. La cible est maîtrisée (<em>Livre de base p. 195</em>) et comptée étendue pour les attaques qui la visent. Sa carte lui donne <strong>Se libérer du filet</strong> : action complexe, Combat à mains nues ou Évasion + Agilité [Physique], la meilleure des deux, avec −2 en Agilité dans un filet XL pour une cible de taille normale et +2 pour un troll dans un filet standard (<em>Run & Gun p. 25, 28</em>). Un filet sans VD ne fait aucun dommage ; le ShockNet est électrique, frappe même sur un effleurement (<em>Livre de base p. 175-176</em>), et sa seconde charge part au début du tour suivant si la cible est encore prise.</p>\n<p>Le malus d'un tir de couverture vaut pour toutes les actions du personnage jusqu'à la fin du tour de combat, qu'il soit à terre ou relevé (<em>Livre de base p. 181</em>) : se relever ne l'efface pas. La fenêtre de jet le nomme <strong>Effet spécial (Tir de couverture)</strong>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser}</p><p>← @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser} · @UUID[.DhsZ2lyi4mQkj3bN]{Encaisser et appliquer les dommages} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DhsZ2lyi4mQkj3bN",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.DhsZ2lyi4mQkj3bN",
+      "name": "Encaisser et appliquer les dommages",
+      "type": "text",
+      "sort": 3200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le bouton <strong>Appliquer les dommages</strong> coche les cases sur la longueur réelle du moniteur et en tire aussitôt les conséquences, annoncées par une notification :</p>\n<ul>\n<li><p><strong>Malus de blessure</strong> : il s'applique à tous les jets suivants et au score d'initiative (« Initiative modifiée de −3 »).</p></li>\n<li><p><strong>Projection au sol</strong> : si les dommages dépassent la limite Physique, ou atteignent 10 cases, le personnage est mis à terre (<em>Livre de base p. 195</em>).</p></li>\n<li><p><strong>Moniteur plein</strong> : l'excédent d'étourdissant passe au physique ; un personnage au moniteur plein est assommé, un esprit dissipé, une brute hors de combat (@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.8M53gzMBMO1fPrZ3]{moniteurs de condition et blessures}).</p></li>\n</ul>\n<p>Pour des dommages sur un personnage qui n'est pas le sien, le joueur ou la joueuse passe par le MJ : la demande lui est envoyée, et il l'applique d'un clic. Le MJ peut aussi cocher ou décocher les cases à la main sur la fiche.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser}</p><p>← @UUID[.9B72deS2DMTZJXcr]{Les options de la défense} · @UUID[.OLdrBmiY89HDufSP]{Les dommages continus} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OLdrBmiY89HDufSP",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.OLdrBmiY89HDufSP",
+      "name": "Les dommages continus",
+      "type": "text",
+      "sort": 3300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le feu, l'acide et l'électricité continuent d'agir après l'attaque (<em>Livre de base p. 172-173</em>). L'effet est posé sur la cible en même temps que les dommages ; aux tours suivants, sa carte propose <strong>Encaisser (dommages continus)</strong> avec la valeur de dommages du moment :</p>\n<ul>\n<li><p><strong>feu</strong> : il brûle tant qu'on ne l'éteint pas, et la carte donne la valeur de dommages du tour ;</p></li>\n<li><p><strong>acide</strong> : la valeur baisse à chaque tour, et l'acide ronge l'armure ;</p></li>\n<li><p><strong>électricité</strong> : elle prolonge la durée de ses effets (désorientation, initiative).</p></li>\n</ul>\n<p>L'engloutissement d'un esprit se résiste de la même façon, phase après phase, avec la valeur recalculée sur l'esprit. Quand le feu s'éteint ou que la cible s'en sort, le MJ retire l'effet du jeton.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser}</p><p>← @UUID[.DhsZ2lyi4mQkj3bN]{Encaisser et appliquer les dommages} · @UUID[.dewehQUwKvn8IrqL]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "dewehQUwKvn8IrqL",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.dewehQUwKvn8IrqL",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 3400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il propose la défense à la cible de l'attaque, compte la défense cumulative, les malus du mode de tir et de l'environnement vu par le défenseur.</p></li>\n<li><p>Il retire l'initiative des défenses actives et de la défense totale, et pose l'effet de la défense totale.</p></li>\n<li><p>Il coche les cases, applique le malus de blessure à l'initiative, met à terre et assomme selon la règle.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il choisit le couvert selon la scène, et juge d'un tir dans une mêlée (qui risque d'être touché) (<em>Livre de base p. 191</em>).</p></li>\n<li><p>Il retire les effets de dommages continus quand la cible s'en est sortie.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions et initiative</strong> (défenses actives sans initiative ou sans compétence)</td><td>Verrous de règles</td><td>coché</td></tr>\n<tr><td><strong>Mêlée : ignorer l'environnement s'il est égal pour les deux</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Dommages et dommages spéciaux : (<em>Livre de base p. 171-174</em>) ; défense et modificateurs : (<em>Livre de base p. 189-191</em>) ; défense totale et interruptions : (<em>Livre de base p. 170</em>) ; projection au sol : (<em>Livre de base p. 195</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Messages-de-chat\">wiki : Lire un message de chat</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki : Moniteurs de condition</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.LmUKMVXr8d1K0AVr]{3.5 Se défendre et encaisser}</p><p>← @UUID[.OLdrBmiY89HDufSP]{Les dommages continus} · @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cMWglwIpg0jkWqZp",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.cMWglwIpg0jkWqZp",
+      "name": "3.6 Après le combat",
+      "type": "text",
+      "sort": 3500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Quand les balles se taisent, il reste à soigner, à guérir, et parfois à gérer un poison, une drogue ou une maladie. Le système fait le calcul des premiers soins et de la guérison et coche les cases à votre place ; il applique une toxine de l'attaque jusqu'aux dommages ; il suit une drogue de la prise à la descente. Les affections au long cours (maladies, SFC, faim des infectés) avancent avec l'horloge du monde, et rien n'y bouge sans un clic du MJ.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.dewehQUwKvn8IrqL]{Réglages liés et références} · @UUID[.NIj3usHwtzKVum1g]{Premiers soins et guérison} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NIj3usHwtzKVum1g",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.NIj3usHwtzKVum1g",
+      "name": "Premiers soins et guérison",
+      "type": "text",
+      "sort": 3600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : donner les premiers soins</h4>\n<ol>\n<li><p>Sélectionnez le jeton du soigneur et ciblez le blessé (c'est le patient : sans cible, le système prend le jeton sélectionné).</p></li>\n<li><p>Sur la fiche du soigneur, onglet des compétences, cliquez sur <strong>Premiers soins</strong>.</p></li>\n<li><p>Dans la fenêtre, choisissez les <strong>Conditions</strong> (①), de <strong>Bonnes</strong> (installation médicale) à <strong>Terribles</strong> (feu, orage), et les <strong>Fournitures médicales</strong> (②) : <strong>Aucunes</strong>, <strong>Improvisées</strong> ou <strong>Médikit sans fil</strong>. Les cases du patient (③) suivent la table des modificateurs aux soins (<em>Livre de base p. 208</em>).</p></li>\n<li><p>Lancez. Le test se fait au seuil 2, et chaque succès au-delà soigne une case, sans dépasser l'indice de Premiers soins (<em>Livre de base p. 207</em>) : la carte affiche <strong>Soigner N cases</strong>, ou <strong>Échec des soins</strong>.</p></li>\n<li><p>Cliquez sur le bouton de la carte. Si le patient a deux moniteurs, le système demande lequel soigner.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-soins.webp\" width=\"494\" alt=\"La fenêtre des premiers soins : ① les conditions, ② les fournitures médicales, ③ le patient Éveillé ou Émergé, ④ la case qui en fait un test étendu.\" /><figcaption><strong>Figure 3.6.1</strong> — La fenêtre des premiers soins : ① les conditions, ② les fournitures médicales, ③ le patient Éveillé ou Émergé, ④ la case qui en fait un test étendu.</figcaption></figure>\n\n<p>Les premiers soins ne s'appliquent qu'une fois par groupe de blessures, et pas après des soins magiques (<em>Livre de base p. 207</em>). Un patient en armure complète (case <strong>Armure complète</strong> sur l'armure portée) ne reçoit que la moitié des effets, arrondie au supérieur. Un échec critique ajoute 1D3 cases. Les premiers soins ne soignent ni un appareil ni un drone.</p>\n\n<h4>Pas à pas : la guérison naturelle</h4>\n<ol>\n<li><p>Sur la fiche du blessé, cliquez sur le <strong>nom</strong> du moniteur, en bas : <strong>Étourdissant</strong> ou <strong>Physique</strong> (un clic droit, lui, remet le moniteur à zéro).</p></li>\n<li><p>La fenêtre de guérison propose les mêmes conditions de soin ; lancez. C'est un test étendu : le bouton <strong>Nouveau jet</strong> de la carte relance, et le bouton de soin décoche les cases.</p></li>\n</ol>\n<p>L'étourdissant guérit avant le physique : tant que le personnage a des dommages étourdissants, la guérison naturelle du physique est refusée (<em>Livre de base p. 207</em>). La compétence Médecine passe par la même fenêtre. Les soins magiques et le sort Soins sont décrits avec la magie (@UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.9ouEQLH2RNX4qCQ8]{lancer un sort}) (<em>Livre de base p. 209</em>).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Soins sous le feu ennemi (Balles et Pansements)</p><p>Deux options du livre, décochées par défaut dans <strong>Réglages Shadowrun</strong>, onglet <strong>Corps, santé et augmentations</strong> : <strong>Soins sous le feu ennemi</strong> (une blessure de 5 cases physiques ou plus saigne jusqu'à sa stabilisation ; la fenêtre des premiers soins propose <strong>Traitement</strong>, <strong>Stabilisation</strong> ou <strong>Diagnostic</strong>) et <strong>Médikits avancés</strong> (l'indice du médikit en dés, une charge par patient) (<em>Balles et Pansements p. 14-19</em>). Le MJ applique lui-même chaque case de saignement, d'un clic sur sa carte.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p><p>← @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat} · @UUID[.X6unsHjfCp87f8H3]{Toxines} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "X6unsHjfCp87f8H3",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.X6unsHjfCp87f8H3",
+      "name": "Toxines",
+      "type": "text",
+      "sort": 3700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une toxine est un objet à part entière : le MJ la crée, la modifie et la dépose sur une arme, une grenade ou l'arme naturelle d'une créature. Le Mégapack et le compendium « [fr] Drogues » en fournissent une trentaine, relues au livre ; le bouton <strong>Toxines du livre</strong>, en haut de l'onglet <strong>Objets</strong> (MJ), crée les toxines du livre de base dans un dossier du monde, sans doublon.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-toxine.webp\" width=\"694\" alt=\"La fiche d'une toxine, onglet de configuration : ① ses vecteurs, ② sa vitesse, sa Puissance, sa pénétration et ses dommages, ③ ses effets et l'effet spécial écrit sur la carte, ④ la partie maladie.\" /><figcaption><strong>Figure 3.6.2</strong> — La fiche d'une toxine, onglet de configuration : ① ses vecteurs, ② sa vitesse, sa Puissance, sa pénétration et ses dommages, ③ ses effets et l'effet spécial écrit sur la carte, ④ la partie maladie.</figcaption></figure>\n\n<h4>Pas à pas : empoisonner une arme (MJ)</h4>\n<ol>\n<li><p>Ouvrez la fiche de l'arme, onglet de configuration : sous les dommages, une zone <strong>Glissez ici une toxine</strong> attend.</p></li>\n<li><p>Glissez-y la toxine depuis l'onglet Objets ou un compendium. L'arme passe en dommages <strong>Toxine</strong> et garde une copie de son profil ; les flèches la resynchronisent après une modification de la toxine d'origine.</p></li>\n</ol>\n\n<h4>Pas à pas : résister et appliquer</h4>\n<ol>\n<li><p>L'attaque et la défense se jouent comme d'habitude. Si l'attaque porte, la cible clique sur <strong>Résister à la toxine</strong> : Constitution + Volonté + l'indice de sa protection, chaque succès retirant un point de Puissance (<em>Livre de base p. 410</em>). Le champ <strong>Doses reçues en même temps</strong> ajoute 1 Puissance par dose de plus.</p></li>\n<li><p>Le MJ clique sur <strong>Appliquer l'effet de la toxine</strong> quand vient le tour indiqué : dommages et effets (désorientation, nausée, paralysie…) tombent d'un coup, et l'effet spécial s'affiche en texte.</p></li>\n</ol>\n<p>Un masque à gaz immunise contre les toxines inhalées, l'isolation chimique contre celles de contact et inhalées, tant que l'objet est actif ; le message dit ce qui a protégé (<em>Livre de base p. 409-410</em>). L'antitoxine (Chrome Flesh) retire son indice à la Puissance (<em>Chrome Flesh p. 154</em>). Les maladies (une toxine qui revient, case <strong>Pathogène</strong>) et les radiations se déclarent par le MJ, puis avancent avec l'horloge : voir <a href=\"https://github.com/DjamZee/sr5/wiki/Toxines\">wiki : Toxines</a>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p><p>← @UUID[.NIj3usHwtzKVum1g]{Premiers soins et guérison} · @UUID[.sneZmBmW54FdOUCY]{Drogues} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "sneZmBmW54FdOUCY",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.sneZmBmW54FdOUCY",
+      "name": "Drogues",
+      "type": "text",
+      "sort": 3800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Une drogue se range dans l'équipement de la fiche. Sur sa ligne, une seule pastille suit sa phase.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-drogue.webp\" width=\"598\" alt=\"Une drogue sur la fiche : ① la quantité (clic gauche pour en retirer, clic droit pour en ajouter), ② la pastille de phase.\" /><figcaption><strong>Figure 3.6.3</strong> — Une drogue sur la fiche : ① la quantité (clic gauche pour en retirer, clic droit pour en ajouter), ② la pastille de phase.</figcaption></figure>\n\n<h4>Pas à pas : prendre une drogue</h4>\n<ol>\n<li><p>Cliquez sur la pastille (②) : le personnage prend la drogue, une dose est retirée et les effets de montée s'appliquent.</p></li>\n<li><p>Cliquez de nouveau quand la montée s'achève : les effets de descente remplacent ceux de la montée.</p></li>\n<li><p>Un dernier clic met fin à la drogue. Un clic droit du MJ la remet à zéro.</p></li>\n</ol>\n<p>Prendre une drogue ne coûte aucune action. Une surdose ouvre la fenêtre d'encaissement correspondante, et le test d'addiction suit le livre (<em>Livre de base p. 412-417</em>) ; le réglage <strong>Sevrage : modificateur du test selon le niveau</strong> (onglet Corps, santé et augmentations) chiffre le manque si le MJ le souhaite.</p>\n\n<h4>Pas à pas : concevoir une drogue</h4>\n<ol>\n<li><p>Cliquez sur <strong>Concepteur de drogue</strong>, en haut de l'onglet <strong>Objets</strong> de la barre latérale : le bouton est là pour le MJ, et pour le joueur ou la joueuse dont le personnage a la compétence Chimie (ou quand le MJ a levé la famille « Objets » des verrous). Une liste, en tête du concepteur, choisit pour quel personnage ; le MJ y trouve aussi les objets du monde. La demande d'un joueur ou d'une joueuse part au MJ (<em>Chrome Flesh p. 194-196</em>).</p></li>\n<li><p>Choisissez la <strong>Base</strong> (①), puis le niveau de chaque <strong>Bloc</strong> voulu (②), les <strong>Améliorateurs</strong> (③), la gamme et le type d'addiction. Le résultat (effets, vitesse, durée, descente, addiction, disponibilité, prix) se calcule à mesure (<em>Chrome Flesh p. 194-196</em>).</p></li>\n<li><p>Cliquez sur <strong>Créer la drogue</strong>. Celle du MJ est créée aussitôt ; celle du joueur ou de la joueuse attend la validation du MJ, qui la reçoit en murmure avec le bouton <strong>Examiner la drogue</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-concepteur.webp\" width=\"930\" alt=\"Le concepteur de drogue : ① la base, ② les blocs et leur niveau, ③ les améliorateurs ; en dessous, la gamme et la drogue obtenue.\" /><figcaption><strong>Figure 3.6.4</strong> — Le concepteur de drogue : ① la base, ② les blocs et leur niveau, ③ les améliorateurs ; en dessous, la gamme et la drogue obtenue.</figcaption></figure>\n\n<p>Une recette contraire au livre est signalée en rouge et ne peut pas être créée. Le test de fabrication (Chimie + Logique) reste à jouer à la main.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p><p>← @UUID[.X6unsHjfCp87f8H3]{Toxines} · @UUID[.WpuWMtNv2DsbWRHl]{SFC et infectés (MJ)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WpuWMtNv2DsbWRHl",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.WpuWMtNv2DsbWRHl",
+      "name": "SFC et infectés (MJ)",
+      "type": "text",
+      "sort": 3900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Deux affections propres aux suppléments se suivent depuis la fiche, par le MJ seul, et avancent avec l'horloge du monde (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.e6Mpw7TMwnO5VSpW]{le calendrier}) :</p>\n<ul>\n<li><p><strong>Le traitement du SFC</strong> (<em>Dark Terrors p. 86-91</em>) : sur la fiche d'un personnage qui a un Volume de nanites, le lien <strong>Administrer un traitement</strong> injecte des nanites Overwriters ou du NanoScrub. Les Overwriters se battent contre les nanites à chaque fin de tour de combat, ou d'un coup avec <strong>Résoudre (hors combat)</strong> ; le NanoScrub agit d'heure en heure. Les implants qu'une complication détruirait attendent le bouton <strong>Détruire</strong> du MJ.</p></li>\n<li><p><strong>La faim des infectés</strong> (<em>Livre de base p. 403</em>) : sur la fiche d'une créature qui draine l'Essence, le lien <strong>Suivre la faim</strong> fait perdre un point d'Essence par mois lunaire ; chaque pouvoir utilisé propose d'avancer la perte d'une semaine. Quand une victime tombe à 0 d'Essence près d'une créature dotée du pouvoir Infection, le MJ peut tenter la contagion (<em>Livre de base p. 401</em>).</p></li>\n</ul>\n<p>Le détail de ces deux suivis : <a href=\"https://github.com/DjamZee/sr5/wiki/Traitement-du-SFC\">wiki : Traitement du SFC</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Infectes\">wiki : Infectés</a>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p><p>← @UUID[.sneZmBmW54FdOUCY]{Drogues} · @UUID[.iJ6roO23hOx1fRZn]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "iJ6roO23hOx1fRZn",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.iJ6roO23hOx1fRZn",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 4000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule les premiers soins et la guérison, divise par deux à travers une armure complète, décoche les cases et refuse la guérison du physique tant qu'il reste de l'étourdissant.</p></li>\n<li><p>Il applique une toxine de l'attaque aux dommages, protections et doses comprises, et suit une drogue de la prise à la descente.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il décide du moment où tombe l'effet d'une toxine (le tour indiqué sur la carte) et clique.</p></li>\n<li><p>Il fait avancer maladies, radiations, SFC et faim en avançant l'horloge, et confirme chaque étape.</p></li>\n<li><p>Il fait jouer le test de fabrication d'une drogue et les traits que donnent certains blocs.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Corps et soins</strong> (étourdissant d'abord, médikit absent…)</td><td>Verrous de règles</td><td>coché</td></tr>\n<tr><td><strong>Soins sous le feu ennemi (Balles et Pansements)</strong></td><td>Réglages Shadowrun, onglet Corps, santé et augmentations</td><td>décoché</td></tr>\n<tr><td><strong>Médikits avancés (Balles et Pansements)</strong></td><td>Réglages Shadowrun, onglet Corps, santé et augmentations</td><td>décoché</td></tr>\n<tr><td><strong>Sevrage : modificateur du test selon le niveau</strong></td><td>Réglages Shadowrun, onglet Corps, santé et augmentations</td><td>Aucun (le livre ne le chiffre pas)</td></tr>\n<tr><td><strong>Maladies : tout montrer aux joueurs et aux joueuses</strong></td><td>Réglages Shadowrun, onglet Corps, santé et augmentations</td><td>décoché</td></tr>\n<tr><td><strong>Perte d'Essence : durée du mois lunaire (jours)</strong></td><td>Réglages Shadowrun, onglet Corps, santé et augmentations</td><td>29,5</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Premiers soins et guérison : (<em>Livre de base p. 206-208</em>) ; soins magiques : (<em>Livre de base p. 209</em>) ; toxines : (<em>Livre de base p. 409-412</em>) ; drogues : (<em>Livre de base p. 412-417</em>) ; drogues customisées : (<em>Chrome Flesh p. 194-196</em>) ; SFC : (<em>Dark Terrors p. 86-91</em>) ; infectés : (<em>Livre de base p. 401-403</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki : Moniteurs de condition et guérison</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Toxines\">wiki : Toxines</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Concepteur-de-drogue\">wiki : Concepteur de drogue</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.cMWglwIpg0jkWqZp]{3.6 Après le combat}</p><p>← @UUID[.WpuWMtNv2DsbWRHl]{SFC et infectés (MJ)} · @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lhSPt41O2TBXv2Ho",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.lhSPt41O2TBXv2Ho",
+      "name": "3.7 La discrétion, la course",
+      "type": "text",
+      "sort": 4100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Cacher un pistolet sous sa veste, fouiller un suspect, faire les poches d'un garde ou glisser un mouchard dans un sac : le livre les règle par un même test opposé d'Escamotage contre Perception (<em>Livre de base p. 422</em>). Le système le joue de bout en bout, en gardant le secret : le jet du voleur et celui de la cible partent en privé au MJ, et c'est lui qui déplace l'objet. La course, elle, change les dés de tout un tour de combat : le système pose l'état sur le jeton et coche les bonnes cases.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU}</p><p>← @UUID[.iJ6roO23hOx1fRZn]{Réglages liés et références} · @UUID[.uELsXBep1MNE2fvn]{Cacher un objet, fouiller quelqu'un} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "uELsXBep1MNE2fvn",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.uELsXBep1MNE2fvn",
+      "name": "Cacher un objet, fouiller quelqu'un",
+      "type": "text",
+      "sort": 4200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : cacher un objet sur soi</h4>\n<ol>\n<li><p>Sur la fiche, dépliez la ligne de l'objet en cliquant sur son nom (une arme, une protection, un équipement, un appareil).</p></li>\n<li><p>Cliquez sur l'étiquette <strong>Cacher sur soi</strong> (①) : Escamotage + Agilité [Physique], une action complexe. La carte est chuchotée au MJ.</p></li>\n<li><p>L'objet garde ses succès : un œil barré suit son nom sur la fiche. Pour le ressortir, cliquez sur <strong>Sortir</strong>, ou équipez l'arme : une arme en main n'est jamais cachée.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-cacher.webp\" width=\"598\" alt=\"La ligne dépliée d'un pistolet : ① l'étiquette Cacher sur soi.\" /><figcaption><strong>Figure 3.7.1</strong> — La ligne dépliée d'un pistolet : ① l'étiquette Cacher sur soi.</figcaption></figure>\n\n<h4>Pas à pas : chercher ou fouiller</h4>\n<ol>\n<li><p>Ciblez le jeton à examiner.</p></li>\n<li><p>Sur la ligne <strong>Perception</strong> de l'onglet des compétences, cliquez sur la loupe (①) pour chercher un objet dissimulé, ou sur la main (②) pour une fouille au corps, au contact. Choisissez la compétence et, pour une fouille au corps, l'attribut (Intuition ou Agilité).</p></li>\n<li><p>Le MJ reçoit la demande et clique sur <strong>Résoudre</strong> : il coche la situation (« cherche attentivement », « distrait ») et ajoute un modificateur libre. Le système jette un test par objet caché.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-fouille.webp\" width=\"622\" alt=\"La ligne Perception : ① chercher un objet dissimulé, ② fouiller au corps.\" /><figcaption><strong>Figure 3.7.2</strong> — La ligne Perception : ① chercher un objet dissimulé, ② fouiller au corps.</figcaption></figure>\n\n<p>Un objet est trouvé si le fouilleur obtient au moins un succès et au moins autant que celui qui l'a caché : l'égalité va au fouilleur. En fouille au corps, une dissimulation négative est divisée par deux et une positive doublée (<em>Livre de base p. 422</em>). Le fouilleur n'apprend que ce qu'il trouve ; c'est au MJ de dire s'il confisque. Seuls les objets cachés par le bouton sont cherchés : une arme simplement portée sous un manteau reste à son appréciation.</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course}</p><p>← @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course} · @UUID[.VIRXDUiWWCUFHS4c]{Le vol à la tire} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VIRXDUiWWCUFHS4c",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.VIRXDUiWWCUFHS4c",
+      "name": "Le vol à la tire",
+      "type": "text",
+      "sort": 4300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : faire les poches de quelqu'un</h4>\n<ol>\n<li><p>Sélectionnez votre jeton, puis faites un clic droit sur la cible, sur une case voisine. Le HUD s'ouvre sur elle même si vous ne la possédez pas, avec la main <strong>Vol à la tire</strong> (①) et, si vous portez un petit objet, <strong>Déposer sur quelqu'un</strong> (②).</p></li>\n<li><p>Cliquez sur la main. Une fenêtre demande ce que vous visez (facultatif : « son commlink », « au hasard ») ; ce texte s'affichera sur la carte.</p></li>\n<li><p>Lancez Escamotage + Agilité [Physique]. La carte part en privé au MJ : la cible n'en sait rien. En combat, le vol coûte une action complexe. Sans Escamotage appris, le jet est refusé (<em>Livre de base p. 135</em>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-hud-vol.webp\" width=\"290\" alt=\"Le HUD d'un garde vu par le joueur ou la joueuse du voleur : ① Vol à la tire, ② Déposer sur quelqu'un.\" /><figcaption><strong>Figure 3.7.3</strong> — Le HUD d'un garde vu par le joueur ou la joueuse du voleur : ① Vol à la tire, ② Déposer sur quelqu'un.</figcaption></figure>\n\n<h4>Pas à pas : la réponse du MJ</h4>\n<ol>\n<li><p>Sur la carte du voleur, cliquez sur <strong>Perception de la cible</strong> (bouton visible du MJ seul).</p></li>\n<li><p>Choisissez l'objet (les petits d'abord, ou <strong>Au hasard</strong>), la quantité pour une pile, et la situation : <strong>Cible distraite</strong>, <strong>Cible attentive à ses affaires</strong>, <strong>Diversion</strong> (<em>Livre de base p. 139</em>). Confirmez les succès du voleur.</p></li>\n<li><p>Le système lance Perception + Intuition [Mentale] de la cible, la dissimulation de l'objet en modificateur, puis propose le bouton qui convient : <strong>Subtiliser</strong> si le voleur l'emporte, <strong>Repéré : prévenir la cible</strong> sinon (l'égalité va à la cible).</p></li>\n</ol>\n<p>Seuls les petits objets (jusqu'à +2 de dissimulation) se volent ; un objet rangé dans un contenant verrouillé n'est pas proposé. Avec une complication, l'objet passe mais la cible sent quelque chose ; sur un échec critique, le voleur est pris la main dans le sac. Déposer un objet suit le même chemin dans l'autre sens. Ces suites sans règle écrite sont des arbitrages de DjamZ, détaillés sur <a href=\"https://github.com/DjamZee/sr5/wiki/Vol-a-la-tire\">wiki : Vol à la tire</a>.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Vol à la tire : le voleur choisit l'objet</strong>, onglet Pillage et butin des Réglages Shadowrun, décoché par défaut (le livre laisse le choix au MJ). Coché, le voleur choisit lui-même, avant son jet, parmi les petits objets de la cible ; le MJ garde la Perception, la quantité et le transfert.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course}</p><p>← @UUID[.uELsXBep1MNE2fvn]{Cacher un objet, fouiller quelqu'un} · @UUID[.m50arlfBcQAALNG7]{La course} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "m50arlfBcQAALNG7",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.m50arlfBcQAALNG7",
+      "name": "La course",
+      "type": "text",
+      "sort": 4400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un personnage qui dépasse sa vitesse de marche court jusqu'à la fin du tour de combat : +2 dés à ses défenses, −2 à ses actions, sauf le Sprint et la charge (<em>Livre de base p. 163-164, 179, 190</em>).</p>\n\n<h4>Pas à pas : courir</h4>\n<ol>\n<li><p>Faites un clic droit sur votre jeton et ouvrez la palette des types de déplacement (l'icône du marcheur).</p></li>\n<li><p>Choisissez <strong>Course</strong> (①) ou <strong>Sprint</strong> (②), puis déplacez le jeton. Pendant un combat commencé, il reçoit l'état <strong>En course</strong>, qui tombe tout seul au tour de combat suivant ou à la fin de la rencontre.</p></li>\n<li><p>Pour sprinter plus loin, lancez le test de <strong>Sprint</strong> depuis la fiche (bloc des déplacements) : Course + Force [Physique], 2 m par succès (1 m pour un nain ou un troll).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-course.webp\" width=\"389\" alt=\"Le HUD du jeton, palette des déplacements ouverte : ① Course, ② Sprint.\" /><figcaption><strong>Figure 3.7.4</strong> — Le HUD du jeton, palette des déplacements ouverte : ① Course, ② Sprint.</figcaption></figure>\n\n<p>En glissant le jeton, le chemin prend la couleur de l'allure, en comptant les mètres déjà faits dans le tour : vert jusqu'à la marche, jaune jusqu'à la course, rouge au-delà. Avec l'état <strong>En course</strong>, la fenêtre de jet coche d'elle-même <strong>En course</strong> (−2) sur les actions, <strong>Attaquant en course</strong> sur un tir et le +2 sur les défenses ; rien sur le Sprint ni sur les tests de résistance. La case <strong>Charge</strong> d'une attaque de mêlée retire le −2. Toutes ces cases restent décochables.</p>\n<p>Courir coûte une action gratuite par passe où le jeton se déplace en course (<em>Livre de base p. 164</em>). Chaque test de Sprint fait en combat à des phases consécutives inflige une fatigue de 1E, puis 2E, 3E… résistée par Constitution + Volonté, sans armure : c'est le MJ qui voit s'ouvrir la fenêtre et la lance (<em>Livre de base p. 174</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course}</p><p>← @UUID[.VIRXDUiWWCUFHS4c]{Le vol à la tire} · @UUID[.OXlUYXRSwK6LwAlj]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OXlUYXRSwK6LwAlj",
+      "_key": "!journal.pages!gOUR40WhFA46CDwQ.OXlUYXRSwK6LwAlj",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 4500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il garde les succès d'un objet caché, jette un test par objet lors d'une fouille et ne montre au fouilleur que ce qu'il trouve.</p></li>\n<li><p>Il fait passer le vol et sa réponse par le MJ, recompte les succès annoncés et déplace l'objet au clic du MJ.</p></li>\n<li><p>Il pose et retire l'état En course, coche les modificateurs de course, décompte l'action gratuite et la fatigue du sprint.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il décide de ce qu'un fouilleur confisque, et d'une arme portée sans avoir été cachée par le bouton.</p></li>\n<li><p>Il compte la fatigue d'une longue course hors combat, qui se mesure en minutes.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Où</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Vol à la tire : le voleur choisit l'objet</strong></td><td>Réglages Shadowrun, onglet Pillage et butin</td><td>décoché</td></tr>\n<tr><td><strong>Poser l'état « En course » d'après la distance parcourue</strong></td><td>Réglages Shadowrun, onglet Combat</td><td>décoché (seul le choix Course ou Sprint du HUD pose l'état)</td></tr>\n<tr><td><strong>Objets</strong> (Escamotage exigé) et <strong>Portée et cibles</strong> (fouille au contact)</td><td>Verrous de règles</td><td>coché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Escamotage : (<em>Livre de base p. 135</em>) ; objets dissimulés : (<em>Livre de base p. 422</em>) ; modificateurs de Perception : (<em>Livre de base p. 139</em>) ; déplacement et course : (<em>Livre de base p. 163-164</em>) ; fatigue : (<em>Livre de base p. 174</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Vol-a-la-tire\">wiki : Vol à la tire</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Course\">wiki : Course</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.iGhwGsUFJdjVdP2f]{MENU} &gt; @UUID[.lhSPt41O2TBXv2Ho]{3.7 La discrétion, la course}</p><p>← @UUID[.m50arlfBcQAALNG7]{La course}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

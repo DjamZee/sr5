@@ -1,0 +1,689 @@
+{
+  "_id": "dnvEvohrMpHvh5dR",
+  "_key": "!journal!dnvEvohrMpHvh5dR",
+  "name": "7. Acheter, vendre, vivre",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 800000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "DhMZWuputJHuues7",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.DhMZWuputJHuues7",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie suit l'argent du personnage : comment il s'équipe à la boutique, comment le MJ tient ses marchands et rachète le butin, où vivent les nuyens et le loyer, et comment l'horloge du monde fait arriver les commandes et tomber les échéances. Le joueur ou la joueuse lit surtout les chapitres 7.1 et 7.3 ; le MJ lit les quatre.</p>\n<p>Le système applique ici les règles d'achat et de revente du livre de base (<em>Livre de base p. 419-421</em>). Ce manuel ne les recopie pas : il montre les fenêtres, dit ce que le système calcule seul et ce qui reste à la main du MJ.</p><table><tbody><tr><td><p>@UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p></td><td><p>Joueur ou joueuse</p></td></tr><tr><td><p>&emsp;@UUID[.rCD4P3khNagAnODN]{La fenêtre de la boutique}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.KCwO9LeINSJYoROJ]{Acheter : le panier, le test, la caisse}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.aG5xz2odvcmkng4w]{La livraison}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.NIeZQKqXM58Cg2Jz]{S'équiper pendant la création}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.2icQRYXbLSObM3f5]{Les implants : gammes et Essence}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.cPo7hXSrHjyXq4bg]{Ce que fait le système, réglages et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.cHcctuavWeEIK3QH]{Configurer la boutique}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.SyI6YSnFTX8x0idb]{Les vendeurs}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.kfVv5yBRr0BFrJfI]{Revendre : la fourgue}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.AKjSwcLBTCl5WB3C]{Le courtier en informations}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.HzE2wFoGu9CxID8V]{Les factions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WsdsU4MlUP0QztsL]{Le suivi des arnaques}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WpxIBztMXHhclflG]{Réglages et références du MJ}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.mobgPpSfFUKzOT6f]{Les comptes}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.rsDpQnk1XgPMWKFB]{Le liquide : les créditubes}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.GLoMzcHu3JGOVedj]{Le style de vie}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.7vDJsSf9jlfFUhd1]{Ce que fait le système et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.vT1M2MQ7gSHMPYdr]{Les événements}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.rTWBi4ijKRG8vNXP]{Les échéances du MJ}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Hlsqwkfzz0afMWu5]{Réglages liés et références}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "FcFAEQCYnWId4zg4",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.FcFAEQCYnWId4zg4",
+      "name": "7.1 La boutique du joueur ou de la joueuse",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Joueur ou joueuse</strong></p><h4>À quoi ça sert</h4>\n<p>La boutique est la fenêtre où l'on achète du matériel : armes, armures, implants, électronique, drogues, focus, véhicules… Elle lit les compendiums que le MJ a mis en vente, affiche pour chaque objet sa Disponibilité, son délai de recherche et son prix, fait le test de Disponibilité, débite vos comptes et pose l'objet sur votre fiche, tout de suite ou après le délai, selon les réglages du MJ.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU}</p><p>@UUID[.rCD4P3khNagAnODN]{La fenêtre de la boutique} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rCD4P3khNagAnODN",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.rCD4P3khNagAnODN",
+      "name": "La fenêtre de la boutique",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : ouvrir la boutique</h4>\n<ol>\n<li><p>Ouvrez la fiche de votre personnage, onglet <strong>Équipement</strong>, et cliquez sur <strong>Boutique</strong> dans le bloc <strong>Finances</strong>. La fenêtre s'ouvre avec votre personnage déjà choisi comme acheteur.</p></li>\n<li><p>Vous pouvez aussi cliquer sur l'icône en forme de chariot de la barre latérale (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.beFyXqYIXDNyD5AR]{voir la barre latérale}), puis choisir l'acheteur en haut de la colonne de droite.</p></li>\n<li><p>À la première ouverture de la séance, la boutique lit ses rayons (« Lecture des rayons… ») : quelques secondes avec le Mégapack, puis elle répond tout de suite.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-1-fenetre.webp\" width=\"1412\" alt=\"La boutique, rayon Armes : ① les onglets Rayons et Vendeurs, puis les rayons, ② les objets, ③ la caisse. Le MJ voit en plus, en bas de la caisse, le bloc MJ.\" /><figcaption><strong>Figure 7.1.1</strong> — La boutique, rayon Armes : ① les onglets Rayons et Vendeurs, puis les rayons, ② les objets, ③ la caisse. Le MJ voit en plus, en bas de la caisse, le bloc MJ.</figcaption></figure>\n\n<p>La fenêtre a trois colonnes :</p>\n<ul class=\"legende\">\n<li><p><strong>① Les rayons</strong> (à gauche) : <strong>Tout</strong>, puis Armes (dépliable), Munitions, Armures, Cyberware, Bioware, Autres augmentations, Électronique et programmes, Matériel, Véhicules, Drones, Drogues et toxines, Magie (les focus)… Un rayon vide ne s'affiche pas ; le nombre d'objets suit chaque rayon. Quand le MJ a ouvert des boutiques, deux onglets apparaissent au-dessus, <strong>Rayons</strong> (le marché) et <strong>Vendeurs</strong> (avec leur nombre), puis le choix du vendeur (@UUID[.SyI6YSnFTX8x0idb]{voir les vendeurs}).</p></li>\n<li><p><strong>② Les objets</strong> (au centre) : les filtres en haut, puis une ligne par objet. Un clic sur la ligne ouvre la fiche de l'objet.</p></li>\n<li><p><strong>③ La caisse</strong> (à droite) : l'<strong>Acheteur</strong> et son solde, <strong>Recherche par</strong> (vous-même ou un contact) avec le <strong>Surcoût</strong>, le <strong>Panier</strong>, puis les boutons <strong>Tester la Disponibilité du panier</strong>, <strong>Payer</strong> et <strong>Revendre du matériel</strong>.</p></li>\n</ul>\n\n<p>La boutique ne vend que des marchandises : qualités, sorts, pouvoirs, arts martiaux et types d'esprit ne sont jamais en rayon. Vous ne voyez dans la liste des acheteurs que les personnages dont vous êtes propriétaire. Le solde affiché est celui de vos comptes (@UUID[.qk2XJEf1NvKmaJ6R]{voir l'argent}).</p>\n\n<h4>Lire une ligne</h4>\n<figure><img src=\"systems/sr5/manuel/captures/7-1-ligne.webp\" width=\"896\" alt=\"Trois lignes du rayon Cyberware : ① la Disponibilité, ② la pastille, ③ le délai, ④ la gamme, ⑤ le prix (en rouge : plus que le solde).\" /><figcaption><strong>Figure 7.1.2</strong> — Trois lignes du rayon Cyberware : ① la Disponibilité, ② la pastille, ③ le délai, ④ la gamme, ⑤ le prix (en rouge : plus que le solde).</figcaption></figure>\n<ul class=\"legende\">\n<li><p><strong>① La Disponibilité</strong> : un nombre seul pour un objet légal, suivi de <strong>R</strong> en ambre s'il est restreint, de <strong>P</strong> sur fond rouge s'il est prohibé. Un tiret signale un bien courant, qui s'achète sans test (<strong>pas de test (p. 420)</strong>) (<em>Livre de base p. 419-420</em>).</p></li>\n<li><p><strong>② La pastille</strong> compare la réserve de celui qui cherche, surcoût compris, à la Disponibilité : verte quand la réserve la dépasse de deux dés ou plus, orange à un dé près, rouge en dessous. C'est un repère, pas une probabilité ; le texte à côté donne les deux chiffres (« 15 dés contre 11 »).</p></li>\n<li><p><strong>③ Le délai</strong> : celui de la table des délais de recherche pour le prix de l'objet (<em>Livre de base p. 420</em>), avant tout jet ; « immédiat » pour un bien courant.</p></li>\n<li><p><strong>④ La gamme</strong>, pour un implant : occasion, standard, alphaware… Le prix, la Disponibilité et l'Essence de la ligne suivent la gamme choisie (@UUID[.2icQRYXbLSObM3f5]{voir les implants}).</p></li>\n<li><p><strong>⑤ Le prix</strong>, en rouge s'il dépasse ce qu'il vous reste une fois le panier payé ; puis la quantité, le dé (<strong>Tester la disponibilité</strong> de cette seule ligne) et le chariot (<strong>Ajouter au panier</strong>).</p></li>\n</ul>\n\n<h4>Pas à pas : trouver un objet</h4>\n<ol>\n<li><p>Choisissez un rayon à gauche, ou tapez une partie du nom dans <strong>Rechercher un nom…</strong> : les accents et les majuscules ne comptent pas. Le nom anglais (VO) marche aussi, quand l'objet en porte un : « imaging scope » trouve la Lunette de visée. Survolez un nom pour lire son nom VO. Le Mégapack en pose sur la plupart de ses objets ; le module officiel des compendiums n'en a pas.</p></li>\n<li><p>Resserrez au besoin avec <strong>Prix max</strong> et <strong>Dispo max</strong>, ou éteignez une des trois puces de légalité (<strong>Légal</strong>, <strong>Restreint (R)</strong>, <strong>Prohibé (P)</strong>).</p></li>\n<li><p>Cochez <strong>Seulement ce que je peux acheter</strong> pour ne garder que ce que couvre votre solde, panier déjà rempli déduit.</p></li>\n<li><p>La gomme efface tous les filtres ; les flèches (<strong>Relire les compendiums</strong>) relisent les rayons si le MJ vient de changer un compendium.</p></li>\n</ol><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse} · @UUID[.KCwO9LeINSJYoROJ]{Acheter : le panier, le test, la caisse} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "KCwO9LeINSJYoROJ",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.KCwO9LeINSJYoROJ",
+      "name": "Acheter : le panier, le test, la caisse",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : acheter</h4>\n<ol>\n<li><p>Sur la ligne de l'objet, réglez la quantité (et la gamme d'un implant), puis cliquez sur le chariot : l'objet entre dans le <strong>Panier</strong>. Des yeux alphaware et des yeux standard font deux lignes distinctes.</p></li>\n<li><p>Dans <strong>Recherche par</strong>, laissez <strong>Moi-même</strong> ou choisissez un de vos contacts : c'est alors lui qui cherche, avec sa Connexion. Un contact dont le type est marchand (fixer, receleur, armurier, talismonger…) reçoit en plus deux dés de spécialisation.</p></li>\n<li><p>Choisissez un <strong>Surcoût</strong> si vous voulez payer plus pour chercher mieux : chaque tranche ajoute un dé au test (<em>Livre de base p. 420</em>). Le surcoût est facturé à l'encaissement.</p></li>\n<li><p>Cliquez sur <strong>Tester la Disponibilité du panier</strong>. Chaque ligne fait son propre test : ce sont des recherches distinctes. Une carte <strong>Test de Disponibilité</strong> arrive dans le tchat.</p></li>\n<li><p>La carte arrive repliée : cliquez sur son en-tête pour lire le détail de chaque ligne. Puis cliquez sur <strong>Encaisser l'achat</strong>. Le prix est débité de vos comptes et l'objet part vers votre fiche.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-1-panier.webp\" width=\"300\" alt=\"La caisse : l'acheteur et son solde, la recherche confiée à un contact (sa réserve de dés), le panier, son total et le délai le plus long.\" /><figcaption><strong>Figure 7.1.3</strong> — La caisse : l'acheteur et son solde, la recherche confiée à un contact (sa réserve de dés), le panier, son total et le délai le plus long.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/7-1-carte-dispo.webp\" width=\"488\" alt=\"La carte du test, dépliée : la réserve du contact, puis pour chaque ligne les succès, le résultat et le délai obtenu.\" /><figcaption><strong>Figure 7.1.4</strong> — La carte du test, dépliée : la réserve du contact, puis pour chaque ligne les succès, le résultat et le délai obtenu.</figcaption></figure>\n\n<p>Sous le total du panier, la boutique annonce ce qui vous restera, le délai le plus long et l'Essence totale des implants. Une ligne qui ne passera pas à la caisse (limite de création dépassée, gamme plus proposée) est barrée en rouge : survolez-la pour savoir pourquoi.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">C'est le MJ qui lance les dés</p><p>Quand vous cliquez sur <strong>Tester</strong>, votre navigateur envoie seulement une demande au MJ connecté. Son poste recalcule la réserve, la Disponibilité et le prix depuis le catalogue, lance les dés et poste la carte. <strong>Sans MJ connecté, aucun test n'a lieu</strong> : un message vous le dit, réessayez quand il ou elle est là.</p></div>\n\n<h4>Ce que dit la carte</h4>\n<p>Le test est un test opposé de Négociation + Charisme contre l'indice de Disponibilité (<em>Livre de base p. 420</em>). La carte donne pour chaque ligne la réserve, les succès, le résultat et le délai obtenu :</p>\n<ul>\n<li><p><strong>Réussite</strong> : vos succès nets raccourcissent le délai de recherche.</p></li>\n<li><p><strong>Égalité</strong> : l'objet est trouvé, en deux fois plus de temps.</p></li>\n<li><p><strong>Échec</strong> : la ligne porte un bouton <strong>Nouvel essai</strong>. Le livre impose d'attendre le double du délai (<em>Livre de base p. 420</em>) : le MJ vérifie sur l'horloge du monde que ce temps est passé, puis relance lui-même. Vous pouvez changer le surcoût avant de redemander.</p></li>\n<li><p><strong>Échec critique</strong> : l'objet est introuvable, sans nouvel essai.</p></li>\n</ul>\n<p>Le délai se lit toujours sur le <strong>prix de base</strong> de l'objet, jamais sur le prix gonflé par le surcoût. Un bien courant, lui, se paie directement par <strong>Payer</strong>, sans test.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.rCD4P3khNagAnODN]{La fenêtre de la boutique} · @UUID[.aG5xz2odvcmkng4w]{La livraison} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aG5xz2odvcmkng4w",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.aG5xz2odvcmkng4w",
+      "name": "La livraison",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Par défaut, un objet qui a une Disponibilité n'arrive pas tout de suite : il est trouvé après son délai de recherche, compté sur l'horloge du monde (@UUID[.e6Mpw7TMwnO5VSpW]{voir le calendrier}).</p>\n\n<h4>Pas à pas : suivre une commande</h4>\n<ol>\n<li><p>À l'encaissement, la commande est payée : la dépense apparaît dans vos comptes. L'objet attend dans le bloc <strong>En commande</strong> de l'onglet <strong>Équipement</strong>, avec sa date d'arrivée.</p></li>\n<li><p>Quand l'horloge atteint cette date, la ligne affiche <strong>Arrivée, attend le MJ</strong>. Le MJ reçoit une carte d'échéance avec le bouton <strong>Livrer</strong> : <strong>rien n'arrive sans son clic</strong>.</p></li>\n<li><p>Pour renoncer, cliquez sur 🚫 (<strong>Demander l'annulation</strong>) : le MJ accepte ou refuse, et la réponse arrive dans le tchat.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-1-en-commande.webp\" width=\"584\" alt=\"Le bloc En commande de la fiche : une commande arrivée qui attend le MJ, une autre en route avec sa date d'arrivée.\" /><figcaption><strong>Figure 7.1.5</strong> — Le bloc En commande de la fiche : une commande arrivée qui attend le MJ, une autre en route avec sa date d'arrivée.</figcaption></figure>\n\n<p>N'attendent pas leur délai : les biens courants, ce qu'un vendeur du MJ a déjà en rayon, ce que le MJ pose lui-même, et les achats d'un personnage en création (ci-dessous). Si le MJ a choisi une livraison <strong>Immédiate</strong>, tout arrive à l'encaissement.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Livraison express</p><p>Le livre ne prévoit pas de payer pour être livré plus vite : sa seule voie est le surcoût au test. Si le MJ a coché la livraison express, la carte du test propose une case <strong>Express</strong> au-dessus du bouton d'encaissement : cochez-la avant d'encaisser, et chaque ligne qui attend coûte un pourcentage de son prix de base en plus, pour un délai divisé. C'est plus avantageux que le surcoût du livre, et c'est voulu. Décochée par défaut.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.KCwO9LeINSJYoROJ]{Acheter : le panier, le test, la caisse} · @UUID[.NIeZQKqXM58Cg2Jz]{S'équiper pendant la création} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NIeZQKqXM58Cg2Jz",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.NIeZQKqXM58Cg2Jz",
+      "name": "S'équiper pendant la création",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le MJ peut marquer votre personnage <strong>En création</strong> (menu d'en-tête de la fiche). La caisse affiche alors <strong>Personnage en création</strong> avec les limites du niveau de jeu (par exemple « Dispo ≤ 12, indice ≤ 6 ») :</p>\n<ul>\n<li><p>une ligne au-delà de la Disponibilité ou de l'indice permis est grisée, et la caisse la refuse (<em>Livre de base p. 64, 420</em>) ;</p></li>\n<li><p>seules les gammes occasion, standard et alphaware sont proposées pour les implants (<em>Livre de base p. 454</em>) ;</p></li>\n<li><p>chaque achat est débité : vos nuyens de création se comptent tout seuls ;</p></li>\n<li><p><strong>chaque achat arrive tout de suite sur la fiche</strong>, même si la table joue en livraison différée : pas de commande ni de délai de recherche à la création. C'est vrai à la boutique, chez les vendeurs du MJ et au concessionnaire ;</p></li>\n<li><p>retirer un implant rend son Essence, sans laisser de trou.</p></li>\n</ul>\n<p>Quand le MJ choisit <strong>Création terminée</strong>, les achats attendent de nouveau leur délai. Le détail de la création est au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.U3qRlskIsVJHr10O]{S'équiper à la création}.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.aG5xz2odvcmkng4w]{La livraison} · @UUID[.2icQRYXbLSObM3f5]{Les implants : gammes et Essence} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "2icQRYXbLSObM3f5",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.2icQRYXbLSObM3f5",
+      "name": "Les implants : gammes et Essence",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Sur chaque ligne de cyberware ou de bioware, le sélecteur de gamme change le prix, la Disponibilité et l'Essence affichés, selon la table du livre (<em>Livre de base p. 454</em>). L'implant posé garde sa gamme ; sa fiche calcule le reste.</p>\n<ul>\n<li><p><strong>L'Essence affichée est celle de votre corps</strong> : la boutique tient compte de vos qualités (Système sensible, Biocompatibilité) et de vos traitements. Changer d'acheteur change les chiffres.</p></li>\n<li><p><strong>À 0 d'Essence, c'est la mort</strong> (<em>Livre de base p. 54</em>) : la caisse refuse un achat qui ferait tomber votre Essence à 0 ou moins, et dit à combien elle tomberait.</p></li>\n<li><p>Les gammes gamma et GreyWare sont des options de suppléments que le MJ active ; la GreyWare d'un personnage Éveillé demande une confirmation avant l'achat, car elle coûte un point de Magie.</p></li>\n</ul>\n<p>Le détail (Adapsine, Prototype de transhumain, Essence perdue au retrait) est dans <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">le wiki : Boutique et fourgue</a>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.NIeZQKqXM58Cg2Jz]{S'équiper pendant la création} · @UUID[.cPo7hXSrHjyXq4bg]{Ce que fait le système, réglages et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cPo7hXSrHjyXq4bg",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.cPo7hXSrHjyXq4bg",
+      "name": "Ce que fait le système, réglages et références",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule les prix comme à la caisse (indice, accessoires, gamme, quantité d'une boîte de munitions).</p></li>\n<li><p>Il fait lancer chaque test par le MJ connecté, raccourcit ou double le délai selon le résultat, facture le surcoût.</p></li>\n<li><p>Il débite vos comptes par une ligne de dépense, et date la commande sur l'horloge du monde.</p></li>\n<li><p>Il marque la dépense et chaque objet qu'elle paie d'un même identifiant d'achat : qui a payé, où (boutique, vendeur, création, mode Équiper), quand et combien. Le MJ lit cette trace sous chaque ligne de l'équipement acheté (« Acheté par … — boutique, le … ») ; le Concepteur de personnage s'en sert pour rembourser un achat (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.A4PSjpdZCfh8hG2j]{voir 9.5}).</p></li>\n<li><p>Il refuse un achat au-delà des limites de création ou qui tuerait le personnage faute d'Essence.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il livre chaque commande arrivée, d'un clic, et répond aux demandes d'annulation.</p></li>\n<li><p>Il juge des suites d'une complication ou d'un échec critique au test.</p></li>\n<li><p>Il ajuste les prix au marché local s'il le veut, par la marge de ses vendeurs (<em>Livre de base p. 419</em>).</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Boutique de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Livraison des achats</strong></td><td>après le délai de recherche</td></tr>\n<tr><td><strong>Boutique : niveau de création</strong></td><td>Runner expérimenté (Disponibilité 12, indice 6)</td></tr>\n<tr><td><strong>Boutique : surcoût par dé bonus</strong></td><td>25 % du prix</td></tr>\n<tr><td><strong>Boutique : dés bonus maximum</strong></td><td>12</td></tr>\n<tr><td><strong>Boutique : types de contacts marchands</strong></td><td>fixer, receleur, armurier, talismonger…</td></tr>\n<tr><td><strong>Boutique : gamme gamma</strong>, <strong>Boutique : GreyWare</strong></td><td>décochés</td></tr>\n<tr><td><strong>Livraison express (règle maison)</strong></td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Disponibilité, test, délais, surcoût : (<em>Livre de base p. 419-420</em>). Limites d'équipement à la création : (<em>Livre de base p. 64</em>). Gammes d'implants : (<em>Livre de base p. 454</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki : Boutique et fourgue</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.FcFAEQCYnWId4zg4]{7.1 La boutique du joueur ou de la joueuse}</p><p>← @UUID[.2icQRYXbLSObM3f5]{Les implants : gammes et Essence} · @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "5DdV0wykUSSWuaSG",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.5DdV0wykUSSWuaSG",
+      "name": "7.2 La boutique du MJ, la fourgue, les factions",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Ce chapitre donne au MJ les commandes de l'économie de sa table : choisir ce que la boutique vend et à qui, poser du matériel sans le faire payer, tenir des marchands qui ont un vrai stock et une caisse, racheter le butin des personnages et suivre leur réputation auprès des factions. Tout y est réglable ; les valeurs par défaut sont celles du livre.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU}</p><p>← @UUID[.cPo7hXSrHjyXq4bg]{Ce que fait le système, réglages et références} · @UUID[.cHcctuavWeEIK3QH]{Configurer la boutique} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cHcctuavWeEIK3QH",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.cHcctuavWeEIK3QH",
+      "name": "Configurer la boutique",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : choisir les rayons et les acheteurs</h4>\n<ol>\n<li><p>Ouvrez <strong>Réglages Shadowrun</strong>, onglet <strong>Boutique</strong>, et cliquez sur <strong>Configurer la boutique</strong>.</p></li>\n<li><p>Dans <strong>Rayons de la boutique</strong>, cochez les compendiums vendus. Les autres restent consultables dans le navigateur de compendiums.</p></li>\n<li><p>Dans <strong>Acheteurs</strong>, choisissez qui peut acheter : les personnages joueurs (par défaut), les acteurs d'un dossier, les acteurs où vous avez coché <strong>Peut acheter</strong> (menu ⋮ de leur fiche), ou l'un ou l'autre. Puis <strong>Enregistrer</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-configurer.webp\" width=\"652\" alt=\"Configurer la boutique : les compendiums vendus et qui peut acheter (thème sombre).\" /><figcaption><strong>Figure 7.2.1</strong> — Configurer la boutique : les compendiums vendus et qui peut acheter (thème sombre).</figcaption></figure>\n\n<p>Pour retirer un objet de la vente (un prototype, une arme unique), ouvrez sa fiche dans un compendium déverrouillé et choisissez <strong>Interdit à la vente / prototype</strong> dans son menu ⋮ : le joueur ou la joueuse ne le voit plus nulle part, vous le voyez marqué, sans bouton d'achat.</p>\n<p>Décocher <strong>Boutique : le marché est ouvert aux joueurs</strong> ferme le marché : le joueur ou la joueuse n'achète plus que chez vos vendeurs.</p>\n\n<h4>Les deux cases du MJ</h4>\n<p>En bas de la caisse, le MJ a deux cases :</p>\n<ul>\n<li><p><strong>Équiper</strong> : la liste des destinataires devient tous les acteurs du monde, et la pose est gratuite, sans test ni transaction ; prototypes et toutes les gammes sont permis. Un message, que vous seul voyez, garde la trace de la pose. Un jeton non lié n'est pas dans la liste : pour équiper un seul jeton, glissez l'objet sur la fiche ouverte depuis ce jeton.</p></li>\n<li><p><strong>Mode création</strong> : pour toute la table, ajoute sans débiter ni tester, avec les limites de création du niveau choisi. Pour un seul personnage, préférez la marque <strong>En création</strong> de sa fiche (@UUID[.NIeZQKqXM58Cg2Jz]{voir 7.1}).</p></li>\n</ul>\n\n\n\n<h4>Livrer et annuler les commandes</h4>\n<p>Quand une commande arrive à échéance, vous recevez la carte chuchotée des échéances avec <strong>Livrer</strong>. Dans le bloc <strong>En commande</strong> de la fiche, vous avez aussi 📦 (<strong>Livrer maintenant</strong>, avant l'échéance) et 🚫 (annuler et rembourser). Le remboursement se fonde sur ce que votre poste a inscrit à l'achat ; une commande passée sans MJ connecté y entre à votre retour, et se rembourse donc comme les autres. Avec deux MJ, seul le MJ actif livre.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions} · @UUID[.SyI6YSnFTX8x0idb]{Les vendeurs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "SyI6YSnFTX8x0idb",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.SyI6YSnFTX8x0idb",
+      "name": "Les vendeurs",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un vendeur est un PNJ (Grunt) qui porte un stockage de type <strong>Boutique</strong>. Ce qui est rangé dans ce stockage est son stock : de vrais objets, vendus une fois. Le joueur ou la joueuse n'ouvre jamais sa fiche : tout passe par son comptoir.</p>\n\n<h4>Pas à pas : créer un vendeur depuis un modèle</h4>\n<ol>\n<li><p>Dans la boutique, cliquez sur <strong>Nouveau vendeur</strong>.</p></li>\n<li><p>Choisissez un <strong>Modèle</strong> (Armurier des ombres, Charcudoc, Marchand de talismans, Dealer de rue, Courtier en informations…), un <strong>Nom</strong>, une <strong>Bannière</strong>, et cochez ou non <strong>Jeton lié</strong> : lié, un seul stock ; non lié, chaque jeton est une boutique à part.</p></li>\n<li><p>Validez. Le système crée le Grunt, sa boutique réglée et sa caisse, la remplit et l'ouvre chez vous. Elle est fermée au joueur ou à la joueuse tant que vous n'avez pas coché <strong>Ouverte aux joueurs</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-nouveau-vendeur.webp\" width=\"652\" alt=\"La fenêtre Nouveau vendeur : le modèle, le nom, le jeton lié et la bannière.\" /><figcaption><strong>Figure 7.2.2</strong> — La fenêtre Nouveau vendeur : le modèle, le nom, le jeton lié et la bannière.</figcaption></figure>\n\n<p>Les rayons, la marge et la Disponibilité maximum d'un modèle sont des choix de jeu, pas des règles : le livre n'en donne pas. Le Mégapack fournit en plus des vendeurs prêts (dossier PNJ › Vendeurs) et des bannières, que la boutique prend d'office ; le réglage <strong>Boutique : dossier des bannières</strong> montre alors le dossier du Mégapack. Le générateur de PNJ du Concepteur crée aussi des vendeurs (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.A4PSjpdZCfh8hG2j]{voir 9.5}). La fiche d'un vendeur, comme celle de tout PNJ, liste ses stockages.</p>\n\n<h4>La fiche de la boutique du vendeur</h4>\n<p>Ouvrez la fiche du Grunt, onglet des stockages, puis la fiche du stockage : son onglet de configuration montre le bloc <strong>Boutique du vendeur</strong>.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-fiche-vendeur.webp\" width=\"658\" alt=\"La fiche du stockage Boutique : informations générales, bloc Boutique du vendeur, puis le réassort.\" /><figcaption><strong>Figure 7.2.3</strong> — La fiche du stockage Boutique : informations générales, bloc Boutique du vendeur, puis le réassort.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>Enseigne</strong>, <strong>Bannière (3:1)</strong>, <strong>Portrait</strong>, <strong>Couleur d'accent</strong> : l'allure de la fenêtre.</p></li>\n<li><p><strong>Ouverte aux joueurs</strong> : décochée, seul le MJ y entre.</p></li>\n<li><p><strong>Marge (%)</strong> : ajoutée au prix du livre, négative pour un soldeur. C'est ainsi que vous ajustez les prix au marché local (<em>Livre de base p. 419</em>).</p></li>\n<li><p><strong>Caisse</strong> : un créditube du vendeur (bouton <strong>Lui donner un créditube</strong>). Sans caisse, rien ne se vend.</p></li>\n<li><p><strong>Le MJ approuve chaque vente</strong> : chaque achat ouvre chez vous une fenêtre Accepter / Refuser.</p></li>\n<li><p><strong>Réassort</strong> : rayons, légalité, <strong>Disponibilité max du réassort</strong>, <strong>Articles par rayon</strong>, <strong>Quantité par pile</strong>. <strong>Réassortir</strong> complète le stock au hasard dans les compendiums vendus ; <strong>Vider le stock</strong> le retire. Pas d'horloge : vous réassortissez quand vous voulez.</p></li>\n<li><p><strong>Sur commande</strong> : les objets de ses rayons qu'il n'a pas en stock apparaissent « sur commande » ; c'est le vendeur qui les cherche, avec sa propre réserve (<em>Livre de base p. 420</em>).</p></li>\n<li><p><strong>Contact</strong> et <strong>Réserve de Négociation</strong> : qui cherche pour lui. Glissez un contact sur sa fenêtre de boutique pour en faire son chercheur ; sinon la réserve vient de sa fiche, ou des 8 dés du modèle.</p></li>\n<li><p><strong>Clients contacts</strong> et <strong>Rachète hors de ses rayons</strong> : servent à la revente (plus bas).</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Juste après le chargement, patientez</p><p>La première lecture des rayons de la séance prend quelques secondes, et <strong>Réassortir</strong> ne montre rien pendant ce temps. Ne recliquez pas : le premier réassort aboutirait en retard et doublerait le stock.</p></div>\n\n<h4>Ce que voit le joueur ou la joueuse</h4>\n<ol>\n<li><p>Un double-clic ou un clic droit sur le jeton d'un vendeur ouvert ouvre sa boutique, sur son stock (jamais sa fiche) ; le MJ a pour cela un bouton <strong>Boutique</strong> dans le HUD du jeton. Dans la boutique, l'onglet <strong>Vendeurs</strong> passe aussi du marché aux boutiques ouvertes.</p></li>\n<li><p>L'enseigne s'affiche en haut ; chaque ligne en stock porte « N en rayon » et le prix du vendeur. Ce qui est en rayon est déjà trouvé : pas de test, livré tout de suite.</p></li>\n<li><p><strong>Payer avec</strong> propose ses comptes ou un créditube qu'il ou elle porte.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-comptoir.webp\" width=\"1412\" alt=\"Le comptoir vu par le joueur ou la joueuse : l'enseigne, les lignes « en rayon » et « sur commande », Payer avec. Pas de bloc MJ.\" /><figcaption><strong>Figure 7.2.4</strong> — Le comptoir vu par le joueur ou la joueuse : l'enseigne, les lignes « en rayon » et « sur commande », Payer avec. Pas de bloc MJ.</figcaption></figure>\n\n<p>Chaque achat est une demande à votre poste, qui revérifie tout (acheteur, boutique ouverte, stock, prix recalculé, solde) avant que l'objet et l'argent bougent. L'argent entre dans la caisse du vendeur. Deux personnes qui prennent le dernier exemplaire en même temps : une seule l'obtient.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.cHcctuavWeEIK3QH]{Configurer la boutique} · @UUID[.kfVv5yBRr0BFrJfI]{Revendre : la fourgue} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "kfVv5yBRr0BFrJfI",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.kfVv5yBRr0BFrJfI",
+      "name": "Revendre : la fourgue",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le bouton <strong>Revendre du matériel</strong> de la caisse ouvre la liste de ce que le personnage possède et qui a un prix. Il y a trois façons de vendre, toutes sur le <strong>prix listé</strong> de l'objet, jamais sur ce qu'il a coûté (un implant se revend sur le prix de sa gamme standard) (<em>Livre de base p. 421</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-revendre.webp\" width=\"632\" alt=\"La fenêtre Revendre du matériel : ce que possède le personnage, le choix du contact qui fourgue, et les façons de vendre (thème sombre).\" /><figcaption><strong>Figure 7.2.5</strong> — La fenêtre Revendre du matériel : ce que possède le personnage, le choix du contact qui fourgue, et les façons de vendre (thème sombre).</figcaption></figure>\n\n<ul>\n<li><p><strong>Fourguer au contact</strong> : le contact reprend l'objet sur-le-champ, sans test, pour une part du prix listé par point de Loyauté (<em>Livre de base p. 421</em>). Une carte arrive dans le tchat ; son bouton <strong>Encaisser la vente</strong> retire l'objet et verse le prix, une seule fois.</p></li>\n<li><p><strong>Chercher un acheteur</strong> : un test étendu pour trouver l'acheteur, puis un test opposé pour le prix (<em>Livre de base p. 421</em>). Le livre ne donne pas la réserve de l'acheteur : le système lui met 6 dés, et c'est un réglage.</p></li>\n<li><p><strong>Vendre à</strong> un vendeur, depuis sa boutique : il ne rachète que ses rayons (sauf <strong>Rachète hors de ses rayons</strong>). Ses <strong>Clients contacts</strong> revendent à la part du contact, sans test ; les autres passent par un test opposé de négociation contre lui. C'est vous qui lancez le test et écrivez l'offre ; le joueur ou la joueuse clique <strong>Accepter l'offre</strong> ou <strong>Refuser</strong>.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Toute revente à un vendeur passe par vous</p><p>Quand le joueur ou la joueuse accepte une offre, une fenêtre s'ouvre chez vous : pour chaque objet, son nom, son type, ses chiffres, ceux de l'objet de référence et le prix proposé, avec un avertissement quand ils ne correspondent pas. Vous acceptez, refusez ou corrigez le prix. Un créditube encore chargé n'est pas racheté : il faut d'abord le vider.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.SyI6YSnFTX8x0idb]{Les vendeurs} · @UUID[.AKjSwcLBTCl5WB3C]{Le courtier en informations} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AKjSwcLBTCl5WB3C",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.AKjSwcLBTCl5WB3C",
+      "name": "Le courtier en informations",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un vendeur du modèle <strong>Courtier en informations</strong> vend des informations plutôt que des objets : quinze types de données, chacun avec sa fourchette de prix (<em>Cutting Aces p. 148-149</em>). Le bouton <strong>Informations à vendre</strong> de son enseigne ouvre sa fenêtre ; le MJ voit ce bouton chez n'importe quel vendeur.</p>\n<h4>Pas à pas : acheter une information</h4>\n<ol>\n<li><p>Le joueur ou la joueuse choisit le personnage, un type de données, écrit sur qui ou sur quoi, puis <strong>Commander</strong>.</p></li>\n<li><p>Le MJ voit la demande sous <strong>À traiter par le MJ</strong>. Il fixe le prix (un prix hors fourchette est signalé, pas refusé), écrit ce que contient le fichier, choisit la fiabilité (sûre, erronée en partie, fausse (<em>Livre de base p. 391</em>)), puis <strong>Proposer ce prix</strong> — ou <strong>Introuvable</strong>.</p></li>\n<li><p>Le joueur ou la joueuse voit le prix en grand, sous <strong>À vous de répondre</strong>, à côté du solde du personnage, et paie ou refuse.</p></li>\n<li><p>Le MJ clique sur <strong>Livrer le fichier</strong> : un objet <strong>Fichier</strong> arrive dans l'inventaire de l'acheteur, avec ce que le MJ a écrit.</p></li>\n</ol>\n<p>Pour vendre, le personnage propose un fichier de son inventaire au courtier ; le MJ fait une offre, le personnage vend ou refuse, et garde sa copie. Chaque demande dit qui achète et qui vend, et montre ses étapes (Demandée → Prix proposé → Payée → Livrée ; Proposée → Offre reçue → Vendue), l'issue en rouge si elle échoue. Les onglets se lisent de chaque côté : « Le courtier vend / Le courtier achète » pour le MJ, « Acheter une info / Vendre un fichier / Mes demandes » pour le joueur ou la joueuse. La fiabilité et les notes du MJ ne se voient que de lui.</p>\n<figure><img src=\"systems/sr5/manuel/captures/7-2-courtier.webp\" width=\"908\" alt=\"La fenêtre du courtier côté MJ : une demande à traiter, avec ses étapes.\" /><figcaption><strong>Figure 7.2.6</strong> — La fenêtre du courtier côté MJ : une demande à traiter, avec ses étapes.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.kfVv5yBRr0BFrJfI]{Revendre : la fourgue} · @UUID[.HzE2wFoGu9CxID8V]{Les factions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "HzE2wFoGu9CxID8V",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.HzE2wFoGu9CxID8V",
+      "name": "Les factions",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le système suit la réputation de chaque personnage auprès des factions (gang, corporation, quartier, syndicat…) selon la règle de réputation de faction (<em>Cutting Aces p. 156-160</em>). Vous seul l'écrivez ; le joueur ou la joueuse la lit sur sa fiche.</p>\n\n<h4>Pas à pas : tenir une faction</h4>\n<ol>\n<li><p>Cliquez sur le bouton <strong>Factions</strong> des contrôles de jeton, à côté de celui de la poursuite (le MJ seul le voit) ; ou ouvrez <strong>Réglages Shadowrun</strong>, onglet <strong>Outils du MJ</strong>, puis <strong>Ouvrir les factions</strong> ; ou l'icône de groupe de l'encart <strong>Réputation de faction</strong> d'une fiche (onglet Social).</p></li>\n<li><p>Créez la faction : un nom et un type. Le crayon permet de la renommer, d'écrire une note et de cocher ses <strong>Ennemies</strong>.</p></li>\n<li><p>Sélectionnez sur la scène les jetons de ses PNJ, puis <strong>Ajouter les jetons sélectionnés</strong>. Ajoutez aussi les contacts des personnages qui en font partie.</p></li>\n<li><p>Pour un mouvement de réputation, choisissez la faction, cochez les personnages (la liste a une recherche, sans accents ni majuscules, et se trie : personnages des joueurs et des joueuses d'abord, cochés d'abord) et un <strong>Motif</strong> : les points du livre se remplissent et restent modifiables. Laissés <strong>En attente</strong>, ils s'appliquent tous en fin de mission par <strong>Fin de mission : appliquer les mouvements en attente</strong>, comme le veut le livre.</p></li>\n<li><p>Pour une dépense de réputation (un contact plus influent, un nouveau contact, un service…), choisissez-la et cliquez sur <strong>Dépenser</strong> ; le score ne peut pas passer sous zéro.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-factions.webp\" width=\"768\" alt=\"La fenêtre Factions : une faction, son membre et son contact, la réputation d'un personnage, puis les mouvements de réputation (thème sombre).\" /><figcaption><strong>Figure 7.2.7</strong> — La fenêtre Factions : une faction, son membre et son contact, la réputation d'un personnage, puis les mouvements de réputation (thème sombre).</figcaption></figure>\n\n<p>Le module Topologie corporatiste relie chaque corporation de sa carte à une faction de cette fenêtre (@UUID[Compendium.sr5.manuel.JournalEntry.twKdAaCtgRZ6Ji0d.JournalEntryPage.5wo5nmdI2GEDvesT]{voir 9.9}).</p>\n<p>Ensuite, quand un personnage fait un test social en ciblant un PNJ membre d'une faction, la fenêtre de jet règle d'avance l'attitude du PNJ selon la réputation (<em>Livre de base p. 142</em>). La ligne reste modifiable : un membre bien disposé peut toujours mentir. Rien ne déplace la réputation tout seul : c'est à vous de juger si le fait est connu.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.AKjSwcLBTCl5WB3C]{Le courtier en informations} · @UUID[.WsdsU4MlUP0QztsL]{Le suivi des arnaques} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WsdsU4MlUP0QztsL",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.WsdsU4MlUP0QztsL",
+      "name": "Le suivi des arnaques",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>L'escroquerie en trois phases de <em>Cutting Aces</em> se tient dans la fenêtre <strong>Arnaques</strong>, réservée au MJ (<em>Cutting Aces p. 162-164</em>) ; elle s'ouvre aussi depuis <strong>Réglages Shadowrun</strong>, onglet <strong>Outils du MJ</strong>.</p>\n<h4>Pas à pas : monter une arnaque</h4>\n<ol>\n<li><p>Cliquez sur le bouton en forme de masques des contrôles de jeton, puis <strong>Nouvelle arnaque</strong> : un nom, longue ou courte, la cible (un acteur ou le jeton ciblé) et les escrocs à cocher.</p></li>\n<li><p>Préparation : inscrivez chaque étape (enquête, recherches matricielles, surveillance, évaluation, accessoires fabriqués ou achetés). Pour les oppositions, la fenêtre lance les dés de la cible en aveugle, ou prend les succès que vous tapez. Les deux jauges du haut tiennent le <strong>Niveau de Renseignement</strong> et l'<strong>Indice d'Accessoire</strong>.</p></li>\n<li><p>Appât, renforcement et sortie : le joueur ou la joueuse les lance depuis la fiche de son escroc (@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.89rfIha7WYNddZJY]{voir 2.2}). Sur la carte de résistance de la cible, cliquez sur <strong>Arnaque, … : inscrire « … »</strong> : le résultat est déjà lu (le pigeon a mordu, méfiante, démasqué…).</p></li>\n<li><p>Arnaque finie contre un membre d'une faction : <strong>Inscrire aux factions</strong> pose le mouvement de réputation du livre, en attente (<em>Cutting Aces p. 158</em>).</p></li>\n</ol>\n<p>Le journal de la fenêtre garde chaque étape. Tout chiffre se corrige à la main ; rien ne s'inscrit sans votre clic.</p>\n<figure><img src=\"systems/sr5/manuel/captures/7-2-arnaques.webp\" width=\"728\" alt=\"La fenêtre Arnaques : une arnaque longue en cours, ses deux jauges et le journal des étapes.\" /><figcaption><strong>Figure 7.2.8</strong> — La fenêtre Arnaques : une arnaque longue en cours, ses deux jauges et le journal des étapes.</figcaption></figure><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.HzE2wFoGu9CxID8V]{Les factions} · @UUID[.WpxIBztMXHhclflG]{Réglages et références du MJ} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WpxIBztMXHhclflG",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.WpxIBztMXHhclflG",
+      "name": "Réglages et références du MJ",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il revérifie chaque achat et chaque revente sur votre poste, et refuse ce qui ne passe pas.</p></li>\n<li><p>Il fait entrer l'argent d'un achat dans la caisse du vendeur, et sortir celui d'une revente.</p></li>\n<li><p>Il tient le registre des commandes et des factions, que vous seul écrivez.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il réassortit ses vendeurs, livre les commandes, accepte ou corrige chaque revente à un vendeur.</p></li>\n<li><p>Il inscrit chaque mouvement de réputation et applique les mouvements en attente en fin de mission.</p></li>\n<li><p>Il décide des suites d'une complication ou d'un échec critique de fourgue.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Boutique)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Boutique : le marché est ouvert aux joueurs</strong></td><td>coché</td></tr>\n<tr><td><strong>Boutique : test de Disponibilité aussi chez un vendeur</strong></td><td>décoché (ce qui est en rayon est déjà trouvé)</td></tr>\n<tr><td><strong>Boutique : dossier des bannières</strong></td><td>vide (celles du Mégapack s'il est actif)</td></tr>\n<tr><td><strong>Revente : part du prix listé</strong> et <strong>Revente : pourcentage par succès net</strong></td><td>25 % et 5 %</td></tr>\n<tr><td><strong>Revente : seuil pour trouver un acheteur</strong></td><td>10</td></tr>\n<tr><td><strong>Revente : part payée par un contact</strong></td><td>5 % par point de Loyauté</td></tr>\n<tr><td><strong>Revente : réserve de dés de l'acheteur</strong></td><td>6 (le livre ne la donne pas)</td></tr>\n<tr><td><strong>Règles sociales de Cutting Aces</strong> (onglet MJ)</td><td>coché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Prix et marché : (<em>Livre de base p. 419</em>). Fourguer : (<em>Livre de base p. 421</em>). Attitude des PNJ : (<em>Livre de base p. 142</em>). Factions : (<em>Cutting Aces p. 156-160</em>). Escroquerie : (<em>Cutting Aces p. 162-164</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki : Boutique et fourgue</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Factions\">wiki : Factions</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Social-de-Cutting-Aces\">wiki : Le social de Cutting Aces</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.5DdV0wykUSSWuaSG]{7.2 La boutique du MJ, la fourgue, les factions}</p><p>← @UUID[.WsdsU4MlUP0QztsL]{Le suivi des arnaques} · @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "qk2XJEf1NvKmaJ6R",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.qk2XJEf1NvKmaJ6R",
+      "name": "7.3 Argent, créditubes, style de vie",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un personnage a deux sortes d'argent. Ses <strong>comptes</strong> sont un registre de gains et de dépenses, sur sa fiche : on ne peut ni les donner ni les voler. Son <strong>liquide</strong> est chargé sur des créditubes certifiés, des objets qu'il porte : ils se donnent, se volent et ne laissent aucune trace (<em>Livre de base p. 445</em>). Ce chapitre montre les deux, puis le style de vie, qui coûte un loyer chaque mois.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU}</p><p>← @UUID[.WpxIBztMXHhclflG]{Réglages et références du MJ} · @UUID[.mobgPpSfFUKzOT6f]{Les comptes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "mobgPpSfFUKzOT6f",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.mobgPpSfFUKzOT6f",
+      "name": "Les comptes",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>L'onglet <strong>Équipement</strong> de la fiche affiche le bloc <strong>Finances</strong> : <strong>Nuyens actuels</strong>, <strong>Total gagné</strong> et <strong>Total dépensé</strong>. Ces chiffres ne se saisissent pas : ils se calculent à partir des lignes <strong>Gains</strong> et <strong>Dépenses</strong> en dessous.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-finances.webp\" width=\"594\" alt=\"L'onglet Équipement de la fiche : ① les Finances, ② le Liquide sur soi, ③ les Gains, ④ les Dépenses (entre les deux, les commandes en attente).\" /><figcaption><strong>Figure 7.3.1</strong> — L'onglet Équipement de la fiche : ① les Finances, ② le Liquide sur soi, ③ les Gains, ④ les Dépenses (entre les deux, les commandes en attente).</figcaption></figure>\n\n<h4>Pas à pas : inscrire une paie</h4>\n<ol>\n<li><p>Dans <strong>Gains</strong>, cliquez sur le ＋ : une ligne apparaît.</p></li>\n<li><p>Donnez-lui un nom (« Paie du run Aztechnology ») et un montant. Le total suit.</p></li>\n<li><p>Une erreur ? Corrigez la ligne fautive : le compte reste juste, et l'historique se relit à tout moment. Un clic sur le titre <strong>Gains</strong> ou <strong>Dépenses</strong> replie ou déplie ses lignes.</p></li>\n</ol>\n<p>Chaque achat de la boutique ajoute de lui-même une ligne de dépense ; chaque revente, une ligne de gain. Le système n'écrit jamais directement dans le total.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Le MJ garde l'œil sur l'historique</p><p>Comme partout dans Foundry, le joueur ou la joueuse propriétaire d'une fiche peut y écrire ce qu'il ou elle veut, y compris une ligne de gain. Le système empêche seulement qu'on soit crédité à partir de ce qu'on a écrit soi-même : remboursements, reventes et versements passent par le MJ. Une ligne ajoutée à la main se voit dans l'historique.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie}</p><p>← @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie} · @UUID[.rsDpQnk1XgPMWKFB]{Le liquide : les créditubes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rsDpQnk1XgPMWKFB",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.rsDpQnk1XgPMWKFB",
+      "name": "Le liquide : les créditubes",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le bloc <strong>Liquide sur soi</strong>, juste au-dessus des gains, totalise ce que le personnage porte en créditubes, puis donne une ligne par tube : ce qu'il porte et sa contenance.</p>\n\n<h4>Pas à pas : charger ou vider un créditube</h4>\n<ol>\n<li><p>Sur la ligne du tube, cliquez sur ⬇️ (<strong>Retirer sur le tube</strong>) : l'argent quitte vos comptes (une ligne de dépense « Retrait ») et charge le tube. Saisissez le montant : la fenêtre annonce le maximum, qui est le plus petit de votre solde et de la place restante sur le tube.</p></li>\n<li><p>Cliquez sur ⬆️ (<strong>Déposer depuis le tube</strong>) pour remettre l'argent du tube dans vos comptes, sous forme de gain.</p></li>\n<li><p>Pour payer quelqu'un en liquide, glissez le créditube de votre fiche sur la sienne : les nuyens partent avec le tube.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-retirer.webp\" width=\"602\" alt=\"Retirer sur le tube : le système annonce le maximum possible.\" /><figcaption><strong>Figure 7.3.2</strong> — Retirer sur le tube : le système annonce le maximum possible.</figcaption></figure>\n\n<p>Un tube laissé dans une planque y reste avec son contenu ; un tube sur un corps se ramasse comme une arme, et un vol à la tire peut l'emporter (@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.lhSPt41O2TBXv2Ho]{voir la discrétion}). Les PNJ, véhicules et sacs n'ont pas de comptes, mais peuvent porter des créditubes : c'est ainsi qu'un vendeur a une caisse.</p>\n\n<h4>Marquer un objet comme créditube (MJ)</h4>\n<p>Les créditubes viennent des modules de contenu (le Mégapack), et de la dotation de départ (ci-dessous). Pour en faire un vous-même, ouvrez la fiche d'un objet d'équipement, onglet de configuration, et cochez <strong>Créditube certifié</strong> : deux champs apparaissent, <strong>Chargé</strong> et <strong>Contenance</strong> (0 = sans plafond).</p>\n\n<h4>La dotation de départ</h4>\n<p>Chaque personnage joueur créé dans le monde reçoit trois objets : un stockage <strong>Sac à dos</strong> (Paquetage, 20 ¥), un stockage <strong>Casier</strong> (Planque) et un <strong>Créditube standard</strong> vide, certifié jusqu'à 5 000 ¥ (<em>Run Faster p. 222-223, Livre de base p. 443</em>). Il ne reçoit que ce qui lui manque, aussi après <strong>Importer des données</strong> ; un personnage tiré d'un compendium (prétirés, PNJ et créatures du Mégapack) et les personnages déjà dans le monde ne reçoivent rien. Le réglage <strong>Dotation de départ</strong> (onglet <strong>Pillage et butin</strong>, coché par défaut) la coupe. Le Mégapack vend aussi le <strong>Sac à dos</strong> en boutique.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie}</p><p>← @UUID[.mobgPpSfFUKzOT6f]{Les comptes} · @UUID[.GLoMzcHu3JGOVedj]{Le style de vie} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "GLoMzcHu3JGOVedj",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.GLoMzcHu3JGOVedj",
+      "name": "Le style de vie",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le style de vie dit où et comment vit le personnage, et ce que cela lui coûte chaque mois (<em>Livre de base p. 375-377</em>). Il se range dans l'onglet <strong>Social</strong> de la fiche, bloc <strong>Styles de vie</strong>, comme un objet : glissez-en un depuis un compendium, ou créez-le par le ＋ du bloc.</p>\n\n<h4>Pas à pas : régler un style de vie</h4>\n<ol>\n<li><p>Ouvrez sa fiche. L'onglet de résumé donne l'adresse, l'<strong>Identité liée</strong>, les <strong>Mois pré-payés</strong> et le <strong>Coût du loyer</strong> du mois, métatype compris ; survolez le coût pour voir son détail dans l'aide au survol (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.tHfGIndtHWUOiSaA]{voir l'aide au survol}).</p></li>\n<li><p>Dans l'onglet de configuration, choisissez le <strong>Type de style de vie</strong> (<strong>La rue</strong>, <strong>Squatteur</strong>, <strong>Bas</strong>, <strong>Moyen</strong>, <strong>Élevé</strong>, <strong>Luxueux</strong>, et ceux des suppléments : <strong>Refuge</strong>, <strong>Voyageur</strong>, <strong>Commerçant</strong>). Les scores de <strong>Confort et nécessités</strong>, <strong>Sécurité</strong> et <strong>Quartier</strong> suivent.</p></li>\n<li><p>Ajoutez des <strong>Options et divertissements</strong> par le ＋ : chaque option change le prix et les points comme le prévoit sa ligne.</p></li>\n<li><p>Indiquez combien de mois sont payés d'avance dans <strong>Mois pré-payés</strong>, ou cochez <strong>Acheté</strong> si le personnage en est propriétaire : il n'a plus de loyer.</p></li>\n<li><p>Sans mois payé d'avance, choisissez dans l'onglet de configuration la date du <strong>Premier débit</strong> : le jour où tombera le premier loyer. Le résumé affiche « à choisir » tant qu'elle manque, et rien n'est réclamé d'ici là. Une fois posée, la ligne devient <strong>Prochain débit</strong> : seul le MJ peut encore la corriger.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/7-3-premier-debit.webp\" width=\"658\" alt=\"Un style de vie loué sans mois payé : la ligne « Premier débit », à choisir.\" /><figcaption><strong>Figure 7.3.3</strong> — Un style de vie loué sans mois payé : la ligne « Premier débit », à choisir.</figcaption></figure>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-style-de-vie.webp\" width=\"980\" alt=\"Le résumé d'un style de vie Bas, loué, avec deux mois payés : pour un personnage troll, le coût du loyer est doublé ; la souris sur le coût, l'aide au survol en donne le détail (base, puis le métatype).\" /><figcaption><strong>Figure 7.3.4</strong> — Le résumé d'un style de vie Bas, loué, avec deux mois payés : pour un personnage troll, le coût du loyer est doublé ; la souris sur le coût, l'aide au survol en donne le détail (base, puis le métatype).</figcaption></figure>\n\n<h4>Le loyer, chaque mois</h4>\n<p>Un style de vie loué décompte ses mois payés sur l'horloge du monde (<em>Livre de base p. 377</em>). Quand ils sont épuisés, ou à la date du premier débit d'un style de vie loué sans mois payé, le MJ reçoit une carte d'échéance avec <strong>Débiter un mois</strong> : le clic inscrit une dépense au prix du style de vie, datée du jour du monde, et repousse l'échéance d'un mois (@UUID[.rTWBi4ijKRG8vNXP]{voir les échéances}). Un style de vie acheté n'est pas décompté.</p>\n<p>Le prix du mois tient compte du métatype du personnage : plus cher pour un nain, deux fois plus pour un troll (<em>Livre de base p. 68</em>). L'ajustement porte sur le style de vie, ses options et ses atouts, mais pas sur les modifications, les sorties ni les services, qui s'ajoutent après lui (<em>Hard Targets p. 141</em>). Le surcoût des métavariantes (gnome, cyclope…) n'est pas connu du système : il reste à la main.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie}</p><p>← @UUID[.rsDpQnk1XgPMWKFB]{Le liquide : les créditubes} · @UUID[.7vDJsSf9jlfFUhd1]{Ce que fait le système et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "7vDJsSf9jlfFUhd1",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.7vDJsSf9jlfFUhd1",
+      "name": "Ce que fait le système et références",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule le solde à partir des lignes, et ajoute une ligne à chaque achat, revente, retrait ou dépôt.</p></li>\n<li><p>Il plafonne un retrait au solde et à la contenance du tube.</p></li>\n<li><p>Il calcule le prix du style de vie (type, options, métatype) et décompte les mois payés.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il clique <strong>Débiter un mois</strong> à chaque échéance de loyer.</p></li>\n<li><p>Il vérifie au résumé de chaque style de vie loué sans mois payé que la date du premier débit est choisie, et la corrige au besoin.</p></li>\n<li><p>Il ajoute le surcoût d'une métavariante au loyer.</p></li>\n<li><p>Il surveille l'historique des comptes.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Créditube certifié : (<em>Livre de base p. 445</em>). Styles de vie : (<em>Livre de base p. 375-377</em>). Coût selon le métatype : (<em>Livre de base p. 68</em>) ; ordre du calcul : (<em>Hard Targets p. 141</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Argent-et-creditubes\">wiki : Argent et créditubes</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Calendrier\">wiki : Calendrier (le loyer)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.qk2XJEf1NvKmaJ6R]{7.3 Argent, créditubes, style de vie}</p><p>← @UUID[.GLoMzcHu3JGOVedj]{Le style de vie} · @UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "e6Mpw7TMwnO5VSpW",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.e6Mpw7TMwnO5VSpW",
+      "name": "7.4 Le calendrier",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le monde a une date et une heure du Sixième Monde. Le chapitre @UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.yffYD7ZgnKUfBP2o]{L'horloge et le calendrier} montre l'horloge et ses boutons ; celui-ci montre ce qui suit l'horloge : les événements que le MJ date, et les échéances que le système fait tomber d'elles-mêmes (commandes, loyers, drogues, effets à durée, sevrage). Rien n'est débité, retiré ni lancé sans le clic du MJ.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU}</p><p>← @UUID[.7vDJsSf9jlfFUhd1]{Ce que fait le système et références} · @UUID[.vT1M2MQ7gSHMPYdr]{Les événements} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vT1M2MQ7gSHMPYdr",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.vT1M2MQ7gSHMPYdr",
+      "name": "Les événements",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le MJ tient une liste d'événements datés : un rendez-vous, l'échéance d'un contrat, un délai donné par un Johnson…</p>\n\n<h4>Pas à pas : créer un événement (MJ)</h4>\n<ol>\n<li><p>Ouvrez la vue au mois (bouton <strong>Vue au mois</strong> de l'horloge) et cliquez sur un jour, ou sur <strong>Ajouter un événement</strong>.</p></li>\n<li><p>Donnez un titre, une date et une heure (minuit par défaut), et choisissez qui le voit : <strong>le MJ seul</strong> (par défaut) ou <strong>tout le monde</strong>.</p></li>\n<li><p>Au besoin, glissez un journal ou une page de journal dans le champ du journal lié. Glisser un journal directement sur un jour de la grille ouvre la même fenêtre, déjà remplie.</p></li>\n<li><p>Validez. Le jour est souligné dans la grille, et l'événement s'ajoute à la liste du mois, avec un crayon pour le modifier et une corbeille pour le supprimer.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-4-evenement.webp\" width=\"420\" alt=\"La vue au mois avec deux événements (l'un visible de tous, l'autre du MJ seul, marqué d'un œil barré), et la fenêtre ouverte par un clic sur un jour.\" /><figcaption><strong>Figure 7.4.1</strong> — La vue au mois avec deux événements (l'un visible de tous, l'autre du MJ seul, marqué d'un œil barré), et la fenêtre ouverte par un clic sur un jour.</figcaption></figure>\n\n<p>Le joueur ou la joueuse ne voit que les événements « tout le monde », avec leur journal lié s'il ou elle a le droit de le lire, et sans aucun bouton.</p>\n\n<h4>Le rappel</h4>\n<p>Quand l'horloge franchit la date d'un événement, le MJ reçoit un message chuchoté par événement, même si l'horloge saute plusieurs jours d'un coup. Un événement n'est rappelé qu'une fois ; repoussé à une date future, il se réarme. Le joueur ou la joueuse ne reçoit pas de rappel.</p><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier}</p><p>← @UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier} · @UUID[.rTWBi4ijKRG8vNXP]{Les échéances du MJ} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rTWBi4ijKRG8vNXP",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.rTWBi4ijKRG8vNXP",
+      "name": "Les échéances du MJ",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Quand l'horloge dépasse une durée ou une échéance, le MJ reçoit une carte chuchotée qui regroupe tout ce qui vient d'arriver à ce mouvement d'horloge. Chaque ligne porte le bouton de l'action à faire ; une ligne traitée est marquée <strong>Fait</strong> ou <strong>Retiré</strong>, et le bouton ne revient pas au rechargement.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-4-echeances.webp\" width=\"348\" alt=\"La carte des échéances, chuchotée au MJ : une commande arrivée, avec Livrer et Montrer au joueur.\" /><figcaption><strong>Figure 7.4.2</strong> — La carte des échéances, chuchotée au MJ : une commande arrivée, avec <strong>Livrer</strong> et <strong>Montrer au joueur</strong>.</figcaption></figure>\n\n<table>\n<thead><tr><th>Ce qui arrive</th><th>Le bouton</th><th>Où lire la suite</th></tr></thead>\n<tbody>\n<tr><td>Une commande de la boutique arrive</td><td><strong>Livrer</strong></td><td>@UUID[.aG5xz2odvcmkng4w]{7.1}</td></tr>\n<tr><td>Les mois payés d'un style de vie sont épuisés</td><td><strong>Débiter un mois</strong></td><td>@UUID[.GLoMzcHu3JGOVedj]{7.3}</td></tr>\n<tr><td>Un effet en minutes, heures, jours, semaines ou mois expire</td><td><strong>Retirer</strong> ou <strong>Tout retirer</strong></td><td>@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.waObcY2cn3mPk14F]{les effets}</td></tr>\n<tr><td>Une drogue passe en descente, ou la descente finit</td><td><strong>Passer en descente</strong>, <strong>Terminer la descente</strong></td><td>@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.cMWglwIpg0jkWqZp]{après le combat}</td></tr>\n<tr><td>Un test de sevrage est dû (<em>Livre de base p. 79</em>)</td><td><strong>Lancer le test de sevrage</strong></td><td>@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.cMWglwIpg0jkWqZp]{après le combat}</td></tr>\n</tbody>\n</table>\n\n<p>Par défaut, les échéances restent au MJ. Le bouton <strong>Montrer au joueur</strong> d'une ligne l'envoie, en texte et sans bouton, au joueur ou à la joueuse propriétaire du personnage ; le réglage <strong>Calendrier : montrer les échéances aux joueurs</strong> le fait pour toutes. Reculer l'horloge avant une échéance la réarme.</p>\n\n<p>En combat, chaque nouveau tour avance l'heure de trois secondes (<em>Livre de base p. 51</em>). Après un test étendu, le MJ actif se voit proposer d'avancer l'horloge du temps que le test a pris ; il confirme avant.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Vous utilisez déjà un module de calendrier ?</p><p>Si un module de calendrier est actif (Simple Calendar Reborn, Seasons &amp; Stars…), le système n'affiche pas son horloge ni ses événements et laisse ce module gérer la date et le combat. Les livraisons, loyers, drogues et effets à durée continuent de suivre l'heure du monde.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier}</p><p>← @UUID[.vT1M2MQ7gSHMPYdr]{Les événements} · @UUID[.Hlsqwkfzz0afMWu5]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Hlsqwkfzz0afMWu5",
+      "_key": "!journal.pages!dnvEvohrMpHvh5dR.Hlsqwkfzz0afMWu5",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il date commandes, loyers, drogues, effets et sevrages sur l'horloge, et les regroupe dans une carte du MJ à chaque mouvement.</p></li>\n<li><p>Il rappelle chaque événement une seule fois au MJ, et avance l'heure de trois secondes par tour de combat.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il avance l'horloge quand le temps passe dans l'histoire.</p></li>\n<li><p>Il clique chaque bouton d'échéance : livrer, débiter, retirer, lancer.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Calendrier)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Calendrier : année de départ</strong></td><td>2070 (la changer décale toutes les dates du monde)</td></tr>\n<tr><td><strong>Calendrier : le combat avance l'heure</strong></td><td>coché</td></tr>\n<tr><td><strong>Calendrier : montrer les échéances aux joueurs</strong></td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Durée d'un tour de combat : (<em>Livre de base p. 51</em>). Sevrage : (<em>Livre de base p. 79</em>). Mois de loyer payés d'avance : (<em>Livre de base p. 377</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Calendrier\">wiki : Calendrier</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.DhMZWuputJHuues7]{MENU} &gt; @UUID[.e6Mpw7TMwnO5VSpW]{7.4 Le calendrier}</p><p>← @UUID[.rTWBi4ijKRG8vNXP]{Les échéances du MJ}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

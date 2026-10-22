@@ -1,0 +1,311 @@
+{
+  "_id": "twKdAaCtgRZ6Ji0d",
+  "_key": "!journal!twKdAaCtgRZ6Ji0d",
+  "name": "9. Les modules",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 1000000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "Idlu84bUqarNAO2B",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.Idlu84bUqarNAO2B",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le système se suffit à lui-même ; les modules de DjamZ y ajoutent du contenu, des Règles Maison ou des outils. Chaque fiche dit à quoi sert le module, comment l'activer, ce qu'il règle, et où trouver son propre guide.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Installer un module, une fois pour toutes</p><p>Tous les modules de cette partie s'installent de la même façon. Sur l'écran d'accueil de Foundry (monde fermé), ouvrez l'onglet <strong>Modules complémentaires</strong>, cliquez sur <strong>Installer un module</strong>, collez en bas de la fenêtre le lien du manifeste donné avec la publication du module, puis cliquez sur <strong>Installer</strong>. Un module livré en zip se décompresse dans le dossier <strong>Data/modules</strong> de Foundry. Ensuite, dans chaque monde où vous le voulez : <strong>Paramètres</strong> › <strong>Gérer les modules</strong>, cochez-le, puis <strong>Sauvegarder les paramètres de modules</strong>. Le système s'installe, lui, comme le décrit @UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.LVIIXxfssJPd2wNU]{le chapitre 0.2}.</p></div><table><tbody><tr><td><p>@UUID[.fRv6Sd5vjaHLoIFV]{9.1 Mégapack Lite}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.lzkbmNtBmZsLbmuF]{9.2 Bibliothèque SR5}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.tAowbLWNFsHQ1YfZ]{9.3 Matrice v1}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.fgsrf6pppb5iMO3G]{9.4 Vertige}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.A4PSjpdZCfh8hG2j]{9.5 Concepteur de personnage}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.UYSHraFs1imHmXuo]{9.6 Effets visuels (SFX)}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.ycGY2qxSPltoccyr]{9.7 Aventures}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.966hBDljLMgjHLBc]{9.8 Onglets de journal}</p></td><td><p>Tous</p></td></tr><tr><td><p>@UUID[.5wo5nmdI2GEDvesT]{9.9 Topologie corporatiste}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.NDHhxHQPTq63Zsd8]{9.10 Arts martiaux révisés}</p></td><td><p>MJ</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fRv6Sd5vjaHLoIFV",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.fRv6Sd5vjaHLoIFV",
+      "name": "9.1 Mégapack Lite",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Megapack SR5 Lite - Foundry VTT</strong> est la réserve de contenu de la table : des objets (armes, armures, augmentations, sorts, qualités, véhicules, drones, programmes…), des acteurs (brutes, contacts, vendeurs, paracréatures, esprits, dispositifs de sécurité, serveurs) et des tables aléatoires, rangés en compendiums. Chacun porte son nom, ses caractéristiques, son prix, sa Disponibilité, ses effets et ses automatisations, mais <strong>aucun texte des livres</strong> : la description se réduit au livre et à la page où lire la règle. Vous y prenez ce que vous glissez sur une fiche, sur une scène ou dans un vendeur de la boutique. Il n'a besoin d'aucun autre module.</p>\n<p>Dans ce manuel, « le Mégapack » désigne cette édition Lite. Contenu non officiel : il suppose que vous possédez les livres qu'il cite.</p>\n\n<h4>Pas à pas : l'activer</h4>\n<ol>\n<li><p>Installez-le, puis cochez <strong>Megapack SR5 Lite - Foundry VTT</strong> dans <strong>Gérer les modules</strong> et sauvegardez.</p></li>\n<li><p>Ouvrez l'onglet <strong>Compendiums</strong> de la barre latérale : quatre compendiums apparaissent, <strong>SR5 - Objets</strong>, <strong>SR5 - Acteurs</strong>, <strong>SR5 - Tables</strong> et <strong>SR5 - Macros</strong>.</p></li>\n<li><p>Ouvrez <strong>SR5 - Objets</strong> : cinq grands dossiers (Créature, Magie, Matos &amp; Équipement, Personnages, Résonance), rangés comme les chapitres des livres. Le champ de recherche en haut filtre par nom.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-1-objets.webp\" width=\"432\" alt=\"Le compendium « SR5 - Objets », le dossier « Matos &amp;amp; Équipement » déplié.\" /><figcaption><strong>Figure 9.1.1</strong> — Le compendium « SR5 - Objets », le dossier « Matos &amp; Équipement » déplié.</figcaption></figure>\n\n<h4>Ce qu'il apporte à la table</h4>\n<ul>\n<li><p><strong>Les objets prêts à poser</strong>, avec leurs effets : une qualité à effets est active dès qu'elle est sur la fiche, sauf si son effet dépend d'une circonstance (sa description le dit alors). Les traits sociaux de Cutting Aces portent leurs effets (@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.89rfIha7WYNddZJY]{voir 2.2}) ; les esprits mentors ont leur image ; un nom anglais (VO) accompagne plus de 300 augmentations et véhicules, ce qui permet de les chercher en anglais dans la boutique.</p></li>\n<li><p><strong>Les acteurs</strong> : des brutes de tous les indices de professionnalisme (<em>Livre de base p. 380-383</em>), des contacts, des vendeurs pour la boutique, le bestiaire, les esprits, les dispositifs de sécurité (caméras, maglocks, scanners) et des serveurs déjà typés avec leurs CI.</p></li>\n<li><p><strong>Les tables</strong> : le générateur de contacts, la réalité augmentée, et toutes celles que le système sait tirer (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.ajCgle1YU7wn4L1h]{chapitre 8.4}).</p></li>\n<li><p><strong>Ce que le système y lit tout seul</strong> : les pouvoirs des esprits et des sprites, les armes naturelles, les bannières des vendeurs. Les réglages <strong>Compendium des pouvoirs de créatures</strong>, <strong>des pouvoirs de sprites</strong> et <strong>des armes de base</strong> (Réglages Shadowrun, onglet Outils du MJ) valent <strong>Automatique</strong> : ils lisent le Mégapack en premier (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.lTXSR6fe0WFc3j8g]{chapitre 8.1}).</p></li>\n</ul>\n\n<h4>Pas à pas : le compléter avec vos livres</h4>\n<p>La Lite donne les chiffres et renvoie au livre ; le texte de la règle, c'est votre livre qui le donne. Complétez les copies de votre monde, jamais le compendium : un compendium de module est remis à neuf à chaque mise à jour.</p>\n<ol>\n<li><p>Glissez l'objet ou l'acteur du compendium dans le monde (ou sur une fiche) : c'est cette copie que vous complétez.</p></li>\n<li><p>Ouvrez sa fiche : la description indique le livre et la page, par exemple « SR5 p. 429 ». Ajoutez-y, si vous le voulez, vos propres notes tirées de votre livre.</p></li>\n<li><p>Un objet manque ? Dupliquez un objet voisin de la Lite et changez ses valeurs d'après votre livre, ou créez-le depuis l'onglet <strong>Objets</strong> de la barre latérale.</p></li>\n<li><p>Rangez vos copies complétées dans un compendium du monde (onglet <strong>Compendiums</strong>, <strong>Créer un compendium</strong>) pour les retrouver d'un monde à l'autre.</p></li>\n</ol>\n\n<h4>Les macros du MJ</h4>\n<p>Le compendium <strong>SR5 - Macros</strong>, réservé au MJ, range dans le dossier <strong>Outils du MJ</strong> trois macros de réparation, utiles à un monde créé avec une version plus ancienne du système. Glissez-en une dans la barre de macros, puis cliquez dessus.</p>\n<ul>\n<li><p><strong>Activer les pouvoirs automatiques</strong> : coche les pouvoirs toujours actifs des esprits et créatures créés avant que le système ne le fasse seul. Une fenêtre propose l'acteur sélectionné ou tous les acteurs ; un résumé vous est chuchoté. La relancer ne change rien.</p></li>\n<li><p><strong>Convertir les esprits mentors</strong> : transforme les anciennes qualités « Esprit mentor (…) » en qualité liée à un objet Esprit mentor ; <strong>Annuler la conversion</strong> la défait. La relancer ne crée pas de doublon.</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/9-1-macros.webp\" width=\"432\" alt=\"Les macros du dossier « Outils du MJ ».\" /><figcaption><strong>Figure 9.1.2</strong> — Les macros du dossier « Outils du MJ ».</figcaption></figure>\n\n<h4>Ses réglages</h4>\n<p>Aucun : le Mégapack ne contient que des compendiums. Les joueurs et les joueuses peuvent consulter les objets, les acteurs et les tables ; seul le MJ voit les macros.</p>\n\n<h4>Références</h4>\n<ul>\n<li><p>Brutes et indice de professionnalisme (<em>Livre de base p. 380-383</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Macros\">wiki : Macros</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Navigateur-de-compendiums\">wiki : Navigateur de compendiums</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>@UUID[.lzkbmNtBmZsLbmuF]{9.2 Bibliothèque SR5} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lzkbmNtBmZsLbmuF",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.lzkbmNtBmZsLbmuF",
+      "name": "9.2 Bibliothèque SR5",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Bibliothèque SR5 - Foundry</strong> met les livres de Shadowrun 5 en journaux, pour lire une règle sans quitter Foundry : le livre de base, les suppléments de règles, les métroplexes, les catalogues et l'écran du MJ. Les autres modules (Vertige) y renvoient par des liens : un renvoi « voir p. 197 » ouvre la bonne page quand la Bibliothèque est active.</p>\n\n<h4>Pas à pas : l'activer et lire un livre</h4>\n<ol>\n<li><p>Installez-le, cochez <strong>Bibliothèque SR5 - Foundry</strong> dans <strong>Gérer les modules</strong> et sauvegardez.</p></li>\n<li><p>Dans l'onglet <strong>Compendiums</strong>, ouvrez <strong>Bibliothèque SR5</strong> : un dossier par livre.</p></li>\n<li><p>Ouvrez le journal d'un livre. Le plus souvent, un livre en a deux : <strong>SIGLE.1 - Titre</strong> pour le texte, <strong>SIGLE.2 - Encarts, Tables &amp; Tableaux</strong> pour ses encarts et ses tables, en images.</p></li>\n<li><p>Partez de la page <strong>MENU</strong> : c'est le sommaire du livre, chaque ligne mène à son chapitre. Au pied de chaque page, la ligne <strong>Backlinks</strong> remonte le fil (MENU › chapitre › page parente).</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-2-compendium.webp\" width=\"432\" alt=\"Le compendium « Bibliothèque SR5 » : un dossier par livre.\" /><figcaption><strong>Figure 9.2.1</strong> — Le compendium « Bibliothèque SR5 » : un dossier par livre.</figcaption></figure>\n\n<h4>Ce qu'il apporte à la table</h4>\n<ul>\n<li><p>Les livres consultables par tous : les joueurs et les joueuses ouvrent les journaux en lecture.</p></li>\n<li><p>Un second compendium, <strong>Tables du MJ</strong>, réservé au MJ : les temps de réponse des forces de l'ordre selon le niveau de sécurité de la zone (AAA à Z) (<em>Livre de base p. 358</em>), à tirer comme toute table (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.ajCgle1YU7wn4L1h]{chapitre 8.4}).</p></li>\n<li><p>Avec le module @UUID[.966hBDljLMgjHLBc]{Onglets de journal}, plusieurs pages d'un même livre ouvertes en onglets dans la même fenêtre.</p></li>\n</ul>\n\n<h4>Ses réglages</h4>\n<p>Aucun.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Une bibliothèque privée</p><p>La Bibliothèque reprend le texte de livres publiés : elle sert à votre table, elle ne se diffuse pas. Ce manuel ne la recopie jamais ; il cite les pages du livre, que vous retrouvez dans la Bibliothèque ou dans votre exemplaire.</p></div>\n\n<h4>Références</h4>\n<ul>\n<li><p>Temps de réponse des forces de l'ordre (<em>Livre de base p. 358</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.fRv6Sd5vjaHLoIFV]{9.1 Mégapack Lite} · @UUID[.tAowbLWNFsHQ1YfZ]{9.3 Matrice v1} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "tAowbLWNFsHQ1YfZ",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.tAowbLWNFsHQ1YfZ",
+      "name": "9.3 Matrice v1",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 — Matrice (règles maison)</strong> (« Matrice v1 » dans ce manuel) applique les Règles Maison de la Matrice : l'intérieur d'un serveur devient une carte, découpée en zones et en serveurs imbriqués (les « nids »), que l'on joue en même temps que la carte du bâtiment. Il fait tourner les CI au tour par tour, tient les pistes de Surveillance, place le spider, et range les fichiers dans les zones. Il ne modifie pas le système : sans lui, la Matrice suit le livre (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.8tsTkRwzpFwEKJHE]{partie 5}).</p>\n\n<h4>Pas à pas : l'activer</h4>\n<ol>\n<li><p>Installez le module, puis, dans le monde, ouvrez <strong>Paramètres</strong> › <strong>Gérer les modules</strong>.</p></li>\n<li><p>Cochez <strong>Shadowrun 5 — Matrice (règles maison)</strong>, puis <strong>Sauvegarder les paramètres de modules</strong>. Le Mégapack n'est pas obligatoire, mais ses serveurs, déjà typés et accompagnés de leurs CI, sont prêts à monter (@UUID[.fRv6Sd5vjaHLoIFV]{sa fiche}).</p></li>\n<li><p>Gardez un MJ connecté pendant la partie : c'est son client qui tient l'état de la Matrice (qui est où, les CI, les pistes).</p></li>\n</ol>\n\n<h4>Monter un serveur et ses nids</h4>\n<p>Le plus court : dans la console du spider (plus bas), <strong>Nouveau serveur…</strong> demande un nom, un indice et le type du serveur (<em>Kill Code p. 48-52</em>), pose son jeton sur la scène affichée et le monte d'un coup ; les appareils sélectionnés sur la scène lui sont asservis au passage. Pour un serveur qui existe déjà :</p>\n<ol>\n<li><p>Posez le jeton du serveur sur la scène du site (le bâtiment).</p></li>\n<li><p>Ouvrez sa couronne, cliquez sur le serveur : <strong>Monter le serveur…</strong> (MJ seul). La fenêtre propose un indice pour chaque nid, d'après l'indice et le Traitement de données du serveur ; un écart au livre s'affiche en direct (<em>Kill Code p. 51</em>). Chaque nid reçoit un type, et la fenêtre propose le modèle « vitrine et données » du livre.</p></li>\n<li><p>Cliquez sur <strong>Monter</strong>. La scène « <i>serveur</i> — serveur » apparaît (hors de la barre de navigation), avec ses zones de couleur : Hall, Infrastructure, Sécurité, Poste du spider, Archives, Coffre, fusionnées dans un petit serveur. Les nids rejoignent le dossier d'acteurs « Matrice — <i>serveur</i> ».</p></li>\n<li><p>Le même menu propose ensuite <strong>Scène du serveur</strong> et <strong>Ajouter un nid…</strong>. Rattachez les appareils du site (caméras, portes) à leur zone par <strong>Rattacher à une zone…</strong> dans leur couronne : leur double apparaît sur la scène du serveur.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-monter.webp\" width=\"658\" alt=\"La fenêtre « Monter le serveur » d'un serveur de données d'indice 6 : ① l'indice et le Traitement de données modifié, ② les indices proposés pour le nid de sécurité et le nid de données.\" /><figcaption><strong>Figure 9.3.1</strong> — La fenêtre « Monter le serveur » d'un serveur de données d'indice 6 : ① l'indice et le Traitement de données modifié, ② les indices proposés pour le nid de sécurité et le nid de données.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-scene.webp\" width=\"1489\" alt=\"La scène d'un serveur d'indice 7 monté : ① le serveur extérieur (Hall, Infrastructure), ② le nid de sécurité (Sécurité, Poste du spider), ③ le nid de données (Archives, Coffre), avec le jeton de ses fichiers au Coffre, ④ les portes des deux nids, dans Infrastructure.\" /><figcaption><strong>Figure 9.3.2</strong> — La scène d'un serveur d'indice 7 monté : ① le serveur extérieur (Hall, Infrastructure), ② le nid de sécurité (Sécurité, Poste du spider), ③ le nid de données (Archives, Coffre), avec le jeton de ses fichiers au Coffre, ④ les portes des deux nids, dans Infrastructure.</figcaption></figure>\n\n<h4>Les CI et le combat commun</h4>\n<ul>\n<li><p><strong>Le combat commun</strong> : dès qu'un hacker entre dans le serveur (<strong>Entrer dans le serveur</strong>, dans la couronne du serveur, une mark requise), le MJ choisit d'entrer avec le combat commun, sans combat, ou de refuser. Le combat commun réunit la scène du site et celle du serveur : un seul ordre d'initiative pour toute la table, que l'on soit en RV ou dans le couloir. Il prend aussi les personnages des scènes que regardent les joueurs et les joueuses (la rigger restée dans son fourgon).</p></li>\n<li><p><strong>L'action offerte</strong> : après un Hacker à la volée, un Passer en force ou une Perception matricielle réussis, une carte <strong>Action offerte</strong> propose au joueur ou à la joueuse une autre action sur la même cible, sans coût d'action, parmi celles dont il ou elle tient les marks, en boutons côte à côte ; les exceptions de la table révisée sont appliquées (pas d'Attaque après Hacker à la volée, pas de Corruption après Passer en force). Réglage <strong>Aide à l'action enchaînée</strong>, coché par défaut.</p></li>\n<li><p><strong>Les CI tour par tour</strong> : à chaque nouveau tour, le module retire les CI brickées, avance chaque CI d'une zone vers son intrus, et fait lancer une CI par serveur en alerte, dans sa zone de naissance, au plus Indice CI actives (<em>Livre de base p. 249, Kill Code p. 50</em>). Il résume le tour au MJ. Une CI n'attaque que dans sa zone.</p></li>\n<li><p><strong>L'alerte</strong> se met et se lève dans la couronne du serveur extérieur, ou dans la fenêtre des pistes ; elle est partagée par toute la famille de serveurs (<em>Kill Code p. 51</em>).</p></li>\n</ul>\n\n<h4>La console du spider</h4>\n<p>Dans les outils des jetons, l'icône de l'agent ouvre la <strong>Console du spider</strong> (elle s'appelait « Pistes de la Matrice »), au style sombre du Concepteur quel que soit le thème, chaque bouton expliqué au survol ; elle défile quand elle dépasse la fenêtre. On y lance les CI, on y pose l'entrée du site d'un clic sur la carte (<strong>Poser une entrée du site</strong>, sans passer par les Régions de Foundry), et l'alarme du site encadre la carte du site en rouge pour toute la table. Elle montre aussi l'alerte de chaque serveur, l'alarme du site, et la tranche de Surveillance de chaque hacker (Calme, Frémissement, Tendu, Rouge, Convergence). Tout le monde peut l'ouvrir ; le chiffre reste au MJ, sauf réglage du système ou programme Surveillance. Le MJ y ajoute un jet fait hors du système (<strong>Ajouter des points</strong>), lance les <strong>2D6 du quart d'heure</strong> en secret (<em>Livre de base p. 233</em>), et pose le jeton <strong>Intervention</strong> de la sécurité. À 40, son mot porte <strong>Appliquer la convergence</strong> : le module ne la déclenche jamais seul (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.evin7gKCPk1ou1nK]{la convergence}).</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-pistes.webp\" width=\"708\" alt=\"La console du spider, vue du MJ : ① l'alerte du serveur (Calme), ② l'alarme du site (Silence), ③ le hacker, sa tranche et le chiffre que le MJ lit, ④ les boutons du MJ (Ajouter des points, 2D6 du quart d'heure, Intervention).\" /><figcaption><strong>Figure 9.3.3</strong> — La console du spider, vue du MJ : ① l'alerte du serveur (Calme), ② l'alarme du site (Silence), ③ le hacker, sa tranche et le chiffre que le MJ lit, ④ les boutons du MJ (Ajouter des points, 2D6 du quart d'heure, Intervention).</figcaption></figure>\n\n<h4>Le spider</h4>\n<p>Dans la couronne du serveur extérieur, <strong>Spiders du serveur…</strong> désigne un ou plusieurs personnages, posés au Poste du spider. Le spider compte comme propriétaire du serveur et de ses nids (<em>Kill Code p. 51</em>) : il franchit un sas sans mark, déclenche ou coupe l'alarme du site, rappelle et relance les CI (une action simple chacune, arbitrage de DjamZ du 08/10). Pour le jouer honnêtement, <strong>Voir comme ce spider</strong>, dans la couronne de son icône, estompe chez le MJ seul les jetons que le spider ne voit pas.</p>\n\n<h4>Les technomanciens et leurs sprites</h4>\n<p>Un technomancien passe partout où passe un decker (marks, entrée, cloisons, sas, CI, pistes) ; son persona incarné quitte le serveur quand il n'est plus éveillé (<em>Livre de base p. 236</em>). Le menu radial d'une icône lui propose « Tisser : … » pour chacune de ses formes complexes qui peut la viser, et <strong>Décompiler</strong> sur un sprite, avec le Technodrain sur la carte (<em>Livre de base p. 252-259</em>). Un sprite entre dans le serveur avec sa propre mark ; celui d'un spider est du côté du serveur (choix du module). Son pouvoir Suppression retarde le prochain lancement de CI, et « Fin de mission » le fait sortir après une tâche à distance (<em>Livre de base p. 258-260</em>). Le guide du module a une page « Les technomanciens et leurs sprites ».</p>\n\n<h4>Les fichiers</h4>\n<p>Chaque fichier d'un serveur monté est rangé dans une zone, le Coffre par défaut ; le MJ le range ailleurs par <strong>Ranger dans une zone…</strong> dans sa couronne. Il ne se voit que depuis son serveur, et ne se vise que depuis sa zone : ailleurs, ses actions sont grisées avec la raison. Le reste (protection, bombe, actions) est celui du système (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.uEgW7aWe3KemVueX]{les fichiers}).</p>\n\n<h4>Ses réglages</h4>\n<ul>\n<li><p><strong>Annoncer au MJ les entrées de zone</strong> (décoché) : une notification chez le MJ seul quand une icône entre dans une zone.</p></li>\n<li><p><strong>Alerte des serveurs quand ils repèrent un intrus</strong> : <strong>Le MJ décide</strong> (par défaut, un mot avec le bouton <strong>Mettre en alerte</strong>) ou <strong>Le serveur se met en alerte tout seul</strong> (<em>Livre de base p. 249</em>).</p></li>\n<li><p><strong>Les yeux du serveur (spider et Patrouilleuse)</strong> (coché) : quand une icône bouge dans un serveur, le spider et la Patrouilleuse la regardent ; une icône en mode silencieux demande un test de Perception matricielle opposé, proposé par un bouton (<em>Livre de base p. 236</em>).</p></li>\n<li><p><strong>Aide à l'action enchaînée (règle maison)</strong> (coché) : la carte « Action offerte », plus haut.</p></li>\n<li><p>Le reste se règle serveur par serveur, dans sa couronne : ordre de lancement des CI, ronde de la Patrouilleuse, spiders.</p></li>\n</ul>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — ce que le module propose</p><p>Les zones et les nids, et le prix d'une cloison (une action simple) ; le combat commun pour toute la table dès l'entrée du hacker (Règles Maison, § 5) ; la connexion directe depuis la zone qui commande l'appareil ; la zone de naissance fixe des CI ; le jeton d'intervention sur le site ; l'action enchaînée de la table des actions révisée, offerte par une carte. Les points que les Règles Maison laissent ouverts suivent les arbitrages de DjamZ, datés dans le guide.</p></div>\n\n<h4>Où est son guide</h4>\n<p>Le module a son propre guide, en journal : compendium <strong>Matrice — Guide du MJ</strong>, dossier <strong>Matrice (règles maison)</strong>. Il détaille chaque règle, sa source (livre, Règles Maison, arbitrage, choix du module), la table des actions révisée, et la liste de ce qui reste au MJ. Ce manuel ne le recopie pas.</p>\n\n<h4>Ce que le module ne fait pas</h4>\n<ul>\n<li><p>Il ne livre aucune image : cartes, jetons et image du jeton d'intervention sont à fournir.</p></li>\n<li><p>Il ne déplace personne d'une scène à l'autre : donnez la scène du serveur aux joueurs et aux joueuses.</p></li>\n<li><p>Il n'automatise pas ce que fait l'alarme du site sur le bâtiment : il l'affiche, le MJ en tire les suites.</p></li>\n<li><p>Il prévient le MJ sans jamais refuser : un sas franchi sans mark, une CI qui attaque hors de sa zone, un saut entre zones non voisines arrivent avec un bouton <strong>Renvoyer</strong> ou un avertissement.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Serveurs, CI, convergence dans un serveur : (<em>Livre de base p. 247-251</em>). Serveurs imbriqués, spider, types de serveurs : (<em>Kill Code p. 48-52</em>). Score de Surveillance : (<em>Livre de base p. 233</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.lzkbmNtBmZsLbmuF]{9.2 Bibliothèque SR5} · @UUID[.fgsrf6pppb5iMO3G]{9.4 Vertige} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fgsrf6pppb5iMO3G",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.fgsrf6pppb5iMO3G",
+      "name": "9.4 Vertige",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 — Vertige (Xama_)</strong> apporte <i>Vertige</i>, supplément amateur francophone de Xama_ pour Shadowrun 5 : son texte complet en journaux, ses tableaux, et six mécaniques que le MJ active une à une. Il ne modifie aucun fichier du système. Ses compendiums d'objets existent déjà, rangés par chapitre, mais sont encore vides : ils se rempliront dans les prochaines versions.</p>\n\n<h4>Pas à pas : l'activer</h4>\n<ol>\n<li><p>Installez-le, cochez <strong>Shadowrun 5 — Vertige (Xama_)</strong> dans <strong>Gérer les modules</strong> et sauvegardez. Activez aussi la Bibliothèque (@UUID[.lzkbmNtBmZsLbmuF]{9.2}) : sans elle, les renvois de Vertige aux livres s'affichent comme des liens cassés.</p></li>\n<li><p>Ouvrez <strong>Paramètres</strong> › <strong>Configurer les paramètres</strong>, puis l'onglet <strong>Shadowrun 5 — Vertige (Xama_)</strong> dans la colonne de gauche.</p></li>\n<li><p>Cochez les mécaniques que votre table joue, puis <strong>Sauvegarder</strong>. La page se recharge.</p></li>\n</ol>\n\n<h4>Ses réglages</h4>\n<p>Sept cases de monde, décochées par défaut, que seul le MJ coche, et deux heures réglables. Une case décochée ne retire aucun objet des compendiums : elle coupe l'automatisation et cache les panneaux.</p>\n<table>\n<thead><tr><th>Réglage</th><th>Ce qu'il ajoute</th></tr></thead>\n<tbody>\n<tr><td><strong>Gamme omégaware</strong></td><td>La gamme « Omégaware » (« Oméga » dans la boutique) dans les listes de gammes des implants et dans la boutique, pour le cyberware seulement.</td></tr>\n<tr><td><strong>Blessures aggravées des armes de Vertige</strong></td><td>Les armes de Vertige qui l'indiquent laissent des blessures aggravées, posées automatiquement ; pour le reste, le MJ marque la case d'un clic droit. Les blessures aggravées suivent la règle de <i>Howling Shadows</i> (<em>Howling Shadows p. 213</em>), que le système gère déjà.</td></tr>\n<tr><td><strong>Charges de mana</strong></td><td>Un panneau « Charges de mana (Vertige) » sous les métamagies de la fiche : dépenser une charge (un message de tchat le dit), et le bouton du MJ pour remplir la réserve. Recharge à l'aube et au crépuscule de l'horloge du monde, à 6 h et 18 h (deux réglages de l'heure).</td></tr>\n<tr><td><strong>Formations (règle optionnelle)</strong></td><td>Un panneau « Formations (Vertige) » sous les qualités, avec le bouton <strong>Monter de grade</strong>.</td></tr>\n<tr><td><strong>Technomancien nanoadepte</strong></td><td>Un panneau « Nanorésonance » sur la fiche d'un technomancien : le déclarer nanoadepte, faire d'un sprite compilé un nanosprite.</td></tr>\n<tr><td><strong>Lasers Shiawaze : une unité par tir</strong></td><td>Une unité de puissance par tir au lieu de 3 (Yōroppa, Sora 5), comme l'auteur le suggère.</td></tr>\n<tr><td><strong>Plafond d'invocation (règle optionnelle)</strong></td><td>Un message de tchat quand la Puissance d'un esprit ou le niveau d'un sprite dépasse la Magie ou la Résonance de qui l'invoque ou le compile.</td></tr>\n</tbody>\n</table>\n<figure><img src=\"systems/sr5/manuel/captures/9-4-reglages.webp\" width=\"812\" alt=\"Les réglages de Vertige dans un monde neuf : les cases décochées, puis les deux heures des charges de mana.\" /><figcaption><strong>Figure 9.4.1</strong> — Les réglages de Vertige dans un monde neuf : les cases décochées, puis les deux heures des charges de mana.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — ce que le module propose</p><p>Tout ce que Vertige ajoute vient d'un supplément amateur, et non des livres de Catalyst : ce sont des Règles Maison, que vous activez case par case. Le système n'en contient aucune trace. Les passages encore en relecture chez l'auteur sont signalés dans les journaux par un encadré « À confirmer ».</p></div>\n\n<h4>Où est son guide</h4>\n<p>Dans le compendium <strong>Vertige — Journaux</strong>, le journal <strong>Vertige — Guide du module</strong> détaille chaque mécanique ; ce manuel ne le recopie pas. Le même compendium contient le texte du supplément (journal <strong>Vertige</strong>, avec sa page MENU) et ses tableaux (<strong>Vertige — Tables</strong>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-4-guide.webp\" width=\"972\" alt=\"Le journal « Vertige — Guide du module ».\" /><figcaption><strong>Figure 9.4.2</strong> — Le journal « Vertige — Guide du module ».</figcaption></figure>\n\n<h4>Références</h4>\n<ul>\n<li><p>Blessures aggravées (<em>Howling Shadows p. 213</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.tAowbLWNFsHQ1YfZ]{9.3 Matrice v1} · @UUID[.A4PSjpdZCfh8hG2j]{9.5 Concepteur de personnage} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "A4PSjpdZCfh8hG2j",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.A4PSjpdZCfh8hG2j",
+      "name": "9.5 Concepteur de personnage",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 — Concepteur de personnage</strong> ajoute un assistant de création en onze étapes : le joueur ou la joueuse remplit, le MJ relit et valide. Il connaît les trois méthodes (priorités, Sum-to-Ten, Karma), les tables du livre et, en option, celles des Règles Maison, et compte le budget à chaque clic. Il ne modifie jamais le système : il lit ses réglages et écrit sur la fiche ce que l'assistant y pose.</p>\n\n<h4>Pas à pas : l'activer</h4>\n<ol>\n<li><p>Installez le module, puis, dans le monde, ouvrez <strong>Paramètres</strong> › <strong>Gérer les modules</strong>.</p></li>\n<li><p>Cochez <strong>Shadowrun 5 — Concepteur de personnage</strong>. Il a besoin du <strong>Mégapack</strong> (@UUID[.fRv6Sd5vjaHLoIFV]{sa fiche}) : ses qualités, pouvoirs, sorts et mentors alimentent les listes de l'assistant.</p></li>\n<li><p>Cliquez sur <strong>Sauvegarder les paramètres de modules</strong> ; la page se recharge.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-5-activer.webp\" width=\"692\" alt=\"Le module dans « Gérer les modules », filtré sur son nom.\" /><figcaption><strong>Figure 9.5.1</strong> — Le module dans « Gérer les modules », filtré sur son nom.</figcaption></figure>\n\n<h4>Ses réglages</h4>\n<ul>\n<li><p>Les réglages du monde : <strong>Méthode de création</strong> (Priorités), <strong>Tables de priorités</strong> (Tables du livre), <strong>Règle 7 des Règles Maison (Essence des non-Éveillés)</strong> (cochée, sans effet avec les tables du livre), trois Règles Maison décochées par défaut (<strong>Spécialisations et compétences d'un groupe payables en points</strong>, <strong>Initiation et submersion à la création</strong>, <strong>Monades jouables</strong>), <strong>Création d'IA</strong> (Le livre, ou Révisée en Règle Maison), et les deux dossiers d'images du générateur de PNJ (<strong>dossier des portraits</strong>, <strong>dossier des jetons</strong>).</p></li>\n<li><p>Le niveau de jeu est celui de la boutique du système (<strong>Boutique : niveau de création</strong>, Réglages Shadowrun, onglet Boutique).</p></li>\n<li><p>La méthode et le Karma de départ se choisissent ensuite par personnage, quand le MJ le met en création ; le MJ peut aussi y fixer le niveau de jeu d'un personnage, qui prend alors le pas sur celui du monde.</p></li>\n<li><p>À l'étape Équipement, chaque objet acheté a sa ligne, son prix et sa corbeille, qui le rembourse grâce à la trace d'achat de la boutique (@UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.U3qRlskIsVJHr10O]{voir 1.4}).</p></li>\n</ul>\n<p>Le détail, captures comprises : @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.VBABjq532n1FCsGC]{préparer la création}.</p>\n\n<h4>Le générateur de PNJ</h4>\n<p>Le bouton <strong>Générateur de PNJ</strong> de l'onglet <strong>Acteurs</strong> (MJ seul) crée en quelques choix :</p>\n<ul>\n<li><p>une <strong>brute</strong> (jusqu'à 12 d'un coup, avec un lieutenant), un <strong>PNJ notable</strong> (deux moniteurs, vraie Chance), un <strong>contact</strong> (ajouté s'il le faut à la fiche d'un personnage joueur) ou un <strong>vendeur</strong> (sa boutique est celle du système, @UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.SyI6YSnFTX8x0idb]{voir 7.2}) ;</p></li>\n<li><p>d'après un archétype (28, dont 11 tirés des suppléments) ou un type de contact, un Professionnalisme (Inexpérimentés, Préparés, Entraînés, Élite (<em>Livre de base p. 382</em>)) ou une Influence, et un métatype ;</p></li>\n<li><p>statistiques, compétences et matériel du Mégapack remplis d'office, par palier, avec sorts, formes complexes, focus et pouvoirs d'adepte quand il le faut (<em>Livre de base p. 382-394, Run Faster p. 174-189</em>) ;</p></li>\n<li><p>un nom sous trois formes au choix (nom des rues, Prénom Nom, surnom seul), un portrait et un jeton tirés dans les dossiers réglés (un sous-dossier au nom de l'archétype lui est réservé), rangés dans le dossier d'acteurs choisi.</p></li>\n</ul>\n<p>Limites connues : pas d'esprit ni de sprite lié, et les drones du rigger arrivent sans autosoft réglé ; on ne part pas encore d'une brute du Mégapack comme gabarit.</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-5-generateur.webp\" width=\"468\" alt=\"Le générateur de PNJ : une brute, son archétype, son Professionnalisme, le nombre et le dossier.\" /><figcaption><strong>Figure 9.5.2</strong> — Le générateur de PNJ : une brute, son archétype, son Professionnalisme, le nombre et le dossier.</figcaption></figure>\n\n<h4>Où est son guide</h4>\n<p>Le guide du module, c'est la partie 1 de ce manuel : @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.VBABjq532n1FCsGC]{préparer} (MJ), @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.Itcz2SZs2GUqfKlf]{l'assistant pas à pas}, @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.giRIqitwxkkaI1Z6]{les trois méthodes}, @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.U3qRlskIsVJHr10O]{l'équipement}, @UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.HhZRH1LpORX1Rpu0]{soumettre, renvoyer, valider}.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — ce que le module propose</p><p>Les tables de priorités des Règles Maison (trois niveaux, avec leur horizontalité), pour les priorités et le Sum-to-Ten ; la règle 7 (Essence des non-Éveillés divisée par deux) avec sa propre case ; le type « Non implanté » en Élite. Deux cases à part : les compétences d'un groupe payées en points, et l'initiation ou la submersion dès la création (10 + grade × 3 Karma, une métamagie ou un écho par grade), que le livre ne prévoit pas (<em>Livre de base p. 68</em>). Les points que les Règles Maison laissent dans l'ombre suivent les arbitrages de DjamZ, cités au récapitulatif de chaque personnage.</p></div>\n\n<h4>Ce que le module ne fait pas</h4>\n<ul>\n<li><p>Les êtres singuliers (infectés, drakes de <i>Dark Terrors</i>, changelins du GRIME…), choisis dans la section <strong>Être singulier</strong> de l'étape Métatype : le module compte leur coût en Karma, mais leurs pouvoirs et leurs traits restent à valider par le MJ. Les métavariants, métaconsciences et zoocanthropes se choisissent, eux, à l'étape Métatype.</p></li>\n<li><p>Pas de personnages prétirés.</p></li>\n<li><p>Le réglage <strong>Mode création</strong> de la boutique ne met aucun personnage en création pour l'assistant : seul le menu de la fiche le fait.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Création de personnage (<em>Livre de base p. 62-107</em>) ; Sum-to-Ten et création au Karma (<em>Run Faster p. 138-142</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.fgsrf6pppb5iMO3G]{9.4 Vertige} · @UUID[.UYSHraFs1imHmXuo]{9.6 Effets visuels (SFX)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "UYSHraFs1imHmXuo",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.UYSHraFs1imHmXuo",
+      "name": "9.6 Effets visuels (SFX)",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 - Effets visuels (SFX)</strong> anime les jets du système sur la carte, sans rien changer aux règles : les tirs (lancés au jet de défense, touchés ou ratés, autant de balles que le mode de tir en tire (<em>Livre de base p. 180</em>)), le corps à corps, les grenades (<em>Livre de base p. 182</em>), les sorts, les rituels et les préparations, le Drain, l'arrivée et le départ des esprits, des sprites et des drones, la Matrice, les échecs critiques, les soins. Un sort de mana ne se voit qu'en perception ou en projection astrale ; ce qui se passe dans la Matrice n'est vu que des personnes connectées.</p>\n\n<h4>Pas à pas : l'installer et l'activer</h4>\n<ol>\n<li><p>Installez d'abord, depuis la liste des modules de Foundry, <strong>Sequencer</strong> (obligatoire : sans lui, aucune animation) et <strong>JB2A</strong>, la bibliothèque d'animations : la version gratuite, <strong>JB2A - Jules and Ben's Animated Assets - Free Content</strong>, ou la version Patreon, que le module préfère d'office si elle est là.</p></li>\n<li><p>Facultatif : <strong>Automated Animations</strong>, et <strong>Foundry Summons</strong> pour le bouton « Poser sur la carte » (ci-dessous).</p></li>\n<li><p>Installez <strong>Shadowrun 5 - Effets visuels (SFX)</strong>, puis cochez-le avec ses compagnons dans <strong>Gérer les modules</strong> et sauvegardez.</p></li>\n</ol>\n\n<h4>Ses réglages</h4>\n<p>Un seul bouton, réservé au MJ : <strong>Paramètres</strong> › <strong>Configurer les paramètres</strong>, onglet <strong>Shadowrun 5 - Effets visuels (SFX)</strong>, <strong>Réglages des animations</strong> › <strong>Ouvrir</strong>. La fenêtre range les situations par groupe (Tirs, Corps à corps et combat spécial, Grenades, Sorts…) ; chaque ligne montre, en petit, l'animation jouée par défaut.</p>\n<ol>\n<li><p>Cliquez sur le lien <strong>visualiseur de Sequencer</strong>, en haut de la fenêtre, trouvez l'animation voulue et copiez son chemin.</p></li>\n<li><p>Collez-le dans la case de la situation. Sélectionnez un jeton sur la carte, puis cliquez sur le bouton de lecture de la ligne pour un aperçu.</p></li>\n<li><p>Cliquez sur <strong>Enregistrer</strong>. La gomme d'une ligne la remet à l'animation par défaut ; une case vide, c'est l'animation par défaut.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-6-reglages.webp\" width=\"832\" alt=\"La fenêtre « Réglages des animations », le groupe « Tirs » déplié.\" /><figcaption><strong>Figure 9.6.1</strong> — La fenêtre « Réglages des animations », le groupe « Tirs » déplié.</figcaption></figure>\n\n<h4>Le bouton « Poser sur la carte »</h4>\n<p>Quand Foundry Summons est actif, un viseur apparaît sur la fiche, à côté de chaque esprit, sprite, drone, véhicule ou agent une fois créé : il ouvre le viseur de Foundry Summons pour poser son jeton sur la scène.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Automated Evocations</p><p>La documentation du module conseille de désactiver Automated Evocations, s'il est installé : Foundry Summons le remplace.</p></div>\n\n<h4>Où est son guide</h4>\n<p>Le module n'a pas de journal : sa documentation (sommaire, tutoriels de personnalisation, présentation) est livrée avec lui, dans son dossier <strong>docs</strong>.</p>\n\n<h4>Références</h4>\n<ul>\n<li><p>Modes de tir (<em>Livre de base p. 180</em>) ; grenades (<em>Livre de base p. 182</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.A4PSjpdZCfh8hG2j]{9.5 Concepteur de personnage} · @UUID[.ycGY2qxSPltoccyr]{9.7 Aventures} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ycGY2qxSPltoccyr",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.ycGY2qxSPltoccyr",
+      "name": "9.7 Aventures",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Trois modules livrent une aventure prête à jouer : scènes, acteurs et journaux, réunis dans un compendium d'aventure. Aucun n'a de réglage.</p>\n<table>\n<thead><tr><th>Module</th><th>Contenu</th></tr></thead>\n<tbody>\n<tr><td><strong>SR5 - Lockdown</strong></td><td>La campagne <i>Lockdown</i>, à Boston : 2 scènes, 52 acteurs, 3 journaux.</td></tr>\n<tr><td><strong>Shadowrun 5 - Avis de Tempête</strong></td><td>Les événements de Denver du supplément <i>Avis de Tempête</i> : 11 scènes, 69 acteurs, 10 journaux.</td></tr>\n<tr><td><strong>SR Chicago</strong></td><td>Les lieux de Chicago en scènes et en journaux, en français. Son compendium est déclaré pour un autre système (Anarchy) : vérifiez qu'il apparaît dans votre monde avant de compter dessus.</td></tr>\n</tbody>\n</table>\n\n<h4>Pas à pas : importer une aventure</h4>\n<ol>\n<li><p>Faites une sauvegarde du monde : l'importation crée de nombreux documents d'un coup.</p></li>\n<li><p>Installez et activez le module de l'aventure, puis ouvrez son compendium dans l'onglet <strong>Compendiums</strong>.</p></li>\n<li><p>Ouvrez l'aventure : la fenêtre résume ce qu'elle contient. Cliquez sur <strong>Importer l'aventure</strong>.</p></li>\n<li><p>Les scènes, les acteurs et les journaux arrivent dans le monde, rangés dans leurs dossiers.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-7-importer.webp\" width=\"560\" alt=\"La fenêtre de l'aventure « Campagne Lockdown », avant l'importation.\" /><figcaption><strong>Figure 9.7.1</strong> — La fenêtre de l'aventure « Campagne Lockdown », avant l'importation.</figcaption></figure>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Premiers-pas-MJ\">wiki : Premiers pas du MJ</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.UYSHraFs1imHmXuo]{9.6 Effets visuels (SFX)} · @UUID[.966hBDljLMgjHLBc]{9.8 Onglets de journal} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "966hBDljLMgjHLBc",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.966hBDljLMgjHLBc",
+      "name": "9.8 Onglets de journal",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Onglets de journal</strong> ouvre plusieurs pages d'un même journal en onglets dans une seule fenêtre, comme dans un navigateur : une règle et sa table côte à côte, sans repasser par le sommaire. Il sert à tous les journaux, ceux de la Bibliothèque, de Vertige et de ce manuel compris, et ne dépend d'aucun système.</p>\n\n<h4>Pas à pas : ouvrir des onglets</h4>\n<ol>\n<li><p>Le MJ coche <strong>Onglets de journal</strong> dans <strong>Gérer les modules</strong> et sauvegarde.</p></li>\n<li><p>Ouvrez un journal. Dans son sommaire, ou sur un lien vers une autre page du même journal, faites <strong>Ctrl+clic</strong> (ou un clic de la molette) : la page s'ouvre dans un nouvel onglet.</p></li>\n<li><p>Cliquez sur un onglet pour l'afficher. Sa croix, ou un clic de la molette, le ferme. La barre n'apparaît qu'à partir de deux onglets, et le dernier ne se ferme pas.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-8-onglets.webp\" width=\"1012\" alt=\"Le livre de base de la Bibliothèque, avec deux pages ouvertes en plus par Ctrl+clic dans le sommaire.\" /><figcaption><strong>Figure 9.8.1</strong> — Le livre de base de la Bibliothèque, avec deux pages ouvertes en plus par Ctrl+clic dans le sommaire.</figcaption></figure>\n\n<h4>Ses réglages</h4>\n<ul>\n<li><p><strong>Basculer sur le nouvel onglet</strong> (décoché), un réglage personnel : coché, un Ctrl+clic affiche aussitôt l'onglet qu'il ouvre ; décoché, l'onglet s'ouvre sans quitter la page en cours.</p></li>\n<li><p>Les onglets ouverts sont retenus pour chaque personne et chaque journal.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Avec Monk's Enhanced Journal</p><p>Si le module Monk's Enhanced Journal est actif, Onglets de journal se met en veille, et le MJ en est prévenu : les deux modules changent la même fenêtre. Gardez l'un ou l'autre.</p></div>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Aide-en-jeu\">wiki : Aide en jeu</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.ycGY2qxSPltoccyr]{9.7 Aventures} · @UUID[.5wo5nmdI2GEDvesT]{9.9 Topologie corporatiste} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "5wo5nmdI2GEDvesT",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.5wo5nmdI2GEDvesT",
+      "name": "9.9 Topologie corporatiste",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 — Topologie corporatiste</strong> montre la carte des mégacorporations du Sixième Monde : qui est allié à qui, qui se bat contre qui, leurs filiales, et comment cela change d'une époque à l'autre (2072, 2075-2079, 2080). C'est du contenu de campagne, sans aucune règle : il ne modifie pas le système. Les logos des corporations sont des créations de DjamZ, livrées avec le module.</p>\n\n<h4>Pas à pas : ouvrir et lire la carte</h4>\n<ol>\n<li><p>Activez <strong>Shadowrun 5 — Topologie corporatiste</strong> dans <strong>Gérer les modules</strong>.</p></li>\n<li><p>Ouvrez la carte par le bouton <strong>Topologie corporatiste</strong> des outils des Notes (barre de gauche), ou en tête de l'onglet <strong>Journal</strong>.</p></li>\n<li><p>Survolez une corporation pour isoler ses alliés (trait plein) et ses rivaux (pointillé rouge) ; cliquez dessus pour ouvrir son dossier à droite : siège, direction, rang, filiales, relations, personnages, notes. Les époques se choisissent en haut, les filtres (AAA, AA, filiales, secteurs, recherche) à côté.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-9-carte.webp\" width=\"1528\" alt=\"La carte 2075-2079, une corporation cliquée et son dossier ouvert à droite.\" /><figcaption><strong>Figure 9.9.1</strong> — La carte 2075-2079, une corporation cliquée et son dossier ouvert à droite.</figcaption></figure>\n\n<h4>Ce que fait le MJ</h4>\n<ul>\n<li><p><strong>Édition</strong> : déplacer les corporations, en créer, en retirer, ajouter filiales et relations, réécrire le dossier d'une époque, choisir les logos par le sélecteur de fichiers.</p></li>\n<li><p>Déposer un acteur du monde sur une corporation pour en faire un de ses personnages, ou créer une fiche libre ; écrire des notes de table.</p></li>\n<li><p>Relier chaque corporation à une faction de la fenêtre des factions du système (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.HzE2wFoGu9CxID8V]{voir 7.2}) : le bouton à côté ouvre cette fenêtre.</p></li>\n<li><p><strong>Montrer aux joueurs et joueuses</strong> (l'œil, en haut à droite) ouvre la carte chez toute la table. Notes, personnages et renseignements naissent cachés ; l'œil barré les révèle un par un, et la faction reliée reste visible du MJ seul.</p></li>\n</ul>\n\n<h4>Ses réglages</h4>\n<ul>\n<li><p><strong>Carte ouverte aux joueurs et joueuses</strong> (monde) : décoché, seul le MJ l'ouvre ou la montre.</p></li>\n<li><p><strong>Flux animé</strong> et <strong>Intensité du néon</strong> (personnels) : pour les machines lentes, ou le goût de chacun.</p></li>\n</ul>\n\n<h4>Où est son guide</h4>\n<p>Le module n'a pas de journal : son fichier <strong>README.md</strong> en tient lieu. Ce manuel n'en dit pas plus.</p>\n\n<h4>Références</h4>\n<ul>\n<li><p>Réputation de faction : (<em>Cutting Aces p. 156-160</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.966hBDljLMgjHLBc]{9.8 Onglets de journal} · @UUID[.NDHhxHQPTq63Zsd8]{9.10 Arts martiaux révisés} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NDHhxHQPTq63Zsd8",
+      "_key": "!journal.pages!twKdAaCtgRZ6Ji0d.NDHhxHQPTq63Zsd8",
+      "name": "9.10 Arts martiaux révisés",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le module <strong>Shadowrun 5 — Arts martiaux révisés</strong> apporte « Shadowrun 5.5 : Arts martiaux », une révision des arts martiaux écrite par DjamZ et Adrwen : 48 styles et 70 techniques en compendiums, et le texte complet en journal. Il ne modifie pas le système, et ne change rien tant que son réglage est décoché : les arts martiaux du livre restent tels quels (<em>Run & Gun p. 128</em>).</p>\n\n<h4>Pas à pas : l'activer</h4>\n<ol>\n<li><p>Installez-le, cochez <strong>Shadowrun 5 — Arts martiaux révisés</strong> dans <strong>Gérer les modules</strong> et sauvegardez.</p></li>\n<li><p>Ouvrez <strong>Paramètres</strong> › <strong>Configurer les paramètres</strong>, l'onglet du module, et cochez <strong>Utiliser les arts martiaux révisés</strong>. Sauvegardez.</p></li>\n<li><p>Les styles et les techniques se trouvent dans les compendiums <strong>Arts martiaux révisés — Styles</strong> et <strong>— Techniques</strong> ; glissez-les sur une fiche comme les techniques du livre.</p></li>\n</ol>\n\n<h4>Ce qu'il change, réglage coché</h4>\n<ul>\n<li><p>Un style apporte sa <strong>technique spéciale</strong>, marquée « offerte » sur la fiche.</p></li>\n<li><p>Une technique ne s'ajoute que par un style connu qui donne sa catégorie (Arme, Frappe, Lutte, Mobilité ; Générale pour tout style). Une technique cumulable se reprend par un second style, deux fois au plus. Une technique Arme et Frappe s'apprend « (armé) » ou « (mains nues) », et sa réduction de tir ciblé ne vaut que pour ces attaques-là.</p></li>\n<li><p>À chaque ajout, une fenêtre propose de dépenser le Karma (7 pour un style, 5 pour une technique ; « Non » pour un ajout offert ou en création), et le tchat rappelle la durée d'apprentissage (1 mois, 2 semaines).</p></li>\n<li><p>Une technique du livre est refusée au joueur ou à la joueuse, avec son équivalent révisé ; le MJ est averti et peut l'ajouter lui-même.</p></li>\n<li><p>Les effets chiffrés passent par les effets du système : réductions de tir ciblé, défenses, cases de la fenêtre de jet, VD à mains nues, allonge (Coup de pied, Balestra) et succès non limités en défense (Souplesse du roseau, Opposition en force) (@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.waObcY2cn3mPk14F]{les trois cibles d'effet, 2.6}).</p></li>\n<li><p>Le Concepteur de personnage propose ses styles à la création (@UUID[Compendium.sr5.manuel.JournalEntry.lqXMboHRWTo9phGa.JournalEntryPage.Itcz2SZs2GUqfKlf]{étape 6}).</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/9-10-reglage.webp\" width=\"812\" alt=\"Le réglage du module, décoché dans un monde neuf.\" /><figcaption><strong>Figure 9.10.1</strong> — Le réglage du module, décoché dans un monde neuf.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — ce que le module propose</p><p>Tout le module est une Règle Maison, que le MJ active d'une case. Les choix d'interprétation et les décisions de DjamZ du 14/10 sont notés dans son journal.</p></div>\n\n<h4>Où est son guide</h4>\n<p>Le compendium <strong>Arts martiaux révisés — Journal</strong> contient le texte complet, son récapitulatif et les décisions de DjamZ. Ce manuel ne le recopie pas.</p>\n\n<h4>Références</h4>\n<ul>\n<li><p>Arts martiaux du livre : (<em>Run & Gun p. 128-151</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.Idlu84bUqarNAO2B]{MENU}</p><p>← @UUID[.5wo5nmdI2GEDvesT]{9.9 Topologie corporatiste}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

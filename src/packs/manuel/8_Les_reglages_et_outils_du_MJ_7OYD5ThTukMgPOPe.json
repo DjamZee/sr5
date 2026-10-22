@@ -1,0 +1,635 @@
+{
+  "_id": "7OYD5ThTukMgPOPe",
+  "_key": "!journal!7OYD5ThTukMgPOPe",
+  "name": "8. Les réglages et outils du MJ",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 900000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "YmbfyxHueLNjNZjW",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.YmbfyxHueLNjNZjW",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie s'adresse au meneur ou à la meneuse de jeu (le MJ). Elle décrit ce qui se règle une fois, au début d'une campagne : la fenêtre <strong>Réglages Shadowrun</strong>, onglet par onglet, les verrous de règles, la préparation des scènes. Elle décrit ensuite les outils qui servent en cours de partie : les tables aléatoires, le navigateur de compendiums, les macros, le suivi du combat. Elle se termine par la liste de ce que le système ne fait pas et que le MJ fait à la main.</p>\n<p>Rien n'y est secret : un joueur ou une joueuse qui sait ce que le MJ a coché comprend mieux pourquoi le système refuse une action, ou la laisse passer.</p><table><tbody><tr><td><p>@UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.SdMk8BrzKmOhEBa1]{Les préréglages}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.VKT6oIqySJwy6PBf]{Combat, Magie, Matrice, Rigging}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.YUlceTQb8k3UOwpt]{Perception, corps, objets}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.wPt2x4zlmzqh8foq]{Boutique et calendrier}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.lTXSR6fe0WFc3j8g]{Couronne du PAN, Outils du MJ, Interface}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.Mb92AaftdWYQADV5]{8.2 Les verrous de règles}</p></td><td><p>MJ</p></td></tr><tr><td><p>@UUID[.69OkRSC6h7elrvhm]{8.3 Scènes}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.mP1nsVy11CrAE7bb]{L'environnement, le bruit, le champ magique}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.rv2YfTdQozPnU7aw]{La vision partagée et les caméras}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.7q2auC5bZKVoSnL3]{Réglages liés et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.ajCgle1YU7wn4L1h]{8.4 Tables aléatoires}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.cAP5Y8oyenw1jDxy]{Tirer et distribuer}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.pI6V9DuKCcv2fm6I]{Un compendium comme une table}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.smS68CvNFbL5LZ4D]{Le navigateur de compendiums}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.758LhIGNVDOv83cf]{Les macros}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.zRGw517P44lsJVjH]{Remettre les actions à neuf}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.liiyBVr98ljgwBLZ]{Le registre des implants et le MJ actif}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.Y4eSypRXpSfL9lMo]{8.6 Ce que le système ne fait pas}</p></td><td><p>MJ</p></td></tr><tr><td><p>&emsp;@UUID[.bZ5q13RX4X1l7rMJ]{Combat, magie, Matrice}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.rCMp8mxpBtMnkwBg]{Corps, objets, véhicules, table}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QYyDfkWFmXpwqPaK",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.QYyDfkWFmXpwqPaK",
+      "name": "8.1 La fenêtre Réglages Shadowrun",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Tous les réglages du système sont réunis dans une seule fenêtre, rangée en onglets : les règles optionnelles des suppléments, les chiffres de la boutique, le calendrier, l'affichage. Un monde neuf démarre avec les valeurs du livre de base : vous n'avez rien à toucher pour jouer selon le livre. Ce chapitre vous dit, onglet par onglet, ce que chaque case change, pour que vous ne cochiez que ce que votre table veut vraiment.</p>\n\n<h4>Pas à pas : ouvrir la fenêtre</h4>\n<ol>\n<li><p>Ouvrez l'onglet <strong>Paramètres</strong> (la roue, en bas de la barre latérale), puis <strong>Configurer les paramètres</strong>.</p></li>\n<li><p>Dans la partie du système, cliquez sur <strong>Ouvrir les réglages</strong>. La fenêtre <strong>Réglages Shadowrun</strong> s'ouvre (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.qQYev8qvHFHEaMmF]{le premier lancement d'un monde} montre ce premier passage en images).</p></li>\n<li><p>Choisissez un onglet dans la colonne de gauche. Le chiffre entre crochets à droite de chaque onglet dit combien de réglages il contient.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-combat.webp\" width=\"792\" alt=\"L'onglet Combat. Chaque ligne porte son nom, une étiquette quand elle s'écarte du livre de base, son explication et, en italique, sa valeur par défaut.\" /><figcaption><strong>Figure 8.1.1</strong> — L'onglet Combat. Chaque ligne porte son nom, une étiquette quand elle s'écarte du livre de base, son explication et, en italique, sa valeur par défaut.</figcaption></figure>\n\n<h4>Lire une ligne</h4>\n<ul>\n<li><p><strong>Le nom et l'explication</strong> disent ce que la case change et citent la page du livre concernée.</p></li>\n<li><p><strong>L'étiquette bleue</strong> <strong>option du livre</strong> signale une règle optionnelle imprimée dans un livre : le livre de base ou un supplément.</p></li>\n<li><p><strong>L'étiquette rouge</strong> <strong>règle maison</strong> signale une règle qu'aucun livre ne donne. Elle est toujours décochée, ou réglée sur la valeur du livre, par défaut.</p></li>\n<li><p><strong>Le défaut</strong>, en italique à la fin de l'explication (<strong>Défaut : décoché.</strong>), est la valeur d'un monde neuf : celle du livre, ou celle du système quand le livre ne donne pas de chiffre.</p></li>\n<li><p>Une ligne sans étiquette règle la façon dont le système applique la règle du livre, ou son affichage.</p></li>\n</ul>\n\n<h4>Pas à pas : trouver un réglage</h4>\n<ol>\n<li><p>Tapez un mot dans le champ de recherche, en haut à gauche : « maison », « option du livre », « drone », « Essence »…</p></li>\n<li><p>Les chiffres à côté des onglets se mettent à jour : ils comptent les réglages qui répondent. Les onglets à <strong>[0]</strong> passent en gris.</p></li>\n<li><p>Cliquez sur un onglet qui a des réponses pour les voir. La croix à droite du champ efface la recherche.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-recherche.webp\" width=\"792\" alt=\"« maison » tapé dans le champ de recherche : les onglets comptent les Règles Maison, ici celles de l'onglet Pillage et butin.\" /><figcaption><strong>Figure 8.1.2</strong> — « maison » tapé dans le champ de recherche : les onglets comptent les Règles Maison, ici celles de l'onglet Pillage et butin.</figcaption></figure>\n\n<h4>Enregistrer, annuler, recharger</h4>\n<ul>\n<li><p><strong>Sauvegarder</strong>, en bas à droite, enregistre tous les onglets d'un coup. Certains réglages ne prennent effet qu'après un rechargement de la page ; Foundry pose alors une seule question, « recharger maintenant ? ». Pour un réglage de monde, <strong>Oui</strong> recharge aussi la page de toutes les personnes connectées. <strong>Non</strong> garde vos choix, qui s'appliqueront au prochain rechargement.</p></li>\n<li><p><strong>Réinitialiser les valeurs par défaut</strong>, en bas à gauche, remet dans la fenêtre les valeurs d'un monde neuf. Rien n'est enregistré tant que vous n'avez pas cliqué sur <strong>Sauvegarder</strong> ; fermez la fenêtre pour renoncer.</p></li>\n</ul>\n\n<h4>Ce que voit le joueur ou la joueuse</h4>\n<p>La fenêtre s'ouvre pour tout le monde, mais un joueur ou une joueuse n'y voit que ses réglages personnels : les onglets <strong>Couronne du PAN</strong> et <strong>Interface</strong>, sans les lignes que seul le MJ règle. Les réglages de monde et les boutons du MJ (verrous, boutique, factions) n'y apparaissent pas.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-joueuse.webp\" width=\"792\" alt=\"La même fenêtre ouverte depuis un compte de joueur ou de joueuse : ses seuls réglages personnels.\" /><figcaption><strong>Figure 8.1.3</strong> — La même fenêtre ouverte depuis un compte de joueur ou de joueuse : ses seuls réglages personnels.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Réglage de monde ou réglage personnel ?</p><p>Un <strong>réglage de monde</strong> vaut pour toute la table et change les règles appliquées : seul le MJ le règle. Un <strong>réglage personnel</strong> ne change que l'écran de la personne qui le choisit (l'apparence, l'aide au survol, l'ouverture des couronnes du PAN) : chacun le règle pour soi, sur son poste.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>@UUID[.SdMk8BrzKmOhEBa1]{Les préréglages} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "SdMk8BrzKmOhEBa1",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.SdMk8BrzKmOhEBa1",
+      "name": "Les préréglages",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>L'onglet <strong>Préréglages</strong>, en tête de la fenêtre, a un bouton réservé au MJ : <strong>Choisir un préréglage</strong>. Il pose d'un coup une façon de jouer ; ensuite, chaque réglage reste modifiable dans son onglet.</p>\n<h4>Pas à pas : appliquer un préréglage</h4>\n<ol>\n<li><p>Choisissez l'<strong>Automatisation</strong> : <strong>Légère</strong> (verrous levés, pas d'état « En course » automatique, l'heure n'avance pas en combat, achats livrés tout de suite) ou <strong>Avancée</strong> (le livre). Laissez <strong>Ne rien changer</strong> pour ne pas y toucher.</p></li>\n<li><p>Choisissez les <strong>Règles</strong> : <strong>Livre et suppléments</strong> (les options des livres cochées, les Règles Maison décochées), <strong>Règles maison</strong> (les Règles Maison cochées, les options des livres au livre de base) ou <strong>Mélange</strong> (les deux).</p></li>\n<li><p>Lisez la liste <strong>Ce qui changera</strong> : chaque réglage, sa valeur actuelle et la nouvelle. Puis cliquez sur <strong>Appliquer</strong> ; le rechargement est proposé si un réglage le demande.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/8-1-prereglages.webp\" width=\"608\" alt=\"Choisir un préréglage : Automatisation Légère, Règles inchangées, et la liste « Ce qui changera ».\" /><figcaption><strong>Figure 8.1.4</strong> — Choisir un préréglage : Automatisation Légère, Règles inchangées, et la liste « Ce qui changera ».</figcaption></figure>\n<p>Le même onglet porte, sous <strong>Verrous de règles</strong>, le bouton <strong>Régler les verrous</strong> et la case <strong>Le MJ n'est jamais bloqué par les verrous de règles</strong> (@UUID[.Mb92AaftdWYQADV5]{voir 8.2}) : l'ancien onglet des verrous y est fondu.</p>\n<p><strong>Enregistrer mes réglages</strong> garde tous les réglages de monde et les verrous tels qu'ils sont, avec la date ; <strong>Rétablir mes réglages</strong> les remet, après une confirmation. Aucun préréglage ne touche aux options RG1 à RG6 de Run &amp; Gun (le livre veut qu'on les choisisse une à une (<em>Run & Gun p. 121</em>)), aux réglages à choix ou à nombre, ni aux réglages personnels.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p><p>← @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun} · @UUID[.VKT6oIqySJwy6PBf]{Combat, Magie, Matrice, Rigging} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VKT6oIqySJwy6PBf",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.VKT6oIqySJwy6PBf",
+      "name": "Combat, Magie, Matrice, Rigging",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Ces quatre onglets décident quelles règles des suppléments le système applique. N'activez que ce que votre table utilise : chaque option ajoute des choix dans les fenêtres de jet et des lignes sur les fiches.</p>\n\n<h4>Combat</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Utiliser les règles d'attaques ciblées</strong></td><td>coché</td><td>Les attaques ciblées apparaissent dans la fenêtre d'attaque (<em>Run & Gun p. 125-131</em>).</td></tr>\n<tr><td><strong>Utiliser le système de lutte</strong></td><td>décoché</td><td>Saisie, immobilisation, évasion et renversement, avec leurs états sur les jetons (<em>Livre de base p. 195-196</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.dQ3e5i0smJlXOWCx]{la mêlée}).</td></tr>\n<tr><td><strong>Poser l'état « En course » d'après la distance parcourue</strong></td><td>décoché</td><td>Coché, un jeton qui parcourt plus que sa vitesse de marche dans le tour reçoit l'état « En course », même sans avoir choisi l'action Course (<em>Livre de base p. 163-164</em>).</td></tr>\n<tr><td><strong>Mêlée : ignorer l'environnement s'il est égal pour les deux</strong></td><td>décoché</td><td>L'option du MJ du livre : un même malus de lumière et de visibilité des deux côtés est ignoré en mêlée (<em>Livre de base p. 188</em>).</td></tr>\n<tr><td><strong>Recharger sans dépenser d'action (règle maison)</strong></td><td>décoché</td><td>Voir l'encadré ci-dessous.</td></tr>\n<tr><td><strong>Soins sous le feu ennemi (Balles et Pansements)</strong></td><td>décoché</td><td>Les blessures graves qui s'aggravent jusqu'à la stabilisation, le diagnostic, le traitement renforcé (<em>Balles et Pansements p. 14-16</em>).</td></tr>\n<tr><td><strong>Médikits avancés (Balles et Pansements)</strong></td><td>décoché</td><td>L'indice du médikit devient un bonus de dés, ses charges baissent d'une par patient (<em>Balles et Pansements p. 16-19</em>).</td></tr>\n<tr><td>Options <strong>RG1</strong> à <strong>RG6</strong> de Run &amp; Gun</td><td>décochées</td><td>Limite d'attaques, taille de la cible, vitesse de déplacement, initiative alternative, armure en malus, VD accrue (<em>Run & Gun p. 121-125</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.b9kcQQZ87uW3LuMI]{voir 3.1}).</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Recharger sans dépenser d'action.</strong> Le livre fait payer le rechargement en actions (<em>Livre de base p. 167</em>). Coché, recharger en combat ne coûte rien quand les munitions du bon type sont dans l'inventaire ; éjecter seul un chargeur garde son coût.</p></div>\n\n<h4>Magie</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Règles des réactifs</strong></td><td>Livre de base</td><td>Un seul stock de drachmes (<em>Livre de base p. 319-321</em>), ou les réactifs bruts, raffinés et radicaux de Shadow Spells, ou ceux d'Arcanes Interdites avec leurs bonus de Limite et de Drain.</td></tr>\n<tr><td><strong>Esprits : attribut de résistance au Drain d'un sort inné</strong></td><td>Charisme</td><td>Le livre laisse le choix entre Intuition et Charisme au MJ (<em>Livre de base p. 403</em>) : choisissez ici.</td></tr>\n<tr><td><strong>Homoncule : Blindage du matériau en Armure</strong></td><td>décoché</td><td>Voir l'encadré ci-dessous.</td></tr>\n<tr><td><strong>Masque du mentor</strong></td><td>décoché</td><td>Règle optionnelle : le magicien réduit ses Drains de 1, l'adepte gagne un point de pouvoir (<em>Arcanes interdites p. 176</em>).</td></tr>\n<tr><td><strong>Laisse des esprits</strong></td><td>décoché</td><td>Règle optionnelle : la laisse compte comme un sort maintenu, et un esprit qui réussit assez propose au MJ de tester la laisse (<em>Arcanes interdites p. 176</em>).</td></tr>\n<tr><td><strong>Façonnage de sorts : coût d'une bulle</strong></td><td>1</td><td>Combien de points de façonnage épargnent un personnage : le livre ne convertit pas la bulle en cases (<em>Livre de base p. 329</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.JzhtOnU77IZ0FhF1.JournalEntryPage.aFtR1eDU4YXAqWnq]{voir 4.1}).</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Homoncule : Blindage du matériau en Armure.</strong> Le livre donne à l'homoncule la Structure de son matériau comme Constitution, et aucune Armure (<em>Livre de base p. 301</em>). Coché, il reçoit aussi en Armure le Blindage de ce matériau.</p></div>\n\n<h4>Matrice</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Exiger une IND pour basculer le wifi en action gratuite</strong></td><td>décoché</td><td>Coché, la case <strong>Relié par IND</strong> de chaque fiche décide si allumer le sans-fil d'un appareil est une action gratuite ou une action simple (<em>Livre de base p. 165, 167</em>). Couper le sans-fil reste toujours gratuit.</td></tr>\n<tr><td><strong>Utiliser les Grilles matricielles</strong></td><td>coché</td><td>Les grilles publiques et locales, et le malus de saut de grille (<em>Livre de base p. 234-235</em>).</td></tr>\n<tr><td><strong>Utiliser les règles de Kill Code</strong></td><td>décoché</td><td>Ajoute les règles matricielles de Kill Code.</td></tr>\n<tr><td><strong>IA hors appareil : attribut qui remplace la Logique en défense et en résistance</strong></td><td>la plus haute des deux</td><td>Le livre ne dit pas laquelle de la Volonté ou de l'Intuition remplace la Logique (<em>Data Trails p. 157</em>) : choisissez ici.</td></tr>\n<tr><td><strong>Score de Surveillance gardé par le MJ</strong></td><td>coché</td><td>La règle du livre : seul le MJ voit le chiffre monter ; le joueur ou la joueuse le connaît en le vérifiant (<em>Livre de base p. 233</em>).</td></tr>\n<tr><td><strong>Serveurs asservis à d'autres serveurs (« nodes »)</strong> (règle maison)</td><td>décoché</td><td>Coché, un serveur peut en avoir un autre pour maître (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.c5IFvqrOj73IR3VU]{voir 5.3}). Le livre n'asservit jamais un serveur (<em>Livre de base p. 234</em>).</td></tr>\n</tbody>\n</table>\n\n<h4>Rigging</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Utiliser les actions matricielles de Rigger 5</strong></td><td>décoché</td><td>Ajoute les actions matricielles propres au rigging.</td></tr>\n<tr><td><strong>Règles de conduite avancées (Rigger 5.0)</strong></td><td>décoché</td><td>Les poursuites de Rigger 5.0 (<em>Rigger 5.0 p. 175-185</em>) au lieu de celles du livre de base (<em>Livre de base p. 204-205</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.R8istJLbf18Vqn7R.JournalEntryPage.k8t2zbObC0IHgrPy]{les poursuites}).</td></tr>\n<tr><td><strong>Modifications des drones</strong></td><td>Emplacements</td><td>Les emplacements de la règle principale (<em>Rigger 5.0 p. 153</em>), ou les Points de Modification de la règle optionnelle (<em>Rigger 5.0 p. 126-128</em>). Les véhicules gardent toujours leurs emplacements.</td></tr>\n</tbody>\n</table><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p><p>← @UUID[.SdMk8BrzKmOhEBa1]{Les préréglages} · @UUID[.YUlceTQb8k3UOwpt]{Perception, corps, objets} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "YUlceTQb8k3UOwpt",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.YUlceTQb8k3UOwpt",
+      "name": "Perception, corps, objets",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Perception et vision</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Les yeux cybernétiques remplacent la vision naturelle</strong></td><td>coché</td><td>La règle : des cyberyeux retirent la vision du métatype, sauf si elle a été rachetée en amélioration (<em>Livre de base p. 96</em>).</td></tr>\n<tr><td><strong>Portée de la vision nocturne</strong></td><td>0</td><td>0 : la vision nocturne ne voit que ce qui est éclairé, comme le dit le livre (<em>Livre de base p. 176</em>).</td></tr>\n<tr><td><strong>Portée de la vision thermographique</strong></td><td>30</td><td>Voir l'encadré ci-dessous.</td></tr>\n<tr><td><strong>Portée de la vision ultrasonique</strong></td><td>50</td><td>La valeur du livre (<em>Livre de base p. 176</em>).</td></tr>\n<tr><td><strong>Portée de la Perception astrale</strong></td><td>300</td><td>Distance de vue dans le plan astral, en mètres.</td></tr>\n<tr><td><strong>Vision nocturne teintée de vert</strong></td><td>décoché</td><td>Voir l'encadré ci-dessous.</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Portée de la vision thermographique.</strong> Le livre ne donne aucune portée : 30 mètres est un choix de confort, à changer selon votre table.</p>\n<p><strong>Vision nocturne teintée de vert.</strong> Une convention visuelle, pas une règle : le livre dit seulement qu'on voit normalement en lumière faible (<em>Livre de base p. 447</em>). Cochée, ce que voit un jeton en vision nocturne prend la teinte de lunettes de vision nocturne, quand un seul jeton est sélectionné.</p></div>\n\n<h4>Corps, santé et augmentations</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Compétence Vol pour les personnages</strong></td><td>décoché</td><td>Ajoute la compétence Vol au groupe Athlétisme des fiches, pour une table qui joue des métatypes ailés.</td></tr>\n<tr><td><strong>Plafond des augmentations</strong></td><td>+4 au plus sur l'attribut naturel</td><td>La règle du livre (<em>Livre de base p. 96</em>) ; ou le seul maximum augmenté du métatype ; ou aucun plafond. La bulle de l'attribut montre la valeur réelle et la valeur retenue.</td></tr>\n<tr><td><strong>Failles d'Essence (Chrome Flesh p. 74)</strong></td><td>décoché</td><td>Règle optionnelle : l'Essence perdue en retirant un implant sert de crédit aux implants posés ensuite (<em>Chrome Flesh p. 74</em>).</td></tr>\n<tr><td><strong>Lots d'augmentations (Chrome Flesh p. 96)</strong></td><td>décoché</td><td>Règle optionnelle : une case cochée par le MJ réduit de 10 % l'Essence d'un implant d'un lot complet (<em>Chrome Flesh p. 96</em>).</td></tr>\n<tr><td><strong>Sevrage : modificateur du test selon le niveau</strong></td><td>Aucun</td><td>Le livre demande des modificateurs selon le degré d'addiction sans les chiffrer (<em>Livre de base p. 417</em>). <strong>Malus du manque</strong> reprend les valeurs de la p. 79 (arbitrage de DjamZ).</td></tr>\n<tr><td><strong>Maladies : tout montrer aux joueurs et aux joueuses</strong></td><td>décoché</td><td>Coché, le joueur ou la joueuse voit aussi la Puissance de la maladie et le nombre de tests.</td></tr>\n<tr><td><strong>Perte d'Essence : durée du mois lunaire (jours)</strong></td><td>29,5</td><td>Un infecté perd 1 point d'Essence par mois lunaire (<em>Livre de base p. 403</em>) ; le livre ne chiffre pas le mois.</td></tr>\n</tbody>\n</table>\n\n<h4>Pillage et butin</h4>\n<p>Cet onglet s'appelait « Objets et stockage ». Le réglage <strong>Dotation de départ</strong> (coché par défaut) donne à chaque personnage joueur créé dans le monde un sac à dos, un casier et un créditube standard vide (<em>Run Faster p. 222-223</em>) (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.qk2XJEf1NvKmaJ6R]{voir 7.3}). Les trois autres sont des Règles Maison : ils sont décochés par défaut.</p>\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Vol à la tire : le voleur choisit l'objet.</strong> Le livre laisse le MJ choisir l'objet subtilisé (<em>Livre de base p. 422</em>). Coché, le voleur ou la voleuse le choisit avant son jet, sans validation du MJ.</p>\n<p><strong>Laisser une dépouille à la mort</strong> et <strong>Part du matériel laissée (%)</strong> (50 par défaut). À la mort d'un personnage, un sac apparaît sur son corps avec une partie de ce qu'il portait : chaque objet a ce pourcentage de chances d'y tomber. Aucune règle ne le prévoit. Le matériel tombé quitte le corps : annuler une mort demande de ramasser le sac.</p></div>\n<p>Le garage et le kit de serrurerie, qui étaient ici autrefois, sont devenus des cases de la famille Objets des verrous de règles (@UUID[.Mb92AaftdWYQADV5]{chapitre 8.2}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p><p>← @UUID[.VKT6oIqySJwy6PBf]{Combat, Magie, Matrice, Rigging} · @UUID[.wPt2x4zlmzqh8foq]{Boutique et calendrier} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "wPt2x4zlmzqh8foq",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.wPt2x4zlmzqh8foq",
+      "name": "Boutique et calendrier",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Boutique</h4>\n<p>L'onglet commence par le bouton <strong>Configurer la boutique</strong> : les compendiums que la boutique vend, et qui peut acheter. Son usage, les vendeurs du MJ et la fourgue sont décrits au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.5DdV0wykUSSWuaSG]{de la boutique du MJ}. Les chiffres qui suivent sont ceux du livre : ne les touchez que si votre table joue autrement.</p>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Boutique : gamme gamma (Chrome Flesh p. 74)</strong></td><td>décoché</td><td>Propose le gammaware à l'achat, jamais en mode création (<em>Chrome Flesh p. 74</em>).</td></tr>\n<tr><td><strong>Boutique : GreyWare (Better Than Bad p. 142)</strong></td><td>décoché</td><td>Propose la GreyWare pour le cyberware seul, création comprise (<em>Better Than Bad p. 142</em>).</td></tr>\n<tr><td><strong>Boutique : niveau de création</strong></td><td>Runner expérimenté (Disponibilité 12, indice 6)</td><td>Les plafonds de l'équipement acheté en mode création : niveau rue, runner expérimenté, runner d'élite (<em>Livre de base p. 66</em>) ou <strong>Libre</strong>, qui utilise les deux valeurs suivantes.</td></tr>\n<tr><td><strong>Boutique : Disponibilité maximum à la création (libre)</strong> et <strong>indice maximum</strong></td><td>12 et 6</td><td>Utilisés seulement au niveau <strong>Libre</strong>.</td></tr>\n<tr><td><strong>Boutique : surcoût par dé bonus</strong> et <strong>dés bonus maximum</strong></td><td>25 % et 12</td><td>Payer plus pour gagner des dés au test de Disponibilité (<em>Livre de base p. 420</em>).</td></tr>\n<tr><td>Les cinq réglages <strong>Revente : …</strong></td><td>25 %, 5 %, 10, 5 %, 6</td><td>Le point de départ, le pas par succès, le seuil pour trouver un acheteur, la part payée par un contact et la réserve de l'acheteur (<em>Livre de base p. 421</em>). Le livre ne chiffre pas la dernière.</td></tr>\n<tr><td><strong>Boutique : le marché est ouvert aux joueurs</strong></td><td>coché</td><td>Décoché, le joueur ou la joueuse n'achète que chez les vendeurs posés par le MJ.</td></tr>\n<tr><td><strong>Boutique : dossier des bannières</strong></td><td>celui du Mégapack s'il est actif</td><td>Le dossier des bannières des vendeurs ; le champ montre le dossier du Mégapack quand il est actif.</td></tr>\n<tr><td><strong>Boutique : test de Disponibilité aussi chez un vendeur</strong></td><td>décoché</td><td>Par défaut, un objet en rayon est déjà trouvé et s'achète sans test (<em>Livre de base p. 420</em>).</td></tr>\n<tr><td><strong>Boutique : types de contacts marchands</strong></td><td>une liste de mots</td><td>Un contact dont le type contient l'un de ces mots donne +2 dés (Marchandage) au test de Disponibilité.</td></tr>\n<tr><td><strong>Livraison des achats</strong></td><td>Après le délai de recherche</td><td>L'objet payé attend « En commande » sur la fiche jusqu'à l'échéance (<em>Livre de base p. 420</em>), et le MJ le livre d'un clic. <strong>Immédiate</strong> livre à l'encaissement.</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison</p><p><strong>Livraison express</strong>, <strong>Express : surcoût (%)</strong> (25) et <strong>Express : délai divisé par</strong> (2). Absente du livre. Cochée, le joueur ou la joueuse peut choisir l'express à la commande : un surcoût sur le prix de base, un délai divisé. C'est plus avantageux que la surenchère du livre (<em>Livre de base p. 420</em>), et c'est voulu.</p></div>\n\n<h4>Calendrier</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Par défaut</th><th>Ce que ça change</th></tr></thead>\n<tbody>\n<tr><td><strong>Calendrier : année de départ</strong></td><td>2070</td><td>L'heure zéro du monde tombe le 1er janvier de cette année. La changer décale toutes les dates du monde, échéances comprises.</td></tr>\n<tr><td><strong>Calendrier : le combat avance l'heure</strong></td><td>coché</td><td>Chaque tour de combat avance l'heure de 3 secondes (<em>Livre de base p. 51</em>).</td></tr>\n<tr><td><strong>Calendrier : montrer les échéances aux joueurs</strong></td><td>décoché</td><td>Coché, le joueur ou la joueuse reçoit aussi les échéances de son personnage (sevrage, loyer), sans les boutons du MJ.</td></tr>\n</tbody>\n</table>\n<p>L'année et le combat sont sans effet quand un module de calendrier est actif (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.e6Mpw7TMwnO5VSpW]{le calendrier}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p><p>← @UUID[.YUlceTQb8k3UOwpt]{Perception, corps, objets} · @UUID[.lTXSR6fe0WFc3j8g]{Couronne du PAN, Outils du MJ, Interface} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lTXSR6fe0WFc3j8g",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.lTXSR6fe0WFc3j8g",
+      "name": "Couronne du PAN, Outils du MJ, Interface",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Couronne du PAN</h4>\n<p>Trois réglages de monde, puis trois réglages personnels que chacun choisit pour soi. Leur effet est montré au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.8tsTkRwzpFwEKJHE]{de la couronne du PAN}.</p>\n<table>\n<thead><tr><th>Réglage</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Visibilité des couronnes de PAN</strong> : les appareils repérés selon le livre (<em>Livre de base p. 236-238</em>), ou seulement ceux que le MJ dévoile</td><td>MJ, pour le monde</td><td>Règles du livre</td></tr>\n<tr><td><strong>Plafond d'ambiance des couronnes de PAN</strong> : l'animation la plus riche permise à la table</td><td>MJ, pour le monde</td><td>Spectaculaire</td></tr>\n<tr><td><strong>Dévoilement d'un appareil par le MJ</strong> : à toute la table, ou joueur par joueur</td><td>MJ, pour le monde</td><td>À toute la table</td></tr>\n<tr><td><strong>Ouverture des couronnes de PAN</strong> : survol, bouton du HUD ou toujours visible</td><td>chacun pour soi</td><td>Au survol</td></tr>\n<tr><td><strong>Touche de la vue RA</strong> : bascule ou maintien (touche M par défaut)</td><td>chacun pour soi</td><td>Bascule</td></tr>\n<tr><td><strong>Ambiance des couronnes de PAN</strong> : statique, sobre ou spectaculaire, sans dépasser le plafond</td><td>chacun pour soi</td><td>Sobre</td></tr>\n</tbody>\n</table>\n\n<h4>Outils du MJ</h4>\n<ul>\n<li><p><strong>Factions</strong>, bouton <strong>Ouvrir les factions</strong> : la réputation de faction (<em>Cutting Aces p. 156</em>), décrite au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.5DdV0wykUSSWuaSG]{de la boutique du MJ et des factions}.</p></li>\n<li><p><strong>Réparer la Négociation</strong>, bouton <strong>Ouvrir</strong> : les acteurs et contacts importés avant une correction du système ont pu perdre leur compétence Négociation (0). La fenêtre liste ceux dont le compendium d'origine donne plus ; cochez ce qui s'applique (la case <strong>Tout réparer</strong> coche toutes les fiches à 0 de la liste), puis validez. Chaque correction ne s'applique qu'une fois par fiche.</p></li>\n<li><p><strong>Vérifier les jets des joueurs et joueuses</strong> (décoché) : décoché, le jet d'un joueur ou d'une joueuse, lancé pour un personnage qui lui appartient, est pris tel quel, comme celui du MJ. Coché, le système recompte ses succès sur les dés et dans la réserve de la fiche, et avertit le MJ d'un écart. Dans les deux cas, un jet lancé pour un personnage qu'on ne possède pas est refusé, et le MJ garde la fenêtre <strong>Demande d'un joueur ou d'une joueuse au MJ</strong>. Décoché, trois confirmations ne s'ouvrent plus : celle d'un effet qui lit les succès, celle de l'attaque d'une CI lancée par un joueur ou une joueuse, et celle d'une carte de toxine.</p></li>\n<li><p><strong>Effets des objets écrits par le MJ seul</strong> (décoché) : coché, seul le MJ ajoute, modifie ou retire les effets d'un objet ; le joueur ou la joueuse les voit sans pouvoir les changer, et le MJ voit passer chaque modification d'effets faite depuis un autre poste.</p></li>\n<li><p><strong>Compendium des pouvoirs de créatures</strong>, <strong>des pouvoirs de sprites</strong> et <strong>des armes de base</strong> (Automatique) : où le système cherche les pouvoirs et les attaques naturelles d'un esprit invoqué ou d'un sprite compilé. <strong>Automatique</strong> lit le Mégapack, puis le module officiel de compendiums en secours. Si vous utilisez un module de contenu à vous, pointez ces trois réglages sur son compendium. Sous chacun, le « + » ajoute vos propres compendiums, lus après le principal : ce qu'ils apportent de nouveau est donné, rien n'est doublé. Par défaut, aucun.</p></li>\n<li><p><strong>Jetons créés en cours de partie</strong>, bouton <strong>Configurer les jetons</strong> : pour les esprits, sprites, CI, appareils et hôtes, drones et véhicules, agents que crée le système, la taille, la disposition, le nom et les barres affichés, les deux barres et la vision du jeton qu'ils reçoivent. « — » garde le comportement d'origine, qui reste le défaut ; un jeton déjà posé ne change pas.</p></li>\n<li><p><strong>Règles sociales de Cutting Aces</strong> (coché) : les manœuvres sociales et les étapes d'arnaque offertes dans la fenêtre de jet (@UUID[Compendium.sr5.manuel.JournalEntry.QOnlNlLLjtaxDQDL.JournalEntryPage.89rfIha7WYNddZJY]{voir 2.2}).</p></li>\n<li><p><strong>Arnaques</strong>, bouton <strong>Ouvrir le suivi</strong> : la fenêtre de l'escroquerie en trois phases (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.WsdsU4MlUP0QztsL]{voir 7.2}).</p></li>\n</ul>\n<p>L'onglet <strong>Autres</strong>, en dernier, porte la règle maison <strong>Cryptage des messages commcode</strong>, décochée par défaut (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.ppMeoTy8wgmHEQvi]{voir 5.3}).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Des invocations qui arrivent vides ?</p><p>Si ni le Mégapack ni le module officiel de compendiums ne sont actifs, <strong>Automatique</strong> ne trouve rien, et le MJ en est averti par un message qui reste à l'écran. Venez alors ici et choisissez le compendium qui contient vos pouvoirs.</p></div>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Réparer la Négociation dans un grand monde</p><p>La fenêtre lit chaque acteur et chaque contact du monde, et va chercher leur original dans les compendiums avant de s'afficher. Dans un monde de plusieurs centaines d'acteurs, elle peut mettre plusieurs minutes à s'ouvrir, sans rien afficher pendant ce temps : ne cliquez pas une seconde fois, attendez qu'elle apparaisse.</p></div>\n\n<h4>Interface</h4>\n<table>\n<thead><tr><th>Réglage</th><th>Pour qui</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Apparence</strong> : Thème Shadowrun 5 ou 6 (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.b6m8pFR9jevetHlN]{les thèmes})</td><td>chacun pour soi</td><td>Thème Shadowrun 5</td></tr>\n<tr><td><strong>Activer la fenêtre d'aide</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.tHfGIndtHWUOiSaA]{l'aide au survol})</td><td>chacun pour soi</td><td>coché</td></tr>\n<tr><td><strong>Rappel des règles</strong> : décoché, les cartes, les fenêtres de jet, les notifications et l'aide n'affichent plus les renvois aux pages des livres ; les règles s'appliquent de la même façon (rechargement)</td><td>MJ, pour le monde</td><td>coché</td></tr>\n<tr><td><strong>Masquer le jet sur les tables aléatoires</strong> : le dé et sa face disparaissent des cartes de tirage, le résultat reste</td><td>MJ, pour le monde</td><td>décoché</td></tr>\n<tr><td><strong>Effets portés par la cible ou par une zone</strong> : ce que voit le lanceur d'un effet porté par un autre personnage (nom, libellé neutre, ou rien). Un effet porté par un personnage joueur est toujours nommé.</td><td>MJ, pour le monde</td><td>Nom de l'effet et de son porteur</td></tr>\n<tr><td><strong>Activer le journal de développement</strong> et <strong>Filtre du journal de développement</strong> : des messages techniques dans la console du navigateur</td><td>chacun pour soi</td><td>décoché, Erreurs uniquement</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Signaler un défaut</p><p>Le journal de développement ne sert qu'à diagnostiquer un problème. Pour signaler un défaut, activez-le avec le filtre <strong>Débogage</strong>, reproduisez le problème, puis joignez ce qu'affiche la console du navigateur (touche F12). Coupez-le ensuite.</p></div>\n\n<h4>Références</h4>\n<ul>\n<li><p>Le détail exhaustif de chaque réglage, avec son historique : <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki : Réglages du système</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.QYyDfkWFmXpwqPaK]{8.1 La fenêtre Réglages Shadowrun}</p><p>← @UUID[.wPt2x4zlmzqh8foq]{Boutique et calendrier} · @UUID[.Mb92AaftdWYQADV5]{8.2 Les verrous de règles} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Mb92AaftdWYQADV5",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.Mb92AaftdWYQADV5",
+      "name": "8.2 Les verrous de règles",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>À plusieurs endroits, le système refuse une action au nom d'une règle du livre : plus d'action dans la passe, une cible hors de portée, des munitions insuffisantes, un esprit déjà lié, des marks manquantes… Une table qui joue plus librement peut lever ces refus, famille par famille. Une famille levée laisse partir l'action ; les calculs ne changent pas (un malus reste un malus, un chargeur ne passe jamais sous zéro), et le MJ est prévenu.</p>\n\n<h4>Pas à pas : régler les verrous</h4>\n<ol>\n<li><p>Ouvrez <strong>Réglages Shadowrun</strong>, onglet <strong>Préréglages</strong> (le premier), puis cliquez sur <strong>Régler les verrous</strong>. Le bouton n'apparaît qu'au MJ.</p></li>\n<li><p>Cochez ou décochez les familles et leurs cases. Pour tout cocher ou tout décocher d'un coup, passez par le menu Préréglages, automatisation avancée ou légère (@UUID[.SdMk8BrzKmOhEBa1]{voir 8.1}).</p></li>\n<li><p>La case <strong>Le MJ n'est jamais bloqué par les verrous de règles</strong>, dans l'onglet Préréglages, sous le bouton (décochée par défaut) : cochée, une action du MJ part toujours, et une notification lui dit quelle règle il a passée ; les joueurs et les joueuses suivent toujours les cases.</p></li>\n<li><p>Cliquez sur <strong>Enregistrer</strong>. Le changement vaut tout de suite, sans rechargement.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-2-verrous.webp\" width=\"568\" alt=\"La fenêtre des verrous de règles : les familles, chacune avec ce qu'elle couvre.\" /><figcaption><strong>Figure 8.2.1</strong> — La fenêtre des verrous de règles : les familles, chacune avec ce qu'elle couvre.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-2-verrous-objets.webp\" width=\"568\" alt=\"Le bas de la même fenêtre : la famille Objets, ses deux cases, et le bouton Enregistrer.\" /><figcaption><strong>Figure 8.2.2</strong> — Le bas de la même fenêtre : la famille Objets, ses deux cases, et le bouton Enregistrer.</figcaption></figure>\n\n<h4>Les sept familles</h4>\n<table>\n<thead><tr><th>Famille</th><th>Ce qu'elle refuse quand elle est cochée</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions et initiative</strong></td><td>Recharger sans l'action nécessaire, interrompre sans assez d'initiative, parer ou bloquer sans la compétence, dépenser de la Chance pendant un test étendu (<em>Livre de base p. 163-170, 191-192</em>). Sa case <strong>Bloquer une action qu'on n'a plus</strong> refuse en plus une action quand la passe n'en a plus, ou quand le score d'initiative est à 0 ou moins (<em>Livre de base p. 162-165</em>) ; elle ne lève que ce refus-là.</td></tr>\n<tr><td><strong>Portée et cibles</strong></td><td>Tirer au-delà de la portée extrême (<em>Livre de base p. 186</em>), frapper hors d'allonge, viser plusieurs cibles d'une seule attaque, le tir en éventail hors des limites, fouiller sans être au contact, crocheter à distance.</td></tr>\n<tr><td><strong>Munitions et armes</strong></td><td>Un mode de tir sans assez de munitions (<em>Livre de base p. 179</em>), certains rechargements en combat, le sans-fil d'une arme Vintage, un accessoire au-delà de la capacité (<em>Livre de base p. 447</em>).</td></tr>\n<tr><td><strong>Magie</strong></td><td>Toute magie sous Blight, un rituel sans cercle valable, un façonnage au-delà de la Magie (<em>Livre de base p. 329</em>), un esprit déjà lié, une préparation à Puissance 0.</td></tr>\n<tr><td><strong>Matrice</strong></td><td>Une action de Résonance sans Résonance, une action sur un appareil au sans-fil coupé, des marks insuffisantes (<em>Livre de base p. 238</em>), le reboot sous verrouillage, l'Émulation au-delà de la Profondeur, le PAN plein, la vision partagée sans mark.</td></tr>\n<tr><td><strong>Corps et soins</strong></td><td>Un implant rejeté (qualité, seconde ossature), un achat qui ferait tomber l'Essence à 0 (<em>Livre de base p. 54</em>), les soins naturels de l'étourdissant d'abord (<em>Livre de base p. 207</em>), les soins de Better Than Bad, l'absence de médikit (<em>Livre de base p. 208</em>).</td></tr>\n<tr><td><strong>Objets</strong></td><td>Un rangement plein, le vol à la tire et la dissimulation sans Escamotage (<em>Livre de base p. 135</em>), une prise de lutte sur quelqu'un déjà tenu, le concepteur de drogues sans Chimie, une modification de véhicule au-delà de ses emplacements. Ses deux cases : <strong>Vérifier le Niveau de vie des garages</strong> (<em>Run Faster p. 216</em>) et <strong>Le crochetage exige un kit de serrurerie</strong> (<em>Livre de base p. 450</em>) ; chacune ne joue que si la famille est cochée.</td></tr>\n</tbody>\n</table>\n\n<h4>Ce qui se passe quand une famille est levée</h4>\n<ul>\n<li><p><strong>L'action part</strong>, avec ce que la fiche permet. Un tir de barrage avec 3 balles part avec 3 balles ; une action de Résonance sans Résonance part avec 0 dé ; un vol à la tire sans Escamotage part avec la réserve de la fiche (0 dé), et le MJ ajoute ce qu'il juge dans le modificateur <strong>Divers</strong>.</p></li>\n<li><p><strong>Le MJ reçoit un murmure</strong> dans le tchat, du type « <em>Clo : règle « Munitions et armes » levée, l'action est partie. Motif du refus levé : …</em> », une seule fois par personnage, par message et par tour de combat. Le joueur ou la joueuse qui a agi ne le voit pas. Sans MJ connecté, l'action part sans murmure ; le MJ qui agit lui-même reçoit une simple notification.</p></li>\n<li><p><strong>Ce que le Blight retire reste retiré</strong> : la famille Magie levée laisse lancer le sort, mais un focus activé sous Blight ne donne rien. Pour lever tout l'effet, retirez le Blight de la fiche.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Ce qui ne se lève jamais</p><p>Les verrous ne touchent ni aux registres et aux champs réservés au MJ, ni aux cartes à usage unique (on n'encaisse pas deux fois la même attaque), ni aux nuyens, aux réactifs et à la Chance déjà dépensés, ni aux droits de Foundry, ni aux issues d'un calcul : une cible hors de la zone d'un sort reste hors de la zone, un seuil non atteint reste raté. La boutique garde ses propres règles dans l'onglet <strong>Boutique</strong>.</p></div>\n\n<h4>Un monde neuf, un monde mis à jour</h4>\n<p>Un <strong>monde neuf</strong> démarre au livre. À son premier chargement, une fenêtre demande une seule fois au MJ son automatisation : <strong>Avancée</strong> (le livre), <strong>Légère</strong> ou <strong>Personnalisée</strong>. La fermer applique <strong>Avancée</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.qQYev8qvHFHEaMmF]{le premier lancement d'un monde}).</p>\n<p>Un <strong>monde existant</strong> ne voit jamais cette fenêtre, et ne change pas de comportement à la mise à jour : la case <strong>Bloquer une action qu'on n'a plus</strong> reprend l'ancien réglage du même nom, décoché par défaut, et le monde arrive en <strong>Personnalisé</strong>.</p>\n\n<h4>Que faire d'un refus</h4>\n<ul>\n<li><p><strong>Le joueur ou la joueuse</strong> lit le message : il dit quelle règle refuse, souvent avec sa page. Si la situation de jeu justifie une exception, demandez-la au MJ plutôt que de contourner la fiche.</p></li>\n<li><p><strong>Le MJ</strong> a trois réponses : appliquer la règle ; lever la famille le temps de la scène, puis la recocher ; ou, pour un cas isolé, faire jouer l'action avec un modificateur <strong>Divers</strong> quand la fiche le permet.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Le détail de chaque refus et de ce qui se passe quand il est levé : <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki : Réglages du système, § Verrous de règles</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>← @UUID[.lTXSR6fe0WFc3j8g]{Couronne du PAN, Outils du MJ, Interface} · @UUID[.69OkRSC6h7elrvhm]{8.3 Scènes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "69OkRSC6h7elrvhm",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.69OkRSC6h7elrvhm",
+      "name": "8.3 Scènes",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Ce que vous réglez sur une scène s'applique tout seul à tous les jets faits sur elle : la lumière et la visibilité aux attaques, le bruit matriciel aux actions matricielles, le champ magique aux sorts. La configuration de scène de Foundry reçoit pour cela trois onglets du système.</p>\n\n<h4>Pas à pas : ouvrir la configuration</h4>\n<ol>\n<li><p>Dans la navigation des scènes, en haut à gauche, faites un clic droit sur la scène, puis <strong>Configurer</strong>.</p></li>\n<li><p>Les trois onglets du système suivent ceux de Foundry : <strong>Modificateurs environnementaux</strong>, <strong>Bruit matriciel</strong> et <strong>Champ magique</strong>.</p></li>\n<li><p>Réglez, puis enregistrez en bas de la fenêtre.</p></li>\n</ol><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>← @UUID[.Mb92AaftdWYQADV5]{8.2 Les verrous de règles} · @UUID[.mP1nsVy11CrAE7bb]{L'environnement, le bruit, le champ magique} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "mP1nsVy11CrAE7bb",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.mP1nsVy11CrAE7bb",
+      "name": "L'environnement, le bruit, le champ magique",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong>Modificateurs environnementaux.</strong> Choisissez une situation pour la <strong>Visibilité</strong>, la <strong>Lumière</strong>, l'<strong>Éblouissement</strong> et le <strong>Vent</strong>. Comme le veut le livre, le système retient la pire et l'applique aux tests concernés : les modificateurs ne s'additionnent pas (<em>Livre de base p. 176</em>). Les visions de chaque personnage les atténuent, et la portée de tir entre dans la même table. Le modificateur apparaît dans la fenêtre de jet, dans la section repliée des modificateurs d'environnement.</p>\n<figure><img src=\"systems/sr5/manuel/captures/8-3-environnement.webp\" width=\"560\" alt=\"L'onglet Modificateurs environnementaux : quatre situations, puis la rigueur des radiations.\" /><figcaption><strong>Figure 8.3.1</strong> — L'onglet Modificateurs environnementaux : quatre situations, puis la rigueur des radiations.</figcaption></figure>\n<p>En bas de l'onglet, <strong>Rigueur des radiations</strong> fixe l'intensité d'une zone irradiée (<em>Run & Gun p. 164-165</em>). Rien ne se passe tant que vous ne cliquez pas sur <strong>Exposer aux radiations</strong>, qui ouvre la liste des personnages exposés.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-bruit.webp\" width=\"560\" alt=\"L'onglet Bruit matriciel : la zone de spam et la zone d'interférences de la scène.\" /><figcaption><strong>Figure 8.3.2</strong> — L'onglet Bruit matriciel : la zone de spam et la zone d'interférences de la scène.</figcaption></figure>\n<p><strong>Bruit matriciel.</strong> Choisissez la <strong>Zone de spam</strong> (publicités et trafic, du centre-ville au rassemblement massif) et la <strong>Zone d'interférence</strong> (immeuble abandonné, Barrens, lieu reculé…) (<em>Livre de base p. 232-233</em>). Le bruit s'applique aux actions matricielles faites depuis la scène, avec le bruit de distance.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-champ-magique.webp\" width=\"560\" alt=\"L'onglet Champ magique : le phénomène astral, l'indice et l'alignement.\" /><figcaption><strong>Figure 8.3.3</strong> — L'onglet Champ magique : le phénomène astral, l'indice et l'alignement.</figcaption></figure>\n<p><strong>Champ magique.</strong> Réglez l'<strong>Indice de Champ magique</strong> et son <strong>Alignement</strong> : un champ aligné sur une tradition l'aide au lieu de la gêner (<em>Grimoire des ombres p. 30</em>). Le menu <strong>Phénomène astral</strong> remplit les deux d'un clic (<em>Aetherologie p. 33-35</em>) ; vous pouvez ensuite les modifier dans la fourchette du livre. Le champ s'applique aux sorts, préparations, rituels et pouvoirs lancés sur la scène.</p>\n<p>Le bruit et le champ magique de la scène affichée sont rappelés en bas à gauche de l'écran, sous la liste des personnes connectées (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.UL8RBpRELYtP4Sop]{l'écran en un coup d'œil}).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Mètres, pieds et taille de case</p><p>Shadowrun écrit toutes ses distances en mètres. L'onglet <strong>Grille</strong> de Foundry vous laisse choisir l'unité de la scène : le système convertit les pieds en mètres avant de comparer une distance à une portée, et dessine les gabarits à la bonne taille. Seuls le mètre et le pied sont reconnus ; toute autre unité est lue comme des mètres. Une scène neuve naît à 1,5 m par case ; une scène créée avant la conversion garde sa taille de case : réglez-la à 1,5 m si elle était à 1 m.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.69OkRSC6h7elrvhm]{8.3 Scènes}</p><p>← @UUID[.69OkRSC6h7elrvhm]{8.3 Scènes} · @UUID[.rv2YfTdQozPnU7aw]{La vision partagée et les caméras} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rv2YfTdQozPnU7aw",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.rv2YfTdQozPnU7aw",
+      "name": "La vision partagée et les caméras",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un joueur ou une joueuse peut voir par les yeux d'un drone, d'une caméra ou de tout appareil qui a des senseurs : parce que son ou sa propriétaire partage son flux (<em>Inviter au markage</em>), parce qu'un hacker l'a piraté (<em>Fureter</em>) (<em>Livre de base p. 241</em>), ou parce qu'un rigger y est plongé.</p>\n\n<h4>Pas à pas : partager la vue d'une caméra (MJ)</h4>\n<ol>\n<li><p>Faites un clic droit sur le jeton de la caméra ou du drone : le HUD montre un œil, <strong>Partager la vision</strong>.</p></li>\n<li><p>Cliquez dessus. Cochez les joueurs et les joueuses qui doivent voir, puis cliquez sur <strong>Partager la vision</strong>.</p></li>\n<li><p>Chacun voit désormais sur la carte ce que voit l'appareil, en plus de ce que voient ses propres jetons. Une caméra cachée reste cachée : on voit par elle sans la voir.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-vision-hud.webp\" width=\"203\" alt=\"Le HUD d'une caméra : l'œil « Partager la vision », en bas de la colonne de gauche.\" /><figcaption><strong>Figure 8.3.4</strong> — Le HUD d'une caméra : l'œil « Partager la vision », en bas de la colonne de gauche.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-3-vision-partage.webp\" width=\"452\" alt=\"La fenêtre de partage : une case par joueur ou joueuse du monde, ici deux.\" /><figcaption><strong>Figure 8.3.5</strong> — La fenêtre de partage : une case par joueur ou joueuse du monde, ici deux.</figcaption></figure>\n\n<p>Le propriétaire ou la propriétaire d'un drone fait le même geste depuis le HUD de son drone ; en combat, partager lui coûte une action simple, hors combat rien. Le MJ ne paie rien. Un Fureter réussi donne au hacker un bouton <strong>Voir par…</strong> sur la carte de défense, valable tant qu'il garde une mark sur l'appareil.</p>\n<p>Celui ou celle qui voit par un appareil trouve, en bas à gauche, l'encadré <strong>Vous voyez par</strong> avec le nom de chaque appareil ; l'œil barré arrête de voir par lui. La vision s'arrête aussi toute seule quand la mark disparaît, quand le sans-fil est coupé, ou quand l'appareil est brické ou détruit.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.69OkRSC6h7elrvhm]{8.3 Scènes}</p><p>← @UUID[.mP1nsVy11CrAE7bb]{L'environnement, le bruit, le champ magique} · @UUID[.7q2auC5bZKVoSnL3]{Réglages liés et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "7q2auC5bZKVoSnL3",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.7q2auC5bZKVoSnL3",
+      "name": "Réglages liés et références",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il applique à chaque jet l'environnement, le bruit et le champ magique de la scène où se trouve le jeton.</p></li>\n<li><p>Il convertit les pieds en mètres et dessine chaque gabarit au rayon du livre, même s'il déborde de la carte.</p></li>\n<li><p>Il arrête une vision partagée dont la mark, le sans-fil ou l'appareil a disparu.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il change l'environnement quand la scène change (la nuit tombe, la fumée se dissipe).</p></li>\n<li><p>Il affiche la scène où se joue l'action quand un personnage a des jetons sur plusieurs scènes : le système lit celle que regarde le MJ.</p></li>\n<li><p>Il expose les personnages aux radiations d'un clic, quand le récit le demande.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Mêlée : ignorer l'environnement s'il est égal pour les deux</strong> (Combat)</td><td>décoché</td></tr>\n<tr><td><strong>Portée de la vision nocturne</strong>, <strong>thermographique</strong>, <strong>ultrasonique</strong>, <strong>de la Perception astrale</strong> (Perception et vision)</td><td>0, 30, 50, 300</td></tr>\n<tr><td>La famille <strong>Matrice</strong> des verrous (vision partagée sans mark)</td><td>cochée</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Modificateurs environnementaux : (<em>Livre de base p. 176</em>). Zones de spam et d'interférences : (<em>Livre de base p. 232-233</em>). Inviter au markage et Fureter : (<em>Livre de base p. 241</em>).</p></li>\n<li><p>Le détail : <a href=\"https://github.com/DjamZee/sr5/wiki/Configuration-de-scene\">wiki : Configuration de scène</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Vision-partagee\">wiki : Vision partagée et caméras</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.69OkRSC6h7elrvhm]{8.3 Scènes}</p><p>← @UUID[.rv2YfTdQozPnU7aw]{La vision partagée et les caméras} · @UUID[.ajCgle1YU7wn4L1h]{8.4 Tables aléatoires} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ajCgle1YU7wn4L1h",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.ajCgle1YU7wn4L1h",
+      "name": "8.4 Tables aléatoires",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Foundry tire une ligne au hasard dans une table. Le système y ajoute de quoi monter une table de butin (combien de tirages, combien d'exemplaires, combien de nuyens), de quoi distribuer ce qui sort, et de quoi tirer directement dans un compendium sans monter de table.</p>\n\n<h4>Pas à pas : monter une table de butin</h4>\n<ol>\n<li><p>Créez une table dans l'onglet <strong>Tables aléatoires</strong> de la barre latérale, ou ouvrez-en une. Cliquez sur <strong>Editer</strong>, en haut à droite de la fiche, puis sur l'onglet <strong>Sommaire</strong>.</p></li>\n<li><p>Sous <strong>Formule du jet</strong>, remplissez <strong>Nombre de tirages</strong> (par exemple <code>3</code> ou <code>1d4+1</code>) : la table est tirée autant de fois d'un coup, et tout arrive sur une seule carte.</p></li>\n<li><p>Remplissez <strong>Nuyens trouvés</strong> (par exemple <code>2d6*100</code>) si le butin contient de l'argent. Laissé vide, la table ne donne pas d'argent.</p></li>\n<li><p>Sur une ligne, cliquez sur la roue dentée à droite, puis remplissez <strong>Quantité</strong> sous <strong>Poids</strong> (par exemple <code>2d6</code>) : la ligne donne autant d'exemplaires. Une quantité sur une ligne qui renvoie à une autre table relance cette sous-table : <code>1d3</code> donne une à trois armes différentes, pas trois fois la même.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-config.webp\" width=\"732\" alt=\"La fiche d'une table en mode édition, onglet Sommaire : Nombre de tirages et Nuyens trouvés sont ajoutés par le système, et la case Tirage avec remise s'explique.\" /><figcaption><strong>Figure 8.4.1</strong> — La fiche d'une table en mode édition, onglet Sommaire : Nombre de tirages et Nuyens trouvés sont ajoutés par le système, et la case Tirage avec remise s'explique.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-4-ligne.webp\" width=\"572\" alt=\"La configuration d'une ligne : le champ Quantité, sous le poids.\" /><figcaption><strong>Figure 8.4.2</strong> — La configuration d'une ligne : le champ Quantité, sous le poids.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Bon à savoir</p><p>Une quantité ne fait jamais disparaître une ligne : écrivez une ligne « Rien » si la table doit pouvoir ne rien donner. Une formule incompréhensible ne bloque pas la partie : le MJ est prévenu et la table tire une fois. Les sous-tables s'emboîtent sur cinq niveaux au plus. Une table sans remise qu'on tire plus de fois qu'elle n'a de lignes est remise en jeu : vous obtenez toujours le nombre demandé.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>← @UUID[.7q2auC5bZKVoSnL3]{Réglages liés et références} · @UUID[.cAP5Y8oyenw1jDxy]{Tirer et distribuer} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "cAP5Y8oyenw1jDxy",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.cAP5Y8oyenw1jDxy",
+      "name": "Tirer et distribuer",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Tirez la table comme d'habitude. La carte regroupe les résultats identiques (<strong>×3</strong>), puis porte une ligne par chose à remettre.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-carte.webp\" width=\"300\" alt=\"La carte d'un tirage triple : les tirages identiques regroupés en une seule ligne (×2), le butin à donner, les nuyens à verser, et Relancer. Partager n'apparaît que sur une carte privée ou aveugle.\" /><figcaption><strong>Figure 8.4.3</strong> — La carte d'un tirage triple : les tirages identiques regroupés en une seule ligne (×2), le butin à donner, les nuyens à verser, et Relancer. Partager n'apparaît que sur une carte privée ou aveugle.</figcaption></figure>\n\n<ul>\n<li><p><strong>Donner</strong> copie sur le personnage sélectionné les objets sortis des compendiums. Sélectionnez un seul jeton : avec deux jetons sélectionnés, rien n'est donné. N'importe quel acteur peut recevoir : un personnage, un PNJ, une planque.</p></li>\n<li><p><strong>Verser</strong> (MJ seulement) partage les nuyens en parts égales entre les personnages joueurs sélectionnés, sans perte à l'arrondi. Le bouton ne sert qu'une fois ; la somme apparaît sur la fiche comme un gain ordinaire. Pour annuler, supprimez la ligne sur la fiche. Le partage égal est un confort de table : le livre ne dit pas comment une équipe se répartit ce qu'elle trouve.</p></li>\n<li><p><strong>Relancer</strong> refait le même tirage, dans le même mode (public, privé, aveugle), sur une nouvelle carte.</p></li>\n<li><p><strong>Partager</strong> rend publique une carte tirée en privé ou en aveugle.</p></li>\n</ul>\n<p>Le MJ voit ces boutons sur toutes les cartes ; le joueur ou la joueuse, seulement sur ses propres tirages. Quand la carte a été tirée par un joueur ou une joueuse, <strong>Donner</strong> et <strong>Verser</strong> montrent d'abord au MJ ce qui va être remis ; s'il refuse, rien n'est remis.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.ajCgle1YU7wn4L1h]{8.4 Tables aléatoires}</p><p>← @UUID[.ajCgle1YU7wn4L1h]{8.4 Tables aléatoires} · @UUID[.pI6V9DuKCcv2fm6I]{Un compendium comme une table} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pI6V9DuKCcv2fm6I",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.pI6V9DuKCcv2fm6I",
+      "name": "Un compendium comme une table",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Pas besoin de monter une table pour sortir un objet, un acteur ou un journal au hasard.</p>\n\n<h4>Pas à pas : tirer au hasard dans un compendium</h4>\n<ol>\n<li><p>Dans l'onglet <strong>Compendiums</strong> de la barre latérale, faites un clic droit sur un compendium. La même entrée existe dans le menu de la fenêtre d'un compendium ouvert, sur un dossier à l'intérieur d'un compendium (le tirage se fait alors dans ce dossier), et dans le navigateur de compendiums, où le tirage se fait parmi ce que les filtres laissent voir.</p></li>\n<li><p>Choisissez <strong>Tirer au hasard</strong>.</p></li>\n<li><p>Indiquez le nombre de tirages (1 par défaut, 100 au plus), puis validez. Chaque entrée a la même chance de sortir ; la carte habituelle arrive, avec <strong>Donner</strong> pour les objets. Rien n'est créé dans le monde.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-menu-compendium.webp\" width=\"313\" alt=\"Le clic droit sur un compendium : Tirer au hasard et Créer une table pondérée.\" /><figcaption><strong>Figure 8.4.4</strong> — Le clic droit sur un compendium : Tirer au hasard et Créer une table pondérée.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-4-tirer.webp\" width=\"412\" alt=\"La fenêtre qui demande combien de tirages.\" /><figcaption><strong>Figure 8.4.5</strong> — La fenêtre qui demande combien de tirages.</figcaption></figure>\n\n<h4>Pas à pas : créer une table pondérée (MJ)</h4>\n<ol>\n<li><p>Au même endroit, choisissez <strong>Créer une table pondérée</strong>. La fenêtre liste les entrées par ordre alphabétique, chacune avec un poids de 1.</p></li>\n<li><p>Donnez un poids à chaque entrée : 3 sort trois fois plus souvent que 1 ; 0 n'entre pas dans la table. <strong>Filtrer par nom</strong> masque des lignes, <strong>Exclure les masquées</strong> met à 0 tout ce que le filtre cache, <strong>Tout à 1</strong> remet tous les poids à 1.</p></li>\n<li><p>Cliquez sur <strong>Créer la table</strong>. La table est créée dans le monde, avec une formule qui couvre exactement les poids, et s'ouvre. Vous pouvez ensuite lui ajouter un nombre de tirages, des quantités ou des nuyens.</p></li>\n</ol>\n\n<h4>Réglages liés et références</h4>\n<table>\n<thead><tr><th>Réglage (onglet de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Masquer le jet sur les tables aléatoires</strong> (Interface)</td><td>décoché</td></tr>\n</tbody>\n</table>\n<p>Afficher le dé ou non se décide aussi table par table, par la case <strong>Afficher le résultat du jet dans le tchat</strong> de l'onglet <strong>Sommaire</strong>. Le détail, et le passage depuis l'ancien module Better Roll Tables : <a href=\"https://github.com/DjamZee/sr5/wiki/Tables-aleatoires\">wiki : Tables aléatoires</a>. Les nuyens versés : @UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.qk2XJEf1NvKmaJ6R]{argent et créditubes}.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.ajCgle1YU7wn4L1h]{8.4 Tables aléatoires}</p><p>← @UUID[.cAP5Y8oyenw1jDxy]{Tirer et distribuer} · @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "8MpF7Mlz5nP0zHae",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.8MpF7Mlz5nP0zHae",
+      "name": "8.5 Navigateur, macros, registre des implants",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Quatre outils du quotidien : trouver un objet dans tous les compendiums à la fois, mettre un jet dans la barre de macros, rendre ses actions à un combattant, et savoir ce que tient le MJ actif pendant la partie.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>← @UUID[.pI6V9DuKCcv2fm6I]{Un compendium comme une table} · @UUID[.smS68CvNFbL5LZ4D]{Le navigateur de compendiums} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "smS68CvNFbL5LZ4D",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.smS68CvNFbL5LZ4D",
+      "name": "Le navigateur de compendiums",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : chercher un objet</h4>\n<ol>\n<li><p>Ouvrez l'onglet <strong>Compendiums</strong> de la barre latérale et cliquez sur <strong>Navigateur de compendiums</strong>, en haut de la liste.</p></li>\n<li><p>Choisissez un type dans le panneau de gauche (armes, augmentations, sorts, véhicules, acteurs…) : les filtres propres à ce type apparaissent (sous-type, indice, disponibilité, prix…). Le nombre d'entrées de chaque sous-type est affiché. Sous les types, à gauche, se trouvent les boutons <strong>Ouvrir la boutique</strong>, <strong>Tirer au hasard</strong> et <strong>Créer une table pondérée</strong> ; le compte des résultats est en bas, près de <strong>Charger plus</strong>.</p></li>\n<li><p>Affinez par le champ de recherche, puis glissez l'entrée trouvée sur une fiche, ou sur la scène pour un acteur.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-5-navigateur.webp\" width=\"972\" alt=\"Le navigateur de compendiums : les types à gauche, les filtres, la liste.\" /><figcaption><strong>Figure 8.5.1</strong> — Le navigateur de compendiums : les types à gauche, les filtres, la liste.</figcaption></figure>\n<p>Le navigateur ne lit que les compendiums que votre rôle peut voir : un joueur ou une joueuse n'y trouve pas ce que le MJ garde pour lui. Il sert aussi de boutique et de point de départ pour <strong>Tirer au hasard</strong> parmi ce que les filtres laissent voir (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.FcFAEQCYnWId4zg4]{la boutique}, @UUID[.ajCgle1YU7wn4L1h]{les tables aléatoires}).</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants}</p><p>← @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants} · @UUID[.758LhIGNVDOv83cf]{Les macros} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "758LhIGNVDOv83cf",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.758LhIGNVDOv83cf",
+      "name": "Les macros",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : mettre un jet dans la barre</h4>\n<ol>\n<li><p>Ouvrez la fiche du personnage.</p></li>\n<li><p>Glissez une arme, un sort, une préparation, une forme complexe ou un pouvoir d'adepte qui demande un jet vers une case de la barre de macros, en bas de l'écran. Une compétence, une action matricielle ou une action de Résonance se glissent de la même façon.</p></li>\n<li><p>Le système fabrique la macro, au nom et à l'image de ce que vous avez glissé. Un clic lance le jet.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-5-macro.webp\" width=\"792\" alt=\"Une arme glissée dans la barre (①) : la macro porte son nom et son image.\" /><figcaption><strong>Figure 8.5.2</strong> — Une arme glissée dans la barre (①) : la macro porte son nom et son image.</figcaption></figure>\n<p>Une macro d'objet joue pour le personnage sélectionné, ou pour celui de votre utilisateur : un même bouton sert à chacun pour son personnage. Un objet qui ne demande pas de jet ne fait pas de macro, et le système le dit plutôt que de créer un bouton inerte.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants}</p><p>← @UUID[.smS68CvNFbL5LZ4D]{Le navigateur de compendiums} · @UUID[.zRGw517P44lsJVjH]{Remettre les actions à neuf} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zRGw517P44lsJVjH",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.zRGw517P44lsJVjH",
+      "name": "Remettre les actions à neuf",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le système décompte les actions de chaque combattant à chaque passe (@UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.jWfPWabTAgzEg8yB]{l'initiative et les actions}). Quand un décompte doit être corrigé, le MJ rend toutes ses actions à un combattant.</p>\n<ol>\n<li><p>Dans l'onglet <strong>Combat</strong> de la barre latérale, faites un clic droit sur le combattant.</p></li>\n<li><p>Choisissez <strong>Remettre ses actions à neuf</strong> : il retrouve son action gratuite, ses deux actions simples ou son action complexe, comme au début d'une passe.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/8-5-actions-neuf.webp\" width=\"313\" alt=\"Le menu d'un combattant : Remettre ses actions à neuf, réservé au MJ.\" /><figcaption><strong>Figure 8.5.3</strong> — Le menu d'un combattant : Remettre ses actions à neuf, réservé au MJ.</figcaption></figure>\n<p>Le même menu porte les retraits d'initiative (−1, −5, −10), <strong>Prendre l'initiative</strong>, <strong>Blitz</strong> et <strong>Retarder son action</strong>.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants}</p><p>← @UUID[.758LhIGNVDOv83cf]{Les macros} · @UUID[.liiyBVr98ljgwBLZ]{Le registre des implants et le MJ actif} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "liiyBVr98ljgwBLZ",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.liiyBVr98ljgwBLZ",
+      "name": "Le registre des implants et le MJ actif",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le navigateur du <strong>MJ actif</strong> (le premier MJ connecté) tient plusieurs registres pendant la partie : celui des implants (les champs d'Essence et de lots que seul le MJ remplit), celui des commandes de la boutique, des maladies, des infections, des soins, des factions. Il n'y a rien à ouvrir : ces registres travaillent seuls. Ce qu'il faut en savoir, c'est ce qu'ils demandent à la table.</p>\n<ul>\n<li><p><strong>Restez connecté</strong> pendant la partie. Les livraisons de la boutique, le suivi des maladies et des soins, et les demandes faites au MJ (des dommages sur un personnage qui n'est pas le sien, par exemple) passent par le navigateur du MJ actif. Sans MJ connecté, rien n'est vérifié ; à l'arrivée du MJ suivant, les champs d'implants qui ne correspondent pas à son registre sont remis en ordre.</p></li>\n<li><p><strong>Un message « Seul le MJ actif… »</strong> veut dire que l'action doit être faite depuis le poste du MJ actif. Avec deux MJ connectés, c'est le premier arrivé.</p></li>\n<li><p><strong>Une alerte du MJ en partie normale</strong> (un champ réservé « remis », alors que personne n'a rien fait d'inhabituel) est un défaut du système : signalez-la.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Navigateur-de-compendiums\">wiki : Navigateur de compendiums</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Macros\">wiki : Macros</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Outils-du-MJ\">wiki : Outils du MJ</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki : Tracker d'initiative</a>.</p></li>\n<li><p>Les décomptes d'actions par passe : (<em>Livre de base p. 164-165</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.8MpF7Mlz5nP0zHae]{8.5 Navigateur, macros, registre des implants}</p><p>← @UUID[.zRGw517P44lsJVjH]{Remettre les actions à neuf} · @UUID[.Y4eSypRXpSfL9lMo]{8.6 Ce que le système ne fait pas} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Y4eSypRXpSfL9lMo",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.Y4eSypRXpSfL9lMo",
+      "name": "8.6 Ce que le système ne fait pas",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">MJ</strong></p><h4>À quoi ça sert</h4>\n<p>Le système automatise beaucoup, pas tout. Voici les gestes qui restent au MJ, rangés par domaine. Aucun n'empêche de jouer : pour chacun, la ligne dit ce que vous faites à la main. Certains sont des choix (le livre laisse la décision au MJ, ou l'automatiser coûterait plus que cela ne rapporte) : ils sont signalés comme tels.</p><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU}</p><p>← @UUID[.liiyBVr98ljgwBLZ]{Le registre des implants et le MJ actif} · @UUID[.bZ5q13RX4X1l7rMJ]{Combat, magie, Matrice} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "bZ5q13RX4X1l7rMJ",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.bZ5q13RX4X1l7rMJ",
+      "name": "Combat, magie, Matrice",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Combat</h4>\n<ul>\n<li><p><strong>Une seule attaque par phase</strong> <em>(choix : « restons souple », arbitrage de DjamZ)</em>. Le système avertit d'une action hors phase mais laisse passer deux attaques avec deux actions simples. Veillez vous-même à la règle (<em>Livre de base p. 166</em>).</p></li>\n<li><p><strong>Changer de mode, se relever, se mettre à couvert sans action.</strong> Ces gestes ne sont pas bloqués quand le personnage n'a plus l'action nécessaire. Arbitrez à la table.</p></li>\n<li><p><strong>Défenses actives des suppléments.</strong> Elles n'ont ni limite ni contrôle de coût en actions : comptez l'action et la limite vous-même.</p></li>\n<li><p><strong>Fumée côté tireur.</strong> Quand le tireur est dans la fumée et la cible dehors, le système applique la visibilité sans chercher à l'annuler. Corrigez le modificateur dans la fenêtre de jet si vous jugez autrement.</p></li>\n<li><p><strong>Effets circonstanciels sur l'Initiative et l'Allonge.</strong> Un effet circonstanciel ne sait pas les modifier : ajustez-les sur la fiche le temps de l'effet.</p></li>\n<li><p><strong>PNJ non lié qui tire depuis sa fiche du répertoire.</strong> Le recul progressif ne compte que pour le jeton présent dans le combat : faites tirer le PNJ depuis son jeton.</p></li>\n<li><p><strong>Accessoires reconnus par leur nom.</strong> La lampe d'arme, le viseur point rouge, la visée laser, le viseur holographique, la lunette et les systèmes de recul sont reconnus par leur nom : renommés, ils n'agissent plus. Gardez leur nom d'origine.</p></li>\n<li><p><strong>Armes laser.</strong> La baisse de VD avec la portée ne joue que sur une arme qui porte le trait « Arme laser » : posez le trait sur une arme d'une autre source que le Mégapack.</p></li>\n<li><p><strong>Smartlink monté dans une lunette.</strong> Il ne fait pas jouer le smartgun de l'arme : appliquez-le à la main.</p></li>\n<li><p><strong>Déviation en diagonale, Seconde chance et complication, malus de saisie contre une autre cible</strong> <em>(choix, arbitrages de DjamZ)</em> : le système fait ce qui est décrit au chapitre @UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.l2kcMvt1ZtbjZ95v]{des grenades} et @UUID[Compendium.sr5.manuel.JournalEntry.gOUR40WhFA46CDwQ.JournalEntryPage.dQ3e5i0smJlXOWCx]{de la mêlée} ; rien à faire.</p></li>\n</ul>\n\n<h4>Magie</h4>\n<ul>\n<li><p><strong>Environnement et sorts indirects.</strong> Ni le lancement ni la défense d'un sort indirect ne lisent la visibilité ou la lumière. Ajoutez le modificateur dans la fenêtre de jet si vous jugez qu'il s'applique.</p></li>\n<li><p><strong>Focus de contresort et de protection d'autrui</strong> <em>(choix)</em>. Seul le plus puissant compte, et il est toujours appliqué : retirez-le si sa catégorie ne convient pas.</p></li>\n<li><p><strong>Lanceur supprimé.</strong> Si l'acteur qui maintient un effet est supprimé, les résistances liées s'arrêtent sans prévenir : retirez ou relancez l'effet.</p></li>\n<li><p><strong>Armure de mana gris contre un sort bénéfique.</strong> Il n'y a pas de jet de résistance, donc l'armure ne joue pas : appliquez son indice à la main si le sort doit être résisté.</p></li>\n<li><p><strong>Sort d'illusion : physique ou mana.</strong> Le choix de l'illusionniste n'est pas modélisé : choisissez la catégorie du sort selon sa décision.</p></li>\n<li><p><strong>Diminution des réflexes.</strong> Le sort baisse aussi les Initiatives matricielle et astrale : corrigez-les si besoin.</p></li>\n<li><p><strong>Augmentation et Diminution du bruit.</strong> Ces sorts ne posent aucun effet : appliquez-les à la table.</p></li>\n<li><p><strong>Puissance d'un esprit, niveau d'un sprite</strong> <em>(choix)</em>. Le propriétaire ou la propriétaire peut les changer sur la fiche : surveillez la valeur à l'invocation.</p></li>\n</ul>\n\n<h4>Matrice</h4>\n<ul>\n<li><p><strong>Convergence.</strong> À 40 de Score de Surveillance, rien ne se déclenche dans le système seul : appliquez la convergence à la main.</p></li>\n<li><p><strong>Plafond de programmes d'une IA</strong> <em>(choix)</em>. Au-delà, un avertissement s'affiche sans bloquer : tranchez si un programme de trop doit être retiré.</p></li>\n<li><p><strong>Spam modifié.</strong> Changer la valeur d'un Spam ne change pas l'effet déjà posé : retirez l'effet et posez-le de nouveau.</p></li>\n<li><p><strong>Second verrouillage par une CI.</strong> Sur une cible déjà verrouillée, le bouton de verrou de la CI est caché : posez le second verrou à la main.</p></li>\n<li><p><strong>IA hors de tout appareil.</strong> Elle est insensible au verrouillage de connexion (<em>Data Trails p. 157</em>), mais la carte le propose quand même : ne cliquez pas, ou retirez l'effet « Connexion verrouillée » de sa fiche.</p></li>\n<li><p><strong>Armes DSP sans appareil.</strong> Contre une cible qui n'a pas d'appareil actif, l'impulsion ne fait rien : au MJ d'ajuster si elle doit viser un autre appareil, porté par la cible ou par un voisin.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.Y4eSypRXpSfL9lMo]{8.6 Ce que le système ne fait pas}</p><p>← @UUID[.Y4eSypRXpSfL9lMo]{8.6 Ce que le système ne fait pas} · @UUID[.rCMp8mxpBtMnkwBg]{Corps, objets, véhicules, table} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rCMp8mxpBtMnkwBg",
+      "_key": "!journal.pages!7OYD5ThTukMgPOPe.rCMp8mxpBtMnkwBg",
+      "name": "Corps, objets, véhicules, table",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Soins et augmentations</h4>\n<ul>\n<li><p><strong>Premiers soins à travers une armure complète.</strong> La carte annonce le nombre entier de cases ; seule la moitié est appliquée au clic, avec une notification : fiez-vous à la notification.</p></li>\n<li><p><strong>Matériel improvisé.</strong> Le malus est appliqué, mais le nouvel essai au double du délai n'est pas suivi : comptez-le vous-même.</p></li>\n<li><p><strong>Contrôle surrénal.</strong> Désactivez-le sur la fiche quand son effet prend fin.</p></li>\n<li><p><strong>Premiers soins sur une IA.</strong> Le jet est proposé et retirerait des cases de son cœur, qui est un dommage matriciel : répondez « Non » à la demande.</p></li>\n<li><p><strong>Deux ossatures déjà actives.</strong> Le refus vaut à la pose et à l'activation, mais deux ossatures déjà actives le restent : désactivez ou retirez l'ancienne.</p></li>\n<li><p><strong>Implant livré inactif</strong> <em>(choix)</em>. Un implant acheté arrive inactif ; l'Essence ne baisse qu'une fois sa case cochée : cochez-la à l'installation.</p></li>\n<li><p><strong>Vérins hydrauliques.</strong> Le saut et la chute réduite ne sont pas calculés (<em>Livre de base p. 461</em>) : comptez-les.</p></li>\n</ul>\n\n<h4>Objets, drogues et effets</h4>\n<ul>\n<li><p><strong>Objets posés avant une mise à jour.</strong> Ils gardent leurs anciens effets : supprimez-les de la fiche et reprenez-les dans le compendium.</p></li>\n<li><p><strong>Bonus « au choix »</strong> <em>(choix)</em>. L'objet arrive avec un choix par défaut : modifiez l'effet selon celui du personnage.</p></li>\n<li><p><strong>Qualités d'addiction</strong> <em>(choix)</em>. Elles ne sont pas fournies : créez-les si besoin.</p></li>\n<li><p><strong>Surdose.</strong> Un effet décrit seulement dans le texte d'une drogue n'est pas lu (<em>Livre de base p. 417</em>) : appliquez alors la surdose à la main.</p></li>\n<li><p><strong>Effet « Mana gris » modifié.</strong> Modifier l'objet peut effacer la cible de l'effet : reprenez l'objet dans le Mégapack.</p></li>\n</ul>\n\n<h4>Véhicules et boutique</h4>\n<ul>\n<li><p><strong>AGP.</strong> La vitesse n'est pas calculée : indiquez-la à la main.</p></li>\n<li><p><strong>Loyer des métavariantes.</strong> Le loyer compte les cinq métatypes, pas le surcoût d'une métavariante ni d'une qualité : débitez-le par une transaction de perte.</p></li>\n<li><p><strong>Boutique dans une petite fenêtre.</strong> Sous environ 1 100 pixels de large, la colonne des noms disparaît : agrandissez la fenêtre.</p></li>\n</ul>\n\n<h4>À la table, avec plusieurs MJ ou plusieurs scènes</h4>\n<ul>\n<li><p><strong>Le MJ actif part pendant une demande.</strong> La demande est perdue, et le joueur ou la joueuse en est prévenu : il ou elle clique de nouveau, la demande va au MJ qui reste.</p></li>\n<li><p><strong>Brouillage avec deux MJ connectés.</strong> Le brouillage et les gabarits de bruit ou de champ magique peuvent compter deux fois : un seul MJ connecté pendant ces scènes, ou retirez les effets « brouillé » restés sur les fiches.</p></li>\n<li><p><strong>Verrou d'un contenant.</strong> Si le MJ ferme son navigateur pendant qu'une demande attend, son choix est perdu : refaites la demande.</p></li>\n<li><p><strong>Les données d'une fiche.</strong> Foundry envoie à chaque poste les données des acteurs, et le propriétaire ou la propriétaire d'une fiche peut l'écrire, son argent compris. Le système recalcule ce qui compte et prévient le MJ ; gardez un œil sur les comptes et sur le suivi du combat, et vérifiez une carte inattendue avant de la valider.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>La liste tenue à jour, avec la date de chaque limite : <a href=\"https://github.com/DjamZee/sr5/wiki/Limites-connues\">wiki : Limites connues</a>. Une limite levée par une version suivante en sort et apparaît dans le <a href=\"https://github.com/DjamZee/sr5/wiki/Changelog\">wiki : Changelog</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.YmbfyxHueLNjNZjW]{MENU} &gt; @UUID[.Y4eSypRXpSfL9lMo]{8.6 Ce que le système ne fait pas}</p><p>← @UUID[.bZ5q13RX4X1l7rMJ]{Combat, magie, Matrice}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

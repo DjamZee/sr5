@@ -1,4 +1,4 @@
-// Compendium of the fork's user manual, built by the manuel-sr5 repository (packs/manuel)
+// Compendium of the fork's user manual (packs/manuel), compiled from src/packs/manuel by `npm run build:packs`
 export const SR5_MANUAL_PACK = 'sr5.manuel'
 
 // First page of the first journal of the manual pack (the table of contents of "0. Démarrer"),
@@ -10,8 +10,8 @@ export async function sr5OpenManual() {
     fields: ['sort'] 
   })
   const first = [...index].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))[0]
-  // An installation served from the source tree has the pack declared but empty: the manual is compiled in the
-  // manuel-sr5 repository and copied into the published zip only (pack 5, DjamZ's 30000, 21/10)
+  // A source checkout served before `npm run build:packs` (or `npm run check`) has the pack declared but empty:
+  // Foundry creates it empty (DjamZ's 30000, 21/10)
   if (!first) return ui.notifications.warn(game.i18n.localize('SR5.ManualEmpty'), {
     permanent: true
   })

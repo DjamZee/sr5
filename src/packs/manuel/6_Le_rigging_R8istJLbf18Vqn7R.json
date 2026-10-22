@@ -1,0 +1,662 @@
+{
+  "_id": "R8istJLbf18Vqn7R",
+  "_key": "!journal!R8istJLbf18Vqn7R",
+  "name": "6. Le rigging",
+  "folder": "N2zXFKZTwykH5727",
+  "sort": 700000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "CnGOxSa25fcJzDxV",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.CnGOxSa25fcJzDxV",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Cette partie suit un rigger et ses machines : sortir un drone de sa fiche, en prendre le contrôle à la main, à distance ou en plongée, partager ses autosofts depuis la console, puis transformer le drone à l'Atelier, en acheter un neuf au concessionnaire, le lancer dans une poursuite, former un essaim et brouiller les drones d'en face. Le joueur ou la joueuse qui joue un rigger lit toute la partie ; le MJ lit surtout les chapitres 6.2 (ce qu'il pose sans test), 6.4 (c'est lui qui tient la poursuite) et les tableaux de réglages.</p>\n<p>Le système applique les règles du rigging du livre de base (<em>Livre de base p. 266-272</em>) et de ses poursuites (<em>Livre de base p. 199-205</em>) ; quand le MJ les coche, celles de <i>Rigger 5.0</i>. Ce manuel ne les recopie pas : il montre les fenêtres, dit ce que le système calcule seul et ce qui reste à la main du MJ.</p><table><tbody><tr><td><p>@UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.YRPqxggE1VlcjzpE]{Déployer un drone, lire sa fiche}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.xperwMtXBZqiCgrn]{Prendre le contrôle : manuel, à distance, plongé}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ufJtw5rziXVWG2Ax]{La RV : cold sim, hot sim, biofeedback, éjection}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.w2TxECHDrySkXQPA]{La console : réduction de bruit, partage, autosofts}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.sbERWXLlUYTYVpDh]{Le bruit entre le rigger et ses drones}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.101iNyuDikVh86Ix]{Ce que fait le système et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.b4PYgoLd4n0Hut2E]{L'onglet Atelier}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.LwJG9fU2a3vfMM64]{Acheter, installer, retirer}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.n42Ve168t2xz6HFo]{Les Points de Modification des drones}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.3hXHsoM5HGXiNvHk]{Réparer}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.vAvduh6wlDtygO79]{Ce que fait le système, réglages et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.AaXxyC5Sdgf94TgA]{6.3 Le concessionnaire}</p></td><td><p>Tous</p></td></tr><tr><td><p>@UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.OhfnkdD5MnrGBFAm]{Mener une poursuite (MJ)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.d0pkZJnT1VdtJm72]{Les actions de poursuite}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ejHxdstQHDdKOjGT]{Les règles de Rigger 5.0}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.zFoBs9hT00NPH18j]{Ce que fait le système, réglages et références}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims}</p></td><td><p>Tous</p></td></tr><tr><td><p>&emsp;@UUID[.rKwCzCHzPtiT3zOm]{Les actions de guerre électronique}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.aWawjGI6KIE60Vnd]{Les essaims}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.82Hm69EhUalkQYnu]{Ce que fait le système, réglages et références}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AtuZz9Pwqg0xLguA",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.AtuZz9Pwqg0xLguA",
+      "name": "6.1 La console de rigger",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Un drone ou un véhicule possédé par un personnage vit d'abord comme un objet de sa fiche. Une fois <strong>déployé</strong>, il devient un acteur à part, avec sa fiche et son jeton, que l'on pilote de trois façons : à la main, à distance par un commlink ou une console, ou en plongée, le rigger « dans » la machine. Ce chapitre montre ces gestes, ce que la plongée change aux jets, ce qui arrive au rigger quand son drone est touché ou détruit, et comment la console de rigger partage ses autosofts avec les drones.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU}</p><p>@UUID[.YRPqxggE1VlcjzpE]{Déployer un drone, lire sa fiche} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "YRPqxggE1VlcjzpE",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.YRPqxggE1VlcjzpE",
+      "name": "Déployer un drone, lire sa fiche",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : déployer et rappeler</h4>\n<ol>\n<li><p>Ouvrez la fiche du rigger, onglet <strong>Équipement</strong>, bloc <strong>Véhicules &amp; Drones</strong> : chaque drone et chaque véhicule a sa ligne.</p></li>\n<li><p>Cliquez sur l'icône de déploiement de la ligne (①, <strong>Déployer le drone / véhicule</strong>). Le système crée l'acteur du drone, avec le rigger pour contrôleur ; il apparaît dans l'onglet <strong>Acteurs</strong>. Glissez-le sur la scène pour poser son jeton.</p></li>\n<li><p>Une ligne déployée porte l'icône retournée (②). Cliquez dessus pour rappeler le drone : ses dommages, ses modifications, son équipement et sa description reviennent sur l'objet de la fiche, et repartiront avec lui au prochain déploiement.</p></li>\n</ol>\n<p>Un drone déployé prend l'icône d'acteur à fond noir des autres jetons de drone. Un drone déployé avec une ancienne alpha garde son image : rappelez-le puis redéployez-le. Quand le MJ cache le jeton d'un drone, son propriétaire garde l'icône du drone dans sa couronne du PAN ; les autres ne la voient pas.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-deployer.webp\" width=\"590\" alt=\"Le bloc Véhicules &amp;amp; Drones de la fiche du rigger : ① l'icône de déploiement d'un drone rangé, ② celle d'un drone déployé, qui sert à le rappeler.\" /><figcaption><strong>Figure 6.1.1</strong> — Le bloc Véhicules &amp; Drones de la fiche du rigger : ① l'icône de déploiement d'un drone rangé, ② celle d'un drone déployé, qui sert à le rappeler.</figcaption></figure>\n\n<h4>La fiche du drone</h4>\n<p>La fiche d'un drone ou d'un véhicule déployé a ses attributs de véhicule (Maniabilité, Vitesse, Accélération, Structure, Blindage, Autopilote, Senseurs, Places), ses résistances, et en bas son moniteur de condition et son moniteur matriciel.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-fiche-drone.webp\" width=\"908\" alt=\"La fiche d'un Doberman déployé, autonome : ① les actions de véhicule, ② le mode de contrôle.\" /><figcaption><strong>Figure 6.1.2</strong> — La fiche d'un Doberman déployé, autonome : ① les actions de véhicule, ② le mode de contrôle.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Les Actions de véhicule</strong> : <strong>Test de pilotage</strong>, <strong>Percuter</strong>, <strong>Autopilote face à l'imprévu</strong> (en autonome), <strong>Acquisition active</strong> et <strong>Réparer</strong>, chacune avec sa réserve et sa limite : un clic sur le chiffre lance le jet.</p></li>\n<li><p><strong>② Le bloc Mode de contrôle</strong> dit qui pilote et comment ; ses lignes sont détaillées ci-dessous.</p></li>\n</ul>\n<ul>\n<li><p><strong>Le mode</strong> (la liste sous Contrôleur) : <strong>Autonome</strong> (l'autopilote), <strong>À distance</strong> (par un commlink ou une console), <strong>Manuel</strong> (quelqu'un à bord, aux commandes) et <strong>Rigging</strong> (la plongée).</p></li>\n<li><p><strong>Le Contrôleur</strong> : le personnage qui pilote. C'est sa compétence, son câblage, sa console et sa Chance que le système lit. L'icône en haut du bloc permet d'en choisir un autre.</p></li>\n<li><p><strong>Appareil asservi</strong> : le drone est esclave de l'appareil maître du contrôleur (commlink, cyberdeck ou console). Il se défend dans la Matrice avec le Firewall de ce maître, il est dessiné sous lui dans la couronne du PAN (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.8tsTkRwzpFwEKJHE]{la couronne du PAN}), et il reçoit les autosofts partagés par une console. Sous la case : <strong>Connexion directe au rigger</strong> (@UUID[.sbERWXLlUYTYVpDh]{le bruit}) et <strong>Essaim n°</strong> (@UUID[.aWawjGI6KIE60Vnd]{les essaims}). Le geste est unique : ajouter le véhicule au PAN depuis la fiche du rigger coche cette case, et la cocher sur le drone le met dans la liste du PAN du maître (s'il y reste de la place). Retirer le véhicule de la liste ou décocher la case défait les deux.</p></li>\n<li><p><strong>La Vitesse actuelle</strong> : la vitesse à laquelle le drone se déplace en ce moment, 0 à l'arrêt. La poursuite la lit et l'écrit, ainsi que deux qualités de <i>Rigger 5.0</i>, Démon de la vitesse et Surcharge d'informations (<em>Rigger 5.0 p. 37-38</em>).</p></li>\n</ul>\n<p>Les onglets de la fiche, en haut, donnent aussi les modifications et l'équipement du drone, son <strong>Atelier</strong> (l'icône d'engrenages, @UUID[.4cWCYgWvhAX7eaYv]{6.2}) et sa description. Tout drone a l'interface de rigging d'office (<em>Livre de base p. 271</em>) : la case <strong>Module de rigging</strong> est cochée et grisée. Pour un véhicule, elle doit être cochée pour que la plongée soit proposée.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger} · @UUID[.xperwMtXBZqiCgrn]{Prendre le contrôle : manuel, à distance, plongé} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "xperwMtXBZqiCgrn",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.xperwMtXBZqiCgrn",
+      "name": "Prendre le contrôle : manuel, à distance, plongé",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Choisissez le mode dans le bloc <strong>Mode de contrôle</strong> de la fiche du drone, et le pilote comme <strong>Contrôleur</strong>. Les jets se lancent depuis la fiche du drone ; le système prend la réserve et la limite qui conviennent au mode, et les affiche dans le bloc <strong>Actions de véhicule</strong>.</p>\n\n<table>\n<thead><tr><th>Mode</th><th>Qui lance</th><th>Ce que le système change</th></tr></thead>\n<tbody>\n<tr><td><strong>Autonome</strong></td><td>le drone lui-même : Autopilote + autosoft</td><td>les autosofts installés sur le drone, ou partagés par la console ; jamais de Chance</td></tr>\n<tr><td><strong>Manuel</strong></td><td>le pilote à bord : compétence de pilotage + Réaction [Maniabilité]</td><td>malus d'un ork, d'un elfe, d'un nain ou d'un troll aux commandes d'un véhicule non adapté (<em>Rigger 5.0 p. 171</em>)</td></tr>\n<tr><td><strong>À distance</strong></td><td>le contrôleur, par son commlink ou sa console (<em>Livre de base p. 238</em>)</td><td>chaque limite plafonnée par le Traitement de données de l'appareil qui commande ; +2 à la limite d'un pilote en RV (<em>Livre de base p. 202</em>) ; le bruit de la distance</td></tr>\n<tr><td><strong>Rigging</strong> (plongée)</td><td>le rigger, par son câblage de contrôle de véhicules</td><td>limites + 2 (RV) + indice du câblage ; réserve des tests de pilotage + indice du câblage ; seuil des tests de pilotage − indice, jamais sous 1 ; +1 dé en hot sim (<em>Livre de base p. 202, 268</em>)</td></tr>\n</tbody>\n</table>\n\n<h4>Pas à pas : plonger dans un drone</h4>\n<ol>\n<li><p>Vérifiez que le rigger a un <strong>Câblage de contrôle de véhicules</strong> (un implant), ou l'écho <strong>Possession de la machine</strong> s'il est technomancien (<em>Livre de base p. 261</em>). Sans l'un ou l'autre, le mode <strong>Rigging</strong> n'est pas proposé : il pilote à distance.</p></li>\n<li><p>Sur la fiche du drone, choisissez le rigger comme <strong>Contrôleur</strong>, puis le mode <strong>Rigging</strong>. Les chiffres du bloc Actions de véhicule changent aussitôt.</p></li>\n<li><p>Cliquez sur le chiffre de <strong>Test de pilotage</strong> : la fenêtre de jet détaille la réserve (la compétence du rigger, plus son câblage), la limite (base, <strong>Réalité virtuelle</strong>, câblage) et la réduction du seuil.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-jet-plonge.webp\" width=\"462\" alt=\"Le test de pilotage d'un Doberman en plongée : 13 dés du rigger et 2 du câblage, limite 5 + 2 (RV) + 2 (câblage), seuil réduit de 2 s'il y en a un.\" /><figcaption><strong>Figure 6.1.3</strong> — Le test de pilotage d'un Doberman en plongée : 13 dés du rigger et 2 du câblage, limite 5 + 2 (RV) + 2 (câblage), seuil réduit de 2 s'il y en a un.</figcaption></figure>\n\n<p>Seuls les tests de compétences de pilotage (test de pilotage, percussion, Armes de véhicule) reçoivent les dés du câblage ; la Perception, la discrétion et la défense du drone ne reçoivent que la hausse de leur limite (<em>Livre de base p. 268</em>). En plongée, la discrétion du drone se lance avec Discrétion + Intuition du rigger ; à distance, avec la Discrétion et l'Agilité de qui contrôle. La fenêtre propose <strong>Repousser les limites</strong> : la Chance du pilote vaut sur tous les tests de véhicule, à la main, à distance ou en plongée, jamais pour l'autopilote.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.YRPqxggE1VlcjzpE]{Déployer un drone, lire sa fiche} · @UUID[.ufJtw5rziXVWG2Ax]{La RV : cold sim, hot sim, biofeedback, éjection} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ufJtw5rziXVWG2Ax",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.ufJtw5rziXVWG2Ax",
+      "name": "La RV : cold sim, hot sim, biofeedback, éjection",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Plonger, c'est être en réalité virtuelle (<em>Livre de base p. 268</em>). Le mode utilisateur du rigger, sur sa fiche (onglet Matrice, sous sa console : ① de la figure de @UUID[.w2TxECHDrySkXQPA]{la console}), dit laquelle : <strong>Réalité virtuelle cold sim</strong> ou <strong>Réalité virtuelle hot sim</strong>. La hot sim donne +1 dé à toutes les actions de véhicule, mais rend les dommages de biofeedback physiques.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Plonger met en RV, même si la fiche dit RA</p><p>Un rigger plongé est toujours en RV : si sa fiche est restée en <strong>Réalité augmentée</strong>, le système le traite comme en <strong>RV cold sim</strong> (biofeedback et choc d'éjection étourdissants). Passez sa fiche en hot sim si c'est ce qu'il a choisi : rien ne le fait à sa place.</p></div>\n\n<h4>Le biofeedback</h4>\n<p>Un drone touché pendant que son rigger y est plongé lui renvoie la moitié des dommages en biofeedback (<em>Livre de base p. 268</em>) : étourdissants en cold sim, physiques en hot sim. La fenêtre <strong>Résister aux dommages de biofeedback</strong> s'ouvre <strong>chez le joueur ou la joueuse du rigger</strong>, s'il ou elle est connecté(e), sinon chez le MJ. Les senseurs tactiles du drone lui coûtent 2 dés à ce jet (<em>Rigger 5.0 p. 170</em>).</p>\n\n<h4>L'éjection</h4>\n<p>Le rigger plongé est <strong>éjecté</strong> quand son drone est détruit (moniteur de condition plein) ou briqué (moniteur matriciel plein), ou quand la console ou le commlink qu'il utilise est briqué (<em>Livre de base p. 268, 271</em>). Il subit le choc d'éjection (<em>Livre de base p. 229</em>) : la fenêtre <strong>Résister au Choc d'éjection</strong> s'ouvre chez son joueur ou sa joueuse. Le drone passe en <strong>Autonome</strong>, hors de contrôle jusqu'au début du tour suivant, puis l'autopilote reprend la main ; un drone détruit ou briqué ne la reprend pas, et le message le dit. Un rigger qui pilotait à distance n'est pas éjecté.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-ejection.webp\" width=\"778\" alt=\"Un Roto-Drone détruit sous son rigger : le message d'éjection dans le tchat, et la fenêtre de résistance au choc d'éjection ; elle s'ouvre après le jet de biofeedback du drone touché (en bas).\" /><figcaption><strong>Figure 6.1.4</strong> — Un Roto-Drone détruit sous son rigger : le message d'éjection dans le tchat, et la fenêtre de résistance au choc d'éjection ; elle s'ouvre après le jet de biofeedback du drone touché (en bas).</figcaption></figure>\n\n<p>Un drone détruit par une attaque pendant la plongée donne <strong>deux</strong> résistances : le biofeedback et le choc d'éjection. Elles arrivent l'une après l'autre : la seconde fenêtre s'ouvre quand on a lancé (ou fermé) la première.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.xperwMtXBZqiCgrn]{Prendre le contrôle : manuel, à distance, plongé} · @UUID[.w2TxECHDrySkXQPA]{La console : réduction de bruit, partage, autosofts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "w2TxECHDrySkXQPA",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.w2TxECHDrySkXQPA",
+      "name": "La console : réduction de bruit, partage, autosofts",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>La console de commande pour rigger (CCR) est un appareil matriciel à deux indices propres, la <strong>Réduction de bruit</strong> et le <strong>Partage</strong>, dont le total ne dépasse jamais l'Indice d'appareil (<em>Livre de base p. 269</em>).</p>\n\n<h4>Pas à pas : régler la console et partager des autosofts</h4>\n<ol>\n<li><p>Sur la fiche du rigger, ouvrez l'onglet Matrice de gauche : la console équipée affiche son Indice d'appareil, le mode utilisateur (①) et, sous <strong>Attributs matriciels</strong>, la Réduction de bruit et le Partage (②). Un clic droit augmente un indice, un clic gauche le diminue.</p></li>\n<li><p>Dans l'onglet Matrice de droite, liste <strong>Programmes</strong>, chaque autosoft porte une icône de partage (③, <strong>Partager avec les drones</strong>). Cliquez-la pour les autosofts que la console doit partager, autant que l'indice de Partage : au-delà, le système refuse et le dit. Chargez-les aussi (colonne <strong>Actif</strong>).</p></li>\n<li><p>Sur la fiche de chaque drone qui doit en profiter, cochez <strong>Appareil asservi</strong> et laissez-le en <strong>Autonome</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-console.webp\" width=\"908\" alt=\"Les deux onglets Matrice du rigger : ① le mode utilisateur (ici RV cold sim), ② la Réduction de bruit et le Partage de la console, ③ l'icône de partage d'un autosoft. Les Résistances matricielles donnent aussi le biofeedback et le choc d'éjection.\" /><figcaption><strong>Figure 6.1.5</strong> — Les deux onglets Matrice du rigger : ① le mode utilisateur (ici RV cold sim), ② la Réduction de bruit et le Partage de la console, ③ l'icône de partage d'un autosoft. Les Résistances matricielles donnent aussi le biofeedback et le choc d'éjection.</figcaption></figure>\n\n<p>Un drone reçoit les autosofts partagés <strong>et actifs</strong> s'il est en autopilote, asservi, et si son contrôleur a la console équipée (<em>Livre de base p. 269</em>). Un drone qui fait tourner ses propres autosofts n'en reçoit aucun de la console. Sur sa fiche, chaque autosoft de la console est marqué : utilisé, partagé mais écarté, ou non partagé ; survolez l'icône pour savoir pourquoi. Un autosoft installé sur le drone tourne au plus à l'indice de son Autopilote (<em>Rigger 5.0 p. 131</em>).</p>\n<p>En combat, charger un autosoft (sur la console ou sur le drone) coûte une action complexe ; le décharger est gratuit.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.ufJtw5rziXVWG2Ax]{La RV : cold sim, hot sim, biofeedback, éjection} · @UUID[.sbERWXLlUYTYVpDh]{Le bruit entre le rigger et ses drones} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "sbERWXLlUYTYVpDh",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.sbERWXLlUYTYVpDh",
+      "name": "Le bruit entre le rigger et ses drones",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Un drone piloté à distance ou en plongée subit le bruit de la distance qui le sépare de son rigger (<em>Livre de base p. 232, 268</em>). Le système mesure cette distance entre les deux jetons, sur la scène affichée, et ajoute la ligne <strong>Bruit (distance au rigger)</strong> dans la fenêtre de jet de chaque action du drone (test de pilotage, percussion, tir, compétence, ciblage par senseurs), moins la réduction de bruit de la console. Ni les défenses ni les résistances ne la reçoivent, ni un drone en autopilote ou conduit à bord.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-bruit.webp\" width=\"494\" alt=\"Un Doberman piloté à distance, à 1,5 km de son rigger : ① le bruit de la distance (3) moins la réduction de bruit de la console (1). La limite est plafonnée par le Traitement de données de la console.\" /><figcaption><strong>Figure 6.1.6</strong> — Un Doberman piloté à distance, à 1,5 km de son rigger : ① le bruit de la distance (3) moins la réduction de bruit de la console (1). La limite est plafonnée par le Traitement de données de la console.</figcaption></figure>\n\n<ul>\n<li><p><strong>Connexion directe au rigger</strong> (bloc Mode de contrôle du drone) : le drone est relié par un câble, pas de bruit.</p></li>\n<li><p>Une <strong>Unité de relais</strong> installée sur un autre drone du même rigger sert de relais : le système prend le meilleur chemin et compte le plus mauvais de ses tronçons (<em>Rigger 5.0 p. 170</em>).</p></li>\n<li><p>Si l'un des deux jetons n'est pas sur la scène affichée, rien n'est compté : le MJ ajoute le bruit à la main, comme celui d'une zone brouillée.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.w2TxECHDrySkXQPA]{La console : réduction de bruit, partage, autosofts} · @UUID[.101iNyuDikVh86Ix]{Ce que fait le système et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "101iNyuDikVh86Ix",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.101iNyuDikVh86Ix",
+      "name": "Ce que fait le système et références",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule réserve, limite et seuil de chaque jet de véhicule selon le mode de contrôle, le câblage et la RV.</p></li>\n<li><p>Il partage les autosofts cochés avec les drones asservis en autopilote, dans la limite du Partage.</p></li>\n<li><p>Il ouvre la résistance au biofeedback et au choc d'éjection chez le joueur ou la joueuse du rigger, passe le drone en autonome et rend la main à l'autopilote au tour suivant.</p></li>\n<li><p>Il mesure le bruit entre le rigger et chacun de ses drones, relais compris.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il lance le choc d'éjection quand le câble d'une connexion directe est arraché : le système ne connaît pas ce cas.</p></li>\n<li><p>Il ajoute le bruit d'une zone brouillée, ou de deux jetons qui ne sont pas sur la même scène.</p></li>\n<li><p>Il juge la suite d'un autopilote face à l'imprévu : la ligne du même nom lance l'Indice d'appareil × 2 contre le seuil qu'il fixe.</p></li>\n</ul>\n\n<h4>Références</h4>\n<ul>\n<li><p>Piloter en RA ou en RV : (<em>Livre de base p. 202</em>). Rigging, câblage, plongée, biofeedback : (<em>Livre de base p. 266-268</em>). Console de rigger : (<em>Livre de base p. 269-270</em>). Drones : (<em>Livre de base p. 271-272</em>). Bruit : (<em>Livre de base p. 232</em>). Choc d'éjection : (<em>Livre de base p. 231</em>). Plafond des autosofts : (<em>Rigger 5.0 p. 131</em>).</p></li>\n<li><p>Le détail exhaustif : <a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki : Rigging</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.AtuZz9Pwqg0xLguA]{6.1 La console de rigger}</p><p>← @UUID[.sbERWXLlUYTYVpDh]{Le bruit entre le rigger et ses drones} · @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4cWCYgWvhAX7eaYv",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.4cWCYgWvhAX7eaYv",
+      "name": "6.2 L'Atelier",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>L'Atelier est l'onglet où l'on transforme un drone ou un véhicule : acheter une modification, l'installer selon le livre (un test étendu du mécanicien), la retirer, ou, pour le MJ, la poser d'un clic. Il compte les emplacements de chaque catégorie, ou les Points de Modification d'un drone si la table joue cette règle, et refuse ce qui ne rentre pas. On y répare aussi les dommages.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU}</p><p>← @UUID[.101iNyuDikVh86Ix]{Ce que fait le système et références} · @UUID[.b4PYgoLd4n0Hut2E]{L'onglet Atelier} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "b4PYgoLd4n0Hut2E",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.b4PYgoLd4n0Hut2E",
+      "name": "L'onglet Atelier",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Ouvrez la fiche d'un drone déployé, ou celle de l'objet véhicule sur la fiche de son propriétaire, et cliquez sur l'icône d'engrenages.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-atelier.webp\" width=\"908\" alt=\"L'Atelier d'un véhicule : ① les six jauges d'emplacements, ② le coût, ③ l'icône des dés d'une modification à installer, ④ la clé du MJ.\" /><figcaption><strong>Figure 6.2.1</strong> — L'Atelier d'un véhicule : ① les six jauges d'emplacements, ② le coût, ③ l'icône des dés d'une modification à installer, ④ la clé du MJ.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Les jauges</strong> : autour de l'image du véhicule (à défaut, l'image de sa catégorie), les six catégories (Groupe motopropulseur, Blindage, Armement, Structure, Électromagnétique, Apparence), autant d'emplacements chacune que la Structure (<em>Rigger 5.0 p. 153-154</em>). Une jauge pleine se colore. Sous les Points de Modification, une seule jauge les remplace (@UUID[.n42Ve168t2xz6HFo]{plus bas}).</p></li>\n<li><p><strong>② Le coût</strong> : véhicule nu + modifications = total, et qui paie, avec son solde. L'équipement d'usine compte 0 : il est payé avec le véhicule, et il ne prend aucun emplacement (<em>Rigger 5.0 p. 191</em>).</p></li>\n<li><p><strong>③ Les dés</strong> : <strong>Installer selon le livre (test étendu)</strong> sur une modification à bord, à installer ; sur une modification posée, la retirer selon le livre.</p></li>\n<li><p><strong>④ La clé</strong> : <strong>Poser directement (MJ)</strong>, ou ôter, sans test ni paiement.</p></li>\n</ul>\n<p>Chaque ligne donne les emplacements (ou les PM), le seuil, les outils et le prix de la modification <strong>sur ce véhicule</strong> : certains prix se multiplient par la Maniabilité, la Vitesse ou le prix du véhicule (<em>Rigger 5.0 p. 156</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p><p>← @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier} · @UUID[.LwJG9fU2a3vfMM64]{Acheter, installer, retirer} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "LwJG9fU2a3vfMM64",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.LwJG9fU2a3vfMM64",
+      "name": "Acheter, installer, retirer",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : acheter une modification</h4>\n<ol>\n<li><p>Ouvrez un compendium de modifications de véhicule (celles du Mégapack), et glissez la modification sur l'Atelier du drone déployé.</p></li>\n<li><p>Une fenêtre donne sa catégorie, ses emplacements (ou ses PM), son seuil et ses outils, son prix sur ce véhicule et qui paie. Cliquez sur <strong>Acheter</strong> : l'achat passe par la boutique, avec ses contrôles habituels (acheteur autorisé, solde, création, disponibilité), et le rigger est débité (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.FcFAEQCYnWId4zg4]{la boutique}).</p></li>\n<li><p>La modification arrive <strong>à bord, à installer</strong> : sa ligne le dit, grisée. Une modification glissée depuis l'inventaire d'un personnage monte à bord sans paiement (<strong>Mettre à bord, à installer</strong>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-acheter.webp\" width=\"623\" alt=\"La fenêtre ouverte par le dépôt d'une modification sur l'Atelier : son prix sur ce véhicule, qui paie, et les boutons Acheter et, pour le MJ, Poser directement.\" /><figcaption><strong>Figure 6.2.2</strong> — La fenêtre ouverte par le dépôt d'une modification sur l'Atelier : son prix sur ce véhicule, qui paie, et les boutons Acheter et, pour le MJ, Poser directement.</figcaption></figure>\n\n<h4>Pas à pas : installer selon le livre</h4>\n<ol>\n<li><p>Sur la ligne d'une modification à installer, cliquez sur l'icône des dés.</p></li>\n<li><p>La fenêtre <strong>Installer une modification</strong> propose le <strong>Mécanicien</strong> (le jeton sélectionné, sinon votre personnage, sinon le propriétaire du véhicule), sa <strong>Compétence</strong> de Mécanique selon le véhicule (modifiable) et les <strong>Outils du mécanicien</strong>. Validez.</p></li>\n<li><p>La fenêtre de jet s'ouvre : c'est un test étendu Mécanique + Logique [Logique], seuil de la modification, intervalle 1 heure (<em>Rigger 5.0 p. 153</em>) ; des outils inférieurs à ceux demandés coûtent −2 dés, aucun outil −4 dés, déjà réglés ; plans et conditions de travail s'y ajoutent.</p></li>\n<li><p>Le seuil atteint, la carte propose <strong>Installer</strong> : un clic pose la modification, et ses effets s'appliquent à la fiche.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-installer.webp\" width=\"416\" alt=\"La fenêtre d'installation : le mécanicien, sa compétence, ses outils, et le rappel du test.\" /><figcaption><strong>Figure 6.2.3</strong> — La fenêtre d'installation : le mécanicien, sa compétence, ses outils, et le rappel du test.</figcaption></figure>\n\n<ul>\n<li><p><strong>Pas de place</strong> : une modification qui ne rentre pas (emplacements ou PM) est refusée <strong>avant</strong> le test, avec le compte dans le message (« il faut 3 emplacement(s)… il en reste 1 »). Le MJ peut lever ce refus avec le verrou de règles <strong>Objets</strong> (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{les verrous}).</p></li>\n<li><p><strong>Échec critique</strong> : les pièces sont perdues ; le bouton de la carte retire la modification du véhicule, sans remboursement.</p></li>\n<li><p><strong>Compétence spéciale</strong> : une modification qui en demande une le rappelle ; ce test-là se lance à la main depuis la fiche.</p></li>\n<li><p><strong>Retirer</strong> : l'icône des dés d'une modification posée lance le même test au <strong>seuil divisé par deux, arrondi au supérieur</strong>. Le livre ne chiffre pas le retrait (<em>Rigger 5.0 p. 154</em>) : le système fait ce choix. La modification retirée reste à bord, à installer.</p></li>\n</ul>\n\n<h4>La pose directe du MJ</h4>\n<p>Le MJ glisse une modification et choisit <strong>Poser directement (MJ)</strong>, ou clique la clé d'une ligne : pas de test, pas de paiement. Sur l'<strong>objet véhicule</strong> (non déployé), seul le MJ pose ou ôte ; l'achat et l'installation se font sur le drone déployé. Le refus faute de place vaut aussi pour lui.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p><p>← @UUID[.b4PYgoLd4n0Hut2E]{L'onglet Atelier} · @UUID[.n42Ve168t2xz6HFo]{Les Points de Modification des drones} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "n42Ve168t2xz6HFo",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.n42Ve168t2xz6HFo",
+      "name": "Les Points de Modification des drones",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le réglage <strong>Modifications des drones</strong> propose la règle optionnelle de <i>Rigger 5.0</i> : les <strong>Points de Modification</strong> (PM) au lieu des emplacements (<em>Rigger 5.0 p. 126-128</em>). Elle ne vise que les drones : un véhicule garde toujours ses six catégories. L'Atelier et le concessionnaire d'un drone montrent alors une seule jauge, <strong>Points de Modification</strong>, et la colonne <strong>PM</strong> remplace celle des emplacements.</p>\n<ul>\n<li><p><strong>La réserve</strong> : autant de PM que la Structure. Quand le livre écrit Structure X(Y), le MJ porte Y dans le champ <strong>PM disponibles (Y)</strong> de l'Atelier (le joueur ou la joueuse le lit sans le modifier) ; vide, c'est la Structure.</p></li>\n<li><p><strong>L'équipement d'usine est gratuit et ne prend aucun PM</strong> (<em>Rigger 5.0 p. 191</em>) : un Steel Lynx neuf garde ses 6 PM pour vos propres modifications, sa monture d'usine comprise dans le profil.</p></li>\n<li><p><strong>Monter un attribut</strong> (Maniabilité, Vitesse, Accélération, Blindage, Senseurs) : +1 gratuit, une fois par drone, puis le montant moins 1 (+2 en Vitesse coûte 1 PM). Un attribut ne dépasse jamais le double de sa valeur de départ. Le Blindage compte par paliers de 3 points, sans plafond au double, mais au-delà de 3 × Structure il retire de la Maniabilité, de la Vitesse et de l'Accélération.</p></li>\n<li><p><strong>Les montures d'arme</strong> suivent la table du livre selon la catégorie de l'arme, de Micro (0) à Lourde (6), +1 pour une monture interne ou dissimulée (<em>Rigger 5.0 p. 128</em>). La monture <strong>Légère</strong> des véhicules, absente de la table, coûte 3 PM : le livre ne la chiffre pas, c'est un choix du système.</p></li>\n<li><p><strong>Les remplacements</strong> : le Remplacement des Senseurs compte comme une hausse des Senseurs jusqu'à son indice ; le Remplacement de l'Autopilote ne coûte aucun PM (le livre ne lui en donne pas).</p></li>\n<li><p><strong>Baisser un attribut</strong> rend 1 PM en tout. Baisser la Structure rend 1 PM par point, mais <strong>jamais sous la moitié de la Structure de départ, arrondie au supérieur</strong> (<em>Rigger 5.0 p. 127</em>) : une Structure 3 descend à 2, pas à 1. Une baisse en dessous est refusée, avec ce plancher dans le message. Le texte français écrit « arrondie à l'inférieur », mais son propre exemple raisonne en arrondi supérieur : le système suit l'exemple.</p></li>\n</ul>\n<p>Une pose qui dépasse les PM restants est refusée, pour le joueur ou la joueuse comme pour le MJ ; une modification qui ne demande pas plus de PM n'est jamais refusée. La fenêtre qui s'ouvre quand on dépose une modification annonce les PM qu'elle prendra.</p>\n<p>Une amélioration d'attribut prend la Disponibilité du livre (Maniabilité, Vitesse, Senseurs : nouvelle valeur × 2 ; Accélération : × 4 ; Blindage : la nouvelle valeur, Restreint au-delà de 6, Prohibé au-delà de 12), dans l'Atelier, au concessionnaire et à la caisse (<em>Rigger 5.0 p. 127-128</em>). Sous Maniabilité 1, ou à Vitesse ou Accélération 0, la fiche du drone affiche <strong>Ce drone ne peut plus se déplacer</strong> (<em>Rigger 5.0 p. 128</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-pm.webp\" width=\"908\" alt=\"L'Atelier d'un Steel Lynx sous les Points de Modification : ① la jauge unique (1 PM pris sur 6), ② le champ du Y, ③ la monture d'usine, marquée « (D'origine) », à 0 ¥, qui ne compte pas dans la jauge. L'Amélioration de la Vitesse (2) prend 1 PM, le +1 gratuit déduit.\" /><figcaption><strong>Figure 6.2.4</strong> — L'Atelier d'un Steel Lynx sous les Points de Modification : ① la jauge unique (1 PM pris sur 6), ② le champ du Y, ③ la monture d'usine, marquée « (D'origine) », à 0 ¥, qui ne compte pas dans la jauge. L'Amélioration de la Vitesse (2) prend 1 PM, le +1 gratuit déduit.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">L'usine, sur un drone d'une ancienne version du Mégapack</p><p>Le système reconnaît l'équipement d'usine à la case <strong>D'origine</strong> de la modification, ou à la marque que le Mégapack pose sur ses copies dans ses versions récentes. Un drone tiré d'une version plus ancienne, ou fait à la main, peut avoir une monture d'usine qui compte encore ses PM et son prix : ouvrez la fiche de la modification et cochez <strong>D'origine</strong>.</p></div>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Le prix aussi suit le livre</p><p>Sous les PM, une hausse d'attribut se paie au prix du livre : nouvelle valeur × Structure × 200 ¥ (le double pour la Vitesse ; nouvelle valeur × 1 000 ¥ pour les Senseurs) (<em>Rigger 5.0 p. 127</em>). La fenêtre d'achat annonce le coût de la modification comme si elle était seule ; la ligne posée compte le +1 gratuit déjà pris.</p></div><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p><p>← @UUID[.LwJG9fU2a3vfMM64]{Acheter, installer, retirer} · @UUID[.3hXHsoM5HGXiNvHk]{Réparer} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "3hXHsoM5HGXiNvHk",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.3hXHsoM5HGXiNvHk",
+      "name": "Réparer",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Le bloc <strong>Actions de véhicule</strong> de la fiche a une ligne <strong>Réparer</strong> (la clé à molette) (<em>Rigger 5.0 p. 33-34</em>).</p>\n\n<h4>Pas à pas : réparer un drone ou un véhicule</h4>\n<ol>\n<li><p>Sélectionnez le jeton du mécanicien, puis cliquez sur la clé à molette de la fiche du véhicule.</p></li>\n<li><p>La fenêtre annonce les cases de dommages et le coût des pièces détachées (5 % du prix du véhicule par case). Choisissez la <strong>Méthode</strong>, la <strong>Compétence</strong> de Mécanique (selon le véhicule), les <strong>Cases à réparer</strong> (le seuil) et, s'il en manque, les <strong>Cases sans pièces détachées</strong>.</p></li>\n<li><p>Cliquez sur <strong>Réparer</strong> : c'est un test étendu Mécanique + Logique [Mentale], intervalle 4 heures (1 jour et −4 dés par case sans pièces). Le seuil atteint, la carte propose <strong>Réparer N cases</strong>, qui les efface du moniteur.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-reparer.webp\" width=\"416\" alt=\"La fenêtre de réparation d'un véhicule à 3 cases de dommages : le coût des pièces, la méthode, le mécanicien, le seuil.\" /><figcaption><strong>Figure 6.2.5</strong> — La fenêtre de réparation d'un véhicule à 3 cases de dommages : le coût des pièces, la méthode, le mécanicien, le seuil.</figcaption></figure>\n\n<p>Un véhicule équipé du système de nanomaintenance offre deux méthodes de plus : la nanomaintenance autonome (l'indice en dés, 1 heure) ou assistée (l'indice ajouté au mécanicien) (<em>Rigger 5.0 p. 167</em>). Un véhicule dont toutes les cases sont remplies est grillé : il ne se répare plus.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p><p>← @UUID[.n42Ve168t2xz6HFo]{Les Points de Modification des drones} · @UUID[.vAvduh6wlDtygO79]{Ce que fait le système, réglages et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vAvduh6wlDtygO79",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.vAvduh6wlDtygO79",
+      "name": "Ce que fait le système, réglages et références",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il calcule le prix de chaque modification sur ce véhicule, compte emplacements ou PM, et refuse avant le test ce qui ne rentre pas.</p></li>\n<li><p>Il fait payer l'achat par la boutique, prépare le test d'installation, de retrait ou de réparation, et pose le résultat d'un clic.</p></li>\n<li><p>Il applique les effets des modifications reconnues (remplacements, plafond du Blindage, senseurs tactiles, camouflage de signature, adaptation métahumaine, système de protection des passagers…).</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il porte le Y d'un drone Structure X(Y) dans l'Atelier, sous les PM.</p></li>\n<li><p>Il lance le test de compétence spéciale d'une modification qui en demande un, et juge des conditions de travail.</p></li>\n<li><p>Il débite les pièces détachées d'une réparation, que le système annonce sans les prélever.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Rigging de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Modifications des drones</strong></td><td><strong>Emplacements (règle principale)</strong> ; <strong>Points de Modification (optionnel)</strong> en option</td></tr>\n<tr><td>Verrou de règles <strong>Objets</strong> (une modification sans place)</td><td>actif : la pose est refusée</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Emplacements et installation : (<em>Rigger 5.0 p. 153-156</em>). Points de Modification : (<em>Rigger 5.0 p. 126-128</em>) ; table des drones : (<em>Rigger 5.0 p. 191</em>). Réparer : (<em>Rigger 5.0 p. 33-34</em>) ; nanomaintenance : (<em>Rigger 5.0 p. 167</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki : Rigging (L'Atelier, Points de Modification, Réparer)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.4cWCYgWvhAX7eaYv]{6.2 L'Atelier}</p><p>← @UUID[.3hXHsoM5HGXiNvHk]{Réparer} · @UUID[.AaXxyC5Sdgf94TgA]{6.3 Le concessionnaire} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AaXxyC5Sdgf94TgA",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.AaXxyC5Sdgf94TgA",
+      "name": "6.3 Le concessionnaire",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le concessionnaire est une fenêtre où l'on construit un drone ou un véhicule avant de l'acheter : on choisit le modèle, on lui ajoute des modifications, et l'on voit d'un coup d'œil ses jauges, son prix et sa disponibilité. L'achat passe par la boutique, tout le lot ou rien.</p>\n\n<h4>Pas à pas : construire et acheter</h4>\n<ol>\n<li><p>Cliquez sur le bouton en forme de voiture de la barre latérale, juste sous la boutique (@UUID[Compendium.sr5.manuel.JournalEntry.lBbsW7KCNkF2WBZE.JournalEntryPage.beFyXqYIXDNyD5AR]{la barre latérale}).</p></li>\n<li><p>Choisissez l'<strong>Acheteur</strong> en haut : son solde s'affiche.</p></li>\n<li><p>Dans la colonne <strong>Modèles</strong> (①), les véhicules et les drones sont sur deux rayons, triés par catégorie puis par nom, avec leurs attributs ; cliquez sur l'un d'eux. Le champ <strong>Rechercher</strong> filtre la liste. Vous pouvez aussi glisser un véhicule depuis un compendium.</p></li>\n<li><p>Au centre (②), l'image du véhicule entre ses jauges, puis l'équipement livré avec lui. Dans la colonne <strong>Modifications</strong> (③), cliquez sur une modification pour l'ajouter : elle apparaît au centre avec sa catégorie, ses emplacements et son prix sur ce véhicule ; la corbeille la retire, <strong>Retirer les modifications</strong> les retire toutes.</p></li>\n<li><p>Lisez le prix (④), puis cliquez sur <strong>Acheter pour…</strong>.</p></li>\n</ol>\n<p>La vitrine montre les attributs du véhicule une fois ses modifications posées, le profil imprimé barré à côté ; une modification d'usine est déjà comptée dans ce profil, une modification qui attend son installation ne change rien (<em>Rigger 5.0 p. 156</em>). Un véhicule ou un drone sans image à lui affiche l'image de sa catégorie (moto, voiture, drone moyen…), ici comme à l'Atelier. Dans la boutique, véhicules et drones ont chacun leur rayon : <strong>Véhicules</strong> (et leurs modifications (<em>Rigger 5.0 p. 153-173</em>)) et <strong>Drones</strong> (et les modifications de drone (<em>Rigger 5.0 p. 126-132</em>)).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-3-concessionnaire.webp\" width=\"1468\" alt=\"Le concessionnaire : ① les modèles, ② la configuration (jauges, modifications ajoutées), ③ les modifications des rayons, ④ le total, la disponibilité du lot et le solde après l'achat (thème sombre).\" /><figcaption><strong>Figure 6.3.1</strong> — Le concessionnaire : ① les modèles, ② la configuration (jauges, modifications ajoutées), ③ les modifications des rayons, ④ le total, la disponibilité du lot et le solde après l'achat (thème sombre).</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p>Une jauge montre ce qui est posé, puis, hachuré, ce qui reste à installer : « 0 + 4 / 18 » se lit « rien de posé, 4 à installer, 18 emplacements ». Un dépassement est signalé : l'installation de trop sera refusée (<em>Rigger 5.0 p. 154</em>).</p></li>\n<li><p>Le prix : véhicule, modifications, express s'il est ouvert, <strong>Total</strong>, <strong>Disponibilité du lot</strong> (la plus haute de ses éléments, avec la légalité la plus stricte) et <strong>Solde après l'achat</strong>, en rouge s'il ne suffit pas.</p></li>\n<li><p>La qualité <strong>Relation avec un concessionnaire</strong> de la bonne catégorie retire 10 % au prix du véhicule, après le surcoût de disponibilité (<em>Rigger 5.0 p. 37</em>).</p></li>\n</ul>\n\n<h4>Ce qui arrive après l'achat</h4>\n<p>Le véhicule arrive dans l'inventaire de l'acheteur avec ses modifications <strong>à bord, à installer</strong> : on les installe selon le livre depuis l'Atelier du véhicule déployé (@UUID[.LwJG9fU2a3vfMM64]{6.2}). Si le lot a une disponibilité et que la table joue en livraison différée (<em>Livre de base p. 420</em>), il part en <strong>une seule commande</strong>, au délai le plus long de ses éléments, et arrive monté quand le MJ la livre (@UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.aG5xz2odvcmkng4w]{la livraison}). Une commande s'annule comme à la boutique, et le remboursement est celui du débit.</p>\n\n<h4>Pour le MJ</h4>\n<p>La case <strong>Équiper (gratuit)</strong> équipe n'importe quel acteur sans débit, livré tout de suite. Les modifications que vous ajoutez sont marquées <strong>posées</strong> d'office tant qu'il reste la place (la clé de la ligne change ce choix) : le véhicule arrive avec elles installées, même après une livraison différée. Dans le bloc des commandes de la fiche, le lien du MJ sur une commande est <strong>Livrer maintenant</strong> : pour annuler, servez-vous de l'icône d'annulation.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Règles Maison — Livraison express</p><p>Le livre ne prévoit pas de payer pour être livré plus vite. Si le MJ a coché la livraison express, le concessionnaire ajoute la ligne de l'express au prix d'un lot qui attend, calculée sur le prix plein du véhicule. Décochée par défaut.</p></div>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Boutique de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Livraison des achats</strong></td><td>après le délai de recherche</td></tr>\n<tr><td><strong>Livraison express (règle maison)</strong></td><td>décoché</td></tr>\n</tbody>\n</table>\n<p>Le concessionnaire vend depuis les rayons de la boutique (compendiums vendus, @UUID[Compendium.sr5.manuel.JournalEntry.dnvEvohrMpHvh5dR.JournalEntryPage.cHcctuavWeEIK3QH]{configurer la boutique}), pas depuis le comptoir d'un vendeur.</p>\n\n<h4>Références</h4>\n<ul>\n<li><p>Prix d'une modification sur un véhicule : (<em>Rigger 5.0 p. 156</em>). Relation avec un concessionnaire : (<em>Rigger 5.0 p. 37</em>). Délais : (<em>Livre de base p. 420</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki : Rigging (Le concessionnaire)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU}</p><p>← @UUID[.vAvduh6wlDtygO79]{Ce que fait le système, réglages et références} · @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "k8t2zbObC0IHgrPy",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.k8t2zbObC0IHgrPy",
+      "name": "6.4 Les poursuites",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p>Le MJ tient la poursuite dans une fenêtre à part : les véhicules engagés, leur Vitesse actuelle, la portée entre chaque paire, le terrain, et qui est hors de contrôle. Chaque action de poursuite est un bouton qui prépare le jet du pilote et reporte son résultat ; le système applique ce que la fin d'un tour fait découler. Le joueur ou la joueuse lance les actions de son propre véhicule depuis la même fenêtre.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU}</p><p>← @UUID[.AaXxyC5Sdgf94TgA]{6.3 Le concessionnaire} · @UUID[.OhfnkdD5MnrGBFAm]{Mener une poursuite (MJ)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OhfnkdD5MnrGBFAm",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.OhfnkdD5MnrGBFAm",
+      "name": "Mener une poursuite (MJ)",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : engager une poursuite</h4>\n<ol>\n<li><p>Dans les contrôles des jetons (colonne de gauche), cliquez sur l'outil <strong>Poursuite</strong>, puis sur <strong>Engager une poursuite</strong>.</p></li>\n<li><p>Sélectionnez sur la scène les jetons des véhicules et des drones, puis cliquez sur <strong>Ajouter les jetons sélectionnés</strong>. Chaque nouvelle paire commence à portée Moyenne ; le premier véhicule ajouté est le poursuivi (le <strong>Rôle</strong> se change).</p></li>\n<li><p>Donnez à chaque véhicule sa <strong>Vitesse actuelle</strong>. Pour les passagers, sélectionnez leurs jetons et cliquez sur <strong>Embarquer les jetons sélectionnés</strong> sur la bonne ligne ; le pilote à la main est compté à bord sans qu'on l'embarque.</p></li>\n<li><p>Pour chaque paire, fixez la portée, ou faites-la varier d'un cran avec − et +. Au-delà de la plus lointaine, le poursuivi a semé l'autre (<em>Livre de base p. 205</em>).</p></li>\n<li><p>Pendant le tour, cochez <strong>Contrôlé ce tour</strong> pour chaque pilote qui a pris l'action Contrôler un véhicule (<em>Livre de base p. 203</em>) ; un véhicule en autopilote est contrôlé par son autopilote. Puis <strong>Fin du tour de combat</strong> (avec une rencontre en cours, le tour suit ses rounds et ce bouton disparaît).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-4-fenetre.webp\" width=\"928\" alt=\"La fenêtre de poursuite (livre de base) : ① le tour, l'environnement et le terrain, ② la Vitesse actuelle et la case Contrôlé ce tour d'un véhicule, ③ son action de poursuite, ④ les portées d'engagement (thème sombre).\" /><figcaption><strong>Figure 6.4.1</strong> — La fenêtre de poursuite (livre de base) : ① le tour, l'environnement et le terrain, ② la Vitesse actuelle et la case Contrôlé ce tour d'un véhicule, ③ son action de poursuite, ④ les portées d'engagement (thème sombre).</figcaption></figure>\n\n<p>En haut de la fenêtre, le MJ choisit d'un clic le système de poursuite (livre de base ou règles avancées de <i>Rigger 5.0</i>) : c'est le même réglage que dans les Réglages Shadowrun. Chaque terrain de la liste porte un exemple (Dégagé : route déserte, ville la nuit…), et sous la liste s'affichent les exemples du livre pour le terrain choisi (<em>Livre de base p. 201, Rigger 5.0 p. 175</em>). Poursuivi et poursuivants ont chacun leur couleur.</p>\n<p>Le journal de la fenêtre (une boîte qui défile, 200 lignes) et un message dans le tchat disent ce qui s'est passé à chaque fin de tour. Le joueur ou la joueuse qui possède un véhicule engagé, ou qui est à bord, voit la fenêtre s'ouvrir d'elle-même et la suit en direct ; seuls ses propres boutons de lancer sont actifs. Il ou elle peut la fermer : elle ne se rouvre plus à chaque geste du MJ, même après un rechargement.</p>\n\n<h4>Hors de contrôle</h4>\n<p>Un véhicule que personne n'a contrôlé pendant le tour est <strong>hors de contrôle</strong> (<em>Livre de base p. 203</em>) : tous ceux qui sont à bord subissent −2 dés, et le système pose l'effet sur chacun ; il le retire dès que le pilote reprend le contrôle. Au second tour sans contrôle, l'autopilote reprend la main, s'il y en a un. Un véhicule détruit quitte la poursuite à la fin du tour. <strong>Terminer la poursuite</strong> efface tout, malus compris.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites}</p><p>← @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites} · @UUID[.d0pkZJnT1VdtJm72]{Les actions de poursuite} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "d0pkZJnT1VdtJm72",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.d0pkZJnT1VdtJm72",
+      "name": "Les actions de poursuite",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Sous chaque véhicule, la ligne <strong>Action de poursuite</strong> : choisissez l'action, le véhicule visé (<strong>Contre</strong>) quand elle en demande un, puis <strong>Lancer</strong>. La liste ne propose que les actions du jeu de règles en vigueur et du type du véhicule ; une action impossible (mauvaise portée, déjà tentée ce tour, véhicule semé) est refusée avec sa raison.</p>\n\n<h4>Le déroulé</h4>\n<ol>\n<li><p>La fenêtre de jet arrive avec le test de pilotage de la fiche, son <strong>seuil</strong> déjà posé (terrain, seuil de manœuvre, écart de Vitesse…) et la bonne limite ; tout reste modifiable.</p></li>\n<li><p>Si l'action est opposée, la carte porte un bouton <strong>… s'oppose</strong>, que voit le propriétaire du véhicule visé (et le MJ). Il lance le même test, sans seuil ; une seule opposition par carte : le bouton disparaît une fois le jet fait.</p></li>\n<li><p>Le MJ clique <strong>Appliquer à la poursuite</strong> sur la dernière carte : le système reporte portée, rôles, contrôle, Vitesse, Maniabilité ou terrain. Une carte s'applique une seule fois.</p></li>\n<li><p>Quand l'action demande un test de plus (suivre une cascade, éviter l'accident, rester à portée Extrême…), la carte du MJ porte un bouton par véhicule concerné, pour son propriétaire.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-4-carte.webp\" width=\"304\" alt=\"La carte de « Couper la route » lancée par le Rover : ses succès, et le bouton par lequel le Steel Lynx s'oppose.\" /><figcaption><strong>Figure 6.4.2</strong> — La carte de « Couper la route » lancée par le Rover : ses succès, et le bouton par lequel le Steel Lynx s'oppose.</figcaption></figure>\n\n<table>\n<thead><tr><th>Action (livre de base)</th><th>Ce que le système en fait</th></tr></thead>\n<tbody>\n<tr><td><strong>Contrôler un véhicule</strong> (<em>Livre de base p. 203</em>)</td><td>sans jet : le véhicule est sous contrôle ce tour, le malus hors de contrôle tombe</td></tr>\n<tr><td><strong>Rattraper son retard / Prendre de l'avance</strong> (<em>Livre de base p. 205</em>)</td><td>test à seuil (seuil de manœuvre, Moyenne (2) par défaut, + terrain) ; une portée par succès excédentaire, au plus l'Accélération</td></tr>\n<tr><td><strong>Couper la route</strong> (<em>Livre de base p. 205</em>)</td><td>test opposé, à portée Courte ; si l'initiateur l'emporte, la cible fait un test de suite, sinon elle est hors de contrôle et le MJ décide de l'accident</td></tr>\n<tr><td><strong>Percuter</strong> (<em>Livre de base p. 205</em>)</td><td>test opposé, à portée Courte ; la carte donne les dommages des deux véhicules</td></tr>\n<tr><td><strong>Cascade</strong> (<em>Livre de base p. 205</em>)</td><td>pour le poursuivi seulement ; ratée, il est hors de contrôle ; réussie, chaque poursuivant la suit ou recule d'une portée</td></tr>\n</tbody>\n</table>\n\n<h4>Ce qui coûte une action</h4>\n<p>L'action que l'on lance compte son action complexe, sur le combattant qui agit : le véhicule s'il est dans le combat, sinon son pilote (le cas courant : le rigger a l'initiative, pas sa voiture). <strong>S'opposer</strong> et les <strong>tests de suite</strong> sont gratuits, comme une défense : ni action ni initiative (<em>Livre de base p. 205</em>). Le test de pilotage qui suit sa propre action (éviter l'accident après sa cascade ratée) est gratuit aussi : il fait partie de l'action payée.</p>\n\n<h4>Les dommages</h4>\n<p>Quand une action en inflige (Percuter, Collision, Comme un chef raté), la carte du MJ porte un bouton <strong>Appliquer les dommages</strong> par véhicule touché, que voient son propriétaire et le MJ : il ouvre la résistance du véhicule (Structure + Blindage, PA −6) (<em>Livre de base p. 204-205</em>) et disparaît une fois la résistance jetée. Pour un <strong>accident</strong>, le MJ clique <strong>Accident : …, fixer les dommages</strong> : une valeur est proposée, modifiable ; une nouvelle carte donne alors un bouton au véhicule et à chacun de ceux qui sont à bord (<em>Livre de base p. 202</em>).</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites}</p><p>← @UUID[.OhfnkdD5MnrGBFAm]{Mener une poursuite (MJ)} · @UUID[.ejHxdstQHDdKOjGT]{Les règles de Rigger 5.0} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ejHxdstQHDdKOjGT",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.ejHxdstQHDdKOjGT",
+      "name": "Les règles de Rigger 5.0",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Avec le réglage <strong>Règles de conduite avancées (Rigger 5.0)</strong>, la fenêtre suit <i>Rigger 5.0</i> (<em>Rigger 5.0 p. 175-185</em>) : la portée Contact avant Courte (et Repérage après Extrême si un aéronef est engagé), six terrains de Ouvert (+0) à Impossible (+6), une Vitesse actuelle bornée par l'Accélération, un type par véhicule (terrestre, nautique, aéronef à rotors, avion à réaction ; un drone aérien entre comme aéronef), et quinze actions de plus.</p>\n<ul>\n<li><p><strong>Les tests opposés à seuil</strong> (Rattraper, Passer dans les six…) : le système compte les succès nets (ceux de l'initiateur moins ceux de la cible), puis ceux qui dépassent le seuil. Ni la VF ni la VO ne disent comment les deux se combinent (<em>Rigger 5.0 p. 177</em>) : c'est un choix du système.</p></li>\n<li><p><strong>Les cascades</strong> se font seules ou intégrées à une autre action (champ <strong>Cascade</strong> de la ligne, le niveau s'ajoute au seuil) (<em>Rigger 5.0 p. 182-183</em>). Au lancer, la fenêtre demande l'avantage visé. Ratée, la carte du MJ porte un test « éviter l'accident » gratuit, à −niveau en dés, seuil = terrain ; raté, le véhicule est hors de contrôle. Le livre ne donne ni le signe ni le seuil de ce test : c'est un choix du système. L'autopilote ne fait pas de cascade.</p></li>\n<li><p><strong>La Chance du pilote</strong> : Pilotage zen et Tiens bon, bébé (rigger plongé), Comme une feuille au vent (aéronef en chute), cascade folle ; la fenêtre demande confirmation avant de débiter le point (<em>Rigger 5.0 p. 176-182</em>).</p></li>\n<li><p><strong>Les qualités</strong> Cascadeur (+2 dés aux cascades) et Poursuivant infatigable (+2 dés aux actions lancées) s'ajoutent d'elles-mêmes (<em>Rigger 5.0 p. 37</em>).</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites}</p><p>← @UUID[.d0pkZJnT1VdtJm72]{Les actions de poursuite} · @UUID[.zFoBs9hT00NPH18j]{Ce que fait le système, réglages et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zFoBs9hT00NPH18j",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.zFoBs9hT00NPH18j",
+      "name": "Ce que fait le système, réglages et références",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il prépare chaque jet de poursuite (seuil, limite), reporte son résultat et l'écrit au journal.</p></li>\n<li><p>Il pose et retire le malus hors de contrôle, rend la main à l'autopilote, retire les véhicules détruits.</p></li>\n<li><p>Il décompte l'action sur le combattant qui agit, et laisse gratuits l'opposition et les tests de suite.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il fixe la VD d'un accident, et applique les dommages d'Ouvrir la voie, donnés sur la carte.</p></li>\n<li><p>Il joue les effets donnés sur la carte sans être appliqués : perception (Ivan le Fou, filature), tirs (Mitrailler en passant, Rafaler), cascade jointe à une attaque.</p></li>\n<li><p>Il tient les places assises et les actions des passagers, et lit la position des jetons lui-même : la portée est celle qu'il tient.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Rigging de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Règles de conduite avancées (Rigger 5.0)</strong></td><td>décoché : poursuites du livre de base</td></tr>\n<tr><td>Verrou de règles <strong>Actions</strong> (lancer sans action restante)</td><td>selon le préréglage du monde (@UUID[Compendium.sr5.manuel.JournalEntry.7OYD5ThTukMgPOPe.JournalEntryPage.Mb92AaftdWYQADV5]{les verrous})</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Combat de véhicules et poursuites : (<em>Livre de base p. 199-205</em>). Poursuites avancées : (<em>Rigger 5.0 p. 175-185</em>). Qualités : (<em>Rigger 5.0 p. 37-38</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Poursuites\">wiki : Poursuites</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.k8t2zbObC0IHgrPy]{6.4 Les poursuites}</p><p>← @UUID[.ejHxdstQHDdKOjGT]{Les règles de Rigger 5.0} · @UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JFzulyGZ6eU8oCmU",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.JFzulyGZ6eU8oCmU",
+      "name": "6.5 Guerre électronique, essaims",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Tous</strong></p><h4>À quoi ça sert</h4>\n<p><i>Rigger 5.0</i> donne au rigger des actions de guerre électronique (cibler un appareil pour ses drones, brouiller l'autopilote d'en face, rompre un verrouillage, réduire le bruit) et la possibilité de faire agir plusieurs drones comme un seul, en essaim (<em>Rigger 5.0 p. 34-35</em>). Le système applique leurs effets jusqu'à la fin du tour.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU}</p><p>← @UUID[.zFoBs9hT00NPH18j]{Ce que fait le système, réglages et références} · @UUID[.rKwCzCHzPtiT3zOm]{Les actions de guerre électronique} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rKwCzCHzPtiT3zOm",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.rKwCzCHzPtiT3zOm",
+      "name": "Les actions de guerre électronique",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Avec le réglage <strong>Utiliser les actions matricielles de Rigger 5</strong>, ces actions s'ajoutent aux actions matricielles de la fiche du rigger, et se lancent aussi d'un clic sur le drone visé dans la couronne du PAN (@UUID[Compendium.sr5.manuel.JournalEntry.eQD8W5rCT4vBEAW9.JournalEntryPage.6MQU6zP7BSpcxoxa]{le menu radial}), y compris sur un drone autonome de l'adversaire.</p>\n<table>\n<thead><tr><th>Action</th><th>Ce que le système en fait</th></tr></thead>\n<tbody>\n<tr><td><strong>Cibler un appareil</strong></td><td>défense perdue, la carte propose <strong>Cibler l'appareil : +N</strong> ; jusqu'à la fin du tour, les drones asservis au rigger (et les armes à smartlink de son PAN) ont N dés de plus contre cette cible</td></tr>\n<tr><td><strong>Embrouiller l'autopilote</strong></td><td>défense perdue, la carte propose le test d'Autopilote × 2 du drone visé, au seuil de la moitié des succès excédentaires ; au MJ d'en jouer la suite</td></tr>\n<tr><td><strong>Rompre le ciblage</strong></td><td>défense perdue, le verrouillage par senseurs que ce drone tenait baisse de N</td></tr>\n<tr><td><strong>Suppression du bruit</strong></td><td>test simple ; la réduction de bruit du rigger augmente des succès jusqu'à la fin du tour, et compte dans le bruit entre le rigger et ses drones</td></tr>\n</tbody>\n</table>\n<p>La réduction de bruit de la console s'ajoute à la réserve de ces actions. Un même rigger qui relance Cibler un appareil ou la Suppression du bruit remplace son effet au lieu de l'empiler.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims}</p><p>← @UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims} · @UUID[.aWawjGI6KIE60Vnd]{Les essaims} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aWawjGI6KIE60Vnd",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.aWawjGI6KIE60Vnd",
+      "name": "Les essaims",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Pas à pas : former un essaim</h4>\n<ol>\n<li><p>Installez sur la console du rigger le programme <strong>Essaim</strong> (un programme de rigging du Mégapack) et chargez-le.</p></li>\n<li><p>Sur la fiche de chaque drone, cochez <strong>Appareil asservi</strong> et donnez le même <strong>Essaim n°</strong> (0 : hors essaim). Un rigger peut avoir plusieurs essaims, un par numéro.</p></li>\n<li><p>Posez les jetons sur la scène affichée : il faut deux drones au moins. Sous le numéro, la fiche dit « Essaim 1 : 2 drones, +1 aux dés et à la limite », ou pourquoi l'essaim est inactif.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-5-essaim.webp\" width=\"287\" alt=\"Le bloc Mode de contrôle d'un drone de l'essaim n° 1 : deux drones, +1 aux dés et à la limite.\" /><figcaption><strong>Figure 6.5.1</strong> — Le bloc Mode de contrôle d'un drone de l'essaim n° 1 : deux drones, +1 aux dés et à la limite.</figcaption></figure>\n\n<p>Chaque drone de l'essaim prend les valeurs de l'essaim (<em>Rigger 5.0 p. 35</em>) : le plus haut Autopilote (ou l'Indice d'appareil de la console), les plus hauts Senseurs et autosofts, les plus faibles Maniabilité, Vitesse et Accélération. À chaque action lancée depuis un drone de l'essaim, deux cases cochées dans la fenêtre de jet ajoutent nombre de drones − 1 en dés et en limite ; elles ne sont pas proposées pour une défense ni une résistance. Un drone détruit, briqué, qu'on n'asservit plus ou dont on retire le jeton quitte l'essaim aussitôt ; un drone rangé ne compte pas.</p><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims}</p><p>← @UUID[.rKwCzCHzPtiT3zOm]{Les actions de guerre électronique} · @UUID[.82Hm69EhUalkQYnu]{Ce que fait le système, réglages et références} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "82Hm69EhUalkQYnu",
+      "_key": "!journal.pages!R8istJLbf18Vqn7R.82Hm69EhUalkQYnu",
+      "name": "Ce que fait le système, réglages et références",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Ce que le système fait tout seul</h4>\n<ul>\n<li><p>Il applique les effets de la guerre électronique jusqu'à la fin du tour, et les retire au tour suivant.</p></li>\n<li><p>Il recalcule l'essaim à chaque changement (drone ajouté, perdu, rangé) chez le MJ comme chez les joueurs et les joueuses.</p></li>\n</ul>\n\n<h4>Ce que le MJ fait à la main</h4>\n<ul>\n<li><p>Il joue la conduite d'un autopilote embrouillé.</p></li>\n<li><p>Il décide de l'initiative d'un essaim (le système ne change rien au suivi des rencontres) et lance la dispersion des armes explosives des autres drones : le système ne lance qu'un tir, celui du drone choisi.</p></li>\n<li><p>Il retire de sa fiche, à la main, l'effet d'un tour d'un personnage qui n'est pas dans le combat.</p></li>\n</ul>\n\n<h4>Réglages liés</h4>\n<table>\n<thead><tr><th>Réglage (onglet Rigging de Réglages Shadowrun)</th><th>Par défaut</th></tr></thead>\n<tbody>\n<tr><td><strong>Utiliser les actions matricielles de Rigger 5</strong></td><td>décoché</td></tr>\n</tbody>\n</table>\n\n<h4>Références</h4>\n<ul>\n<li><p>Guerre électronique : (<em>Rigger 5.0 p. 34-35</em>). Essaims : (<em>Rigger 5.0 p. 35</em>) ; contrôle de l'essaim en poursuite : (<em>Rigger 5.0 p. 181</em>). Console de rigger : (<em>Livre de base p. 269-271</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki : Rigging (Guerre électronique, Essaims)</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki : Couronne du PAN</a>.</p></li>\n</ul><hr /><p><strong>Backlinks :</strong> @UUID[.CnGOxSa25fcJzDxV]{MENU} &gt; @UUID[.JFzulyGZ6eU8oCmU]{6.5 Guerre électronique, essaims}</p><p>← @UUID[.aWawjGI6KIE60Vnd]{Les essaims}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

@@ -50,9 +50,10 @@ run('ESLint passed', 'npm run lint')
 console.log('\n[2/6] Running tests...')
 run('Tests passed', 'npm test')
 
-// --- 3. Build CSS ---
-console.log('\n[3/6] Building CSS...')
+// --- 3. Build CSS and compendiums ---
+console.log('\n[3/6] Building CSS and compendiums...')
 run('LESS compiled', 'npm run build:css')
+run('Compendiums compiled', 'npm run build:packs')
 
 // --- 4. Validate ---
 console.log('\n[4/6] Validating languages...')

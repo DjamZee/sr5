@@ -4,6 +4,8 @@
   "license": "GPL-3.0",
   "scripts": {
     "build:css": "lessc styles/shadowrun.less css/shadowrun.css && lessc styles/base.less /dev/null",
+    "build:packs": "node scripts/build-packs.js",
+    "import:manuel": "node scripts/import-manuel.js",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest --reporter=verbose",
     "test:coverage": "vitest run --coverage",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@foundryvtt/foundryvtt-cli": "^3.0.4",
     "@vitest/coverage-v8": "^4.1.2",
     "eslint": "^10.1.0",
     "globals": "^17.4.0",
