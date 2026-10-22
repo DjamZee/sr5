@@ -38,6 +38,9 @@ function readStamp(dest) {
 async function buildPack(compilePack, pack) {
   const source = path.join(ROOT, 'src', 'packs', pack.name)
   const dest = path.join(ROOT, pack.path)
+  // A pack built by its own step (flags.sr5.build, e.g. "megapack" for npm run build:megapack) is left to it
+  const builder = pack.flags?.sr5?.build
+  if (builder) return console.log(`  ${pack.name}: construit par npm run build:${builder} : ${fs.existsSync(path.join(dest, 'CURRENT')) ? 'présent' : 'absent'}, sauté`)
   // A pack without JSON sources here is copied in already compiled: it only has to be there
   if (!fs.existsSync(source)) {
     if (fs.existsSync(path.join(dest, 'CURRENT'))) return console.log(`  ${pack.name}: compilé ailleurs, présent`)
