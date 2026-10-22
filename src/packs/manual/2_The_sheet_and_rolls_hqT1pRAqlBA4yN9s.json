@@ -1,0 +1,581 @@
+{
+  "_id": "hqT1pRAqlBA4yN9s",
+  "_key": "!journal!hqT1pRAqlBA4yN9s",
+  "name": "2. The sheet and rolls",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 300000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "IP9Wexn9AmBHABtw",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.IP9Wexn9AmBHABtw",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This is the part the player reads before their first session: the character sheet, the window that prepares a roll, the card that gives its result, then what the system does with limits, Edge, items, effects and wounds.</p>\n<p>The GM also finds here what stays in their hands: the system counts and suggests, but it is always the GM who rules on a circumstance the system does not know.</p><table><tbody><tr><td><p>@UUID[.jegaeuBLsiKBOt9y]{2.1 The character sheet}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.vt6wZWsR9zLHGudq]{Filling in and arranging the sheet}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ZBI2sXhLRvFp5J8Y]{The other sheets}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.D2S6DhkM2Qahs3a1]{Modifiers}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.UBNrY9OEU2OmqD1v]{The roll attribute}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.e5lgeKIZ61IG5tpS]{Extended tests}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.eaKmcOBAtqQ9rBzh]{Cutting Aces social tests}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.BUsLZAG8i1RjsKwC]{Contacts' favors}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.bDt4Dtv4BznFi29F]{The limit}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.97MvKWyQNfHpNoOi]{Spending Edge}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.GwZgFZzHNsomglpu]{Glitches and critical glitches}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.AvrnIjxE379qGOYw]{2.4 Reading a chat card}</p></td><td><p>All</p></td></tr><tr><td><p>@UUID[.FI0Yyn9xEWcJLmHX]{2.5 Items}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.34W6wXdup5ReVVLC]{Armory, Customization, Clinic, Workbench}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ghZJNoWBZzfann6c]{Storing, locking away, concealing}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.5yJeJYQzl8Pk5Nc8]{2.6 Effects}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.Ws8hSYfLsqbhWJv7]{Situational effects and effects on others}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.zTUmA3mt43LczZFb]{2.7 Condition monitors and wounds}</p></td><td><p>All</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "jegaeuBLsiKBOt9y",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.jegaeuBLsiKBOt9y",
+      "name": "2.1 The character sheet",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The sheet gathers everything the character is and owns. Almost every line can be clicked: an attribute, a skill, a weapon roll their test. This chapter takes you around it, then presents the sheets of the other actors: the grunt, the spirit, the drone.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-1-fiche-zones.webp\" width=\"940\" alt=\"A player character's sheet. The numbers refer to the list below.\" /><figcaption><strong>Figure 2.1.1</strong> — A player character's sheet. The numbers refer to the list below.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Portrait and name.</strong> Click the portrait to change the picture; the name is edited in place.</p></li>\n<li><p><strong>② The side tabs</strong> (left of the line): <strong>Attributes</strong>, <strong>Derived</strong>, <strong>Magic</strong>, <strong>Matrix</strong>, <strong>Qualities</strong>. Each tab's name is shown when you hover over its icon.</p></li>\n<li><p><strong>③ The main tabs</strong> (right of the line): <strong>Skills</strong>, <strong>Combat</strong>, <strong>Gear</strong>, <strong>Storage</strong>, <strong>Augmentations</strong>, <strong>Magician</strong>, <strong>Technomancer</strong>, <strong>Matrix</strong>, <strong>Social</strong>, <strong>Biography</strong>.</p></li>\n<li><p><strong>④ The title bar</strong>: the padlock (play mode or edit mode), the wrench to customize the layout, and the three dots for Foundry's other commands.</p></li>\n<li><p><strong>⑤ The side panel</strong>: attributes, resistances, defenses and initiatives. Each line can be clicked to roll its test.</p></li>\n<li><p><strong>⑥ The main panel</strong>: the contents of the chosen tab.</p></li>\n<li><p><strong>⑦ The monitors</strong>, always visible at the bottom, whatever the tab (@UUID[.zTUmA3mt43LczZFb]{condition monitors}).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>@UUID[.vt6wZWsR9zLHGudq]{Filling in and arranging the sheet} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vt6wZWsR9zLHGudq",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.vt6wZWsR9zLHGudq",
+      "name": "Filling in and arranging the sheet",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: switching to edit mode</h4>\n<ol>\n<li><p>Click the padlock in the title bar. Open, the sheet is in <strong>edit mode</strong>: values can be changed. Closed, it is in <strong>play mode</strong>: you click to roll tests without upsetting anything.</p></li>\n<li><p>The mode is remembered for each sheet and each user: your GM can keep the sheet locked while you edit it.</p></li>\n</ol>\n\n<h4>Step by step: adding an item</h4>\n<ol>\n<li><p>Drag the item from a compendium, the <strong>Items</strong> sidebar or another sheet, and drop it on the sheet.</p></li>\n<li><p>The system files it in the right tab on its own: a weapon in <strong>Combat</strong>, a spell in <strong>Magician</strong>, a contact in <strong>Social</strong>… (@UUID[.FI0Yyn9xEWcJLmHX]{items}).</p></li>\n</ol>\n\n<h4>Step by step: customizing the layout</h4>\n<ol>\n<li><p>Switch to edit mode, then click the wrench in the title bar.</p></li>\n<li><p>Drag blocks from one tab to another, change their width (single, double, triple), create your own tabs.</p></li>\n<li><p>The layout is saved for this character; a button restores the original layout.</p></li>\n</ol>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">A sheet too small?</p><p>Enlarge it from its bottom right corner: it remembers its size from one opening to the next, for each type of sheet and on your computer only. It never shrinks below its original size.</p></div>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the dice pools shown (attribute, skill, bonuses from items and effects) and applies the wound modifier to every roll.</p></li>\n<li><p>The metatype, chosen at the bottom of the sheet, sets the character's vision (<em>Core Rulebook p. 66</em>). The metatype's attribute bonuses are left to creation.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.jegaeuBLsiKBOt9y]{2.1 The character sheet}</p><p>← @UUID[.jegaeuBLsiKBOt9y]{2.1 The character sheet} · @UUID[.ZBI2sXhLRvFp5J8Y]{The other sheets} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ZBI2sXhLRvFp5J8Y",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.ZBI2sXhLRvFp5J8Y",
+      "name": "The other sheets",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Each type of actor has its sheet. They look alike; here is what changes.</p>\n\n<h4>The grunt (\"Grunt or critter\")</h4>\n<p>For secondary NPCs and critters. Three differences from a player character: <strong>Professional Rating</strong> replaces Edge, gear does not handle money, and the biography keeps no Karma.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-1-brute.webp\" width=\"912\" alt=\"A grunt's sheet: Professional Rating in place of Edge.\" /><figcaption><strong>Figure 2.1.2</strong> — A grunt's sheet: Professional Rating in place of Edge.</figcaption></figure>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Saving time</p><p>Set up a typical grunt (a security guard, a ganger), then duplicate it: each copy is a new opponent ready to play.</p></div>\n\n<h4>The spirit</h4>\n<p>At the top of the sheet: the <strong>Force</strong>, the <strong>Bounded</strong> box and the <strong>materialization</strong> switch. The owner can change the Force. The GM also has the <strong>Free spirit</strong> box, which gives the spirit its own Edge (<em>Core Rulebook p. 303-304</em>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-1-esprit.webp\" width=\"912\" alt=\"A spirit's sheet: Force, binding and materialization at the top.\" /><figcaption><strong>Figure 2.1.3</strong> — A spirit's sheet: Force, binding and materialization at the top.</figcaption></figure>\n<p>A spirit serving a summoner can spend the summoner's Edge as long as they have some left (<em>Core Rulebook p. 303</em>): the spirit's roll window offers it on its own.</p>\n\n<h4>The drone or vehicle</h4>\n<p>A drone's sheet carries its <strong>Control mode</strong> (with the <strong>Direct connection to the rigger</strong> box and the <strong>Current Speed</strong>), its Matrix device block, and tabs of its own: <strong>Modifications</strong> and <strong>Workshop</strong>. Rigging has its own part (@UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.FhRTLAI7RMJ8TvTP]{the rigger console}, @UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.EL4Y6kscI8gvJoJd]{the Workshop}).</p>\n\n<h4>The sprite</h4>\n<p>At the top of the sheet: the <strong>level</strong> and the <strong>Registered</strong> box, which the owner can change (@UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.DZjwUMabf6C396ud]{technomancers}).</p>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Fiche-de-personnage\">wiki: Character sheet</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Grunt\">wiki: Grunt</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Barres-moniteurs-et-fenetres\">wiki: bars, monitors and windows</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.jegaeuBLsiKBOt9y]{2.1 The character sheet}</p><p>← @UUID[.vt6wZWsR9zLHGudq]{Filling in and arranging the sheet} · @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "nmPutVllRi49XDDe",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.nmPutVllRi49XDDe",
+      "name": "2.2 Rolling a test",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A roll always happens in three beats: you click what you want to test, a window shows you the dice pool and its modifiers, then a chat card gives the result. The system counts almost everything; you add what it cannot guess.</p>\n\n<h4>Step by step: a skill test</h4>\n<ol>\n<li><p>On the sheet, <strong>Skills</strong> tab, click the skill's dice pool (the number and the die icon in the <strong>DP</strong> column, for example on the <strong>Perception</strong> line). The roll window opens, with the linked attribute already counted.</p></li>\n<li><p>Check the <strong>Base Dice Pool</strong>: the arrow next to it unfolds its detail.</p></li>\n<li><p>Unfold <strong>Modifiers</strong> with its arrow to see what the system added, tick what applies, and if needed enter a value in <strong>Various Modifiers</strong>.</p></li>\n<li><p>Click <strong>Roll Dice</strong>: the number in brackets is the final pool. Or click <strong>Push the Limit</strong> to spend a point of Edge (@UUID[.SIK2sIF2F0xrIXd3]{see the next chapter}).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-2-fenetre-jet.webp\" width=\"462\" alt=\"The window of a Perception test rolled from the dice pool: the pool's detail, the Roll attribute menu and the various modifiers line.\" /><figcaption><strong>Figure 2.2.1</strong> — The window of a Perception test rolled from the dice pool: the pool's detail, the Roll attribute menu and the various modifiers line.</figcaption></figure>\n\n<p>Closing the window without rolling cancels everything: nothing is spent, neither ammunition nor Edge.</p>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The name or the pool?</p><p>Clicking the skill's <strong>name</strong> opens a test without an attribute: the pool only counts the skill, and you choose the attribute in the <strong>Secondary Attribute</strong> line of the modifiers. Clicking the <strong>pool</strong> (<strong>DP</strong> column) rolls skill + linked attribute, the most common case.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.ZBI2sXhLRvFp5J8Y]{The other sheets} · @UUID[.D2S6DhkM2Qahs3a1]{Modifiers} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "D2S6DhkM2Qahs3a1",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.D2S6DhkM2Qahs3a1",
+      "name": "Modifiers",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Greyed lines</strong> are computed by the system: wounds, active effects, the scene's environment, recoil, defenses already made this turn. To change one, change its cause (heal, remove the effect…).</p></li>\n<li><p><strong>The <strong>Various Modifiers</strong> line</strong> is always there: the player or the GM enters a circumstance the system does not know.</p></li>\n<li><p><strong>Lines specific to the test</strong> appear depending on what you roll: specialization, range and firing mode for a weapon, Force for a spell, Perception threshold…</p></li>\n<li><p><strong>Situational effects</strong> (\"+2 dice against spirits\") are offered unticked: tick them when the circumstance applies (@UUID[.5yJeJYQzl8Pk5Nc8]{effects}).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p><p>← @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test} · @UUID[.UBNrY9OEU2OmqD1v]{The roll attribute} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "UBNrY9OEU2OmqD1v",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.UBNrY9OEU2OmqD1v",
+      "name": "The roll attribute",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A skill is not always rolled with its linked attribute (<em>Core Rulebook p. 128</em>). For a test rolled from the dice pool (<strong>DP</strong> column) and for a knowledge skill, the window offers a <strong>Roll attribute</strong> menu under the pool, set by default to the linked attribute.</p>\n<ol>\n<li><p>Unfold the <strong>Base Dice Pool</strong> and choose the attribute in the menu (Gymnastics + Strength for climbing, for example).</p></li>\n<li><p>To keep this choice for this skill, tick <strong>Keep this attribute for this skill</strong>: the sheet then shows the attribute kept, greyed, next to the skill.</p></li>\n</ol>\n<p>The limit does not change with the attribute (<em>Core Rulebook p. 136</em>). The player suggests, the GM rules. The menu does not exist for opposed tests, languages, drones, agents and sprites.</p><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p><p>← @UUID[.D2S6DhkM2Qahs3a1]{Modifiers} · @UUID[.e5lgeKIZ61IG5tpS]{Extended tests} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "e5lgeKIZ61IG5tpS",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.e5lgeKIZ61IG5tpS",
+      "name": "Extended tests",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Tick <strong>Extended Test</strong> in the window. The card then offers <strong>New roll</strong>: each reroll has one die fewer, and the hits add up. A critical glitch ends the extended test, and the button disappears (<em>Core Rulebook p. 49</em>). Each reroll reads the sheet again: a character wounded or healed between two intervals rolls with their current wounds (<em>Core Rulebook p. 169</em>), and the penalty for sustained spells counts too.</p><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p><p>← @UUID[.UBNrY9OEU2OmqD1v]{The roll attribute} · @UUID[.eaKmcOBAtqQ9rBzh]{Cutting Aces social tests} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "eaKmcOBAtqQ9rBzh",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.eaKmcOBAtqQ9rBzh",
+      "name": "Cutting Aces social tests",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>When the GM leaves <strong>Cutting Aces social rules</strong> ticked (the default), the window of a social test offers two more lines. Nothing applies unless chosen; unticked, social tests remain those of the core rulebook.</p>\n<ul>\n<li><p><strong>Social maneuver</strong>: the maneuvers that go with the test (Charming Performance with Performance, Distraction or Fleece the Mark with Con, Faux Pas with Etiquette…). They cost 4 dice unless stated otherwise, and one more Free Action (<em>Cutting Aces p. 153-154</em>). What a maneuver leaves for a following test, the GM applies with a button on the card; the next roll window then offers it on a <strong>Maneuver: …</strong> line, ticked by default, and the effect is spent on the roll.</p></li>\n<li><p><strong>Con step</strong>: when the GM has opened a con in which your character is the grifter, Bait the Hook, Reinforce the Lie and Smooth Exit are rolled from the sheet, with a Con + Charisma test (<em>Cutting Aces p. 162-164</em>) (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.Vig8guILL3yvgIjc]{see tracking cons}).</p></li>\n</ul>\n<p>The handshake button of the token controls opens the <strong>Bartering</strong> window, for the whole table: a calculator that gives the negotiated value of an offer according to net hits, the negotiation table (gear, contact, service, information) and what Intimidation gets (<em>Cutting Aces p. 160-162, 164</em>). It writes nothing: the agreed price is then paid as usual.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-2-manoeuvre-sociale.webp\" width=\"462\" alt=\"The window of a Con test: the &quot;Social maneuver&quot; line, in the modifiers.\" /><figcaption><strong>Figure 2.2.2</strong> — The window of a Con test: the \"Social maneuver\" line, in the modifiers.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/2-2-marchandage.webp\" width=\"568\" alt=\"The Bartering window: an offer, the net hits and the negotiation table.\" /><figcaption><strong>Figure 2.2.3</strong> — The Bartering window: an offer, the net hits and the negotiation table.</figcaption></figure>\n\n<h4>Social qualities</h4>\n<p>Several Cutting Aces qualities act on their own once placed on the sheet: <strong>Good Looking and Knows It</strong> ignores 2 points of social penalties, <strong>Empathic Listener</strong> rolls Etiquette with Intuition, <strong>Master Debater</strong> Intimidation, Leadership and Negotiation with Logic (<em>Cutting Aces p. 150-153</em>). The Mégapack also sets the effects of Cynic, Alibi, Innocuous and Social Anxiety Disorder. Subliminal Subacoustics Software arrives unticked in the roll window of the people in its area, with its condition as its label: they tick it when their action goes against the emotion it stirs (<em>Cutting Aces p. 147</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p><p>← @UUID[.e5lgeKIZ61IG5tpS]{Extended tests} · @UUID[.BUsLZAG8i1RjsKwC]{Contacts' favors} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "BUsLZAG8i1RjsKwC",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.BUsLZAG8i1RjsKwC",
+      "name": "Contacts' favors",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Each contact has a <strong>Favors</strong> tab (handshake icon): a balance of chips, green when the contact owes the character, red when the character owes them (<em>Run Faster p. 176-178</em>). The sheet's list of contacts shows the same balance as a badge next to the name. The GM and the player who owns the character keep these chips.</p>\n<ol>\n<li><p>Open the contact from the sheet's <strong>Social</strong> tab, then its <strong>Favors</strong> tab.</p></li>\n<li><p>Click <strong>Ask a favor</strong> and give its rating. Up to Loyalty, the contact accepts (<em>Core Rulebook p. 389</em>); beyond, the Negotiation window opens with the contact's Loyalty in dice (<em>Core Rulebook p. 386</em>) and the chips spent (+1 die each, +4 at most), already ticked.</p></li>\n<li><p>Once the favor is done, click <strong>Favor obtained</strong>: the contact gains their chips. A good turn done for the contact is noted with <strong>Service done</strong>.</p></li>\n</ol>\n<p>The other buttons: <strong>Repay</strong> (the contact asks for double), <strong>Improve relationship</strong> (Loyalty goes up one step), <strong>Intimidate</strong> (−1 Loyalty, no chip), <strong>Correct</strong> (by hand, with a reason). The nature of the relationship, <strong>Family</strong> or <strong>Blackmail</strong>, changes the costs (<em>Run Faster p. 178</em>). The history keeps the last twelve movements. Loyalty tests for an overdue debt are left to the GM.</p>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It counts wounds, effects, recoil, ammunition, reagents, the initiative spent on defenses and the actions used.</p></li>\n<li><p>It applies the limit and flags glitches.</p></li>\n</ul>\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Enters in the custom line any circumstance the system does not know, and rules on the roll attribute when a player suggests another one.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Social maneuvers: (<em>Cutting Aces p. 153-154</em>); expanded negotiation and intimidation: (<em>Cutting Aces p. 160-162, 164</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Anatomie-d-un-jet\">wiki: Anatomy of a roll</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Modificateurs-de-jet\">wiki: Modifiers and roll window</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Attribut-du-jet\">wiki: Roll attribute</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Social-de-Cutting-Aces\">wiki: Cutting Aces social rules</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.nmPutVllRi49XDDe]{2.2 Rolling a test}</p><p>← @UUID[.eaKmcOBAtqQ9rBzh]{Cutting Aces social tests} · @UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "SIK2sIF2F0xrIXd3",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.SIK2sIF2F0xrIXd3",
+      "name": "2.3 Limits, Edge, glitches and critical glitches",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The system applies the limit, counts the 1s to flag a glitch or a critical glitch, and keeps track of Edge when you spend it with a button. The consequence of a glitch stays with the GM.</p><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.BUsLZAG8i1RjsKwC]{Contacts' favors} · @UUID[.bDt4Dtv4BznFi29F]{The limit} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "bDt4Dtv4BznFi29F",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.bDt4Dtv4BznFi29F",
+      "name": "The limit",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The limit comes from the <strong>Derived</strong> tab (Physical, Mental, Social limits), from a weapon's Accuracy, a spell's Force, the Matrix attribute… The result card shows the hits kept and the hits rolled: \"3 / 5\" means 5 hits were rolled and 3 kept. Damage resistance, Drain and Fading tests have no limit.</p><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches}</p><p>← @UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches} · @UUID[.97MvKWyQNfHpNoOi]{Spending Edge} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "97MvKWyQNfHpNoOi",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.97MvKWyQNfHpNoOi",
+      "name": "Spending Edge",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Push the Limit</strong>, in the roll window or on the card afterwards: the limit goes and 6s explode (<em>Core Rulebook p. 56</em>). The system removes the Edge point and notes it on the card. The button only appears if you have Edge left.</p></li>\n<li><p><strong>Second Chance</strong>, on the card: rerolls the failed dice. The result stays capped by the limit (<em>Core Rulebook p. 56</em>); the glitch stays that of the first roll, and a critical glitch stays one.</p></li>\n<li><p><strong>Other uses of Edge</strong> (seizing the initiative, taking cover…) are done by hand: untick a point on the Edge monitor, at the bottom of the sheet.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">And for an extended test?</p><p>Push the Limit can only be used on the first roll of an extended test: Edge goes into the starting pool. Second Chance is not allowed on an extended test. If the GM has lifted the \"Actions and initiative\" lock, the system lets it through and warns them with a discreet message.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches}</p><p>← @UUID[.bDt4Dtv4BznFi29F]{The limit} · @UUID[.GwZgFZzHNsomglpu]{Glitches and critical glitches} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "GwZgFZzHNsomglpu",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.GwZgFZzHNsomglpu",
+      "name": "Glitches and critical glitches",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p>The system counts the 1s and shows \"(Glitch)\" or \"(Critical glitch)\" on the card, highlighting the dice responsible (<em>Core Rulebook p. 45</em>).</p></li>\n<li><p>The 1s rolled when rerolling 6s do not count for the glitch: only the first roll counts. The book does not decide this point; the system makes that choice.</p></li>\n<li><p>The consequence is decided by the GM, except for first aid and healing, where the system itself rolls the boxes lost (<em>Core Rulebook p. 206-207</em>).</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions and initiative</strong> family of the rule locks (<strong>Presets</strong>)</td><td>GM, for the world</td><td>ticked (Book preset)</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Limits, Edge, glitches: (<em>Core Rulebook p. 45, 56</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Limites-Chance-et-complications\">wiki: Limits, Edge and glitches</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.SIK2sIF2F0xrIXd3]{2.3 Limits, Edge, glitches and critical glitches}</p><p>← @UUID[.97MvKWyQNfHpNoOi]{Spending Edge} · @UUID[.AvrnIjxE379qGOYw]{2.4 Reading a chat card} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AvrnIjxE379qGOYw",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.AvrnIjxE379qGOYw",
+      "name": "2.4 Reading a chat card",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Each roll gives a card in the chat. It shows the dice and the result, then offers the buttons for what comes next: defend, resist damage, reroll with Edge, apply an effect. It is through the card that one character's attack becomes another's defense.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-4-carte.webp\" width=\"308\" alt=\"The card of a Perception test, detail unfolded: the dice, the pool, the limit, then the result; at the bottom, the GM's pencil and the Edge icons.\" /><figcaption><strong>Figure 2.4.1</strong> — The card of a Perception test, detail unfolded: the dice, the pool, the limit, then the result; at the bottom, the GM's pencil and the Edge icons.</figcaption></figure>\n\n<h4>What the card shows</h4>\n<ul>\n<li><p><strong>The header</strong>: click the title to fold or unfold the detail.</p></li>\n<li><p><strong>The dice</strong>, in colour: hits (5 and 6), misses, the 1s of a glitch highlighted, the dice exploded by Edge.</p></li>\n<li><p><strong>The detail</strong>: the pool and its modifiers, the limit (hits kept / rolled), the threshold, and for an attack the damage and the actions used. A special penalty says where it comes from, for example <strong>Special effect (Suppressive Fire)</strong>.</p></li>\n</ul>\n<p>The cards the system writes without a roll (deadlines, calendar reminders, effects ending, drugs, diseases, Matrix perception, chase…) look the same: a title band, a coloured edge per family (amber for the calendar, teal for health, green for the Matrix, red for the rest) and the same dark buttons. No system card shows the line of its recipients any more (\"To: …\"); a whisper typed in the chat (<strong>/w</strong>) keeps it. References to book pages disappear from every card when the GM unticks <strong>Rule reminders</strong> (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.onM6wQeM2Rn5e8sp]{see 0.4}).</p>\n\n<h4>Step by step: the chain of an attack</h4>\n<ol>\n<li><p>The attacker targets their opponent (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.9jXWevgNpySvo7Wz]{the token HUD}), then rolls the attack.</p></li>\n<li><p>On the attack card, the target's owner clicks <strong>Defend</strong>: their defense window opens.</p></li>\n<li><p>If the attack hits, the defense card offers the resistance button (<strong>Take On Damage</strong>…), then the system ticks the monitor's boxes.</p></li>\n</ol>\n\n<h4>The buttons and who can click them</h4>\n<ul>\n<li><p><strong>Second Chance</strong> and <strong>Push the Limit</strong>, the two icons at the bottom right of the card: for the author of the roll, if they have Edge left.</p></li>\n<li><p><strong>Defend</strong> and resistance: for the target's owner; one defense per target and per attack. The GM can always click, and reopen a defense.</p></li>\n<li><p><strong>New roll</strong>: the continuation of an extended test.</p></li>\n<li><p>Application buttons (setting an effect, applying damage, the effect of a called shot): a button already used cannot be played again.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The pencil-shaped icon at the bottom left of the card changes the number of hits, for a circumstance the system does not know or a mistake.</p></li>\n<li><p>When a player wants to deal damage to another player's character, the GM receives a request to confirm.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Messages-de-chat\">wiki: Reading a chat message</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.GwZgFZzHNsomglpu]{Glitches and critical glitches} · @UUID[.FI0Yyn9xEWcJLmHX]{2.5 Items} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "FI0Yyn9xEWcJLmHX",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.FI0Yyn9xEWcJLmHX",
+      "name": "2.5 Items",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Weapons, armor, gear, augmentations, spells, contacts: everything a character owns is an item. The system files it in the right tab, applies its bonuses when it is equipped, and knows how to store it, lock it away or conceal it on oneself.</p>\n\n<h4>Step by step: equipping an item</h4>\n<ol>\n<li><p>Drag the item onto the sheet (from a compendium, the sidebar or the shop): it arrives in its tab.</p></li>\n<li><p>Tick its <strong>equipped</strong> box on its line: its bonuses and effects apply.</p></li>\n<li><p>Click its name to open its sheet and set it up (ammunition, accessories, effects…).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-5-equipement.webp\" width=\"912\" alt=\"A character's Gear tab: each item, its state and its buttons.\" /><figcaption><strong>Figure 2.5.1</strong> — A character's Gear tab: each item, its state and its buttons.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.AvrnIjxE379qGOYw]{2.4 Reading a chat card} · @UUID[.34W6wXdup5ReVVLC]{Armory, Customization, Clinic, Workbench} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "34W6wXdup5ReVVLC",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.34W6wXdup5ReVVLC",
+      "name": "Armory, Customization, Clinic, Workbench",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>An item that takes parts has, on its sheet, a tab where the complete item is put together: <strong>Armory</strong> for a ranged weapon, <strong>Customization</strong> for armor, <strong>Clinic</strong> for an implant with Capacity (cyberlimb, cybereyes), <strong>Workbench</strong> for another item with Capacity (glasses, helmet). A vehicle or drone has its <strong>Workshop</strong> (@UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.EL4Y6kscI8gvJoJd]{see 6.2}). A melee weapon, a grenade, a commlink have none.</p>\n<p>The tab shows the weapon's mounts (one frame per mount: the part installed, \"free\" or \"absent on this type of weapon\") (<em>Run & Gun p. 51</em>), or the Capacity gauge (<em>Core Rulebook p. 416</em>); the price of the item, of its parts and of the whole; the Availability of the whole; the parts installed and those in the inventory ready to install. With the Mégapack, a banner of its vendors tops the tab. The workshop tab stands out in the sheet's tab bar: white at rest, red with a glow when open; its contents are a box in the style of the Character Designer.</p>\n<h4>Step by step: installing a part</h4>\n<ol>\n<li><p>Open the sheet of the weapon (or armor, implant…) and its <strong>Armory</strong> tab.</p></li>\n<li><p>Drag the part onto the tab. From your inventory, it is installed at once. From a compendium or the shop, a window gives its price on this item, its Availability and its place: click <strong>Buy for … and fit</strong> (<strong>Take (creation) and fit</strong> at creation). The purchase goes through the shop's till (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.6BUwVHBpL3loQaYF]{see 7.1}); a modification whose price depends on the weapon is charged on that weapon.</p></li>\n<li><p>In play, a stock, barrel or internal accessory, or a modification, is installed <strong>to be fitted</strong>: it only works after the Armorer + Logic [Mental] extended test (<em>Run & Gun p. 51</em>). Click the die on its line, set threshold and interval, then <strong>Install</strong> when the threshold is reached. On top, on the side or under the barrel, the part works at once. At creation, the test is never required.</p></li>\n<li><p>The bin of an installed part removes it and returns it to the inventory.</p></li>\n</ol>\n<p>A part is refused before any payment if it is an original feature of the weapon, if its mount is already taken or absent on this type of weapon, or if it exceeds the remaining Capacity. The GM also has <strong>Fit directly (GM)</strong>, without payment or test.</p>\n<figure><img src=\"systems/sr5/manuel/captures/2-5-armurerie.webp\" width=\"658\" alt=\"The Armory tab of a heavy pistol: the mounts, the price and Availability of the whole, the parts ready to install.\" /><figcaption><strong>Figure 2.5.2</strong> — The Armory tab of a heavy pistol: the mounts, the price and Availability of the whole, the parts ready to install.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/2-5-acheter-et-poser.webp\" width=\"541\" alt=\"An accessory dragged from the shop: its price on this weapon, its place, and &quot;Buy for … and fit&quot;.\" /><figcaption><strong>Figure 2.5.3</strong> — An accessory dragged from the shop: its price on this weapon, its place, and \"Buy for … and fit\".</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.FI0Yyn9xEWcJLmHX]{2.5 Items}</p><p>← @UUID[.FI0Yyn9xEWcJLmHX]{2.5 Items} · @UUID[.ghZJNoWBZzfann6c]{Storing, locking away, concealing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ghZJNoWBZzfann6c",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.ghZJNoWBZzfann6c",
+      "name": "Storing, locking away, concealing",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: putting items in a storage</h4>\n<ol>\n<li><p><strong>Storage</strong> tab, click the header's <strong>+</strong>: choose the <strong>Storage type</strong> (Safehouse, Safe, Pack, Cache, Garage) and its <strong>Capacity</strong> (0 for unlimited).</p></li>\n<li><p>The <strong>+</strong> at the end of the line opens the list of items to store: tick them. The cross takes them out again.</p></li>\n</ol>\n<p>A stored item no longer counts: it disappears from the Combat, Matrix and Magic tabs, and stays greyed elsewhere with the mention \"stored in…\". It comes out intact. A garage holds only one vehicle, and requires a sufficient lifestyle (<em>Run Faster p. 221</em>). A player character created in the world receives by default a <strong>Backpack</strong> (Pack) and a <strong>Locker</strong> (Safehouse) (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.auDjqd2HZaWxiGoy]{starting kit, 7.3}). An NPC's or a vendor's sheet lists its storages like a character's.</p>\n\n<h4>Locked containers</h4>\n<p>A safe has a <strong>Lock</strong> block: type (mechanical lock or maglock), rating, anti-tamper protection. Its owner opens it with a click on the key; others see the safe but not its contents, and can try to <strong>Pick the lock</strong> or <strong>Crack</strong> it (<em>Core Rulebook p. 359-360</em>).</p>\n\n<h4>Concealing on oneself</h4>\n<p>The <strong>Conceal on oneself</strong> button rolls the test, and the item keeps its hits as long as it is not taken out. From the Perception line, another character can look for the item or frisk the targeted token (<em>Core Rulebook p. 133</em>).</p>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Lockpicking requires a lockpick set</strong> (Rule locks, Items family)</td><td>GM, for the world</td><td>ticked</td></tr>\n<tr><td><strong>Check the lifestyle behind a garage</strong> (Rule locks, Items family)</td><td>GM, for the world</td><td>ticked</td></tr>\n<tr><td><strong>Leave spoils on death</strong> (Looting and spoils)</td><td>GM, for the world</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Weapon accessory mounts and installation: (<em>Run & Gun p. 51</em>); Capacity: (<em>Core Rulebook p. 416</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Panorama-des-objets\">wiki: Overview of items</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki: Shop and fencing (item workshops)</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Stockage-et-rangement\">wiki: Storage</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Verrou-des-contenants\">wiki: Container locks</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.FI0Yyn9xEWcJLmHX]{2.5 Items}</p><p>← @UUID[.34W6wXdup5ReVVLC]{Armory, Customization, Clinic, Workbench} · @UUID[.5yJeJYQzl8Pk5Nc8]{2.6 Effects} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "5yJeJYQzl8Pk5Nc8",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.5yJeJYQzl8Pk5Nc8",
+      "name": "2.6 Effects",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>An effect is what an item changes on a character: +1 Reaction, +2 dice to Perception, a raised limit. The system applies the effects of equipped items, offers those that only apply in certain circumstances, and can make an effect bear on other people's rolls. This chapter is mostly for the GM who creates content.</p>\n\n<h4>Step by step: seeing an item's effects</h4>\n<ol>\n<li><p>Open the item's sheet and switch to edit mode.</p></li>\n<li><p>Effects are sorted in three sections: <strong>Owner effects</strong>, <strong>Effects on Item</strong>, <strong>System effects</strong>. The <strong>+</strong> at the end of the line adds one.</p></li>\n<li><p>For each effect, choose its <strong>Category</strong>, its <strong>Property</strong> and its <strong>Type</strong> (Value, Rating, Hits…), then its value.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-6-effets-objet.webp\" width=\"662\" alt=\"An item's effects: category, property, type and value, line by line.\" /><figcaption><strong>Figure 2.6.1</strong> — An item's effects: category, property, type and value, line by line.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.ghZJNoWBZzfann6c]{Storing, locking away, concealing} · @UUID[.Ws8hSYfLsqbhWJv7]{Situational effects and effects on others} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Ws8hSYfLsqbhWJv7",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.Ws8hSYfLsqbhWJv7",
+      "name": "Situational effects and effects on others",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>Situational</strong>: tick an effect's <strong>Situational</strong> box and describe the circumstance in <strong>When?</strong>. The effect leaves the sheet and appears, unticked, in the window of the rolls concerned: the player ticks it when the circumstance applies.</p></li>\n<li><p><strong>On other people's rolls</strong>: the <strong>Others' tests</strong> category makes the effect bear on whoever targets its bearer, or on an area around them (with a radius and a side: everyone, allies or enemies). The effect arrives already ticked in the others' window, with its bearer's name.</p></li>\n</ul>\n\n<h4>Three effect targets for combat</h4>\n<p>They change nothing as long as no effect sets them; the Revised martial arts module uses them (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.G5lt3ucuBihlzQCc]{9.10}).</p>\n<ul>\n<li><p><strong>Weapons / Reach</strong>: adds to the reach of melee weapons of one type (unarmed, blades, clubs, exotic) or of kicks only. The modified reach is read on the attack card, in the melee range and in the defense's reach modifier. It must be a permanent effect: set as a situational effect, no roll reads it.</p></li>\n<li><p><strong>Defenses / [Unlimited hits]</strong> (dodge, block, parry): when the defender chooses this active defense, the Physical limit goes; the window says so (<strong>Unlimited hits</strong>) and the card no longer shows a limit.</p></li>\n<li><p><strong>Martial arts / [Modifier]</strong> can name the skills whose called shot penalty it reduces (<strong>Unarmed Combat</strong>, <strong>Armed attacks</strong> or one combat skill); with no choice, all attacks, as before.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">For the GM who creates content</p><p>The <strong>Item effects written by the gamemaster only</strong> setting (Gamemaster's tools tab) reserves the writing of effects to the GM. Unticked, the GM is warned when a player adds an item with effects.</p></div>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Item effects written by the gamemaster only</strong> (Gamemaster's tools)</td><td>GM, for the world</td><td>unticked</td></tr>\n<tr><td><strong>Effects carried by the target or by an area</strong> (Interface)</td><td>each for themselves</td><td>name of the effect and of its bearer</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Ajouter-un-effet-via-un-Item\">wiki: Adding an effect through an item</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Effets-circonstanciels\">wiki: Situational effects</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Effets-sur-les-jets-des-autres\">wiki: Effects on other people's rolls</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU} &gt; @UUID[.5yJeJYQzl8Pk5Nc8]{2.6 Effects}</p><p>← @UUID[.5yJeJYQzl8Pk5Nc8]{2.6 Effects} · @UUID[.zTUmA3mt43LczZFb]{2.7 Condition monitors and wounds} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zTUmA3mt43LczZFb",
+      "_key": "!journal.pages!hqT1pRAqlBA4yN9s.zTUmA3mt43LczZFb",
+      "name": "2.7 Condition monitors and wounds",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The monitors keep track of damage, Edge and the character's state. The system ticks them when damage is resisted, derives the wound modifier from them and knows when a character goes down; you can always correct them with a click.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/2-7-moniteurs.webp\" width=\"906\" alt=\"The monitors at the bottom of the sheet: Stun, Physical and Edge.\" /><figcaption><strong>Figure 2.7.1</strong> — The monitors at the bottom of the sheet: Stun, Physical and Edge.</figcaption></figure>\n\n<h4>Step by step: correcting a monitor</h4>\n<ol>\n<li><p>Click a box to tick or untick it.</p></li>\n<li><p>Right-click the monitor's name (<strong>Physical</strong>, <strong>Stun</strong>…) to reset it; a left click on that name rolls the natural recovery test.</p></li>\n</ol>\n<p>Greyed boxes are those the character does not have. The <strong>Matrix</strong> monitor appears for a character who has a device, and the Physical one has its overflow boxes.</p>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It applies the wound modifier to every roll.</p></li>\n<li><p>When damage is resisted, it ticks the boxes and carries the excess over to the next monitor.</p></li>\n<li><p>Full monitor: the character falls unconscious (<em>Core Rulebook p. 169</em>), the spirit is disrupted (<em>Core Rulebook p. 302</em>), the grunt is out of the fight (<em>Core Rulebook p. 379</em>). A knocked-out character wakes up when their boxes go back down.</p></li>\n<li><p>Only attacks knock down (weapons, grenades, Matrix attacks…); a drug, Drain or a toxin do not knock down.</p></li>\n<li><p>Aggravated wounds are marked on the box and announced in the chat (<em>Howling Shadows p. 192</em>); a right-click on the box removes the mark.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>An <strong>Unconscious</strong> state set by hand stays in place; the dead stay dead (<em>Core Rulebook p. 209</em>).</p></li>\n<li><p>Healing is done with the <strong>Heal</strong> button of first aid or of magic: the patient is the targeted token, otherwise the selected token (<em>Core Rulebook p. 206</em>) (@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.OfYcF73Vpf9a2rkr]{after combat}).</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Healing under fire (Bullets &amp; Bandages)</strong> (Body, health and augmentations)</td><td>GM, for the world</td><td>unticked</td></tr>\n<tr><td><strong>Advanced medkits (Bullets &amp; Bandages)</strong> (Body, health and augmentations)</td><td>GM, for the world</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki: Condition monitors</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.IP9Wexn9AmBHABtw]{MENU}</p><p>← @UUID[.Ws8hSYfLsqbhWJv7]{Situational effects and effects on others}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

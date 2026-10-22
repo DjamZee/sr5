@@ -1,0 +1,689 @@
+{
+  "_id": "jMw5X886fcLXtB6O",
+  "_key": "!journal!jMw5X886fcLXtB6O",
+  "name": "4. Magic and Resonance",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 500000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "n57naBPmfmmiiOB3",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.n57naBPmfmmiiOB3",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part follows an Awakened or Emerged character from the sheet to the chat card: casting a spell, summoning and binding a spirit, going astral, leading a ritual, initiating, then, for technomancers, threading a complex form and compiling a sprite. It is meant for the player who plays a magician, an adept or a technomancer, and for the GM who wants to know what the system checks on its own and what is left for them to decide.</p>\n<p>The rules themselves stay in the book: each chapter gives the page where to read them. What the system automates beyond the core rulebook (supplements, options) is flagged with its source.</p><table><tbody><tr><td><p>@UUID[.L8wj3Cf3WQVKImL5]{4.1 Casting a spell}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.jaRKuOQo9qZOsEmZ]{Area spells}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.u5h0ieiFIHZXT8dT]{Sustaining a spell, foci and counterspelling}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.55CfHCBIRElkTLWi]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.1yG7AM03EulpiQqD]{4.2 Spirits}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.gzozcTxn5gRmcqKe]{The spirit on the sheet, then on the scene}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.9iBwKm0TOVo2IXSn]{What the GM sets on a spirit}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.1pRqO6y6Sw387LIU]{Custom spirit types and entities}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.vDsTIQNEfcFGvvE4]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.DZqLEimyQwylLGta]{4.3 The astral}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.BcmXkWjJe13iV892]{A scene's background count (GM)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Vi6bdKuDngfOfl4x]{Grey mana and blight}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Y484fgMYofP0u4CD]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.QPF0DcJrinmQGnvJ]{Alchemical preparations}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.pG9EwPHh1eg4H5j5]{Reagents}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.khseU5xlrCvkbXqa]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.ltBs1rCYjkW6Lfvg]{The grade and metamagics}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.U12MAwTB5kUb8XGV]{The mentor spirit}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.XDWuktzRLFwZCVWp]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.DZjwUMabf6C396ud]{4.6 Technomancers}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.lBOKOkF9FhWSl8UU]{Living persona, submersion and streams}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.i0hu18BJg0wjZXoP]{Related settings and references}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "L8wj3Cf3WQVKImL5",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.L8wj3Cf3WQVKImL5",
+      "name": "4.1 Casting a spell",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Casting a spell takes three gestures: a click on the spell's dice pool, a choice of Force in the roll window, then the buttons of the chat card (resist Drain, have the target defend or resist, apply the effect). The system computes the pool, the Limit and the Drain, takes into account active foci, sustained spells and reagents, and offers what comes next to the right character.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-onglet-magie.webp\" width=\"944\" alt=\"The magic tab of a magician's sheet. The numbers refer to the list below.\" /><figcaption><strong>Figure 4.1.1</strong> — The magic tab of a magician's sheet. The numbers refer to the list below.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Magic type and initiate grade</strong>: <strong>Magician</strong>, <strong>Adept</strong>, <strong>Mystical Adept</strong> or <strong>Aspected Magician</strong>. As long as this field stays on <strong>None</strong>, the sheet shows neither tradition nor Drain resistance: set it first.</p></li>\n<li><p><strong>② The tradition</strong>: the <strong>Magical Tradition</strong> item gives the Drain resistance attribute and the spirit types of the five spell categories (@UUID[.1yG7AM03EulpiQqD]{spirits}).</p></li>\n<li><p><strong>③ The astral plane</strong>: astral perception, <strong>Drain Resistance</strong>, astral defense… (@UUID[.DZqLEimyQwylLGta]{the astral}).</p></li>\n<li><p><strong>④ Reagents</strong>: your stock of drams, and the button used to harvest them (@UUID[.lFDbnVCRn4ClwA6w]{rituals, preparations, reagents}).</p></li>\n<li><p><strong>⑤ Spells</strong>: click the figure in the <strong>DP</strong> (dice pool) column to cast the spell.</p></li>\n<li><p><strong>⑥ Force and hits</strong> of the last casting (<strong>F</strong> and <strong>H</strong> columns): the system fills them in at the roll; you can correct them with a click (right-click to increase, left-click to decrease).</p></li>\n<li><p><strong>⑦ Sustaining</strong> (<strong>Dur.</strong> column): the icon switches the sustaining of a sustained-duration spell on or off.</p></li>\n<li><p><strong>⑧ Foci</strong>: the <strong>Equip</strong> pin activates a focus; its rating is set with a click.</p></li>\n<li><p><strong>⑨ Metamagics</strong>: the <strong>Activate Metamagic</strong> pin puts its effects into play (@UUID[.zibQ5EI5pAW7Wv7E]{initiation}).</p></li>\n</ul>\n\n<h4>Step by step: casting a spell</h4>\n<ol>\n<li><p>If the spell targets someone, first target their token (right-click the token, then <strong>Toggle Target State</strong>, see @UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.9jXWevgNpySvo7Wz]{the token HUD}).</p></li>\n<li><p>On the sheet, open the magic tab and click the spell's dice pool, in the <strong>DP</strong> column. The <strong>Cast Spell</strong> window opens.</p></li>\n<li><p>Choose the <strong>Force</strong> with the − and + buttons. It starts from your Magic; the <strong>Limit</strong> and the <strong>Final Drain</strong>, at the bottom of the window, follow at once (<em>Core Rulebook p. 281-282</em>).</p></li>\n<li><p>Tick the options if needed: <strong>Reckless spellcasting</strong> (Drain goes up by 3), <strong>Reagents</strong> (the number of drams replaces the Limit), <strong>SpellShaping</strong> for an area spell if you have the metamagic.</p></li>\n<li><p>Click <strong>Roll Dice</strong>. The spell's card arrives in the chat with your hits.</p></li>\n<li><p>Click <strong>Resist Drain</strong> on the card: the figure in brackets is the Drain to resist. The system rolls your resistance and ticks the boxes, Stun or Physical according to the rule (<em>Core Rulebook p. 282</em>).</p></li>\n<li><p>The target then does its part from the same card: <strong>Defend</strong> against an indirect spell, <strong>Resisting (Direct Spell)</strong> against a direct spell, or nothing at all for a spell that is not resisted. For a spell that sets an effect (an increase, an armor…), click <strong>Apply Effect</strong>.</p></li>\n</ol>\n<p>The <strong>Aura of [element]</strong> spells (Fire Aura, Lightning Aura…) set two effects on their subject: their melee attacks gain +1 DV per hit and become elemental, and whoever touches them in melee resists a DV equal to the hits, in the element (<em>Street Grimoire p. 115</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-fenetre-sort.webp\" width=\"538\" alt=\"The casting window of an area spell, for an initiate who knows Shaping.\" /><figcaption><strong>Figure 4.1.2</strong> — The casting window of an area spell, for an initiate who knows Shaping.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Base Dice Pool</strong> and <strong>② Modifiers</strong>: unfold them (the arrow) to see the detail, foci and penalties included.</p></li>\n<li><p><strong>③ Force</strong>: the only mandatory choice.</p></li>\n<li><p><strong>④ Casting options</strong>: reckless spellcasting, reagents, shaping.</p></li>\n<li><p><strong>⑤ Final Drain</strong> and <strong>⑥ Limit</strong>: recomputed at each change.</p></li>\n<li><p><strong>⑦ Roll Dice</strong>, or <strong>⑧ Push the Limit</strong> to spend a point of Edge before the roll (<em>Core Rulebook p. 56</em>).</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-1-carte-sort.webp\" width=\"340\" alt=\"The card of a direct area spell: ① the template to place, ② the hits, ③ Drain resistance, ④ the target's resistance.\" /><figcaption><strong>Figure 4.1.3</strong> — The card of a direct area spell: ① the template to place, ② the hits, ③ Drain resistance, ④ the target's resistance.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>@UUID[.jaRKuOQo9qZOsEmZ]{Area spells} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "jaRKuOQo9qZOsEmZ",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.jaRKuOQo9qZOsEmZ",
+      "name": "Area spells",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>An area spell shows its range with an <strong>(A)</strong> and, after casting, its radius in meters. On the card, the target-shaped icon places the template on the scene: it is the template that says who is hit. For a detection spell, the radius is the Force multiplied by your Magic, and ten times more at extended range (<em>Core Rulebook p. 285</em>).</p>\n<p>An indirect Combat area spell is cast like a grenade, with a threshold of 3 (<em>Core Rulebook p. 283</em>). With no hit at all, it fails. With one or two hits, it scatters: the card carries the <strong>Scatter</strong> button, which moves the template, and nobody defends. From three hits, the target defends normally and the DV takes the net hits into account.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Shaping: the bubbles</p><p>The <strong>SpellShaping</strong> line only appears if the metamagic is active on the sheet. It has two fields, <strong>extra radius</strong> and <strong>spared characters</strong>, which share a cap equal to your Magic, Shaping focus included (<em>Core Rulebook p. 326, 320</em>); the dice are removed from your pool. On the card, a button designates the spared tokens (targeted or selected): they get no defense, no resistance and no effect from the spell. When your targets and your selection differ, a window has you tick the characters to spare.</p>\n<p>A one-meter bubble cannot be drawn on a grid: the system counts \"one point spares one character\". This rate is a GM setting, <strong>Spell Shaping: cost of one bubble</strong> (Magic tab), because the book gives no conversion.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.L8wj3Cf3WQVKImL5]{4.1 Casting a spell}</p><p>← @UUID[.L8wj3Cf3WQVKImL5]{4.1 Casting a spell} · @UUID[.u5h0ieiFIHZXT8dT]{Sustaining a spell, foci and counterspelling} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "u5h0ieiFIHZXT8dT",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.u5h0ieiFIHZXT8dT",
+      "name": "Sustaining a spell, foci and counterspelling",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A sustained-duration spell (<strong>S</strong> in the <strong>Dur.</strong> column) is sustained with a click on its icon; a second click releases it. While it is sustained, the system counts the sustaining penalty on your rolls (<em>Core Rulebook p. 282</em>). For someone other than you to sustain it, a sustaining focus does the job: choose the spell in its sheet.</p>\n<p>A focus only acts if it is <strong>Equipped</strong> (the pin on its line). The system then adds its rating where it counts: a spellcasting focus to the spells of its category, a power focus to your Magic, hence to all your magic pools (<em>Core Rulebook p. 318-320</em>). It only keeps one per use, the most powerful, with one exception: a power focus stacks with a spell focus, without its bonus counting twice in the same test (DjamZ's ruling). Bonding foci (the Karma spent) is kept on the sheet, by hand.</p>\n<p>The <strong>Counterspelling</strong> line of your skills carries two figures: on the left, the <strong>Spell defense dice pool</strong> you have built up (right-click to increase it, left-click to decrease it), on the right the cap the skill gives you (<em>Core Rulebook p. 294</em>). These dice are then spent by hand, when an ally or you yourself resist a spell. A counterspelling focus adds its Force. The GM removes the bonus in the roll window if the spell's category does not match the focus's.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Blocked by the system?</p><p>When the system refuses a gesture (a spell under Blight, shaping beyond your Magic…), it is a <strong>rule lock</strong> of the Magic family. The GM can lift it in <strong>Shadowrun settings</strong>, <strong>Presets</strong> tab, <strong>Set the locks</strong> button: the action then goes through, and the GM is warned (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{the rule locks}).</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.L8wj3Cf3WQVKImL5]{4.1 Casting a spell}</p><p>← @UUID[.jaRKuOQo9qZOsEmZ]{Area spells} · @UUID[.55CfHCBIRElkTLWi]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "55CfHCBIRElkTLWi",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.55CfHCBIRElkTLWi",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the pool (Spellcasting + Magic), the Limit (the Force) and the Drain, with active foci, the sustained spells penalty and wounds.</p></li>\n<li><p>It chooses Physical or Stun damage for Drain according to your hits and your Magic.</p></li>\n<li><p>It offers the target the right response (defense or resistance), and the template of an area spell.</p></li>\n<li><p>It removes the drams spent and never lets the stock go below 0.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The placement of a template enlarged by shaping, and the bonding of foci.</p></li>\n<li><p>The glitch of a casting, when the book leaves them the choice of its effects (<em>Core Rulebook p. 282</em>).</p></li>\n<li><p>The bonus of a counterspelling focus from another category than the spell, to remove in the roll window.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Reagent rules</strong> (Magic)</td><td>GM, for the world</td><td>Core Rulebook</td></tr>\n<tr><td><strong>Spell Shaping: cost of one bubble</strong> (Magic)</td><td>GM, for the world</td><td>1 (one point spares one character)</td></tr>\n<tr><td><strong>Magic</strong> family (Rule locks)</td><td>GM, for the world</td><td>ticked (the system refuses)</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Spellcasting, Drain, reckless spellcasting: (<em>Core Rulebook p. 281-282</em>); indirect area and Combat spells: (<em>Core Rulebook p. 283</em>); detection: (<em>Core Rulebook p. 285</em>); counterspelling: (<em>Core Rulebook p. 294</em>); foci: (<em>Core Rulebook p. 318-320</em>); shaping: (<em>Core Rulebook p. 326</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki: Area spells, resistance and counterspelling</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.L8wj3Cf3WQVKImL5]{4.1 Casting a spell}</p><p>← @UUID[.u5h0ieiFIHZXT8dT]{Sustaining a spell, foci and counterspelling} · @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "1yG7AM03EulpiQqD",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.1yG7AM03EulpiQqD",
+      "name": "4.2 Spirits",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The system follows a spirit from its summoning to its departure: it rolls the Summoning test and the spirit's resistance, counts the services, creates the spirit on the magician's sheet, then, with a click, the actor that plays it on the scene. Binding and banishing follow the same path. The GM keeps control of what the book entrusts to them: reputation with spirits, free spirits, wild spirits.</p>\n\n<h4>Step by step: summoning a spirit</h4>\n<ol>\n<li><p>On the sheet, <strong>Active Skills</strong> tab, click the dice pool (<strong>DP</strong> column) of the <strong>Summoning</strong> skill.</p></li>\n<li><p>In the window, under <strong>Summoning options</strong>, choose the <strong>Force</strong> and the <strong>Spirit Type</strong>: the list offers the five types of your tradition (<em>Core Rulebook p. 300</em>).</p></li>\n<li><p>Click <strong>Roll Dice</strong>. The chat card shows your hits and the <strong>Spirit Resistance</strong> button, which only the GM sees.</p></li>\n<li><p>The GM clicks it: the spirit's resistance is rolled (its Force in dice), then a second card appears with <strong>Resist Drain</strong> and, if you have at least one net hit, <strong>Summon Spirit</strong>; otherwise it shows <strong>Failed Summon</strong>.</p></li>\n<li><p>Click <strong>Resist Drain</strong>, then <strong>Summon Spirit</strong>. A message confirms the summoning, and the spirit joins the <strong>Summoned Spirits</strong> block of the magic tab, with as many services as net hits (<em>Core Rulebook p. 300</em>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-2-fenetre-invocation.webp\" width=\"510\" alt=\"The Summoning window: ① the roll attribute (Magic), ② the Force, ③ the spirit type, among those of the tradition.\" /><figcaption><strong>Figure 4.2.1</strong> — The Summoning window: ① the roll attribute (Magic), ② the Force, ③ the spirit type, among those of the tradition.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The name or the pool?</p><p>On a skill's line, the <strong>name</strong> opens a test where you choose the attribute; the <strong>figure in the DP column</strong> opens the full test, with the book's attribute (Magic for Conjuring skills). To summon, bind or banish, click the figure.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>← @UUID[.55CfHCBIRElkTLWi]{Related settings and references} · @UUID[.gzozcTxn5gRmcqKe]{The spirit on the sheet, then on the scene} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "gzozcTxn5gRmcqKe",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.gzozcTxn5gRmcqKe",
+      "name": "The spirit on the sheet, then on the scene",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<figure><img src=\"systems/sr5/manuel/captures/4-2-esprits-invoques.webp\" width=\"594\" alt=\"The Summoned Spirits block: ① services left, ② the spirit called onto the scene (the same button dismisses it), ③ bound or not.\" /><figcaption><strong>Figure 4.2.2</strong> — The Summoned Spirits block: ① services left, ② the spirit called onto the scene (the same button dismisses it), ③ bound or not.</figcaption></figure>\n<p>Each line of the <strong>Summoned Spirits</strong> block carries the spirit's type and Force. <strong>Services</strong> are counted down with a click (left click to remove one, right click to add one). The <strong>Call spirit</strong> button creates the spirit's actor, with its attributes, skills and powers computed from its Force and type; place its token on the scene from the actors tab. The same button, which has become the dismiss button, deletes that actor when the spirit leaves.</p>\n<p>When you play the spirit, its roll window offers you your own Edge, as long as you have some left: the summoner can spend it on their spirits' tests (<em>Core Rulebook p. 303</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-2-fiche-esprit.webp\" width=\"944\" alt=\"A summoned spirit's sheet: its type and Force at the top, next to the materialization and binding icons; at the bottom, ③ the summoner's Magic and the services.\" /><figcaption><strong>Figure 4.2.3</strong> — A summoned spirit's sheet: its type and Force at the top, next to the materialization and binding icons; at the bottom, ③ the summoner's Magic and the services.</figcaption></figure>\n<p>In the header, the <strong>Bound Spirit</strong> icon sits next to the materialization one, with its tooltip. The default layout of a spirit sheet shows the <strong>Qualities</strong> (traits) and <strong>Vision types</strong> blocks; a spirit whose layout the GM customized keeps its own, and the GM adds the traits block if it is missing.</p>\n\n<h4>Step by step: binding a spirit</h4>\n<ol>\n<li><p>Target the token of the spirit to bind.</p></li>\n<li><p>Click the dice pool of the <strong>Binding</strong> skill. The window ticks <strong>Reagents</strong> and offers Force × 25 drams (<em>Core Rulebook p. 301</em>); if your stock is not enough, a warning says so.</p></li>\n<li><p>Roll the dice. The GM clicks <strong>Spirit Resistance</strong>: the spirit resists with twice its Force.</p></li>\n<li><p>On the resistance card, click <strong>Bind Spirit</strong>: the <strong>Bounded</strong> column switches to \"Yes\" and the services gained are added. Then resist Drain from your card.</p></li>\n</ol>\n<p>Banishing follows the same path: target the spirit, click the <strong>Banishing</strong> dice pool, and the GM has the spirit resist from the card (<em>Core Rulebook p. 301</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits}</p><p>← @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits} · @UUID[.9iBwKm0TOVo2IXSn]{What the GM sets on a spirit} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9iBwKm0TOVo2IXSn",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.9iBwKm0TOVo2IXSn",
+      "name": "What the GM sets on a spirit",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The traits block of the spirit sheet carries five boxes that only the GM sees and ticks: <strong>Elemental</strong>, <strong>Wild</strong>, <strong>Domain</strong>, <strong>Magic pact</strong> and <strong>Free spirit</strong>. They used to be in the header, where they nearly hid the name.</p>\n<ul>\n<li><p><strong>Free spirit</strong> gives the spirit its own Edge (by default half its Force, rounded up), which the GM adjusts (<em>Core Rulebook p. 303-304</em>); with <strong>Magic pact</strong>, it can still draw on its former summoner's (<em>Street Grimoire p. 137</em>).</p></li>\n<li><p><strong>Elemental</strong> lowers its mental attributes and adds a service; <strong>Wild</strong> and <strong>Domain</strong> change its resistance to banishing and some powers (<em>Forbidden Arcana p. 177-181</em>).</p></li>\n</ul>\n<p>On the magician's sheet, the <strong>Astral Reputation</strong> block (spirit index, adjustment) and the <strong>Wild Reputation</strong> block are kept by the GM; the player does not see them. Astral Reputation removes its dice from Summoning, Binding and Banishing tests; the box is ticked by default in the roll window, and only the GM can untick it (<em>Street Grimoire p. 207</em>). Wild Reputation gives its dice to call a wild spirit or deal with it (<em>Forbidden Arcana p. 177</em>).</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Book option: the spirit leash</p><p>The <strong>Spirit leash (Forbidden Arcana p. 176)</strong> setting (<strong>Magic</strong> tab of <strong>Shadowrun settings</strong>) is unticked by default. Ticked, a chain icon appears next to each summoned spirit: the taut leash counts as a sustained spell, and a spirit that gets many hits offers the GM to <strong>Test the leash</strong> (<em>Forbidden Arcana p. 182</em>).</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits}</p><p>← @UUID[.gzozcTxn5gRmcqKe]{The spirit on the sheet, then on the scene} · @UUID[.1pRqO6y6Sw387LIU]{Custom spirit types and entities} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "1pRqO6y6Sw387LIU",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.1pRqO6y6Sw387LIU",
+      "name": "Custom spirit types and entities",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A spirit the book does not describe (a mist spirit, a variant specific to a mentor) is created as an item: items tab, <strong>Create Item</strong>, type <strong>Spirit Type</strong>. The new type immediately joins the list of types, for summoning as well as in traditions.</p>\n<ol>\n<li><p>Open the item's configuration tab (the cog icon).</p></li>\n<li><p>Choose the official type it inherits from in <strong>Based On</strong>: it takes over its attributes, skills, initiative and powers.</p></li>\n<li><p>Enter only the differences: a <strong>Modifier</strong> is added to the attribute, a <strong>Fixed Value</strong> replaces it; add skills and powers.</p></li>\n<li><p>Check the <strong>What this type gives</strong> block, at the bottom: it shows the spirit as it would be summoned at Force 4.</p></li>\n</ol>\n<p>The <strong>Summonable with the Summoning skill</strong> box, reserved to the GM, removes a type from the summoning list. That is how <strong>extraplanar entities</strong> are set up (an Erinye, a Kappa, a shedim): the GM creates a Spirit actor of that type and chooses its Force, without summoning (<em>Howling Shadows p. 114</em>). The Mégapack provides these types ready-made (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.Qp5FrYdO1ggybgHp]{the Mégapack}).</p>\n<figure><img src=\"systems/sr5/manuel/captures/4-2-type-esprit.webp\" width=\"804\" alt=\"A spirit type's configuration: ① the type it inherits from, ② the Summonable box (GM), ③ a modifier and a fixed value.\" /><figcaption><strong>Figure 4.2.4</strong> — A spirit type's configuration: ① the type it inherits from, ② the Summonable box (GM), ③ a modifier and a fixed value.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/4-2-type-apercu.webp\" width=\"497\" alt=\"The &quot;What this type gives&quot; block: the mist spirit at Force 4, inheritance from the air spirit included.\" /><figcaption><strong>Figure 4.2.5</strong> — The \"What this type gives\" block: the mist spirit at Force 4, inheritance from the air spirit included.</figcaption></figure>\n<h4>Insect spirits and the Skill power</h4>\n<p>An insect spirit's sheet, and the Spirit item, have an <strong>Insect race</strong> list: it gives the caste the powers, skills and resistance bonus of its race (subterranean termite +2, Goliath +4), the rest as a tooltip note (<em>Dark Terrors p. 21-32</em>). The <strong>Skill</strong> spirit power carries the skill it grants (<em>Aetherology p. 38</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits}</p><p>← @UUID[.9iBwKm0TOVo2IXSn]{What the GM sets on a spirit} · @UUID[.vDsTIQNEfcFGvvE4]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vDsTIQNEfcFGvvE4",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.vDsTIQNEfcFGvvE4",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It rolls the spirit's resistance, counts the services, creates the spirit and its actor, gives it its powers from the compendium chosen by the GM.</p></li>\n<li><p>It removes the binding reagents and the Astral Reputation from Conjuring tests.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Keeps the spirit index and decides on free, wild or elemental spirits.</p></li>\n<li><p>Rules on what a spirit without services does, and on social interactions with spirits.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Spirit leash (Forbidden Arcana p. 176)</strong> (Magic)</td><td>GM, for the world</td><td>unticked</td></tr>\n<tr><td><strong>Spirits: attribute resisting the Drain of an innate spell</strong> (Magic)</td><td>GM, for the world</td><td>Charisma</td></tr>\n<tr><td><strong>Creature powers compendium</strong> (Gamemaster's tools)</td><td>GM, for the world</td><td>the Mégapack if it is active</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Summoning, binding, banishing, services, spirits and Edge: (<em>Core Rulebook p. 299-304</em>); astral reputation: (<em>Street Grimoire p. 207</em>); wild and elemental spirits, leash: (<em>Forbidden Arcana p. 175-182</em>); insect spirits: (<em>Dark Terrors p. 21-32</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Esprits-laisse-et-reputation\">wiki: Spirits, leash and reputation</a> and <a href=\"https://github.com/DjamZee/sr5/wiki/Types-d-esprit-personnalises\">wiki: Custom spirit types</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.1yG7AM03EulpiQqD]{4.2 Spirits}</p><p>← @UUID[.1pRqO6y6Sw387LIU]{Custom spirit types and entities} · @UUID[.DZqLEimyQwylLGta]{4.3 The astral} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DZqLEimyQwylLGta",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.DZqLEimyQwylLGta",
+      "name": "4.3 The astral",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A magician can look at the astral plane (astral perception) or go there entirely (projection). The system switches the token's vision, changes initiative and refuses what cannot be done from the astral. The GM, for their part, sets the background count of each scene, which weighs on every magic roll made there.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-3-plan-astral.webp\" width=\"287\" alt=\"The sheet's Astral Plane block, astral perception on: ① the perception pin, ② Drain resistance, ③ astral tests in one click.\" /><figcaption><strong>Figure 4.3.1</strong> — The sheet's Astral Plane block, astral perception on: ① the perception pin, ② Drain resistance, ③ astral tests in one click.</figcaption></figure>\n\n<h4>Step by step: switching to astral perception</h4>\n<ol>\n<li><p>On the sheet, magic tab, click the pin on the <strong>Astral Perception</strong> line, in the <strong>Astral Plane</strong> block.</p></li>\n<li><p>The pin lights up. Your token switches to <strong>Astral Perception</strong> vision and carries the state of the same name: you see the astral plane within the range set by the GM (<em>Core Rulebook p. 312-313</em>).</p></li>\n<li><p>Click the pin again to go back to normal vision.</p></li>\n</ol>\n<p>The same pin is found in the sheet's <strong>Vision types</strong> block, <strong>Astral Perception</strong> line, for those who perceive the astral; it is always on for a spirit (<em>Core Rulebook p. 301</em>). What astral perception shows on screen, and what it changes to the dice: @UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.u9jjBFVO4x8wpNs8]{see 3.2}.</p>\n\n<h4>Step by step: projecting</h4>\n<ol>\n<li><p>Open the sheet's attributes tab (the <strong>A</strong> icon) and go down to the <strong>Initiatives</strong> block.</p></li>\n<li><p>Click the pin on the <strong>Astral</strong> line. Your initiative becomes astral initiative, and the <strong>Astral Initiative</strong> effect is shown on the token (<em>Core Rulebook p. 313</em>).</p></li>\n<li><p>In combat, the switch costs a Complex Action; if you have none left, the system refuses it.</p></li>\n<li><p>To go back into your body, click the pin on the <strong>Physical</strong> line.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-3-initiatives.webp\" width=\"287\" alt=\"The Initiatives block: the lit pin marks the current initiative, here astral initiative.\" /><figcaption><strong>Figure 4.3.2</strong> — The Initiatives block: the lit pin marks the current initiative, here astral initiative.</figcaption></figure>\n<p>In projection, the tests that need a body are refused with the message <strong>You can't roll a Test in astral projection.</strong> The astral tests stay in the <strong>Astral Plane</strong> block: <strong>Astral Defense</strong>, <strong>Pass Through Mana Barrier</strong>, <strong>Astral Tracking</strong>; astral combat is rolled from the <strong>Astral Combat</strong> skill (<em>Core Rulebook p. 315-316</em>). A weapon focus can also be wielded in astral combat: the option is set on its line, in the sheet's list of weapons.</p><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>← @UUID[.vDsTIQNEfcFGvvE4]{Related settings and references} · @UUID[.BcmXkWjJe13iV892]{A scene's background count (GM)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "BcmXkWjJe13iV892",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.BcmXkWjJe13iV892",
+      "name": "A scene's background count (GM)",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Background count is set per scene: configure the scene, <strong>Background Count</strong> tab. The value is then shown at the bottom left of the screen, next to the Matrix Noise (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.o25ieQmnMSZt0yYC]{the screen at a glance}).</p>\n<figure><img src=\"systems/sr5/manuel/captures/4-3-champ-magique.webp\" width=\"606\" alt=\"The Background Count tab of the scene configuration: ① the astral phenomenon, ② the rating, ③ the aspect. Ongoing Mana Flux and Mana Ebb rituals are listed below.\" /><figcaption><strong>Figure 4.3.3</strong> — The Background Count tab of the scene configuration: ① the astral phenomenon, ② the rating, ③ the aspect. Ongoing Mana Flux and Mana Ebb rituals are listed below.</figcaption></figure>\n<ul>\n<li><p><strong>Background Count rating</strong>, from −24 to +24. Positive, it is a domain: the tradition of the <strong>Alignment</strong> gains the value as Limit, all the others lose it in dice. Negative, it is a mana ebb or void: everyone loses the value in dice, whatever their tradition (<em>Aetherology p. 9-10</em>) and (<em>Aetherology p. 33</em>).</p></li>\n<li><p><strong>Astral phenomenon</strong> (Mist, Shroud, Void, astral rift…): the list fills in the rating and the alignment with one click, in the middle of the book's range; you can then change them. The indicator's tooltip recalls what the system leaves to the GM (<em>Aetherology p. 32-34</em>).</p></li>\n<li><p>An area spell or preparation can carry its own background count on its template; it only counts on the scene where the template is placed.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.DZqLEimyQwylLGta]{4.3 The astral}</p><p>← @UUID[.DZqLEimyQwylLGta]{4.3 The astral} · @UUID[.Vi6bdKuDngfOfl4x]{Grey mana and blight} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Vi6bdKuDngfOfl4x",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.Vi6bdKuDngfOfl4x",
+      "name": "Grey mana and blight",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Two items from <i>Better Than Bad</i> cut off magic, and the system applies them on its own (<em>Better Than Bad p. 156-157</em>):</p>\n<ul>\n<li><p><strong>Grey mana</strong> (armor accessory or tattoo) adds its rating to the dice to resist spells, but an Awakened character who wears it loses as many dice on their magic rolls.</p></li>\n<li><p><strong>Blight</strong>, a toxin, sets the <strong>Cut from the manasphere</strong> effect: no more spells, rituals, conjuring or astral as long as it lasts. When it strikes, sustained spells end, foci go out and a projected character comes back into their body. When the effect ends, nothing comes back on its own: switch your foci back on. Blight's refusals are a lock of the Magic family, which the GM can lift.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.DZqLEimyQwylLGta]{4.3 The astral}</p><p>← @UUID[.BcmXkWjJe13iV892]{A scene's background count (GM)} · @UUID[.Y484fgMYofP0u4CD]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Y484fgMYofP0u4CD",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.Y484fgMYofP0u4CD",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It switches the token's vision and initiative, and counts down the Complex Action of projection in combat.</p></li>\n<li><p>It applies the background count of the scene and of templates to each magic roll.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The time a projected character spends out of their body, the Dweller on the Threshold, mana barriers set up by a ritual.</p></li>\n<li><p>The effects of an astral phenomenon that the tooltip recalls (Perception penalty, Composure test, spell deviation).</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Astral Perception range</strong> (Perception and vision)</td><td>GM, for the world</td><td>300 m</td></tr>\n<tr><td><strong>Magic</strong> family (Rule locks)</td><td>GM, for the world</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>The astral world, perception, projection, astral combat, mana barriers: (<em>Core Rulebook p. 312-316</em>); astral phenomena: (<em>Aetherology p. 32-34</em>); grey mana and blight: (<em>Better Than Bad p. 156-157</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Monde-astral\">wiki: Astral world</a> and <a href=\"https://github.com/DjamZee/sr5/wiki/Configuration-de-scene\">wiki: Scene configuration</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.DZqLEimyQwylLGta]{4.3 The astral}</p><p>← @UUID[.Vi6bdKuDngfOfl4x]{Grey mana and blight} · @UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lFDbnVCRn4ClwA6w",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.lFDbnVCRn4ClwA6w",
+      "name": "4.4 Rituals, preparations, reagents",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A ritual is led by several people: the system opens a preparation card where each announces themselves, adds the group's help to the leader's roll, then gives each participant their own Drain button. A preparation is made from a spell marked as an alchemical formula, keeps its Potency and loses it with the world's time. Reagents are counted on the sheet, spent in the roll window and harvested with a click.</p>\n\n<h4>Step by step: leading a ritual (the leader)</h4>\n<ol>\n<li><p>Check your stock of <strong>Reagents</strong>: without reagents, the system refuses with <strong>You don't have reagents left !</strong>.</p></li>\n<li><p>In the <strong>Rituals</strong> block of the magic tab, click the ritual's dice pool. The <strong>Perform Ritual:</strong> window asks for the <strong>Force</strong>: choose it, then <strong>Confirm</strong>. It is set before anyone rolls the dice (<em>Core Rulebook p. 295</em>).</p></li>\n<li><p>The \"Ritual in preparation\" card arrives in the chat, with <strong>Join</strong> (for everyone) and <strong>Seal</strong> (for you and the GM).</p></li>\n<li><p>When everyone has joined, click <strong>Seal</strong>: nobody else can come in, and the roll window opens with the group's help (<em>Core Rulebook p. 296</em>) and (<em>Core Rulebook p. 49</em>).</p></li>\n<li><p>Roll the dice. The GM clicks <strong>Ritual resistance</strong>; the resistance card then gives <strong>one Drain button per person</strong> (<strong>Resist Drain</strong> followed by the name) and says whether the ritual succeeds.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-4-carte-rituel.webp\" width=\"340\" alt=\"The card of a ritual in preparation: ① Join, ② Seal (the leader and the GM only).\" /><figcaption><strong>Figure 4.4.1</strong> — The card of a ritual in preparation: ① Join, ② Seal (the leader and the GM only).</figcaption></figure>\n\n<h4>Step by step: joining a ritual (the participants)</h4>\n<ol>\n<li><p>Select your character's token on the scene (otherwise, it is the character assigned to you who takes part).</p></li>\n<li><p>Click <strong>Join</strong> on the ritual's card. Your help roll (Ritual Spellcasting + Magic) is rolled on its own, and a card announces your participation.</p></li>\n<li><p>The card warns you of special cases: <strong>Tradition different from the leader's: -2 dice.</strong>; without the Ritual Spellcasting skill, you bring no dice but still suffer the Drain (<em>Core Rulebook p. 295</em>).</p></li>\n<li><p>After sealing, resist Drain with <strong>your</strong> button on the resistance card.</p></li>\n</ol>\n<p>Two ritual keywords change the course of things (<em>Street Grimoire p. 122</em>): an <strong>Adept</strong> ritual is performed alone, without a preparation card; a <strong>Contractual</strong> ritual refuses sealing as long as no participant has joined. The <strong>Mana Flux</strong> and <strong>Mana Ebb</strong> rituals give the GM a button that brings the scene's background count closer to 0 for [Force] hours of game time (<em>Shadow Spells p. 22</em>) (@UUID[.BcmXkWjJe13iV892]{background count}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>← @UUID[.Y484fgMYofP0u4CD]{Related settings and references} · @UUID[.QPF0DcJrinmQGnvJ]{Alchemical preparations} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QPF0DcJrinmQGnvJ",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.QPF0DcJrinmQGnvJ",
+      "name": "Alchemical preparations",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ol>\n<li><p>Open the spell's sheet (the edit icon on its line) and tick <strong>Alchemical formula</strong>. The spell goes under the <strong>Alchemical formulae</strong> subheading of the spell list.</p></li>\n<li><p>Click its dice pool: the <strong>Create preparation</strong> window opens (Alchemy + Magic). Choose the <strong>Force</strong> and the <strong>Trigger</strong> (<strong>Command</strong>, <strong>Contact</strong> or <strong>Time</strong>) (<em>Core Rulebook p. 304-305</em>).</p></li>\n<li><p>Roll the dice, resist Drain. The GM clicks <strong>Preparation resistance</strong>, then you click <strong>Create preparation</strong>: the preparation joins the <strong>Preparations</strong> block, with its <strong>Potency</strong> equal to your net hits (<em>Core Rulebook p. 305</em>).</p></li>\n<li><p>To trigger it, click its dice pool in the <strong>Preparations</strong> block.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-4-fiche-preparation.webp\" width=\"694\" alt=\"A preparation's configuration: ① the Potency, ② Full Potency (× 2, × 3 or × 4), ③ Loss of Potency (per hour, or per day with Anchoring).\" /><figcaption><strong>Figure 4.4.2</strong> — A preparation's configuration: ① the Potency, ② Full Potency (× 2, × 3 or × 4), ③ Loss of Potency (per hour, or per day with Anchoring).</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/4-4-fenetre-preparation.webp\" width=\"510\" alt=\"The window for creating a preparation: ① the Force, ② the trigger, ③ reagents, ④ Drain.\" /><figcaption><strong>Figure 4.4.3</strong> — The window for creating a preparation: ① the Force, ② the trigger, ③ reagents, ④ Drain.</figcaption></figure>\n<p>A preparation keeps its full Potency for (Potency × 2) hours of game time, then loses 1 point per hour; the system lowers it when the GM moves the clock forward, and a preparation at 0 can no longer be triggered (<em>Core Rulebook p. 305</em>). The GM can lengthen these durations on the preparation's sheet, configuration tab (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.YRfJG9p6WnN6cUDi]{the clock}):</p>\n<ul>\n<li><p><strong>Full Potency</strong>: × 3 for the Lasting Preparations mastery or some traditions, × 4 for others (<em>Forbidden Arcana p. 39, 75</em>) and (<em>Forbidden Arcana p. 132</em>).</p></li>\n<li><p><strong>Loss of Potency</strong>: <strong>1 per day (Fixation)</strong> with the Anchoring metamagic (<em>Core Rulebook p. 326</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents}</p><p>← @UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents} · @UUID[.pG9EwPHh1eg4H5j5]{Reagents} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pG9EwPHh1eg4H5j5",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.pG9EwPHh1eg4H5j5",
+      "name": "Reagents",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The stock is kept in the <strong>Reagents</strong> block of the magic tab: left click to remove one dram, right click to add one, Shift for ten at a time. In the window of a magic roll, the <strong>Reagents</strong> box opens the number of drams to spend: it replaces the Limit, and the stock goes down when you roll (<em>Core Rulebook p. 316-318</em>). The <strong>Another tradition's reagents (half)</strong> box halves the drams counted.</p>\n<h4>Step by step: harvesting</h4>\n<ol>\n<li><p>Click the green sprout of the <strong>Reagents</strong> block (<strong>Harvest reagents</strong>).</p></li>\n<li><p>Choose the <strong>Area</strong>: suited to your tradition (1 dram per 2 hits) or not (1 per 4) (<em>Core Rulebook p. 317</em>).</p></li>\n<li><p>Roll the dice (Alchemy + Magic [Mental]), then click <strong>Update the reagents</strong> on the card: the harvest is added to the stock.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-4-recolter.webp\" width=\"466\" alt=\"The harvest window: the area sets the yield.\" /><figcaption><strong>Figure 4.4.4</strong> — The harvest window: the area sets the yield.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Book options: reagent rules</p><p>The <strong>Reagent rules</strong> setting (<strong>Magic</strong> tab of <strong>Shadowrun settings</strong>) stays by default on the <strong>Core Rulebook</strong>. <strong>Shadow Spells</strong> adds stocks of refined and radical reagents and orichalcum, and refining (<em>Shadow Spells p. 16</em>) and (<em>Street Grimoire p. 209-211</em>); <strong>Forbidden Arcana</strong> adds a Limit and Drain bonus depending on the tier (<em>Forbidden Arcana p. 187-191</em>). Changing it reloads the world; the stocks already filled become raw reagents.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents}</p><p>← @UUID[.QPF0DcJrinmQGnvJ]{Alchemical preparations} · @UUID[.khseU5xlrCvkbXqa]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "khseU5xlrCvkbXqa",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.khseU5xlrCvkbXqa",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It keeps the list of a ritual's participants, the tradition penalty, the group's help and one Drain per person.</p></li>\n<li><p>It creates the preparation, tracks its Potency with the clock and refuses a spent preparation.</p></li>\n<li><p>It removes the drams spent and adds the harvest.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The leader's glitch and the failure of a ritual along the way (a participant who leaves the foundation) (<em>Core Rulebook p. 296</em>).</p></li>\n<li><p>What speeds up the loss of Potency, and the regrowth time of a harvested area.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Reagent rules</strong> (Magic)</td><td>GM, for the world</td><td>Core Rulebook</td></tr>\n<tr><td><strong>Magic</strong> family (Rule locks)</td><td>GM, for the world</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Ritual spellcasting: (<em>Core Rulebook p. 295-298</em>); teamwork test: (<em>Core Rulebook p. 49</em>); alchemy and preparations: (<em>Core Rulebook p. 304-305</em>); reagents: (<em>Core Rulebook p. 316-318</em>); ritual keywords: (<em>Street Grimoire p. 122</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Rituels\">wiki: Rituals</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Reactifs\">wiki: Reagents</a> and <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki: preparations</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.lFDbnVCRn4ClwA6w]{4.4 Rituals, preparations, reagents}</p><p>← @UUID[.pG9EwPHh1eg4H5j5]{Reagents} · @UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zibQ5EI5pAW7Wv7E",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.zibQ5EI5pAW7Wv7E",
+      "name": "4.5 Initiation",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>An Awakened character who initiates gains a grade and chooses a metamagic; many follow a mentor spirit. The system keeps the grade, applies the metamagics and masteries it can automate, and gives the mentor its bonuses, its disadvantage and the test to resist it. The Karma cost of initiation and the ordeal stay with the table (<em>Core Rulebook p. 324</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>← @UUID[.khseU5xlrCvkbXqa]{Related settings and references} · @UUID[.ltBs1rCYjkW6Lfvg]{The grade and metamagics} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ltBs1rCYjkW6Lfvg",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.ltBs1rCYjkW6Lfvg",
+      "name": "The grade and metamagics",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ol>\n<li><p>In the magic tab, left column, set the <strong>Initiation Grade</strong>: right-click to raise it, left-click to lower it (see the figure of chapter @UUID[.L8wj3Cf3WQVKImL5]{4.1}, marker ①).</p></li>\n<li><p>Add the chosen metamagic with the <strong>+</strong> of the <strong>Metamagics</strong> block, or drag it from a compendium (the Mégapack provides a large selection).</p></li>\n<li><p>Click its pin, <strong>Activate Metamagic</strong>: as long as it is not activated, its effects do not play.</p></li>\n</ol>\n<p>What the system does with an active metamagic: <strong>Shaping</strong> adds its line to the window of area spells (@UUID[.jaRKuOQo9qZOsEmZ]{area spells}); <strong>Anchoring</strong> is set on the preparation (@UUID[.QPF0DcJrinmQGnvJ]{preparations}); <strong>Structured Spellcasting</strong> removes 1 from spells' Drain, in exchange for Edge and reagents no longer raising the Limit; <strong>Harmonious Defense</strong> gives a spell defense pool visible in the <strong>Astral Plane</strong> block (<em>Forbidden Arcana p. 43-46</em>). The metamagics that depend on the GM's judgment stay as text on their sheet.</p>\n<p><i>Forbidden Arcana</i>'s <strong>magical masteries</strong> (Mage Hunter, Death Dealer, Illusionist…) are qualities: place it, tick it active, and its level is its rating (<em>Forbidden Arcana p. 30-42</em>). Those that are automated add a box or a line in the relevant spell's window (for example <strong>Mage Hunter</strong>, unticked by default).</p>\n<h4>What supplement magic adds</h4>\n<ul>\n<li><p><strong>Rapid-Fire Caster</strong>: reckless spellcasting without the Drain increase, one use per day and per level, counted on the sheet (\"1/2 today\"); <strong>Electromancer</strong>: the target's Initiative drops by half the net hits, after its resistance; <strong>Guru</strong>: the ritual window accepts ordinary participants (<em>Forbidden Arcana p. 35-38</em>).</p></li>\n<li><p><strong>Improved Astral Form</strong> and <strong>Astralnaut</strong> metamagics: the projection duration is shown on the sheet; <strong>Rapid Necro-Summoning</strong>: summoning Drain of 4 at least (<em>Forbidden Arcana p. 44-45</em>).</p></li>\n<li><p>The <strong>Mystic Aptitude</strong> and Purity State adept powers (<em>Better Than Bad p. 159</em>); the <strong>Dark Magic</strong> tradition is recognized (<em>Dark Terrors p. 165</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation}</p><p>← @UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation} · @UUID[.U12MAwTB5kUb8XGV]{The mentor spirit} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "U12MAwTB5kUb8XGV",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.U12MAwTB5kUb8XGV",
+      "name": "The mentor spirit",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The mentor lives in <strong>two items</strong>: the <strong>Mentor Spirit</strong> quality (the 5 Karma positive quality that is bought, <em>Core Rulebook p. 76</em>) and a <strong>Mentor Spirit</strong> item that carries the bonuses, the disadvantage and the resistance test. The quality points to the item in its link field; it is the item's effects that play.</p>\n<h4>Step by step: giving a character a mentor</h4>\n<ol>\n<li><p>In the <strong>Mentor spirits</strong> block of the magic tab, click the <strong>+</strong>: a <strong>New mentor spirit</strong> item appears. You can also drag a mentor from the Mégapack, which provides them ready-made (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.Qp5FrYdO1ggybgHp]{the Mégapack}).</p></li>\n<li><p>Open the character's <strong>Mentor Spirit</strong> quality and link it to that item. As long as they are not linked, the sheet says so plainly: \"Mentor Spirit quality missing\" or \"Mentor Spirit: choose a mentor\".</p></li>\n<li><p>On the item's sheet, configuration tab, set the <strong>Resistance threshold</strong>, the <strong>Resistance test attributes</strong> (Charisma + Willpower by default, the test most of the book's mentors ask for (<em>Core Rulebook p. 321-323</em>)) and, for an adept, the <strong>Free Power Points</strong>. A mystic adept chooses once and for all the <strong>Mystic adept path</strong> (<em>Core Rulebook p. 321</em>).</p></li>\n<li><p>In the effects tab, file each bonus in its <strong>Mentor block</strong>: all, magician, adept or disadvantage. A \"+2 if…\" bonus is ticked <strong>Situational</strong>: it will be offered as a box in the window of the relevant roll.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-fiche.webp\" width=\"694\" alt=\"The Mentor Spirit item, configuration tab: ① the mystic adept path, ② the threshold and ③ the attributes of the resistance test, ④ the power points given to an adept.\" /><figcaption><strong>Figure 4.5.1</strong> — The Mentor Spirit item, configuration tab: ① the mystic adept path, ② the threshold and ③ the attributes of the resistance test, ④ the power points given to an adept.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-effets.webp\" width=\"694\" alt=\"Its effects: each says whom it applies to (① Mentor block) and whether it only counts under certain conditions (② Situational).\" /><figcaption><strong>Figure 4.5.2</strong> — Its effects: each says whom it applies to (① Mentor block) and whether it only counts under certain conditions (② Situational).</figcaption></figure>\n<p>To resist the disadvantage, click the die on the mentor's line, in the <strong>Mentor spirits</strong> block: the test is rolled against the threshold, and the card says <strong>Disadvantage resisted</strong> or not.</p>\n<figure><img src=\"systems/sr5/manuel/captures/4-5-mentor-ligne.webp\" width=\"317\" alt=\"The Mentor spirits block: ① the die of the disadvantage resistance test.\" /><figcaption><strong>Figure 4.5.3</strong> — The Mentor spirits block: ① the die of the disadvantage resistance test.</figcaption></figure>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Your old mentors as qualities (GM)</p><p>An old \"Mentor spirit (Bear) [Magician]\" quality that carries its own effects still works. To move to the two-item model, the GM runs the conversion command: a window offers <strong>The selected actor</strong> or <strong>All actors in the world</strong>; the conversion creates the mentor item, files the effects in it, links the quality and whispers a summary to the GM, without deleting anything. The Mégapack provides the ready-made macro (GM's macros compendium), along with the one that undoes the conversion. The detail and the commands: <a href=\"https://github.com/DjamZee/sr5/wiki/Mentors-metamagies-et-maitrises\">wiki: Mentors, metamagics and masteries</a>.</p></div>\n\n<p>The system only keeps one mentor (the first) and makes the mentor inert, disadvantage included, when Magic drops to 0 (<em>Core Rulebook p. 76</em>) and (<em>Core Rulebook p. 321</em>).</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Book option: the Mentor's Mask</p><p>The <strong>Mask of the mentor</strong> setting (<strong>Magic</strong> tab of <strong>Shadowrun settings</strong>) is unticked by default. Ticked, a Mask box appears on the mentor item: a magician then reduces all their Drains by 1 (never below 2), an adept gains 1 power point (<em>Forbidden Arcana p. 182</em>). DjamZ's ruling: a mystic adept who chose the Adept path also gets the −1 to Drain when they cast a spell.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation}</p><p>← @UUID[.ltBs1rCYjkW6Lfvg]{The grade and metamagics} · @UUID[.XDWuktzRLFwZCVWp]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "XDWuktzRLFwZCVWp",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.XDWuktzRLFwZCVWp",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It applies the active metamagics and masteries it can automate, and the mentor's bonuses according to the magic type.</p></li>\n<li><p>It flags a mentor without a quality, a quality without a mentor, or bonuses counted twice.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The Karma cost of initiation, the ordeal, the choice of metamagics left as text.</p></li>\n<li><p>The Mask's \"−3 to notice the magic\" threshold, and what a character who gives in to their disadvantage does.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Mask of the mentor</strong> (Magic)</td><td>GM, for the world</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Initiation and metamagics: (<em>Core Rulebook p. 324-326</em>); mentor spirits: (<em>Core Rulebook p. 76</em>) and (<em>Core Rulebook p. 320-323</em>); <i>Forbidden Arcana</i> metamagics and masteries: (<em>Forbidden Arcana p. 30-46</em>); Mask: (<em>Forbidden Arcana p. 182</em>); Mystic Aptitude and Purity State: (<em>Better Than Bad p. 159</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Mentors-metamagies-et-maitrises\">wiki: Mentors, metamagics and masteries</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Magie-des-supplements\">wiki: Supplement magic</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.zibQ5EI5pAW7Wv7E]{4.5 Initiation}</p><p>← @UUID[.U12MAwTB5kUb8XGV]{The mentor spirit} · @UUID[.DZjwUMabf6C396ud]{4.6 Technomancers} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DZjwUMabf6C396ud",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.DZjwUMabf6C396ud",
+      "name": "4.6 Technomancers",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The technomancer acts in the Matrix without a device, through Resonance. The system gives them a living persona, rolls the threading of complex forms with their Fading, compiles and registers sprites, and applies the chosen stream. This chapter covers Resonance; what belongs to the Matrix itself (marks, Matrix actions, PAN crown) is described in part 5 (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4tswtGQqbgDVe9IS]{the PAN crown}).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/4-6-onglet-resonance.webp\" width=\"630\" alt=\"The Resonance actions tab: ① Resonance actions, ② complex forms and ③ their Fading, ④ compiled sprites, ⑤ echoes.\" /><figcaption><strong>Figure 4.6.1</strong> — The Resonance actions tab: ① Resonance actions, ② complex forms and ③ their Fading, ④ compiled sprites, ⑤ echoes.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Resonance Actions</strong>: compile, decompile, register a sprite, kill a complex form, erase a resonance signature; a click on the pool rolls the test (<em>Core Rulebook p. 250</em>).</p></li>\n<li><p><strong>② Complex forms</strong>: the pool threads the form; the <strong>L</strong> (level) and <strong>H</strong> (hits) columns fill in at the roll.</p></li>\n<li><p><strong>③ Fading</strong>: the form's value at the level shown, stream included.</p></li>\n<li><p><strong>④ Compiled sprites</strong>: tasks left, level, registered or not.</p></li>\n<li><p><strong>⑤ Echoes</strong>: like a metamagic, an echo is placed in this block and activated by its pin.</p></li>\n</ul>\n\n<h4>Step by step: threading a complex form</h4>\n<ol>\n<li><p>Target the token aimed at if needed, then click the complex form's dice pool. The <strong>Thread</strong> window opens.</p></li>\n<li><p>Choose the <strong>Level</strong>: the <strong>Final Fading</strong>, at the bottom, follows at once (<em>Core Rulebook p. 251</em>). The <strong>Distance to target</strong> sets itself from the tokens, and its noise counts in the pool.</p></li>\n<li><p>Roll the dice. The card offers to resist Fading, and to the target to defend when the form calls for it.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-6-fenetre-forme.webp\" width=\"510\" alt=\"The threading window: ① the distance to the target and its noise, ② the level, ③ final Fading.\" /><figcaption><strong>Figure 4.6.2</strong> — The threading window: ① the distance to the target and its noise, ② the level, ③ final Fading.</figcaption></figure>\n<p>Fading never goes below 2 (<em>Core Rulebook p. 251</em>). It is Stun, and Physical when the hits exceed your Resonance (<em>Core Rulebook p. 251</em>).</p>\n\n<h4>Step by step: compiling a sprite</h4>\n<ol>\n<li><p>Click the dice pool of <strong>Compile Sprite</strong>. In the window, choose the <strong>Level</strong> and the <strong>Sprite Type</strong> (Companion, Courier, Crack, Data, Fault, Generalist, Machine).</p></li>\n<li><p>Roll the dice. The GM clicks <strong>Sprite Resistance</strong>: the sprite resists with its level.</p></li>\n<li><p>On the resistance card, resist Fading (twice the sprite's hits, 2 at minimum (<em>Core Rulebook p. 254</em>)), then click <strong>Compile Sprite</strong>. The sprite joins the <strong>Compiled sprites</strong> block with as many tasks as net hits.</p></li>\n<li><p>The <strong>Call sprite</strong> button on its line creates the sprite's actor, as for a spirit (@UUID[.gzozcTxn5gRmcqKe]{spirits}). <strong>Register Sprite</strong> and <strong>Decompile Sprite</strong> are rolled from the Resonance actions (<em>Core Rulebook p. 254-256</em>), with the sprite targeted. Registering is limited by the targeted sprite's Level (without a target, Resonance), decompiling by your Social limit (<em>Core Rulebook p. 250</em>). Effects that modify the limit of threading, compiling or registering (a paragon, \"Dissonance-marked\") are added to it, and the card shows them (<em>Kill Code p. 100, 104</em>).</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/4-6-fenetre-sprite.webp\" width=\"510\" alt=\"The window for compiling a sprite: ① the level, ② the sprite type. A technoshaman also finds the Great Form box there, specific to her stream.\" /><figcaption><strong>Figure 4.6.3</strong> — The window for compiling a sprite: ① the level, ② the sprite type. A technoshaman also finds the Great Form box there, specific to her stream.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU}</p><p>← @UUID[.XDWuktzRLFwZCVWp]{Related settings and references} · @UUID[.lBOKOkF9FhWSl8UU]{Living persona, submersion and streams} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lBOKOkF9FhWSl8UU",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.lBOKOkF9FhWSl8UU",
+      "name": "Living persona, submersion and streams",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>The living persona</strong>: every technomancer has one, as a device on the sheet, whose rating is their Resonance; the connected GM creates it if it is missing, and it cannot be deleted (<em>Core Rulebook p. 251</em>). It acts as the master of the PAN crown, and its Matrix damage is ticked as Stun on the sheet (<em>Core Rulebook p. 228</em>).</p></li>\n<li><p><strong>The submersion grade</strong> is set in the device tab of the left column (<strong>Submersion Grade</strong>, right or left click); echoes are placed in the <strong>Echoes</strong> block.</p></li>\n<li><p><strong>The streams</strong> of <i>Kill Code</i> (Cyberadept, Machinist, Sourcerer, Technoshaman, and the dissonant streams) are qualities (<em>Kill Code p. 89-93</em>) and (<em>Kill Code p. 133-134</em>). The system applies their effects: Fading reduced by 2 for the forms the stream knows (it can then go down to 1), +2 dice to compile and decompile two types of sprites, and the stream's \"daemon\" according to the submersion grade. A Machinist's living persona acts as a rigger command console (@UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.FhRTLAI7RMJ8TvTP]{the rigger console}), but only shares the autosofts that one of their Resonance [Program] echoes copies; the echo carries the name of the program copied (<em>Core Rulebook p. 258, Kill Code p. 91</em>).</p></li>\n<li><p><strong>Great form sprites</strong>: the compiling window of a Technoshaman, and of her alone, carries the <strong>Major form</strong> box. Ticked, the compiling Fading doubles, and the sprite carries its type's power in its description; this power is played from that text (<em>Kill Code p. 92-93</em>).</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Where to find the streams?</p><p>A stream only acts if it carries its system effect (<strong>Special case</strong> category, value \"Stream: …\"). The Mégapack's stream qualities carry it in their recent versions; on an older quality, the GM adds it in the effects tab. The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki: Matrix, AI, devices and vehicles</a>.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.DZjwUMabf6C396ud]{4.6 Technomancers}</p><p>← @UUID[.DZjwUMabf6C396ud]{4.6 Technomancers} · @UUID[.i0hu18BJg0wjZXoP]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "i0hu18BJg0wjZXoP",
+      "_key": "!journal.pages!jMw5X886fcLXtB6O.i0hu18BJg0wjZXoP",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the Fading of each form and of each compilation, stream included, and chooses its damage type.</p></li>\n<li><p>It rolls the sprites' resistance, counts their tasks, creates the sprite and its actor.</p></li>\n<li><p>It keeps the living persona and applies the streams' effects.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Great form powers, played from the sprite's description; submersion itself (Karma, ordeal).</p></li>\n<li><p>Making sure a stream's complex form goes to the right stream: stream forms are compendium items, the system does not check who buys them.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Sprite powers compendium</strong> (Gamemaster's tools)</td><td>GM, for the world</td><td>the Mégapack if it is active</td></tr>\n<tr><td><strong>Matrix</strong> family (Rule locks)</td><td>GM, for the world</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Technomancers, Resonance, living persona, threading, Fading, complex forms: (<em>Core Rulebook p. 249-254</em>); sprites: (<em>Core Rulebook p. 254-256</em>); streams and great form: (<em>Kill Code p. 89-93</em>) and (<em>Kill Code p. 133-134</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki: Matrix, AI, devices and vehicles</a> and <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki: PAN crown</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.n57naBPmfmmiiOB3]{MENU} &gt; @UUID[.DZjwUMabf6C396ud]{4.6 Technomancers}</p><p>← @UUID[.lBOKOkF9FhWSl8UU]{Living persona, submersion and streams}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

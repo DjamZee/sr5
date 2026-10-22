@@ -1,0 +1,311 @@
+{
+  "_id": "LY0gP2n4uytah6mP",
+  "_key": "!journal!LY0gP2n4uytah6mP",
+  "name": "9. Modules",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 1000000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "qOV9ymq6uQaNoscq",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.qOV9ymq6uQaNoscq",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The system is self-sufficient; DjamZ's modules add content, House Rules or tools to it. Each entry says what the module is for, how to switch it on, what it sets, and where to find its own guide. Most of these modules are written in French: their titles and compendium names are quoted here as Foundry shows them.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Installing a module, once and for all</p><p>All the modules of this part install the same way. On Foundry's setup screen (world closed), open the <strong>Add-on Modules</strong> tab, click <strong>Install Module</strong>, paste at the bottom of the window the manifest link given with the module's release, then click <strong>Install</strong>. A module delivered as a zip is unpacked into Foundry's <strong>Data/modules</strong> folder. Then, in each world where you want it: <strong>Settings</strong> › <strong>Manage Modules</strong>, tick it, then <strong>Save Module Settings</strong>. The system itself installs as described in @UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.K6CX2EasFO6vz6Be]{chapter 0.2}.</p></div><table><tbody><tr><td><p>@UUID[.Qp5FrYdO1ggybgHp]{9.1 Mégapack Lite}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.foo9qJetkajRaK5n]{9.2 Bibliothèque SR5}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.4V7hFPTyp4NVXfhI]{9.3 Matrice v1}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.g0O9ecLvjhjaIxvY]{9.4 Vertige}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.FY83GXbOqmVz6WN9]{9.5 Character Designer}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.T5p4QWSziZNI4xOL]{9.6 Visual effects (SFX)}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.LenjNJ7X8d1ENCu7]{9.7 Adventures}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.sjQAg1umcysf4WpA]{9.8 Journal tabs}</p></td><td><p>All</p></td></tr><tr><td><p>@UUID[.hu1TCY7d5cZXfs3p]{9.9 Corporate topology}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.G5lt3ucuBihlzQCc]{9.10 Revised martial arts}</p></td><td><p>GM</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Qp5FrYdO1ggybgHp",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.Qp5FrYdO1ggybgHp",
+      "name": "9.1 Mégapack Lite",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Megapack SR5 Lite - Foundry VTT</strong> module is the table's content store: items (weapons, armor, augmentations, spells, qualities, vehicles, drones, programs…), actors (grunts, contacts, vendors, paracritters, spirits, security devices, hosts) and random tables, sorted into compendiums. Each carries its name, its stats, its price, its Availability, its effects and its automations, but <strong>no text from the books</strong>: the description comes down to the book and the page where to read the rule. You take from it what you drag onto a sheet, onto a scene or into a shop vendor. It needs no other module.</p>\n<p>In this manual, \"the Mégapack\" means this Lite edition. Unofficial content: it assumes you own the books it cites. Its content is in French, with the English name of many items alongside.</p>\n\n<h4>Step by step: switching it on</h4>\n<ol>\n<li><p>Install it, then tick <strong>Megapack SR5 Lite - Foundry VTT</strong> in <strong>Manage Modules</strong> and save.</p></li>\n<li><p>Open the sidebar's <strong>Compendium Packs</strong> tab: four compendiums appear, <strong>SR5 - Objets</strong> (items), <strong>SR5 - Acteurs</strong> (actors), <strong>SR5 - Tables</strong> and <strong>SR5 - Macros</strong>.</p></li>\n<li><p>Open <strong>SR5 - Objets</strong>: five large folders (Créature, Magie, Matos &amp; Équipement, Personnages, Résonance), sorted like the books' chapters. The search field at the top filters by name.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-1-objets.webp\" width=\"432\" alt=\"The &quot;SR5 - Objets&quot; compendium, the &quot;Matos &amp;amp; Équipement&quot; (gear) folder unfolded.\" /><figcaption><strong>Figure 9.1.1</strong> — The \"SR5 - Objets\" compendium, the \"Matos &amp; Équipement\" (gear) folder unfolded.</figcaption></figure>\n\n<h4>What it brings to the table</h4>\n<ul>\n<li><p><strong>Items ready to place</strong>, with their effects: a quality with effects is active as soon as it is on the sheet, unless its effect depends on a circumstance (its description then says so). Cutting Aces' social qualities carry their effects (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.eaKmcOBAtqQ9rBzh]{see 2.2}); mentor spirits have their picture; an English name accompanies more than 300 augmentations and vehicles, which lets you search for them in English in the shop.</p></li>\n<li><p><strong>Actors</strong>: grunts of every professional rating (<em>Core Rulebook p. 378-381</em>), contacts, vendors for the shop, the bestiary, spirits, security devices (cameras, maglocks, scanners) and hosts already typed with their IC.</p></li>\n<li><p><strong>Tables</strong>: the contact generator, augmented reality, and all those the system can draw (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.S2R2SocjATdC39nc]{chapter 8.4}).</p></li>\n<li><p><strong>What the system reads from it on its own</strong>: the powers of spirits and sprites, natural weapons, vendors' banners. The <strong>Creature powers compendium</strong>, <strong>Sprite powers compendium</strong> and <strong>Base weapons compendium</strong> settings (Shadowrun settings, Gamemaster's tools tab) are set to <strong>Automatic</strong>: they read the Mégapack first (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.jB4WF7e1RQt0eerp]{chapter 8.1}).</p></li>\n</ul>\n\n<h4>Step by step: completing it with your books</h4>\n<p>The Lite gives the figures and refers to the book; the text of the rule is given by your book. Complete the copies in your world, never the compendium: a module's compendium is reset at each update.</p>\n<ol>\n<li><p>Drag the item or actor from the compendium into the world (or onto a sheet): that copy is the one you complete.</p></li>\n<li><p>Open its sheet: the description gives the book and the page, for example \"SR5 p. 429\" (French page numbers). Add your own notes from your book there, if you like.</p></li>\n<li><p>An item is missing? Duplicate a neighbouring Lite item and change its values according to your book, or create it from the sidebar's <strong>Items</strong> tab.</p></li>\n<li><p>Store your completed copies in a world compendium (<strong>Compendium Packs</strong> tab, <strong>Create Compendium</strong>) to find them again from one world to the next.</p></li>\n</ol>\n\n<h4>The GM's macros</h4>\n<p>The <strong>SR5 - Macros</strong> compendium, reserved to the GM, keeps in the <strong>Outils du MJ</strong> (GM tools) folder three repair macros, useful to a world created with an older version of the system. Drag one into the macro bar, then click it.</p>\n<ul>\n<li><p><strong>Switch on the automatic powers</strong>: ticks the always-active powers of spirits and critters created before the system did it on its own. A window offers the selected actor or all actors; a summary is whispered to you. Running it again changes nothing.</p></li>\n<li><p>The mentor conversion macro turns the old \"Mentor spirit (…)\" qualities into a quality linked to a Mentor Spirit item; the undo macro undoes it. Running it again creates no duplicate.</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/9-1-macros.webp\" width=\"432\" alt=\"The macros of the &quot;Outils du MJ&quot; folder.\" /><figcaption><strong>Figure 9.1.2</strong> — The macros of the \"<span lang=\"fr\">Outils du MJ</span>\" folder.</figcaption></figure>\n\n<h4>Its settings</h4>\n<p>None: the Mégapack only contains compendiums. Players can browse the items, actors and tables; only the GM sees the macros.</p>\n\n<h4>References</h4>\n<ul>\n<li><p>Grunts and professional rating (<em>Core Rulebook p. 378-381</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Macros\">wiki: Macros</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Navigateur-de-compendiums\">wiki: Compendium browser</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>@UUID[.foo9qJetkajRaK5n]{9.2 Bibliothèque SR5} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "foo9qJetkajRaK5n",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.foo9qJetkajRaK5n",
+      "name": "9.2 Bibliothèque SR5",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Bibliothèque SR5 - Foundry</strong> module puts the Shadowrun 5 books into journals, to read a rule without leaving Foundry: the core rulebook, the rules supplements, the metroplexes, the catalogues and the GM screen. These are the French editions. Other modules (Vertige) link to it: a \"see p. 197\" reference opens the right page when the Bibliothèque is active.</p>\n\n<h4>Step by step: switching it on and reading a book</h4>\n<ol>\n<li><p>Install it, tick <strong>Bibliothèque SR5 - Foundry</strong> in <strong>Manage Modules</strong> and save.</p></li>\n<li><p>In the <strong>Compendium Packs</strong> tab, open <strong>Bibliothèque SR5</strong>: one folder per book.</p></li>\n<li><p>Open a book's journal. Most often, a book has two: <strong>SIGLE.1 - Titre</strong> (code and title) for the text, <strong>SIGLE.2 - Encarts, Tables &amp; Tableaux</strong> for its sidebars and tables, as images.</p></li>\n<li><p>Start from the <strong>MENU</strong> page: it is the book's table of contents, each line leads to its chapter. At the foot of each page, the <strong>Backlinks</strong> line goes back up the thread (MENU › chapter › parent page).</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-2-compendium.webp\" width=\"432\" alt=\"The &quot;Bibliothèque SR5&quot; compendium: one folder per book.\" /><figcaption><strong>Figure 9.2.1</strong> — The \"Bibliothèque SR5\" compendium: one folder per book.</figcaption></figure>\n\n<h4>What it brings to the table</h4>\n<ul>\n<li><p>Books that everyone can consult: players open the journals read-only.</p></li>\n<li><p>A second compendium, <strong>Tables du MJ</strong> (GM tables), reserved to the GM: law enforcement response times according to the area's security rating (AAA to Z) (<em>Core Rulebook p. 352</em>), to draw like any table (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.S2R2SocjATdC39nc]{chapter 8.4}).</p></li>\n<li><p>With the @UUID[.sjQAg1umcysf4WpA]{Onglets de journal} module, several pages of the same book open as tabs in the same window.</p></li>\n</ul>\n\n<h4>Its settings</h4>\n<p>None.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">A private library</p><p>The Bibliothèque reproduces the text of published books: it serves your table, it is not distributed. This manual never copies it; it cites the book's pages, which you find in the Bibliothèque or in your own copy.</p></div>\n\n<h4>References</h4>\n<ul>\n<li><p>Law enforcement response times (<em>Core Rulebook p. 352</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.Qp5FrYdO1ggybgHp]{9.1 Mégapack Lite} · @UUID[.4V7hFPTyp4NVXfhI]{9.3 Matrice v1} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4V7hFPTyp4NVXfhI",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.4V7hFPTyp4NVXfhI",
+      "name": "9.3 Matrice v1",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 — Matrice (règles maison)</strong> module (\"Matrice v1\" in this manual) applies the Matrix House Rules: the inside of a host becomes a map, divided into zones and nested hosts (the \"nests\"), played at the same time as the building's map. It runs IC turn by turn, keeps the Overwatch tracks, places the spider, and files the files in zones. It does not modify the system: without it, the Matrix follows the book (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4tswtGQqbgDVe9IS]{part 5}).</p>\n\n<h4>Step by step: switching it on</h4>\n<ol>\n<li><p>Install the module, then, in the world, open <strong>Settings</strong> › <strong>Manage Modules</strong>.</p></li>\n<li><p>Tick <strong>Shadowrun 5 — Matrice (règles maison)</strong>, then <strong>Save Module Settings</strong>. The Mégapack is not required, but its hosts, already typed and accompanied by their IC, are ready to build (@UUID[.Qp5FrYdO1ggybgHp]{its entry}).</p></li>\n<li><p>Keep a GM connected during play: it is their client that keeps the state of the Matrix (who is where, the IC, the tracks).</p></li>\n</ol>\n\n<h4>Building a host and its nests</h4>\n<p>The shortest way: in the spider's console (below), <strong>New host…</strong> asks for a name, a rating and the host's type (<em>Kill Code p. 43-46</em>), places its token on the displayed scene and builds it in one go; the devices selected on the scene are slaved to it along the way. For a host that already exists:</p>\n<ol>\n<li><p>Place the host's token on the site's scene (the building).</p></li>\n<li><p>Open its crown, click the host: <strong>Mount the host…</strong> (GM only). The window offers a rating for each nest, based on the host's rating and Data Processing; a departure from the book is shown live (<em>Kill Code p. 45</em>). Each nest receives a type, and the window offers the book's \"storefront and data\" model.</p></li>\n<li><p>Click <strong>Mount</strong>. The \"<i>host</i> — host\" scene appears (outside the navigation bar), with its coloured zones: Hall, Infrastructure, Security, Spider's post, Archives, Vault, merged in a small host. The nests join the \"Matrice — <i>host</i>\" actors folder.</p></li>\n<li><p>The same menu then offers <strong>Scene of the host</strong> and <strong>Add a nest…</strong>. Attach the site's devices (cameras, doors) to their zone with <strong>Attach to a zone…</strong> in their crown: their double appears on the host's scene.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-monter.webp\" width=\"658\" alt=\"The &quot;Mount the host&quot; window of a rating 6 data host: ① the rating and the modified Data Processing, ② the ratings offered for the security nest and the data nest.\" /><figcaption><strong>Figure 9.3.1</strong> — The \"Mount the host\" window of a rating 6 data host: ① the rating and the modified Data Processing, ② the ratings offered for the security nest and the data nest.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-scene.webp\" width=\"1489\" alt=\"The scene of a mounted rating 7 host: ① the outer host (Hall, Infrastructure), ② the security nest (Security, Spider's post), ③ the data nest (Archives, Vault), with its files' token in the Vault, ④ the doors of the two nests, in Infrastructure.\" /><figcaption><strong>Figure 9.3.2</strong> — The scene of a mounted rating 7 host: ① the outer host (Hall, Infrastructure), ② the security nest (Security, Spider's post), ③ the data nest (Archives, Vault), with its files' token in the Vault, ④ the doors of the two nests, in Infrastructure.</figcaption></figure>\n\n<h4>IC and shared combat</h4>\n<ul>\n<li><p><strong>Shared combat</strong>: as soon as a hacker enters the host (<strong>Enter the host</strong>, in the host's crown, one mark required), the GM chooses to enter with shared combat, without combat, or to refuse. Shared combat brings together the site's scene and the host's: a single initiative order for the whole table, whether in VR or in the corridor. It also takes the characters of the scenes the players are looking at (the rigger left in her van).</p></li>\n<li><p><strong>The offered action</strong>: after a successful Hack on the Fly, Brute Force or Matrix Perception, an <strong>Offered action</strong> card offers the player another action on the same target, at no action cost, among those whose marks they hold, as buttons side by side; the exceptions of the revised table are applied (no Attack after Hack on the Fly, no Sleaze after Brute Force). <strong>Chained action help (house rule)</strong> setting, ticked by default.</p></li>\n<li><p><strong>Turn-by-turn IC</strong>: at each new turn, the module removes bricked IC, moves each IC one zone towards its intruder, and has one IC launched per host on alert, in its birth zone, at most Rating active IC (<em>Core Rulebook p. 247, Kill Code p. 44</em>). It sums up the turn for the GM. An IC only attacks in its zone.</p></li>\n<li><p><strong>The alert</strong> is set and lifted in the outer host's crown, or in the tracks window; it is shared by the whole family of hosts (<em>Kill Code p. 45</em>).</p></li>\n</ul>\n\n<h4>The spider's console</h4>\n<p>In the token tools, the agent icon opens the <strong>Spider's console</strong> (it used to be called \"Matrix tracks\"), in the dark style of the Character Designer whatever the theme, each button explained on hover; it scrolls when it overflows the window. From it you launch IC, place the site's entry with a click on the map (<strong>Place a site entry</strong>, without going through Foundry's Regions), and the site alarm frames the site's map in red for the whole table. It also shows each host's alert, the site alarm, and each hacker's Overwatch band (Calm, Stirring, Tense, Red, Convergence). Everyone can open it; the figure stays with the GM, unless the system's setting or the Baby Monitor program says otherwise. The GM adds there a roll made outside the system (<strong>Add points</strong>), rolls the <strong>2D6 of the quarter</strong> secretly (<em>Core Rulebook p. 231</em>), and places the security <strong>Intervention</strong> token. At 40, its note carries <strong>Apply the convergence</strong>: the module never triggers it on its own (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4bPHGrH2Rd7sMiHz]{convergence}).</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-3-pistes.webp\" width=\"708\" alt=\"The spider's console, as the GM sees it: ① the host's alert (Calm), ② the site alarm (Silence), ③ the hacker, their band and the figure the GM reads, ④ the GM's buttons (Add points, 2D6 of the quarter, Intervention).\" /><figcaption><strong>Figure 9.3.3</strong> — The spider's console, as the GM sees it: ① the host's alert (Calm), ② the site alarm (Silence), ③ the hacker, their band and the figure the GM reads, ④ the GM's buttons (Add points, 2D6 of the quarter, Intervention).</figcaption></figure>\n\n<h4>The spider</h4>\n<p>In the outer host's crown, <strong>Spiders of the host…</strong> designates one or more characters, placed at the Spider's post. The spider counts as owner of the host and its nests (<em>Kill Code p. 45</em>): they cross an airlock without a mark, trigger or cut the site alarm, recall and relaunch IC (a Simple Action each, DjamZ's ruling of 08/10). To play them fairly, <strong>See as this spider</strong>, in their icon's crown, dims at the GM's only the tokens the spider does not see.</p>\n\n<h4>Technomancers and their sprites</h4>\n<p>A technomancer goes wherever a decker goes (marks, entry, partitions, airlocks, IC, tracks); their living persona leaves the host when they are no longer awake (<em>Core Rulebook p. 235</em>). An icon's radial menu offers them \"Thread: …\" for each of their complex forms that can target it, and <strong>Decompile</strong> on a sprite, with the Fading on the card (<em>Core Rulebook p. 250-256</em>). A sprite enters the host with its own mark; a spider's sprite is on the host's side (the module's choice). Its Suppression power delays the next IC launch, and \"End of mission\" makes it leave after a remote task (<em>Core Rulebook p. 254-257</em>). The module's guide has a page on technomancers and their sprites.</p>\n\n<h4>Files</h4>\n<p>Each file of a mounted host is stored in a zone, the Vault by default; the GM stores it elsewhere with <strong>Place in a zone…</strong> in its crown. It is only seen from its host, and only targeted from its zone: elsewhere, its actions are greyed with the reason. The rest (protection, bomb, actions) is the system's (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.vGNMSTgsybnOEpcv]{files}).</p>\n\n<h4>Its settings</h4>\n<ul>\n<li><p><strong>Tell the GM when a token enters a zone</strong> (unticked): a notification at the GM's only when an icon enters a zone.</p></li>\n<li><p><strong>Hosts' alert when they spot an intruder</strong>: <strong>The gamemaster decides</strong> (the default, a note with the <strong>Put on alert</strong> button) or <strong>The host goes on alert by itself</strong> (<em>Core Rulebook p. 247</em>).</p></li>\n<li><p><strong>The eyes of the host (spider and Patrol IC)</strong> (ticked): when an icon moves in a host, the spider and the Patrol IC look at it; an icon running silent requires an opposed Matrix Perception test, offered by a button (<em>Core Rulebook p. 235</em>).</p></li>\n<li><p><strong>Chained action help (house rule)</strong> (ticked): the \"Offered action\" card, above.</p></li>\n<li><p>The rest is set host by host, in its crown: IC launch order, the Patrol IC's round, spiders.</p></li>\n</ul>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — what the module offers</p><p>Zones and nests, and the price of a partition (a Simple Action); shared combat for the whole table from the hacker's entry (House Rules, § 5); direct connection from the zone that commands the device; the IC's fixed birth zone; the intervention token on the site; the chained action of the revised actions table, offered by a card. The points the House Rules leave open follow DjamZ's rulings, dated in the guide.</p></div>\n\n<h4>Where is its guide</h4>\n<p>The module has its own guide, as a journal (in French): <strong>Matrice — Guide du MJ</strong> compendium, <strong>Matrice (règles maison)</strong> folder. It details each rule, its source (book, House Rules, ruling, the module's choice), the revised actions table, and the list of what stays with the GM. This manual does not copy it.</p>\n\n<h4>What the module does not do</h4>\n<ul>\n<li><p>It provides no images: maps, tokens and the intervention token's picture are to be supplied.</p></li>\n<li><p>It moves nobody from one scene to another: give the players the host's scene.</p></li>\n<li><p>It does not automate what the site alarm does to the building: it displays it, the GM draws the consequences.</p></li>\n<li><p>It warns the GM without ever refusing: an airlock crossed without a mark, an IC attacking outside its zone, a jump between non-neighbouring zones arrive with a <strong>Send back</strong> button or a warning.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Hosts, IC, convergence in a host: (<em>Core Rulebook p. 246-249</em>). Nested hosts, spider, host types: (<em>Kill Code p. 43-46</em>). Overwatch Score: (<em>Core Rulebook p. 231</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.foo9qJetkajRaK5n]{9.2 Bibliothèque SR5} · @UUID[.g0O9ecLvjhjaIxvY]{9.4 Vertige} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "g0O9ecLvjhjaIxvY",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.g0O9ecLvjhjaIxvY",
+      "name": "9.4 Vertige",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 — Vertige (Xama_)</strong> module brings <i>Vertige</i>, Xama_'s French-language fan supplement for Shadowrun 5: its full text as journals (in French), its tables, and six mechanics the GM switches on one by one. It modifies no file of the system. Its item compendiums already exist, sorted by chapter, but are still empty: they will fill in future versions.</p>\n\n<h4>Step by step: switching it on</h4>\n<ol>\n<li><p>Install it, tick <strong>Shadowrun 5 — Vertige (Xama_)</strong> in <strong>Manage Modules</strong> and save. Also switch on the Bibliothèque (@UUID[.foo9qJetkajRaK5n]{9.2}): without it, Vertige's references to the books show as broken links.</p></li>\n<li><p>Open <strong>Settings</strong> › <strong>Configure Settings</strong>, then the <strong>Shadowrun 5 — Vertige (Xama_)</strong> tab in the left column.</p></li>\n<li><p>Tick the mechanics your table plays, then <strong>Save Changes</strong>. The page reloads.</p></li>\n</ol>\n\n<h4>Its settings</h4>\n<p>Seven world boxes, unticked by default, which only the GM ticks, and two adjustable times. An unticked box removes no item from the compendiums: it cuts the automation and hides the panels.</p>\n<table>\n<thead><tr><th>Setting</th><th>What it adds</th></tr></thead>\n<tbody>\n<tr><td><strong>Omegaware grade</strong></td><td>The \"Omegaware\" grade (\"Omega\" in the shop) in the implants' grade lists and in the shop, for cyberware only.</td></tr>\n<tr><td><strong>Aggravated wounds from Vertige weapons</strong></td><td>Vertige's weapons that say so leave aggravated wounds, set automatically; for the rest, the GM marks the box with a right-click. Aggravated wounds follow <i>Howling Shadows</i>' rule (<em>Howling Shadows p. 192</em>), which the system already handles.</td></tr>\n<tr><td><strong>Mana charges</strong></td><td>A \"Mana charges (Vertige)\" panel under the sheet's metamagics: spend a charge (a chat message says so), and the GM's button to fill the pool. Recharges at dawn and dusk on the world's clock, at 6:00 and 18:00 (two time settings).</td></tr>\n<tr><td><strong>Trainings (optional rule)</strong></td><td>A \"Trainings (Vertige)\" panel under the qualities, with the raise-grade button.</td></tr>\n<tr><td><strong>Nanoadept technomancer</strong></td><td>A \"Nanoresonance\" panel on a technomancer's sheet: declare them nanoadept, make a compiled sprite a nanosprite.</td></tr>\n<tr><td><strong>Shiawaze lasers: one unit per shot</strong></td><td>One power unit per shot instead of 3 (Yōroppa, Sora 5), as the author suggests.</td></tr>\n<tr><td><strong>Summoning cap (optional rule)</strong></td><td>A chat message when a spirit's Force or a sprite's level exceeds the Magic or Resonance of whoever summons or compiles it.</td></tr>\n</tbody>\n</table>\n<figure><img src=\"systems/sr5/manuel/captures/9-4-reglages.webp\" width=\"812\" alt=\"Vertige's settings in a new world: the unticked boxes, then the two times of the mana charges.\" /><figcaption><strong>Figure 9.4.1</strong> — Vertige's settings in a new world: the unticked boxes, then the two times of the mana charges.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — what the module offers</p><p>Everything Vertige adds comes from a fan supplement, not from Catalyst's books: they are House Rules, which you switch on box by box. The system contains no trace of them. The passages still under review by the author are flagged in the journals by a \"to be confirmed\" box.</p></div>\n\n<h4>Where is its guide</h4>\n<p>In the <strong>Vertige — Journaux</strong> compendium, the <strong>Vertige — Guide du module</strong> journal details each mechanic; this manual does not copy it. The same compendium contains the supplement's text (<strong>Vertige</strong> journal, with its MENU page) and its tables (<strong>Vertige — Tables</strong>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-4-guide.webp\" width=\"972\" alt=\"The &quot;Vertige — Guide du module&quot; journal.\" /><figcaption><strong>Figure 9.4.2</strong> — The \"Vertige — Guide du module\" journal.</figcaption></figure>\n\n<h4>References</h4>\n<ul>\n<li><p>Aggravated wounds (<em>Howling Shadows p. 192</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.4V7hFPTyp4NVXfhI]{9.3 Matrice v1} · @UUID[.FY83GXbOqmVz6WN9]{9.5 Character Designer} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "FY83GXbOqmVz6WN9",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.FY83GXbOqmVz6WN9",
+      "name": "9.5 Character Designer",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 — Concepteur de personnage</strong> module adds an eleven-step creation wizard: the player fills it in, the GM reviews and validates. It knows the three methods (priorities, Sum to Ten, Karma), the book's tables and, as an option, those of the House Rules, and keeps the budget at every click. It never modifies the system: it reads its settings and writes on the sheet what the wizard puts there.</p>\n\n<h4>Step by step: switching it on</h4>\n<ol>\n<li><p>Install the module, then, in the world, open <strong>Settings</strong> › <strong>Manage Modules</strong>.</p></li>\n<li><p>Tick <strong>Shadowrun 5 — Concepteur de personnage</strong>. It needs the <strong>Mégapack</strong> (@UUID[.Qp5FrYdO1ggybgHp]{its entry}): its qualities, powers, spells and mentors feed the wizard's lists.</p></li>\n<li><p>Click <strong>Save Module Settings</strong>; the page reloads.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-5-activer.webp\" width=\"692\" alt=\"The module in &quot;Manage Modules&quot;, filtered on its name.\" /><figcaption><strong>Figure 9.5.1</strong> — The module in \"Manage Modules\", filtered on its name.</figcaption></figure>\n\n<h4>Its settings</h4>\n<ul>\n<li><p>The world settings: <strong>Creation method</strong> (Priorities), <strong>Priority tables</strong> (Book tables), <strong>House Rules, rule 7 (Essence of the mundane)</strong> (ticked, no effect with the book's tables), three House Rules unticked by default (specializations and group skills payable in points, initiation and submersion at creation, playable monads), <strong>AI creation</strong> (the book, or Revised as a House Rule), and the NPC generator's two image folders (portraits folder, tokens folder).</p></li>\n<li><p>The level of play is that of the system's shop (<strong>Shop: creation level</strong>, Shadowrun settings, Shop tab).</p></li>\n<li><p>The method and starting Karma are then chosen per character, when the GM puts them in creation; the GM can also set a character's level of play there, which then takes precedence over the world's.</p></li>\n<li><p>At the Gear step, each item bought has its line, its price and its bin, which refunds it thanks to the shop's purchase trace (@UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.nnAVUfmnLgdl6XgA]{see 1.4}).</p></li>\n</ul>\n<p>The detail, screenshots included: @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.Yeb3R29dzJgAkkcn]{preparing creation}.</p>\n\n<h4>The NPC generator</h4>\n<p>The <strong>NPC generator</strong> button of the <strong>Actors</strong> tab (GM only) creates in a few choices:</p>\n<ul>\n<li><p>a <strong>grunt</strong> (up to 12 at once, with a lieutenant), a <strong>notable NPC</strong> (two monitors, real Edge), a <strong>contact</strong> (added if needed to a player character's sheet) or a <strong>vendor</strong> (their shop is the system's, @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.DacFECvJtqV9g4Gd]{see 7.2});</p></li>\n<li><p>from an archetype (28, 11 of them from the supplements) or a contact type, a Professional Rating (Untrained, Prepared, Trained, Elite (<em>Core Rulebook p. 380</em>)) or a Connection, and a metatype;</p></li>\n<li><p>stats, skills and Mégapack gear filled in by default, by tier, with spells, complex forms, foci and adept powers when needed (<em>Core Rulebook p. 380-392, Run Faster p. 180-197</em>);</p></li>\n<li><p>a name in one of three forms (street name, First Last, nickname alone), a portrait and a token drawn from the folders set (a subfolder named after the archetype is reserved to it), stored in the chosen actors folder.</p></li>\n</ul>\n<p>Known limits: no bound spirit or registered sprite, and the rigger's drones arrive without set autosofts; you cannot yet start from a Mégapack grunt as a template.</p>\n<figure><img src=\"systems/sr5/manuel/captures/9-5-generateur.webp\" width=\"468\" alt=\"The NPC generator: a grunt, its archetype, its Professional Rating, the number and the folder.\" /><figcaption><strong>Figure 9.5.2</strong> — The NPC generator: a grunt, its archetype, its Professional Rating, the number and the folder.</figcaption></figure>\n\n<h4>Where is its guide</h4>\n<p>The module's guide is part 1 of this manual: @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.Yeb3R29dzJgAkkcn]{preparing} (GM), @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.4tM8aqcqF3Rc1XVm]{the wizard step by step}, @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.xAVFngTqIcEtaOk0]{the three methods}, @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.nnAVUfmnLgdl6XgA]{gear}, @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.SHDPSLzr37K7CMvm]{submitting, sending back, validating}.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — what the module offers</p><p>The House Rules priority tables (three levels, with their horizontality), for priorities and Sum to Ten; rule 7 (Essence of the mundane halved) with its own box; the \"Non implanté\" type at Prime level. Two separate boxes: group skills paid in points, and initiation or submersion from creation (10 + grade × 3 Karma, one metamagic or echo per grade), which the book does not provide for (<em>Core Rulebook p. 66</em>). The points the House Rules leave in the dark follow DjamZ's rulings, cited in each character's summary.</p></div>\n\n<h4>What the module does not do</h4>\n<ul>\n<li><p>Special natures (infected, drakes from <i>Dark Terrors</i>, SURGE changelings…), chosen in the <strong>Special nature</strong> section of the Metatype step: the module counts their cost in Karma, but their powers and traits remain for the GM to validate. Metavariants, metasapients and shapeshifters, on the other hand, are chosen at the Metatype step.</p></li>\n<li><p>No pregenerated characters.</p></li>\n<li><p>The shop's <strong>Creation mode</strong> setting puts no character in creation for the wizard: only the sheet's menu does.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Character creation (<em>Core Rulebook p. 60-107</em>); Sum to Ten and point buy (<em>Run Faster p. 62-65</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.g0O9ecLvjhjaIxvY]{9.4 Vertige} · @UUID[.T5p4QWSziZNI4xOL]{9.6 Visual effects (SFX)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "T5p4QWSziZNI4xOL",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.T5p4QWSziZNI4xOL",
+      "name": "9.6 Visual effects (SFX)",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 - Effets visuels (SFX)</strong> module animates the system's rolls on the map, without changing the rules: shots (launched at the defense roll, hit or missed, as many bullets as the firing mode fires (<em>Core Rulebook p. 178</em>)), close combat, grenades (<em>Core Rulebook p. 181</em>), spells, rituals and preparations, Drain, the arrival and departure of spirits, sprites and drones, the Matrix, critical glitches, healing. A mana spell is only seen in astral perception or projection; what happens in the Matrix is only seen by connected people.</p>\n\n<h4>Step by step: installing and switching it on</h4>\n<ol>\n<li><p>First install, from Foundry's module list, <strong>Sequencer</strong> (required: without it, no animation) and <strong>JB2A</strong>, the animation library: the free version, <strong>JB2A - Jules and Ben's Animated Assets - Free Content</strong>, or the Patreon version, which the module prefers by default if it is there.</p></li>\n<li><p>Optional: <strong>Automated Animations</strong>, and <strong>Foundry Summons</strong> for the \"Place on the map\" button (below).</p></li>\n<li><p>Install <strong>Shadowrun 5 - Effets visuels (SFX)</strong>, then tick it with its companions in <strong>Manage Modules</strong> and save.</p></li>\n</ol>\n\n<h4>Its settings</h4>\n<p>A single button, reserved to the GM: <strong>Settings</strong> › <strong>Configure Settings</strong>, <strong>Shadowrun 5 - Effets visuels (SFX)</strong> tab, <strong>Animation settings</strong> › <strong>Open</strong>. The window sorts the situations by group (Shots, Close combat and special combat, Grenades, Spells…); each line shows, in small, the animation played by default.</p>\n<ol>\n<li><p>Click the Sequencer viewer link, at the top of the window, find the animation you want and copy its path.</p></li>\n<li><p>Paste it into the situation's box. Select a token on the map, then click the line's play button for a preview.</p></li>\n<li><p>Click <strong>Save</strong>. A line's eraser resets it to the default animation; an empty box is the default animation.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-6-reglages.webp\" width=\"832\" alt=\"The &quot;Animation settings&quot; window, the &quot;Shots&quot; group unfolded.\" /><figcaption><strong>Figure 9.6.1</strong> — The \"Animation settings\" window, the \"Shots\" group unfolded.</figcaption></figure>\n\n<h4>The \"Place on the map\" button</h4>\n<p>When Foundry Summons is active, a crosshair appears on the sheet, next to each spirit, sprite, drone, vehicle or agent once created: it opens Foundry Summons' crosshair to place its token on the scene.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Automated Evocations</p><p>The module's documentation advises switching off Automated Evocations, if it is installed: Foundry Summons replaces it.</p></div>\n\n<h4>Where is its guide</h4>\n<p>The module has no journal: its documentation (contents, customization tutorials, presentation) comes with it, in its <strong>docs</strong> folder.</p>\n\n<h4>References</h4>\n<ul>\n<li><p>Firing modes (<em>Core Rulebook p. 178</em>); grenades (<em>Core Rulebook p. 181</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.FY83GXbOqmVz6WN9]{9.5 Character Designer} · @UUID[.LenjNJ7X8d1ENCu7]{9.7 Adventures} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "LenjNJ7X8d1ENCu7",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.LenjNJ7X8d1ENCu7",
+      "name": "9.7 Adventures",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>Three modules deliver an adventure ready to play: scenes, actors and journals, gathered in an adventure compendium (in French). None has a setting.</p>\n<table>\n<thead><tr><th>Module</th><th>Contents</th></tr></thead>\n<tbody>\n<tr><td><strong>SR5 - Lockdown</strong></td><td>The <i>Lockdown</i> campaign, in Boston: 2 scenes, 52 actors, 3 journals.</td></tr>\n<tr><td><strong>Shadowrun 5 - Avis de Tempête</strong></td><td>The Denver events of the <i>Storm Front</i> supplement: 11 scenes, 69 actors, 10 journals.</td></tr>\n<tr><td><strong>SR Chicago</strong></td><td>Chicago's places as scenes and journals, in French. Its compendium is declared for another system (Anarchy): check that it appears in your world before counting on it.</td></tr>\n</tbody>\n</table>\n\n<h4>Step by step: importing an adventure</h4>\n<ol>\n<li><p>Back up the world: importing creates many documents at once.</p></li>\n<li><p>Install and switch on the adventure's module, then open its compendium in the <strong>Compendium Packs</strong> tab.</p></li>\n<li><p>Open the adventure: the window sums up what it contains. Click <strong>Import Adventure</strong>.</p></li>\n<li><p>The scenes, actors and journals arrive in the world, stored in their folders.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-7-importer.webp\" width=\"560\" alt=\"The window of the &quot;Campagne Lockdown&quot; adventure, before importing.\" /><figcaption><strong>Figure 9.7.1</strong> — The window of the \"Campagne Lockdown\" adventure, before importing.</figcaption></figure>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Premiers-pas-MJ\">wiki: GM's first steps</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.T5p4QWSziZNI4xOL]{9.6 Visual effects (SFX)} · @UUID[.sjQAg1umcysf4WpA]{9.8 Journal tabs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "sjQAg1umcysf4WpA",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.sjQAg1umcysf4WpA",
+      "name": "9.8 Journal tabs",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The <strong>Onglets de journal</strong> (Journal Tabs) module opens several pages of the same journal as tabs in a single window, as in a browser: a rule and its table side by side, without going back through the table of contents. It works for all journals, those of the Bibliothèque, of Vertige and of this manual included, and depends on no system.</p>\n\n<h4>Step by step: opening tabs</h4>\n<ol>\n<li><p>The GM ticks <strong>Onglets de journal</strong> in <strong>Manage Modules</strong> and saves.</p></li>\n<li><p>Open a journal. In its table of contents, or on a link to another page of the same journal, do <strong>Ctrl+click</strong> (or a middle click): the page opens in a new tab.</p></li>\n<li><p>Click a tab to show it. Its cross, or a middle click, closes it. The bar only appears from two tabs on, and the last one cannot be closed.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-8-onglets.webp\" width=\"1012\" alt=\"The Bibliothèque's core rulebook, with two more pages opened by Ctrl+click in the table of contents.\" /><figcaption><strong>Figure 9.8.1</strong> — The Bibliothèque's core rulebook, with two more pages opened by Ctrl+click in the table of contents.</figcaption></figure>\n\n<h4>Its settings</h4>\n<ul>\n<li><p><strong>Switch to the new tab</strong> (unticked), a personal setting: ticked, a Ctrl+click shows at once the tab it opens; unticked, the tab opens without leaving the current page.</p></li>\n<li><p>The open tabs are remembered for each person and each journal.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">With Monk's Enhanced Journal</p><p>If the Monk's Enhanced Journal module is active, Journal Tabs goes to sleep, and the GM is warned: the two modules change the same window. Keep one or the other.</p></div>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Aide-en-jeu\">wiki: In-game help</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.LenjNJ7X8d1ENCu7]{9.7 Adventures} · @UUID[.hu1TCY7d5cZXfs3p]{9.9 Corporate topology} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "hu1TCY7d5cZXfs3p",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.hu1TCY7d5cZXfs3p",
+      "name": "9.9 Corporate topology",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 — Topologie corporatiste</strong> module shows the map of the Sixth World's megacorporations: who is allied with whom, who fights whom, their subsidiaries, and how this changes from one era to another (2072, 2075-2079, 2080). It is campaign content, without any rule: it does not modify the system. The corporations' logos are DjamZ's creations, delivered with the module.</p>\n\n<h4>Step by step: opening and reading the map</h4>\n<ol>\n<li><p>Switch on <strong>Shadowrun 5 — Topologie corporatiste</strong> in <strong>Manage Modules</strong>.</p></li>\n<li><p>Open the map with the <strong>Corporate Topology</strong> button of the Notes tools (left bar), or at the top of the <strong>Journal</strong> tab.</p></li>\n<li><p>Hover over a corporation to isolate its allies (solid line) and rivals (red dotted line); click it to open its file on the right: headquarters, management, rank, subsidiaries, relations, characters, notes. Eras are chosen at the top, filters (AAA, AA, subsidiaries, sectors, search) next to them.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/9-9-carte.webp\" width=\"1528\" alt=\"The 2075-2079 map, a corporation clicked and its file open on the right.\" /><figcaption><strong>Figure 9.9.1</strong> — The 2075-2079 map, a corporation clicked and its file open on the right.</figcaption></figure>\n\n<h4>What the GM does</h4>\n<ul>\n<li><p><strong>Edit</strong>: move corporations, create some, remove some, add subsidiaries and relations, rewrite an era's file, choose logos with the file picker.</p></li>\n<li><p>Drop an actor from the world onto a corporation to make it one of its characters, or create a free sheet; write table notes.</p></li>\n<li><p>Link each corporation to a faction of the system's factions window (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.mMDyWNoSU9tpR5kD]{see 7.2}): the button next to it opens that window.</p></li>\n<li><p>The show-to-players button (the eye, at the top right) opens the map for the whole table. Notes, characters and intel are born hidden; the crossed-out eye reveals them one by one, and the linked faction stays visible to the GM only.</p></li>\n</ul>\n\n<h4>Its settings</h4>\n<ul>\n<li><p><strong>Map open to players</strong> (world): unticked, only the GM opens or shows it.</p></li>\n<li><p>Animated flow and <strong>Neon intensity</strong> (personal): for slow machines, or each person's taste.</p></li>\n</ul>\n\n<h4>Where is its guide</h4>\n<p>The module has no journal: its <strong>README.md</strong> file takes its place. This manual says no more about it.</p>\n\n<h4>References</h4>\n<ul>\n<li><p>Faction reputation: (<em>Cutting Aces p. 156-160</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.sjQAg1umcysf4WpA]{9.8 Journal tabs} · @UUID[.G5lt3ucuBihlzQCc]{9.10 Revised martial arts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "G5lt3ucuBihlzQCc",
+      "_key": "!journal.pages!LY0gP2n4uytah6mP.G5lt3ucuBihlzQCc",
+      "name": "9.10 Revised martial arts",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The <strong>Shadowrun 5 — Arts martiaux révisés</strong> module brings \"Shadowrun 5.5: Martial arts\", a revision of martial arts written by DjamZ and Adrwen: 48 styles and 70 techniques in compendiums, and the full text as a journal (in French). It does not modify the system, and changes nothing as long as its setting is unticked: the book's martial arts stay as they are (<em>Run & Gun p. 128</em>).</p>\n\n<h4>Step by step: switching it on</h4>\n<ol>\n<li><p>Install it, tick <strong>Shadowrun 5 — Arts martiaux révisés</strong> in <strong>Manage Modules</strong> and save.</p></li>\n<li><p>Open <strong>Settings</strong> › <strong>Configure Settings</strong>, the module's tab, and tick <strong>Use the revised martial arts</strong>. Save.</p></li>\n<li><p>The styles and techniques are in the <strong>Arts martiaux révisés — Styles</strong> and <strong>— Techniques</strong> compendiums; drag them onto a sheet like the book's techniques.</p></li>\n</ol>\n\n<h4>What it changes, setting ticked</h4>\n<ul>\n<li><p>A style brings its <strong>special technique</strong>, marked \"free\" on the sheet.</p></li>\n<li><p>A technique is only added through a known style that gives its category (Weapon, Strike, Grapple, Mobility; General for any style). A cumulative technique is taken again through a second style, twice at most. A Weapon and Strike technique is learned \"(armed)\" or \"(unarmed)\", and its called shot reduction only applies to those attacks.</p></li>\n<li><p>At each addition, a window offers to spend the Karma (7 for a style, 5 for a technique; \"No\" for a free addition or in creation), and the chat recalls the learning time (1 month, 2 weeks).</p></li>\n<li><p>A technique from the book is refused to the player, with its revised equivalent; the GM is warned and can add it themselves.</p></li>\n<li><p>Quantified effects go through the system's effects: called shot reductions, defenses, roll window boxes, unarmed DV, reach (Kick, Balestra) and unlimited hits in defense (Willow's Suppleness, Opposing Force) (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.5yJeJYQzl8Pk5Nc8]{the three effect targets, 2.6}).</p></li>\n<li><p>The Character Designer offers its styles at creation (@UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.4tM8aqcqF3Rc1XVm]{step 6}).</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/9-10-reglage.webp\" width=\"812\" alt=\"The module's setting, unticked in a new world.\" /><figcaption><strong>Figure 9.10.1</strong> — The module's setting, unticked in a new world.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — what the module offers</p><p>The whole module is a House Rule, which the GM switches on with a box. Interpretation choices and DjamZ's decisions of 14/10 are noted in its journal.</p></div>\n\n<h4>Where is its guide</h4>\n<p>The <strong>Arts martiaux révisés — Journal</strong> compendium contains the full text, its summary and DjamZ's decisions. This manual does not copy it.</p>\n\n<h4>References</h4>\n<ul>\n<li><p>The book's martial arts: (<em>Run & Gun p. 128-139</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.qOV9ymq6uQaNoscq]{MENU}</p><p>← @UUID[.hu1TCY7d5cZXfs3p]{9.9 Corporate topology}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

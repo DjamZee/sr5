@@ -1,0 +1,662 @@
+{
+  "_id": "5afKb26kGAzDG0I9",
+  "_key": "!journal!5afKb26kGAzDG0I9",
+  "name": "6. Rigging",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 700000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "kFGMwUwhIDEOP3x4",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.kFGMwUwhIDEOP3x4",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part follows a rigger and their machines: taking a drone out of the sheet, controlling it by hand, remotely or jumped in, sharing autosofts from the console, then transforming the drone at the Workshop, buying a new one at the dealership, launching it in a chase, forming a swarm and jamming the drones opposite. The player who plays a rigger reads the whole part; the GM mostly reads chapters 6.2 (what they install without a test), 6.4 (they are the one who runs the chase) and the settings tables.</p>\n<p>The system applies the core rulebook's rigging rules (<em>Core Rulebook p. 264-270</em>) and its chases (<em>Core Rulebook p. 198-204</em>); when the GM ticks them, those of <i>Rigger 5.0</i>. This manual does not copy them: it shows the windows, says what the system computes on its own and what stays in the GM's hands.</p><table><tbody><tr><td><p>@UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.f30Mu2spyxzXn9uV]{Deploying a drone, reading its sheet}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.7BRNkM6RuulqrwXP]{Taking control: manual, remote, jumped in}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.c2kfVj88S2XB0ijl]{VR: cold sim, hot sim, biofeedback, dumpshock}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.JH8cbHBFgEXDCGwG]{The console: noise reduction, sharing, autosofts}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.EeofjxxUXrEEcUdb]{Noise between the rigger and their drones}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.7KsLUCEMib3roEF5]{What the system does and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.046XTGe9sFUnz4An]{The Workshop tab}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.uoPEUL919825Gedn]{Buying, installing, removing}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.rMDDQRPY8b6JXf09]{Drone Modification Points}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.s29VMbSZRxv8Nzt4]{Repairing}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.YTo9Tb6Bw8fuLkyp]{What the system does, settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.I5GXBTreZxunHsIW]{6.3 The dealership}</p></td><td><p>All</p></td></tr><tr><td><p>@UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.NhvKN0LO55zGhs9Q]{Running a chase (GM)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6aVi3OOfXZ3nGHk2]{Chase actions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.QqTr1CPKVq1xJEre]{The Rigger 5.0 rules}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.ls3LnmQMXWVK6Ud6]{What the system does, settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.vdNkRr4hF2fWeKko]{Electronic warfare actions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.OfCIohrhdBY7Vzxg]{Swarms}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.9UjV231aFv9WUIcd]{What the system does and references}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "FhRTLAI7RMJ8TvTP",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.FhRTLAI7RMJ8TvTP",
+      "name": "6.1 The rigger console",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A drone or vehicle owned by a character first lives as an item on their sheet. Once <strong>deployed</strong>, it becomes a separate actor, with its own sheet and token, which is driven in three ways: by hand, remotely through a commlink or a console, or jumped in, the rigger \"inside\" the machine. This chapter shows these gestures, what jumping in changes to the rolls, what happens to the rigger when their drone is hit or destroyed, and how the rigger command console shares its autosofts with the drones.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU}</p><p>@UUID[.f30Mu2spyxzXn9uV]{Deploying a drone, reading its sheet} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "f30Mu2spyxzXn9uV",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.f30Mu2spyxzXn9uV",
+      "name": "Deploying a drone, reading its sheet",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: deploying and recalling</h4>\n<ol>\n<li><p>Open the rigger's sheet, <strong>Gear</strong> tab, <strong>Vehicles &amp; Drones</strong> block: each drone and each vehicle has its line.</p></li>\n<li><p>Click the line's deploy icon (①, <strong>Deploy Drone/Vehicle</strong>). The system creates the drone's actor, with the rigger as controller; it appears in the <strong>Actors</strong> tab. Drag it onto the scene to place its token.</p></li>\n<li><p>A deployed line carries the reversed icon (②). Click it to recall the drone: its damage, modifications, gear and description go back to the sheet's item, and will leave with it at the next deployment.</p></li>\n</ol>\n<p>A deployed drone takes the black-background actor icon of other drone tokens. A drone deployed with an old alpha keeps its picture: recall it then redeploy it. When the GM hides a drone's token, its owner keeps the drone's icon in their PAN crown; the others do not see it.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-deployer.webp\" width=\"590\" alt=\"The Vehicles &amp;amp; Drones block of the rigger's sheet: ① the deploy icon of a stored drone, ② that of a deployed drone, used to recall it.\" /><figcaption><strong>Figure 6.1.1</strong> — The Vehicles &amp; Drones block of the rigger's sheet: ① the deploy icon of a stored drone, ② that of a deployed drone, used to recall it.</figcaption></figure>\n\n<h4>The drone's sheet</h4>\n<p>The sheet of a deployed drone or vehicle has its vehicle attributes (Handling, Speed, Acceleration, Body, Armor, Pilot, Sensor, Seats), its resistances, and at the bottom its condition monitor and its Matrix monitor.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-fiche-drone.webp\" width=\"908\" alt=\"The sheet of a deployed Doberman, on autopilot: ① the vehicle actions, ② the control mode.\" /><figcaption><strong>Figure 6.1.2</strong> — The sheet of a deployed Doberman, on autopilot: ① the vehicle actions, ② the control mode.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① Vehicle Actions</strong>: <strong>Vehicle Test</strong>, <strong>Ram</strong>, <strong>Autopilot facing the unexpected</strong> (on autopilot), <strong>Active targeting</strong> and <strong>Repair</strong>, each with its pool and limit: a click on the figure rolls the test.</p></li>\n<li><p><strong>② The Control mode block</strong> says who drives and how; its lines are detailed below.</p></li>\n</ul>\n<ul>\n<li><p><strong>The mode</strong> (the list under Controller): <strong>Autopilot</strong>, <strong>Remote</strong> (through a commlink or a console), <strong>Manual</strong> (someone on board, at the controls) and <strong>Rigging</strong> (jumped in).</p></li>\n<li><p><strong>The Controller</strong>: the character who drives. It is their skill, control rig, console and Edge that the system reads. The icon at the top of the block lets you choose another one.</p></li>\n<li><p><strong>Slaved Device</strong>: the drone is a slave of the controller's master device (commlink, cyberdeck or console). It defends in the Matrix with that master's Firewall, it is drawn under it in the PAN crown (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4tswtGQqbgDVe9IS]{the PAN crown}), and it receives the autosofts shared by a console. Under the box: <strong>Direct connection to the rigger</strong> (@UUID[.EeofjxxUXrEEcUdb]{noise}) and <strong>Swarm no.</strong> (@UUID[.OfCIohrhdBY7Vzxg]{swarms}). It is a single gesture: adding the vehicle to the PAN from the rigger's sheet ticks this box, and ticking it on the drone puts it in the master's PAN list (if there is room left). Removing the vehicle from the list or unticking the box undoes both.</p></li>\n<li><p><strong>The Current Speed</strong>: the speed at which the drone is moving right now, 0 when stopped. The chase reads and writes it, as do two <i>Rigger 5.0</i> qualities, Speed Demon and Information Overload (<em>Rigger 5.0 p. 33-34</em>).</p></li>\n</ul>\n<p>The sheet's tabs, at the top, also give the drone's modifications and gear, its <strong>Workshop</strong> (the gears icon, @UUID[.EL4Y6kscI8gvJoJd]{6.2}) and its description. Every drone has the rigger interface by default (<em>Core Rulebook p. 269</em>): the <strong>Rigger Interface</strong> box is ticked and greyed. For a vehicle, it must be ticked for jumping in to be offered.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console} · @UUID[.7BRNkM6RuulqrwXP]{Taking control: manual, remote, jumped in} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "7BRNkM6RuulqrwXP",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.7BRNkM6RuulqrwXP",
+      "name": "Taking control: manual, remote, jumped in",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Choose the mode in the drone sheet's <strong>Control mode</strong> block, and the driver as <strong>Controler</strong>. Rolls are made from the drone's sheet; the system takes the pool and limit that suit the mode, and shows them in the <strong>Vehicule Actions</strong> block.</p>\n\n<table>\n<thead><tr><th>Mode</th><th>Who rolls</th><th>What the system changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Autopilot</strong></td><td>the drone itself: Pilot + autosoft</td><td>the autosofts installed on the drone, or shared by the console; never Edge</td></tr>\n<tr><td><strong>Manual</strong></td><td>the driver on board: driving skill + Reaction [Handling]</td><td>penalty for an ork, an elf, a dwarf or a troll at the controls of an unadapted vehicle (<em>Rigger 5.0 p. 169</em>)</td></tr>\n<tr><td><strong>Remote</strong></td><td>the controller, through their commlink or console (<em>Core Rulebook p. 237</em>)</td><td>each limit capped by the Data Processing of the commanding device; +2 to the limit of a driver in VR (<em>Core Rulebook p. 201</em>); the noise of distance</td></tr>\n<tr><td><strong>Rigging</strong> (jumped in)</td><td>the rigger, through their control rig</td><td>limits + 2 (VR) + control rig rating; pool of vehicle tests + control rig rating; threshold of vehicle tests − rating, never below 1; +1 die in hot sim (<em>Core Rulebook p. 201, 266</em>)</td></tr>\n</tbody>\n</table>\n\n<h4>Step by step: jumping into a drone</h4>\n<ol>\n<li><p>Check that the rigger has a <strong>Control Rig</strong> (an implant), or the Machine Mind echo if they are a technomancer (<em>Core Rulebook p. 258</em>). Without one or the other, the <strong>Rigging</strong> mode is not offered: they drive remotely.</p></li>\n<li><p>On the drone's sheet, choose the rigger as <strong>Controler</strong>, then the <strong>Rigging</strong> mode. The figures of the Vehicle Actions block change at once.</p></li>\n<li><p>Click the <strong>Vehicle Test</strong> figure: the roll window details the pool (the rigger's skill, plus their control rig), the limit (base, <strong>Virtual Reality</strong>, control rig) and the threshold reduction.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-jet-plonge.webp\" width=\"462\" alt=\"The vehicle test of a Doberman, jumped in: 13 dice from the rigger and 2 from the control rig, limit 5 + 2 (VR) + 2 (control rig), threshold reduced by 2 if there is one.\" /><figcaption><strong>Figure 6.1.3</strong> — The vehicle test of a Doberman, jumped in: 13 dice from the rigger and 2 from the control rig, limit 5 + 2 (VR) + 2 (control rig), threshold reduced by 2 if there is one.</figcaption></figure>\n\n<p>Only vehicle skill tests (vehicle test, ramming, Gunnery) receive the control rig's dice; Perception, stealth and the drone's defense only receive the raise of their limit (<em>Core Rulebook p. 266</em>). Jumped in, the drone's stealth is rolled with the rigger's Sneaking + Intuition; remotely, with the Sneaking and Agility of whoever controls. The window offers <strong>Push the Limit</strong>: the driver's Edge counts on all vehicle tests, by hand, remotely or jumped in, never for the autopilot.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.f30Mu2spyxzXn9uV]{Deploying a drone, reading its sheet} · @UUID[.c2kfVj88S2XB0ijl]{VR: cold sim, hot sim, biofeedback, dumpshock} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "c2kfVj88S2XB0ijl",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.c2kfVj88S2XB0ijl",
+      "name": "VR: cold sim, hot sim, biofeedback, dumpshock",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Jumping in means being in virtual reality (<em>Core Rulebook p. 266</em>). The rigger's user mode, on their sheet (Matrix tab, under their console: ① of the figure in @UUID[.JH8cbHBFgEXDCGwG]{the console}), says which: <strong>Cold-Sim Virtual Reality</strong> or <strong>Hot-Sim Virtual Reality</strong>. Hot sim gives +1 die to all vehicle actions, but makes biofeedback damage Physical.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Jumping in puts you in VR, even if the sheet says AR</p><p>A jumped-in rigger is always in VR: if their sheet stayed on <strong>Augmented Reality</strong>, the system treats them as in <strong>cold-sim VR</strong> (biofeedback and dumpshock as Stun). Switch their sheet to hot sim if that is what they chose: nothing does it for them.</p></div>\n\n<h4>Biofeedback</h4>\n<p>A drone hit while its rigger is jumped in sends them half the damage as biofeedback (<em>Core Rulebook p. 266</em>): Stun in cold sim, Physical in hot sim. The <strong>Resist Biofeedback Damage</strong> window opens <strong>for the rigger's player</strong>, if they are connected, otherwise for the GM. The drone's tactile sensors cost them 2 dice on this roll (<em>Rigger 5.0 p. 168</em>).</p>\n\n<h4>Ejection</h4>\n<p>The jumped-in rigger is <strong>ejected</strong> when their drone is destroyed (full condition monitor) or bricked (full Matrix monitor), or when the console or commlink they use is bricked (<em>Core Rulebook p. 266, 269</em>). They suffer dumpshock (<em>Core Rulebook p. 228</em>): the <strong>Resist to Dumpshock</strong> window opens for their player. The drone switches to <strong>Autopilot</strong>, out of control until the start of the next turn, then the autopilot takes over; a destroyed or bricked drone does not take over, and the message says so. A rigger who was driving remotely is not ejected.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-ejection.webp\" width=\"778\" alt=\"A Roto-Drone destroyed under its rigger: the ejection message in the chat, and the dumpshock resistance window; it opens after the biofeedback roll for the drone that was hit (bottom).\" /><figcaption><strong>Figure 6.1.4</strong> — A Roto-Drone destroyed under its rigger: the ejection message in the chat, and the dumpshock resistance window; it opens after the biofeedback roll for the drone that was hit (bottom).</figcaption></figure>\n\n<p>A drone destroyed by an attack during the jump gives <strong>two</strong> resistances: biofeedback and dumpshock. They arrive one after the other: the second window opens once the first has been rolled (or closed).</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.7BRNkM6RuulqrwXP]{Taking control: manual, remote, jumped in} · @UUID[.JH8cbHBFgEXDCGwG]{The console: noise reduction, sharing, autosofts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JH8cbHBFgEXDCGwG",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.JH8cbHBFgEXDCGwG",
+      "name": "The console: noise reduction, sharing, autosofts",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The rigger command console (RCC) is a Matrix device with two ratings of its own, <strong>Noise Reduction</strong> and <strong>Sharing</strong>, whose total never exceeds the Device Rating (<em>Core Rulebook p. 266</em>).</p>\n\n<h4>Step by step: setting up the console and sharing autosofts</h4>\n<ol>\n<li><p>On the rigger's sheet, open the left Matrix tab: the equipped console shows its Device Rating, the user mode (①) and, under <strong>Matrix Attributes</strong>, Noise Reduction and Sharing (②). A right-click raises a rating, a left-click lowers it.</p></li>\n<li><p>In the right Matrix tab, <strong>Programs</strong> list, each autosoft carries a sharing icon (③, <strong>Share with the drones</strong>). Click it for the autosofts the console must share, as many as the Sharing rating: beyond, the system refuses and says so. Load them too (<strong>Running</strong> column).</p></li>\n<li><p>On the sheet of each drone that should benefit, tick <strong>Slaved Device</strong> and leave it on <strong>Autopilot</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-console.webp\" width=\"908\" alt=\"The rigger's two Matrix tabs: ① the user mode (here cold-sim VR), ② the console's Noise Reduction and Sharing, ③ an autosoft's sharing icon. The Matrix resistances also give biofeedback and dumpshock.\" /><figcaption><strong>Figure 6.1.5</strong> — The rigger's two Matrix tabs: ① the user mode (here cold-sim VR), ② the console's Noise Reduction and Sharing, ③ an autosoft's sharing icon. The Matrix resistances also give biofeedback and dumpshock.</figcaption></figure>\n\n<p>A drone receives the shared <strong>and active</strong> autosofts if it is on autopilot, slaved, and if its controller has the console equipped (<em>Core Rulebook p. 266</em>). A drone running its own autosofts receives none from the console. On its sheet, each console autosoft is marked: used, shared but set aside, or not shared; hover over the icon to know why. An autosoft installed on the drone runs at most at its Pilot rating (<em>Rigger 5.0 p. 127</em>).</p>\n<p>In combat, loading an autosoft (on the console or on the drone) costs a Complex Action; unloading it is free.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.c2kfVj88S2XB0ijl]{VR: cold sim, hot sim, biofeedback, dumpshock} · @UUID[.EeofjxxUXrEEcUdb]{Noise between the rigger and their drones} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "EeofjxxUXrEEcUdb",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.EeofjxxUXrEEcUdb",
+      "name": "Noise between the rigger and their drones",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A drone driven remotely or jumped in suffers the noise of the distance that separates it from its rigger (<em>Core Rulebook p. 230, 266</em>). The system measures this distance between the two tokens, on the displayed scene, and adds the <strong>Noise (distance to the rigger)</strong> line in the roll window of each of the drone's actions (vehicle test, ramming, shooting, skill, sensor targeting), minus the console's noise reduction. Neither defenses nor resistances receive it, nor a drone on autopilot or driven on board.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-1-bruit.webp\" width=\"494\" alt=\"A Doberman driven remotely, 1.5 km from its rigger: ① the noise of the distance (3) minus the console's noise reduction (1). The limit is capped by the console's Data Processing.\" /><figcaption><strong>Figure 6.1.6</strong> — A Doberman driven remotely, 1.5 km from its rigger: ① the noise of the distance (3) minus the console's noise reduction (1). The limit is capped by the console's Data Processing.</figcaption></figure>\n\n<ul>\n<li><p><strong>Direct connection to the rigger</strong> (the drone's Control mode block): the drone is linked by a cable, no noise.</p></li>\n<li><p>A relay unit installed on another drone of the same rigger acts as a relay: the system takes the best path and counts the worst of its legs (<em>Rigger 5.0 p. 168</em>).</p></li>\n<li><p>If one of the two tokens is not on the displayed scene, nothing is counted: the GM adds the noise by hand, like that of a jammed area.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.JH8cbHBFgEXDCGwG]{The console: noise reduction, sharing, autosofts} · @UUID[.7KsLUCEMib3roEF5]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "7KsLUCEMib3roEF5",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.7KsLUCEMib3roEF5",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the pool, limit and threshold of each vehicle roll according to the control mode, the control rig and VR.</p></li>\n<li><p>It shares the ticked autosofts with slaved drones on autopilot, within the Sharing limit.</p></li>\n<li><p>It opens biofeedback and dumpshock resistance for the rigger's player, switches the drone to autopilot and hands control back to the autopilot the next turn.</p></li>\n<li><p>It measures the noise between the rigger and each of their drones, relays included.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Rolls dumpshock when the cable of a direct connection is torn out: the system does not know this case.</p></li>\n<li><p>Adds the noise of a jammed area, or of two tokens that are not on the same scene.</p></li>\n<li><p>Judges what follows an autopilot facing the unexpected: the line of the same name rolls Device Rating × 2 against the threshold they set.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Driving in AR or VR: (<em>Core Rulebook p. 201</em>). Rigging, control rig, jumping in, biofeedback: (<em>Core Rulebook p. 264-266</em>). Rigger command console: (<em>Core Rulebook p. 266-268</em>). Drones: (<em>Core Rulebook p. 269-270</em>). Noise: (<em>Core Rulebook p. 230</em>). Dumpshock: (<em>Core Rulebook p. 229</em>). Autosoft cap: (<em>Rigger 5.0 p. 127</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki: Rigging</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.FhRTLAI7RMJ8TvTP]{6.1 The rigger console}</p><p>← @UUID[.EeofjxxUXrEEcUdb]{Noise between the rigger and their drones} · @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "EL4Y6kscI8gvJoJd",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.EL4Y6kscI8gvJoJd",
+      "name": "6.2 The Workshop",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The Workshop is the tab where you transform a drone or a vehicle: buying a modification, installing it by the book (the mechanic's extended test), removing it, or, for the GM, fitting it with a click. It counts the slots of each category, or a drone's Modification Points if the table plays that rule, and refuses what does not fit. Damage is also repaired there.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU}</p><p>← @UUID[.7KsLUCEMib3roEF5]{What the system does and references} · @UUID[.046XTGe9sFUnz4An]{The Workshop tab} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "046XTGe9sFUnz4An",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.046XTGe9sFUnz4An",
+      "name": "The Workshop tab",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Open the sheet of a deployed drone, or that of the vehicle item on its owner's sheet, and click the gears icon.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-atelier.webp\" width=\"908\" alt=\"A vehicle's Workshop: ① the six slot gauges, ② the cost, ③ the dice icon of a modification to install, ④ the GM's key.\" /><figcaption><strong>Figure 6.2.1</strong> — A vehicle's Workshop: ① the six slot gauges, ② the cost, ③ the dice icon of a modification to install, ④ the GM's key.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>① The gauges</strong>: around the vehicle's image (failing that, its category's image), the six categories (Power Train, Protection, Weapons, Body, Electromagnetic, Cosmetic), each with as many slots as the Body (<em>Rigger 5.0 p. 151-152</em>). A full gauge is coloured. Under Modification Points, a single gauge replaces them (@UUID[.rMDDQRPY8b6JXf09]{below}).</p></li>\n<li><p><strong>② The cost</strong>: bare vehicle + modifications = total, and who pays, with their balance. Factory equipment counts 0: it is paid for with the vehicle, and it takes no slot (<em>Rigger 5.0 p. 189</em>).</p></li>\n<li><p><strong>③ The dice</strong>: <strong>Install by the book (extended test)</strong> on a modification aboard, to be installed; on an installed modification, remove it by the book.</p></li>\n<li><p><strong>④ The key</strong>: <strong>Fit directly (GM)</strong>, or take it off, without test or payment.</p></li>\n</ul>\n<p>Each line gives the slots (or MP), the threshold, the tools and the price of the modification <strong>on this vehicle</strong>: some prices are multiplied by Handling, Speed or the vehicle's price (<em>Rigger 5.0 p. 155</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p><p>← @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop} · @UUID[.uoPEUL919825Gedn]{Buying, installing, removing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "uoPEUL919825Gedn",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.uoPEUL919825Gedn",
+      "name": "Buying, installing, removing",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: buying a modification</h4>\n<ol>\n<li><p>Open a compendium of vehicle modifications (the Mégapack's), and drag the modification onto the deployed drone's Workshop.</p></li>\n<li><p>A window gives its category, its slots (or MP), its threshold and tools, its price on this vehicle and who pays. Click <strong>Buy</strong>: the purchase goes through the shop, with its usual checks (authorized buyer, balance, creation, availability), and the rigger is debited (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.zKky8MvmSeq77inw]{the shop}).</p></li>\n<li><p>The modification arrives <strong>aboard, to be installed</strong>: its line says so, greyed. A modification dragged from a character's inventory comes aboard without payment (<strong>Put aboard, to be installed</strong>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-acheter.webp\" width=\"623\" alt=\"The window opened by dropping a modification onto the Workshop: its price on this vehicle, who pays, and the Buy button and, for the GM, Fit directly.\" /><figcaption><strong>Figure 6.2.2</strong> — The window opened by dropping a modification onto the Workshop: its price on this vehicle, who pays, and the Buy button and, for the GM, Fit directly.</figcaption></figure>\n\n<h4>Step by step: installing by the book</h4>\n<ol>\n<li><p>On the line of a modification to install, click the dice icon.</p></li>\n<li><p>The <strong>Install a mod</strong> window offers the <strong>Mechanic</strong> (the selected token, otherwise your character, otherwise the vehicle's owner), their Mechanic <strong>Skill</strong> depending on the vehicle (editable) and the <strong>Mechanic's tools</strong>. Confirm.</p></li>\n<li><p>The roll window opens: it is an extended Mechanic + Logic [Logic] test, the modification's threshold, interval 1 hour (<em>Rigger 5.0 p. 151</em>); tools below those required cost −2 dice, no tools −4 dice, already set; plans and working conditions are added there.</p></li>\n<li><p>Once the threshold is reached, the card offers <strong>Install</strong>: a click fits the modification, and its effects apply to the sheet.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-installer.webp\" width=\"416\" alt=\"The installation window: the mechanic, their skill, their tools, and the test reminder.\" /><figcaption><strong>Figure 6.2.3</strong> — The installation window: the mechanic, their skill, their tools, and the test reminder.</figcaption></figure>\n\n<ul>\n<li><p><strong>No room</strong>: a modification that does not fit (slots or MP) is refused <strong>before</strong> the test, with the count in the message (\"3 slot(s) needed… 1 left\"). The GM can lift this refusal with the <strong>Objects</strong> rule lock (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{the locks}).</p></li>\n<li><p><strong>Critical glitch</strong>: the parts are lost; the card's button removes the modification from the vehicle, without refund.</p></li>\n<li><p><strong>Special skill</strong>: a modification that requires one recalls it; that test is rolled by hand from the sheet.</p></li>\n<li><p><strong>Removing</strong>: the dice icon of an installed modification rolls the same test at the <strong>threshold divided by two, rounded up</strong>. The book does not give a figure for removal (<em>Rigger 5.0 p. 152</em>): the system makes that choice. The removed modification stays aboard, to be installed.</p></li>\n</ul>\n\n<h4>The GM's direct fit</h4>\n<p>The GM drags a modification and chooses <strong>Fit directly (GM)</strong>, or clicks a line's key: no test, no payment. On the <strong>vehicle item</strong> (not deployed), only the GM fits or takes off; buying and installing are done on the deployed drone. The refusal for lack of room applies to them too.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p><p>← @UUID[.046XTGe9sFUnz4An]{The Workshop tab} · @UUID[.rMDDQRPY8b6JXf09]{Drone Modification Points} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rMDDQRPY8b6JXf09",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.rMDDQRPY8b6JXf09",
+      "name": "Drone Modification Points",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Drone modifications</strong> setting offers the optional <i>Rigger 5.0</i> rule: <strong>Modification Points</strong> (MP) instead of slots (<em>Rigger 5.0 p. 122-124</em>). It only targets drones: a vehicle always keeps its six categories. A drone's Workshop and dealership then show a single gauge, <strong>Modification Points</strong>, and the <strong>MP</strong> column replaces the slots one.</p>\n<ul>\n<li><p><strong>The pool</strong>: as many MP as the Body. When the book writes Body X(Y), the GM enters Y in the Workshop's <strong>Points left (Y):</strong> field (the player reads it without changing it); empty, it is the Body.</p></li>\n<li><p><strong>Factory equipment is free and takes no MP</strong> (<em>Rigger 5.0 p. 189</em>): a new Steel Lynx keeps its 6 MP for your own modifications, its factory mount included in the profile.</p></li>\n<li><p><strong>Raising an attribute</strong> (Handling, Speed, Acceleration, Armor, Sensor): +1 free, once per drone, then the amount minus 1 (+2 Speed costs 1 MP). An attribute never exceeds double its starting value. Armor counts in steps of 3 points, with no cap at double, but beyond 3 × Body it removes Handling, Speed and Acceleration.</p></li>\n<li><p><strong>Weapon mounts</strong> follow the book's table according to the weapon's category, from Micro (0) to Heavy (6), +1 for an internal or concealed mount (<em>Rigger 5.0 p. 124</em>). The vehicles' <strong>Light</strong> mount, absent from the table, costs 3 MP: the book does not give a figure, it is the system's choice.</p></li>\n<li><p><strong>Replacements</strong>: Sensor Replacement counts as a Sensor increase up to its rating; Pilot Replacement costs no MP (the book gives it none).</p></li>\n<li><p><strong>Lowering an attribute</strong> gives back 1 MP in all. Lowering Body gives back 1 MP per point, but <strong>never below half the starting Body, rounded up</strong> (<em>Rigger 5.0 p. 123</em>): a Body 3 goes down to 2, not to 1. A drop below is refused, with this floor in the message. The French text writes \"rounded down\", but its own example reasons with rounding up: the system follows the example.</p></li>\n</ul>\n<p>An installation that exceeds the MP left is refused, for the player as for the GM; a modification that does not ask for more MP is never refused. The window that opens when you drop a modification announces the MP it will take.</p>\n<p>An attribute improvement takes the book's Availability (Handling, Speed, Sensor: new value × 2; Acceleration: × 4; Armor: the new value, Restricted beyond 6, Forbidden beyond 12), in the Workshop, at the dealership and at the till (<em>Rigger 5.0 p. 123-124</em>). Below Handling 1, or at Speed or Acceleration 0, the drone's sheet shows <strong>This drone can no longer move</strong> (<em>Rigger 5.0 p. 124</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-pm.webp\" width=\"908\" alt=\"A Steel Lynx's Workshop under Modification Points: ① the single gauge (1 MP taken out of 6), ② the Y field, ③ the factory mount, marked &quot;(Factory)&quot;, at 0 ¥, which does not count in the gauge. The Speed Improvement (2) takes 1 MP, the free +1 deducted.\" /><figcaption><strong>Figure 6.2.4</strong> — A Steel Lynx's Workshop under Modification Points: ① the single gauge (1 MP taken out of 6), ② the Y field, ③ the factory mount, marked \"(Factory)\", at 0 ¥, which does not count in the gauge. The Speed Improvement (2) takes 1 MP, the free +1 deducted.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Factory equipment on a drone from an old Mégapack version</p><p>The system recognizes factory equipment by the modification's <strong>Factory</strong> box, or by the mark the Mégapack puts on its copies in its recent versions. A drone taken from an older version, or made by hand, can have a factory mount that still counts its MP and its price: open the modification's sheet and tick <strong>Factory</strong>.</p></div>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The price follows the book too</p><p>Under MP, an attribute increase is paid at the book's price: new value × Body × 200 ¥ (double for Speed; new value × 1,000 ¥ for Sensor) (<em>Rigger 5.0 p. 123</em>). The purchase window announces the modification's cost as if it were alone; the installed line counts the free +1 already taken.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p><p>← @UUID[.uoPEUL919825Gedn]{Buying, installing, removing} · @UUID[.s29VMbSZRxv8Nzt4]{Repairing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "s29VMbSZRxv8Nzt4",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.s29VMbSZRxv8Nzt4",
+      "name": "Repairing",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The sheet's <strong>Vehicule Actions</strong> block has a <strong>Repair</strong> line (the wrench) (<em>Rigger 5.0 p. 29-30</em>).</p>\n\n<h4>Step by step: repairing a drone or a vehicle</h4>\n<ol>\n<li><p>Select the mechanic's token, then click the wrench on the vehicle's sheet.</p></li>\n<li><p>The window announces the damage boxes and the cost of spare parts (5% of the vehicle's price per box). Choose the <strong>Method</strong>, the Mechanic <strong>Skill</strong> (depending on the vehicle), the <strong>Boxes to repair (threshold)</strong> and, if some are missing, the <strong>Boxes without spare parts</strong>.</p></li>\n<li><p>Click <strong>Repair</strong>: it is an extended Mechanic + Logic [Mental] test, interval 4 hours (1 day and −4 dice per box without parts). Once the threshold is reached, the card offers to repair N boxes, which erases them from the monitor.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-2-reparer.webp\" width=\"416\" alt=\"The repair window of a vehicle with 3 damage boxes: the cost of parts, the method, the mechanic, the threshold.\" /><figcaption><strong>Figure 6.2.5</strong> — The repair window of a vehicle with 3 damage boxes: the cost of parts, the method, the mechanic, the threshold.</figcaption></figure>\n\n<p>A vehicle equipped with the nanomaintenance system offers two more methods: autonomous nanomaintenance (the rating in dice, 1 hour) or assisted (the rating added to the mechanic) (<em>Rigger 5.0 p. 166</em>). A vehicle whose boxes are all filled is wrecked: it can no longer be repaired.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p><p>← @UUID[.rMDDQRPY8b6JXf09]{Drone Modification Points} · @UUID[.YTo9Tb6Bw8fuLkyp]{What the system does, settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "YTo9Tb6Bw8fuLkyp",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.YTo9Tb6Bw8fuLkyp",
+      "name": "What the system does, settings and references",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the price of each modification on this vehicle, counts slots or MP, and refuses before the test what does not fit.</p></li>\n<li><p>It has the purchase paid through the shop, prepares the test for installing, removing or repairing, and applies the result with a click.</p></li>\n<li><p>It applies the effects of recognized modifications (replacements, Armor cap, tactile sensors, signature masking, metahuman adaptation, passenger protection system…).</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Enters the Y of a Body X(Y) drone in the Workshop, under MP.</p></li>\n<li><p>Rolls the special skill test of a modification that requires one, and judges the working conditions.</p></li>\n<li><p>Debits the spare parts of a repair, which the system announces without taking them.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Rigging tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Drone modifications</strong></td><td><strong>Slots (main rule)</strong>; <strong>Modification Points (optional)</strong> as an option</td></tr>\n<tr><td><strong>Objects</strong> rule lock (a modification with no room)</td><td>active: fitting is refused</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Slots and installation: (<em>Rigger 5.0 p. 151-155</em>). Modification Points: (<em>Rigger 5.0 p. 122-124</em>); drone table: (<em>Rigger 5.0 p. 189</em>). Repairing: (<em>Rigger 5.0 p. 29-30</em>); nanomaintenance: (<em>Rigger 5.0 p. 166</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki: Rigging (Workshop, Modification Points, Repairing)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.EL4Y6kscI8gvJoJd]{6.2 The Workshop}</p><p>← @UUID[.s29VMbSZRxv8Nzt4]{Repairing} · @UUID[.I5GXBTreZxunHsIW]{6.3 The dealership} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "I5GXBTreZxunHsIW",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.I5GXBTreZxunHsIW",
+      "name": "6.3 The dealership",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The dealership is a window where you build a drone or a vehicle before buying it: you choose the model, add modifications, and see at a glance its gauges, price and availability. The purchase goes through the shop, the whole lot or nothing.</p>\n\n<h4>Step by step: building and buying</h4>\n<ol>\n<li><p>Click the car-shaped button of the sidebar, just under the shop (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.mKZ6bak91UOPwDlM]{the sidebar}).</p></li>\n<li><p>Choose the <strong>Buyer</strong> at the top: their balance is shown.</p></li>\n<li><p>In the <strong>Models</strong> column (①), vehicles and drones are on two shelves, sorted by category then by name, with their attributes; click one. The <strong>Search</strong> field filters the list. You can also drag a vehicle from a compendium.</p></li>\n<li><p>In the centre (②), the vehicle's image between its gauges, then the equipment delivered with it. In the <strong>Modifications</strong> column (③), click a modification to add it: it appears in the centre with its category, its slots and its price on this vehicle; the bin removes it, <strong>Take the modifications off</strong> removes them all.</p></li>\n<li><p>Read the price (④), then click the buy button (<strong>Buy for…</strong>).</p></li>\n</ol>\n<p>The showroom shows the vehicle's attributes once its modifications are installed, the printed profile struck through next to them; a factory modification is already counted in that profile, a modification waiting to be installed changes nothing (<em>Rigger 5.0 p. 155</em>). A vehicle or drone without its own image shows its category's image (bike, car, medium drone…), here as at the Workshop. In the shop, vehicles and drones each have their shelf: <strong>Vehicles</strong> (and their modifications (<em>Rigger 5.0 p. 151-171</em>)) and <strong>Drones</strong> (and drone modifications (<em>Rigger 5.0 p. 122-128</em>)).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-3-concessionnaire.webp\" width=\"1468\" alt=\"The dealership: ① the models, ② the configuration (gauges, modifications added), ③ the shelves' modifications, ④ the total, the lot's availability and the balance after purchase (dark theme).\" /><figcaption><strong>Figure 6.3.1</strong> — The dealership: ① the models, ② the configuration (gauges, modifications added), ③ the shelves' modifications, ④ the total, the lot's availability and the balance after purchase (dark theme).</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p>A gauge shows what is installed, then, hatched, what remains to be installed: \"0 + 4 / 18\" reads \"nothing installed, 4 to install, 18 slots\". Going over is flagged: the extra installation will be refused (<em>Rigger 5.0 p. 152</em>).</p></li>\n<li><p>The price: vehicle, modifications, express if open, <strong>Total</strong>, <strong>Availability of the lot</strong> (the highest of its elements, with the strictest legality) and <strong>Balance after purchase</strong>, in red if it is not enough.</p></li>\n<li><p>The Dealer Connection quality of the right category takes 10% off the vehicle's price, after the availability surcharge (<em>Rigger 5.0 p. 33</em>).</p></li>\n</ul>\n\n<h4>What happens after the purchase</h4>\n<p>The vehicle arrives in the buyer's inventory with its modifications <strong>aboard, to be installed</strong>: they are installed by the book from the deployed vehicle's Workshop (@UUID[.uoPEUL919825Gedn]{6.2}). If the lot has an availability and the table plays with delayed delivery (<em>Core Rulebook p. 418</em>), it leaves as <strong>a single order</strong>, at the longest delay of its elements, and arrives assembled when the GM delivers it (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.Ga0gO6SMY0vVY4nv]{delivery}). An order is cancelled as at the shop, and the refund is that of the debit.</p>\n\n<h4>For the GM</h4>\n<p>The <strong>Equip (free)</strong> box equips any actor without debit, delivered at once. The modifications you add are marked <strong>installed</strong> by default as long as there is room left (the line's key changes this choice): the vehicle arrives with them installed, even after a delayed delivery. In the sheet's orders block, the GM's link on an order is <strong>Deliver now</strong>: to cancel, use the cancel icon.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Express delivery</p><p>The book does not provide for paying to be delivered faster. If the GM has ticked express delivery, the dealership adds the express line to the price of a lot that is waiting, computed on the vehicle's full price. Unticked by default.</p></div>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Shop tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Delivery of purchases</strong></td><td>after the search delay</td></tr>\n<tr><td><strong>Express delivery (house rule)</strong></td><td>unticked</td></tr>\n</tbody>\n</table>\n<p>The dealership sells from the shop's shelves (compendiums sold, @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.GhvHZiEOvNRmUArw]{configuring the shop}), not from a vendor's counter.</p>\n\n<h4>References</h4>\n<ul>\n<li><p>Price of a modification on a vehicle: (<em>Rigger 5.0 p. 155</em>). Dealer Connection: (<em>Rigger 5.0 p. 33</em>). Delays: (<em>Core Rulebook p. 418</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki: Rigging (The dealership)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU}</p><p>← @UUID[.YTo9Tb6Bw8fuLkyp]{What the system does, settings and references} · @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Kyp3B3PN2QJ1zfc3",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.Kyp3B3PN2QJ1zfc3",
+      "name": "6.4 Chases",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The GM runs the chase in a separate window: the vehicles engaged, their Current Speed, the range between each pair, the terrain, and who is out of control. Each chase action is a button that prepares the driver's roll and carries over its result; the system applies what the end of a turn brings about. The player rolls their own vehicle's actions from the same window.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU}</p><p>← @UUID[.I5GXBTreZxunHsIW]{6.3 The dealership} · @UUID[.NhvKN0LO55zGhs9Q]{Running a chase (GM)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "NhvKN0LO55zGhs9Q",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.NhvKN0LO55zGhs9Q",
+      "name": "Running a chase (GM)",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: starting a chase</h4>\n<ol>\n<li><p>In the token controls (left column), click the <strong>Chase</strong> tool, then <strong>Start a chase</strong>.</p></li>\n<li><p>Select the vehicles' and drones' tokens on the scene, then click <strong>Add the selected tokens</strong>. Each new pair starts at Medium range; the first vehicle added is the one pursued (the <strong>Role</strong> can be changed).</p></li>\n<li><p>Give each vehicle its <strong>Current Speed</strong>. For passengers, select their tokens and click <strong>Take the selected tokens aboard</strong> on the right line; the manual driver is counted aboard without being taken aboard.</p></li>\n<li><p>For each pair, set the range, or move it one step with − and +. Beyond the farthest, the pursued has lost the other (<em>Core Rulebook p. 204</em>).</p></li>\n<li><p>During the turn, tick <strong>Controlled this turn</strong> for each driver who took the Control a Vehicle action (<em>Core Rulebook p. 202</em>); a vehicle on autopilot is controlled by its autopilot. Then <strong>End of Combat Turn</strong> (with an encounter running, the turn follows its rounds and this button disappears).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-4-fenetre.webp\" width=\"928\" alt=\"The chase window (core rulebook): ① the turn, the environment and the terrain, ② a vehicle's Current Speed and Controlled this turn box, ③ its chase action, ④ the chase ranges (dark theme).\" /><figcaption><strong>Figure 6.4.1</strong> — The chase window (core rulebook): ① the turn, the environment and the terrain, ② a vehicle's Current Speed and Controlled this turn box, ③ its chase action, ④ the chase ranges (dark theme).</figcaption></figure>\n\n<p>At the top of the window, the GM chooses the chase system with a click (core rulebook or <i>Rigger 5.0</i> advanced rules): it is the same setting as in Shadowrun settings. Each terrain in the list carries an example (Open: deserted road, city at night…), and under the list the book's examples for the chosen terrain are shown (<em>Core Rulebook p. 200, Rigger 5.0 p. 173</em>). Pursued and pursuers each have their colour.</p>\n<p>The window's log (a scrolling box, 200 lines) and a chat message say what happened at each end of turn. The player who owns an engaged vehicle, or who is aboard, sees the window open on its own and follows it live; only their own roll buttons are active. They can close it: it no longer reopens at each of the GM's moves, even after a reload.</p>\n\n<h4>Out of control</h4>\n<p>A vehicle that nobody controlled during the turn is <strong>out of control</strong> (<em>Core Rulebook p. 202</em>): everyone aboard suffers −2 dice, and the system sets the effect on each; it removes it as soon as the driver takes control again. On the second turn without control, the autopilot takes over, if there is one. A destroyed vehicle leaves the chase at the end of the turn. <strong>End the chase</strong> clears everything, penalties included.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases}</p><p>← @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases} · @UUID[.6aVi3OOfXZ3nGHk2]{Chase actions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6aVi3OOfXZ3nGHk2",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.6aVi3OOfXZ3nGHk2",
+      "name": "Chase actions",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Under each vehicle, the <strong>Chase action</strong> line: choose the action, the vehicle targeted (<strong>Against</strong>) when it requires one, then <strong>Roll</strong>. The list only offers the actions of the ruleset in force and of the vehicle's type; an impossible action (wrong range, already attempted this turn, vehicle lost) is refused with its reason.</p>\n\n<h4>How it goes</h4>\n<ol>\n<li><p>The roll window arrives with the sheet's vehicle test, its <strong>threshold</strong> already set (terrain, maneuver threshold, Speed difference…) and the right limit; everything stays editable.</p></li>\n<li><p>If the action is opposed, the card carries an \"… opposes\" button, seen by the owner of the vehicle targeted (and the GM). They roll the same test, without a threshold; only one opposition per card: the button disappears once the roll is made.</p></li>\n<li><p>The GM clicks <strong>Apply to the chase</strong> on the last card: the system carries over range, roles, control, Speed, Handling or terrain. A card applies only once.</p></li>\n<li><p>When the action requires one more test (following a stunt, avoiding a crash, staying at Extreme range…), the GM's card carries one button per vehicle concerned, for its owner.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-4-carte.webp\" width=\"304\" alt=\"The card of &quot;Cut Off&quot; rolled by the Rover: its hits, and the button by which the Steel Lynx opposes.\" /><figcaption><strong>Figure 6.4.2</strong> — The card of \"Cut Off\" rolled by the Rover: its hits, and the button by which the Steel Lynx opposes.</figcaption></figure>\n\n<table>\n<thead><tr><th>Action (core rulebook)</th><th>What the system does with it</th></tr></thead>\n<tbody>\n<tr><td><strong>Control a Vehicle</strong> (<em>Core Rulebook p. 202</em>)</td><td>no roll: the vehicle is under control this turn, the out-of-control penalty falls</td></tr>\n<tr><td><strong>Catch Up / Break Away</strong> (<em>Core Rulebook p. 204</em>)</td><td>threshold test (maneuver threshold, Medium (2) by default, + terrain); one range per net hit, at most the Acceleration</td></tr>\n<tr><td><strong>Cut Off</strong> (<em>Core Rulebook p. 204</em>)</td><td>opposed test, at Short range; if the initiator wins, the target makes a follow-up test, otherwise it is out of control and the GM decides on the crash</td></tr>\n<tr><td><strong>Ram</strong> (<em>Core Rulebook p. 204</em>)</td><td>opposed test, at Short range; the card gives the damage to both vehicles</td></tr>\n<tr><td><strong>Stunt</strong> (<em>Core Rulebook p. 204</em>)</td><td>for the pursued only; failed, it is out of control; successful, each pursuer follows it or falls back one range</td></tr>\n</tbody>\n</table>\n\n<h4>What costs an action</h4>\n<p>The action you roll counts its Complex Action, on the combatant who acts: the vehicle if it is in the combat, otherwise its driver (the usual case: the rigger has the initiative, not their car). <strong>Opposing</strong> and <strong>follow-up tests</strong> are free, like a defense: neither action nor initiative (<em>Core Rulebook p. 204</em>). The vehicle test that follows your own action (avoiding the crash after your failed stunt) is free too: it is part of the action paid for.</p>\n\n<h4>Damage</h4>\n<p>When an action inflicts some (Ram, Collision, a failed Like a Boss), the GM's card carries an <strong>Apply Damage</strong> button per vehicle hit, seen by its owner and the GM: it opens the vehicle's resistance (Body + Armor, AP −6) (<em>Core Rulebook p. 203-204</em>) and disappears once the resistance is rolled. For a <strong>crash</strong>, the GM clicks the button that sets the crash damage: a value is offered, editable; a new card then gives a button to the vehicle and to each of those aboard (<em>Core Rulebook p. 201</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases}</p><p>← @UUID[.NhvKN0LO55zGhs9Q]{Running a chase (GM)} · @UUID[.QqTr1CPKVq1xJEre]{The Rigger 5.0 rules} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QqTr1CPKVq1xJEre",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.QqTr1CPKVq1xJEre",
+      "name": "The Rigger 5.0 rules",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>With the <strong>Advanced driving rules (Rigger 5.0)</strong> setting, the window follows <i>Rigger 5.0</i> (<em>Rigger 5.0 p. 173-182</em>): Contact range before Short (and Visual after Extreme if an aircraft is engaged), six terrains from Open (+0) to Impossible (+6), a Current Speed bounded by Acceleration, a type per vehicle (ground, watercraft, rotorcraft, jet; an aerial drone enters as an aircraft), and fifteen more actions.</p>\n<ul>\n<li><p><strong>Opposed tests with a threshold</strong> (Catch Up, Get on Their Six…): the system counts the net hits (the initiator's minus the target's), then those that exceed the threshold. Neither the French nor the English edition says how the two combine (<em>Rigger 5.0 p. 175</em>): it is the system's choice.</p></li>\n<li><p><strong>Stunts</strong> are done on their own or built into another action (the line's <strong>Stunt</strong> field, the level is added to the threshold) (<em>Rigger 5.0 p. 180</em>). On rolling, the window asks for the benefit sought. Failed, the GM's card carries a free \"avoid the crash\" test, at −level in dice, threshold = terrain; failed, the vehicle is out of control. The book gives neither the sign nor the threshold of this test: it is the system's choice. The autopilot does not do stunts.</p></li>\n<li><p><strong>The driver's Edge</strong>: Zen Driving and Hang On Baby (jumped-in rigger), Falling Leaf (falling aircraft), crazy stunt; the window asks for confirmation before debiting the point (<em>Rigger 5.0 p. 174-180</em>).</p></li>\n<li><p><strong>The qualities</strong> Stunt Driver (+2 dice to stunts) and Relentless Pursuer (+2 dice to the actions rolled) are added on their own (<em>Rigger 5.0 p. 33</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases}</p><p>← @UUID[.6aVi3OOfXZ3nGHk2]{Chase actions} · @UUID[.ls3LnmQMXWVK6Ud6]{What the system does, settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ls3LnmQMXWVK6Ud6",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.ls3LnmQMXWVK6Ud6",
+      "name": "What the system does, settings and references",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It prepares each chase roll (threshold, limit), carries over its result and writes it in the log.</p></li>\n<li><p>It sets and removes the out-of-control penalty, hands control back to the autopilot, removes destroyed vehicles.</p></li>\n<li><p>It counts down the action on the combatant who acts, and leaves opposition and follow-up tests free.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Sets the DV of a crash, and applies the damage of Clear the Way, given on the card.</p></li>\n<li><p>Plays the effects given on the card without being applied: perception (Crazy Ivan, tailing), shots (Strafe, Rake), a stunt joined to an attack.</p></li>\n<li><p>Keeps track of the seats and the passengers' actions, and reads the tokens' position themselves: the range is the one they keep.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Rigging tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Advanced driving rules (Rigger 5.0)</strong></td><td>unticked: core rulebook chases</td></tr>\n<tr><td><strong>Actions</strong> rule lock (rolling without an action left)</td><td>according to the world's preset (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{the locks})</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Vehicle combat and chases: (<em>Core Rulebook p. 198-204</em>). Advanced chases: (<em>Rigger 5.0 p. 173-182</em>). Qualities: (<em>Rigger 5.0 p. 33-34</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Poursuites\">wiki: Chases</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.Kyp3B3PN2QJ1zfc3]{6.4 Chases}</p><p>← @UUID[.QqTr1CPKVq1xJEre]{The Rigger 5.0 rules} · @UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "qnNWcUI0hRMbFhqD",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.qnNWcUI0hRMbFhqD",
+      "name": "6.5 Electronic warfare, swarms",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p><i>Rigger 5.0</i> gives the rigger electronic warfare actions (targeting a device for their drones, confusing the opposing autopilot, breaking a target lock, reducing noise) and the possibility to make several drones act as one, as a swarm (<em>Rigger 5.0 p. 30-31</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU}</p><p>← @UUID[.ls3LnmQMXWVK6Ud6]{What the system does, settings and references} · @UUID[.vdNkRr4hF2fWeKko]{Electronic warfare actions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vdNkRr4hF2fWeKko",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.vdNkRr4hF2fWeKko",
+      "name": "Electronic warfare actions",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>With the <strong>Use Rigger 5 Matrix Actions</strong> setting (Rigging tab of Shadowrun settings, unticked by default), these actions are added to the Matrix actions of the rigger's sheet, and are also launched with a click on the drone targeted in the PAN crown (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.lDEaMIJ23r49haVj]{the radial menu}), including on an opponent's autonomous drone.</p>\n<table>\n<thead><tr><th>Action</th><th>What the system does with it</th></tr></thead>\n<tbody>\n<tr><td><strong>Target Device</strong></td><td>defense lost; the card offers to target the device (+N): until the end of the turn, the rigger's slaved drones (and their PAN's smartlinked weapons) get N more dice against it</td></tr>\n<tr><td><strong>Confuse Pilot</strong></td><td>defense lost; the card offers the drone's Pilot × 2 test, threshold half the net hits; the GM plays the rest</td></tr>\n<tr><td><strong>Break Target Lock</strong></td><td>defense lost, the sensor lock that drone held drops by N</td></tr>\n<tr><td><strong>Suppress Noise</strong></td><td>simple test; until the end of the turn, the rigger's noise reduction rises by the hits, also between the rigger and their drones</td></tr>\n</tbody>\n</table>\n<p>The console's noise reduction is added to these actions' pool. The same rigger who rolls Target Device or Suppress Noise again replaces its effect instead of stacking it.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms}</p><p>← @UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms} · @UUID[.OfCIohrhdBY7Vzxg]{Swarms} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OfCIohrhdBY7Vzxg",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.OfCIohrhdBY7Vzxg",
+      "name": "Swarms",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: forming a swarm</h4>\n<ol>\n<li><p>Install the <strong>Swarm</strong> program (a Mégapack rigging program) on the rigger's console and load it.</p></li>\n<li><p>On each drone's sheet, tick <strong>Slaved Device</strong> and give the same <strong>Swarm no.</strong> (0: no swarm). A rigger can have several swarms, one per number.</p></li>\n<li><p>Place the tokens on the displayed scene: at least two drones are needed. Under the number, the sheet says \"Swarm 1: 2 drones, +1 to dice and limit\", or why the swarm is inactive.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/6-5-essaim.webp\" width=\"287\" alt=\"The Control mode block of a drone of swarm no. 1: two drones, +1 to dice and limit.\" /><figcaption><strong>Figure 6.5.1</strong> — The Control mode block of a drone of swarm no. 1: two drones, +1 to dice and limit.</figcaption></figure>\n\n<p>Each drone of the swarm takes the swarm's values (<em>Rigger 5.0 p. 31</em>): the highest Pilot (or the console's Device Rating), the highest Sensor and autosofts, the lowest Handling, Speed and Acceleration. At each action rolled from a drone of the swarm, two boxes ticked in the roll window add number of drones − 1 to dice and to limit; they are not offered for a defense or a resistance. A drone destroyed, bricked, no longer slaved or whose token is removed leaves the swarm at once; a stored drone does not count.</p><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms}</p><p>← @UUID[.vdNkRr4hF2fWeKko]{Electronic warfare actions} · @UUID[.9UjV231aFv9WUIcd]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9UjV231aFv9WUIcd",
+      "_key": "!journal.pages!5afKb26kGAzDG0I9.9UjV231aFv9WUIcd",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It applies electronic warfare effects until the end of the turn, then removes them.</p></li>\n<li><p>It recomputes the swarm at each change (drone added, lost, stored), for everyone.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Plays the driving of a confused autopilot.</p></li>\n<li><p>Decides on a swarm's initiative (the encounter tracker is unchanged) and rolls the scatter of the other drones' explosive weapons: the system rolls only the chosen drone's shot.</p></li>\n<li><p>Removes by hand the one-turn effect of a character outside the combat.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Electronic warfare: (<em>Rigger 5.0 p. 30-31</em>). Swarms: (<em>Rigger 5.0 p. 31</em>); controlling the swarm in a chase: (<em>Rigger 5.0 p. 179</em>). Rigger command console: (<em>Core Rulebook p. 266-269</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Rigging\">wiki: Rigging (Electronic warfare, Swarms)</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki: PAN crown</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.kFGMwUwhIDEOP3x4]{MENU} &gt; @UUID[.qnNWcUI0hRMbFhqD]{6.5 Electronic warfare, swarms}</p><p>← @UUID[.OfCIohrhdBY7Vzxg]{Swarms}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

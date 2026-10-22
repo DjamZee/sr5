@@ -1,0 +1,716 @@
+{
+  "_id": "CKM0UvZC23LLnCgv",
+  "_key": "!journal!CKM0UvZC23LLnCgv",
+  "name": "5. The Matrix",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 600000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "4vqbcO3M6A7CDlm1",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.4vqbcO3M6A7CDlm1",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part follows a hacker at the table: they open a token's PAN crown to see its devices, place marks from the radial menu, choose AR or VR, keep an eye on their Overwatch Score, then come into contact with a host, its IC and its files. The player who plays a decker or a technomancer reads the whole part; the others read at least chapter 5.1 (their own devices are in the crown, and an enemy hacker targets them); the GM also reads chapters 5.4 and 5.5.</p>\n<p>The system applies the core rulebook's Matrix rules (<em>Core Rulebook p. 214-263</em>), and, when the GM ticks them, those of <i>Kill Code</i> and <i>Data Trails</i>. This manual does not copy them: it shows the windows, says what the system computes on its own and what stays in the GM's hands. The inside of a host as a map, with its zones, its turn-by-turn IC and its spider, comes from the Matrice v1 module (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.4V7hFPTyp4NVXfhI]{its entry, 9.3}); without it, the Matrix follows the book.</p><table><tbody><tr><td><p>@UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.IMC9ifGKlNMrb5kL]{Opening the crown}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.bCBBDa2PLW6eT0ih]{Reading the crown}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.QGEY0HIazLHXTFFX]{Who sees what}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.CR9NAotqRi5ajh6y]{Ambiences, settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.fRC5dKiNrKvL6oyH]{Launching a Matrix action}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.QF63HC7WfY48gDMO]{Marks}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.EVMa7HcxhZkEmr6s]{Matrix Perception}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.4bPHGrH2Rd7sMiHz]{The Overwatch Score and convergence}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.mFMAJ6RYR541KNqH]{What the system does and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.WoVOldmeTE5XCncH]{Wireless on, running silent, offline}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.SQU2aUz7dvodIt3J]{AR, cold-sim VR, hot-sim VR}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.C2nRyxGYGB4ozHTJ]{Drones, cameras and doors}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.82jNFTFDETJnwOUQ]{Technomancers, sprites, AIs}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6tBbo4KfG1RXgBmJ]{Messages and calls by commcode}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.JTUOaV4v6H0k7dSx]{What the system does and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.9RZOwrvMbZLVLT9q]{The host and its type}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.zs6TyeVxZEgp1XSK]{IC}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.vGNMSTgsybnOEpcv]{Files}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.LJ3K91MNUlkJaQN9]{With the Matrice v1 module}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.bMoVS3e9j0m38ih6]{What the system does and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.ORHyDcggOBWJk8Yy]{5.5 The \"Matrix\" lock}</p></td><td><p>GM</p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4tswtGQqbgDVe9IS",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.4tswtGQqbgDVe9IS",
+      "name": "5.1 The PAN crown",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The crown shows, on the map, a token's personal area network (PAN): its devices as icons, linked by lines. It is through it that you see what is connected around you, and it is its icons you click to act in the Matrix (@UUID[.lDEaMIJ23r49haVj]{the radial menu}). Each person only sees what their character is entitled to see, according to the book's rules (<em>Core Rulebook p. 235-237</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU}</p><p>@UUID[.IMC9ifGKlNMrb5kL]{Opening the crown} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "IMC9ifGKlNMrb5kL",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.IMC9ifGKlNMrb5kL",
+      "name": "Opening the crown",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: opening and closing a crown</h4>\n<ol>\n<li><p>Right-click a token: its HUD opens. Click the <strong>Show or hide the PAN</strong> button (①). The crown unfolds around the token.</p></li>\n<li><p>Click the same button again to close it. A crown closed with the HUD button stays closed until the next AR view.</p></li>\n<li><p>To see at once the crowns of <strong>all visible tokens</strong>, press <strong>M</strong> (the <strong>AR view</strong>); press again to hide them. The key does not react when you type in the chat or in a sheet; it is changed in Foundry's controls configuration, <strong>AR view: PAN crowns</strong> line.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-hud.webp\" width=\"269\" alt=\"A token's HUD: ① the button that opens and closes its PAN crown.\" /><figcaption><strong>Figure 5.1.1</strong> — A token's HUD: ① the button that opens and closes its PAN crown.</figcaption></figure>\n\n<p>Each person chooses for themselves how crowns open (@UUID[.CR9NAotqRi5ajh6y]{settings}): on hovering over the token (the default), with the HUD button only, or always visible. In all three cases, the HUD button locks the crown open, and the AR view key remains available.</p>\n<p>A player whose character carries a commlink, a cyberdeck or a rigger command console can open the PAN of a token they see: that token's HUD shrinks to the PAN button, and their own token stays selected. What they read there follows the visibility rules below. The GM also has, in the token tools, the <strong>Show every PAN on the map (AR view)</strong> button.</p>\n<p><strong>During a movement</strong>, the crown of the moving token folds, then reopens where it stops; those of the motionless tokens stay open, and their lines follow the moving token. It is a readability choice (DjamZ's ruling, 08/10): nothing is recomputed during the move, what is seen is seen again at the stop.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown}</p><p>← @UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown} · @UUID[.bCBBDa2PLW6eT0ih]{Reading the crown} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "bCBBDa2PLW6eT0ih",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.bCBBDa2PLW6eT0ih",
+      "name": "Reading the crown",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul class=\"legende\">\n<li><p><strong>① The PAN master</strong> (commlink, cyberdeck or rigger command console) is linked to the token; it carries a second thin ring (<em>Core Rulebook p. 231-233</em>).</p></li>\n<li><p><strong>② The slaves</strong> are linked to the master and fan out around it, on the side away from the token. A device is slaved with <strong>Slave to…</strong>, in its icon's radial menu (@UUID[.fRC5dKiNrKvL6oyH]{the owner's actions}).</p></li>\n<li><p><strong>③ A device outside the PAN</strong> (a drawn weapon, a wireless implant switched on) is an icon on its own, linked directly to the token. A loaded crown does not squeeze: beyond a full ring, a second opens further out, turned so that its lines pass between the icons of the first.</p></li>\n</ul>\n<figure><img src=\"systems/sr5/manuel/captures/5-1-couronne.webp\" width=\"715\" alt=\"A street samurai's crown: ① her commlink, PAN master, linked to the token; ② one of her four slaves, linked to the master; ③ a device switched on outside her PAN, linked directly to the token, on the second ring.\" /><figcaption><strong>Figure 5.1.2</strong> — A street samurai's crown: ① her commlink, PAN master, linked to the token; ② one of her four slaves, linked to the master; ③ a device switched on outside her PAN, linked directly to the token, on the second ring.</figcaption></figure>\n<p>The crown follows the token's image <strong>as displayed</strong> (image scale and dynamic ring included) and grows with it, up to double for a 3 × 3 token. The lines pass under the token: they come out at the edge of its outline, and the icons stay above them. The token's name stays clear: no icon on it, no line across it, and no line crosses another icon. With many devices, the master's fan opens wider; the crown of a large token placed at the edge of the scene turns inwards. Known limit: in a corner of a scene, devices outside the PAN can still go out of the frame.</p>\n\n<h4>Lines and colours</h4>\n<table>\n<thead><tr><th>What you see</th><th>What it means</th></tr></thead>\n<tbody>\n<tr><td>Solid line</td><td>the device is wireless on</td></tr>\n<tr><td>Dotted line</td><td>it is running silent (<em>Core Rulebook p. 235</em>)</td></tr>\n<tr><td>Grey line, darkened icon</td><td>it is offline</td></tr>\n<tr><td>Green icon</td><td>a device: commlink, cyberdeck, console, weapon, armor, implant, drone, vehicle</td></tr>\n<tr><td>Orange icon</td><td>the scenery: camera, maglock, door, sensor, turret, elevator, lighting, terminal</td></tr>\n<tr><td>Cyan icon</td><td>the Matrix: persona, host, IC, sprite, agent, file</td></tr>\n<tr><td>Small purple diamonds above an icon</td><td>your marks on that device, one per diamond (@UUID[.QF63HC7WfY48gDMO]{marks})</td></tr>\n</tbody>\n</table>\n<p>On hovering over an icon, its name and mode are shown. Bioware, genetics and symbionts have no icon: they have no wireless function (<em>Core Rulebook p. 458</em>). Each device takes its category's icon; on an item's sheet, the <strong>PAN icon</strong> field (configuration tab) gives it an image of its own, which follows the item when it is given to another character.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown}</p><p>← @UUID[.IMC9ifGKlNMrb5kL]{Opening the crown} · @UUID[.QGEY0HIazLHXTFFX]{Who sees what} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QGEY0HIazLHXTFFX",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.QGEY0HIazLHXTFFX",
+      "name": "Who sees what",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>With the <strong>Visibility of PAN crowns</strong> setting on <strong>Book rules</strong> (the default) (<em>Core Rulebook p. 235-237</em>):</p>\n<ul>\n<li><p>the owner always sees their whole PAN, even offline; the GM sees everything;</p></li>\n<li><p>the others, <strong>provided they themselves have a commlink or a deck switched on</strong>, see the wireless-on devices within 100 m, those they have marked at any distance, and those they spotted with a Matrix Perception (@UUID[.EVMa7HcxhZkEmr6s]{Matrix Perception});</p></li>\n<li><p>an offline device is only seen by its owner and the GM; an unspotted device running silent does not appear;</p></li>\n<li><p>the one looking is the token you control, otherwise your assigned character; what is seen is recomputed at the end of each movement, of any token.</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-joueuse.webp\" width=\"1324\" alt=\"On the player's side, controlling her decker: ① a guard's commlink 12 m away and its implants, wireless on; ② the decker's deck, master of her own crown. The guard's stun baton, running silent, does not appear.\" /><figcaption><strong>Figure 5.1.3</strong> — On the player's side, controlling her decker: ① a guard's commlink 12 m away and its implants, wireless on; ② the decker's deck, master of her own crown. The guard's stun baton, running silent, does not appear.</figcaption></figure>\n\n<p>With <strong>The gamemaster decides</strong>, the player only sees their own crown and the devices the GM has revealed: neither distance, nor marks, nor spotting come into it. With both settings, the GM's radial menu carries <strong>Reveal to the whole table</strong> and <strong>Stop revealing</strong>. With the <strong>Gamemaster's reveal of a device</strong> setting on <strong>Player by player</strong>, the entry becomes <strong>Reveal to…</strong> and the GM ticks the characters to whom they show the device.</p>\n<p>At the GM's only, a <strong>yellow outline</strong> surrounds the icons that no player sees. A line towards a token hidden by the GM is shown to nobody but them.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown}</p><p>← @UUID[.bCBBDa2PLW6eT0ih]{Reading the crown} · @UUID[.CR9NAotqRi5ajh6y]{Ambiences, settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "CR9NAotqRi5ajh6y",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.CR9NAotqRi5ajh6y",
+      "name": "Ambiences, settings and references",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The animation is set according to your machine, with the personal <strong>Ambience of the PAN crowns</strong> setting:</p>\n<ul>\n<li><p><strong>Static</strong>: no animation, no per-frame computation;</p></li>\n<li><p><strong>Sober</strong> (the default): the crown unfolds from the token in half a second, and pulses run along the lines;</p></li>\n<li><p><strong>Spectacular</strong>: in addition, a halo, a shimmer, and a rain of code above a crown open on its own.</p></li>\n</ul>\n<p>The GM sets a ceiling for the table: above it, the levels are greyed in the players' settings. The crown stays static if your system asks to reduce animations, or if Foundry's performance mode is \"Low\".</p>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (PAN crown tab)</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Visibility of PAN crowns</strong></td><td>GM, for the world</td><td>Book rules</td></tr>\n<tr><td><strong>Ambience ceiling of the PAN crowns</strong></td><td>GM, for the world</td><td>Spectacular</td></tr>\n<tr><td><strong>Gamemaster's reveal of a device</strong></td><td>GM, for the world</td><td>To the whole table</td></tr>\n<tr><td><strong>Opening the PAN crowns</strong></td><td>each for themselves</td><td>On hover</td></tr>\n<tr><td><strong>AR view key</strong> (toggle or hold)</td><td>each for themselves</td><td>Toggle</td></tr>\n<tr><td><strong>Ambience of the PAN crowns</strong></td><td>each for themselves</td><td>Sober</td></tr>\n</tbody>\n</table>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-1-reglages.webp\" width=\"792\" alt=\"The PAN crown tab of the Shadowrun settings window, as the GM sees it: two world settings, three personal settings.\" /><figcaption><strong>Figure 5.1.4</strong> — The PAN crown tab of the Shadowrun settings window, as the GM sees it: two world settings, three personal settings.</figcaption></figure>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It draws each token's PAN, drones and scenery devices included, and redraws it when a device changes.</p></li>\n<li><p>It computes, for each person, what their character sees: distance, marks, spotting, mode of the devices.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Reveals what the table must see when they chose \"The gamemaster decides\".</p></li>\n<li><p>Gives an icon to scenery whose name does not say what it is (a Device actor named \"Box\" takes the \"other device\" icon); the crown of an invisible token (vision, fog) is invisible too.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>PAN, master and slaves: (<em>Core Rulebook p. 231-233</em>). What you see in the Matrix, running silent: (<em>Core Rulebook p. 234-236</em>). A slave running silent through its master: (<em>Kill Code p. 34</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki: PAN crown</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.4tswtGQqbgDVe9IS]{5.1 The PAN crown}</p><p>← @UUID[.QGEY0HIazLHXTFFX]{Who sees what} · @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "lDEaMIJ23r49haVj",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.lDEaMIJ23r49haVj",
+      "name": "5.2 The radial menu",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A click on an icon of the crown opens around it a menu in two columns: on the right the <strong>Matrix actions</strong> aimed at that device, on the left the <strong>owner's</strong> (mode, PAN), and, set apart and edged in purple, the <strong>GM's</strong>. You thus launch an action without looking for the target in a list: the device is already chosen, and the defender no longer has to designate it. Close the menu with Escape or a click elsewhere.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU}</p><p>← @UUID[.CR9NAotqRi5ajh6y]{Ambiences, settings and references} · @UUID[.fRC5dKiNrKvL6oyH]{Launching a Matrix action} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fRC5dKiNrKvL6oyH",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.fRC5dKiNrKvL6oyH",
+      "name": "Launching a Matrix action",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: targeting a guard's commlink</h4>\n<ol>\n<li><p>Select your hacker's token (it is the one \"looking\"), then open the guard's crown.</p></li>\n<li><p>Click the icon you are after. The menu lists the actions possible on that device (<em>Core Rulebook p. 237-244</em>): Matrix Perception, Hack on the Fly, Brute Force, Data Spike, Snoop, Control Device, Format Device, Reboot Device, and the others. On the PAN master, which represents the persona (<em>Core Rulebook p. 235</em>), Trace Icon, Crash Program and, with <i>Kill Code</i>, Glitch are added.</p></li>\n<li><p>The menu also shows the device's Matrix condition monitor, sorts the actions alphabetically and explains each mode on hover. The state reads \"Wireless mode on\" or \"Running silent on\". The monitor stays reserved to the owner and the GM, and to the player whose Matrix Perception revealed it (<em>Core Rulebook p. 236</em>).</p></li>\n<li><p>A <strong>greyed</strong> action cannot go: hover over it to read why (\"Marks required: 3 (placed: 1)\", no commlink or deck switched on, an action that requires Resonance).</p></li>\n<li><p>Click an active action: the usual roll window opens, the guard's token targeted and the device already chosen. Roll.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-menu.webp\" width=\"771\" alt=\"The radial menu on a guard's commlink, opened by the decker: ① the Matrix actions, ② an action greyed for lack of marks, with its reason on hover.\" /><figcaption><strong>Figure 5.2.1</strong> — The radial menu on a guard's commlink, opened by the decker: ① the Matrix actions, ② an action greyed for lack of marks, with its reason on hover.</figcaption></figure>\n\n<p>The same actions are launched from the sheet's Matrix tab (<strong>Matrix actions</strong> block, <strong>DP</strong> column): the <strong>Mark</strong> column says how many marks are needed, <strong>Limit</strong> the attribute that caps, <strong>Defense</strong> your own pool to defend against that action (a click rolls it), and the icon of the <strong>GOD</strong> column the illegal actions, which raise the Overwatch Score. Launched from the sheet, the action leaves the defender the window for choosing the device targeted.</p>\n\n<h4>Matrix defense</h4>\n<p>The roll's card carries the defense button. The defender clicks; the system rolls their pool against the device chosen by the attacker (<em>Core Rulebook p. 237-244</em>). A slaved device defends with its master's pool when it is better; in direct connection, with its own ratings only (<em>Core Rulebook p. 233</em>). Vehicles and drones whose wireless is on are defended like devices: slaved, by their master; otherwise, with their Device Rating, which is that of their Pilot (<em>Core Rulebook p. 268-269</em>). An offline device cannot be targeted wirelessly.</p>\n\n<h4>The owner's actions</h4>\n<p>On their own icons, the owner finds <strong>Switch to wireless on</strong>, <strong>Switch to silent running</strong>, <strong>Switch offline</strong>, <strong>Free from the PAN</strong> on a slave, or <strong>Slave to…</strong> on a free device, within the limit of Rating × 3 (<em>Core Rulebook p. 233</em>). The detail of these modes is in the chapter @UUID[.rs8f6el8wzmlvV4q]{on devices}.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p><p>← @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu} · @UUID[.QF63HC7WfY48gDMO]{Marks} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "QF63HC7WfY48gDMO",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.QF63HC7WfY48gDMO",
+      "name": "Marks",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A mark is an authorization, real or stolen, on an icon (<em>Core Rulebook p. 236</em>). You place them with <strong>Hack on the Fly</strong> (discreet) or <strong>Brute Force</strong> (noisy); you can go for two at once at −4 dice, or three at −10 (<em>Core Rulebook p. 239-241</em>). Three marks at most per icon. Most actions require some: the book's table says how many (<em>Core Rulebook p. 237</em>).</p>\n<ul>\n<li><p>A successful mark is placed with a click on the card's button. Placed on a slave, it is also placed on its master (<em>Core Rulebook p. 233</em>).</p></li>\n<li><p>For <strong>Spoof Command</strong>, the mark is counted on the PAN master, not on the device targeted (<em>Core Rulebook p. 242</em>).</p></li>\n<li><p>Owning an icon is worth four marks (<em>Core Rulebook p. 237</em>): the actions that require four (Trace back, Change Icon, Invite Mark, Switch Interface Mode) are reserved to the owner, who also passes all the others without a mark.</p></li>\n</ul>\n<h4>Who is the owner</h4>\n<p>The system recognizes as owner: the character themselves and what they carry; the character who deployed a drone, launched an agent or compiled a sprite; the character to whose PAN a device is slaved; and, with the Matrice v1 module, a host's spiders for the host, its IC and its devices (<em>Kill Code p. 45</em>). Any other character is refused in the name of the book (Matrix family of the locks lifted: the action goes, and the GM is warned). When the owner is unknown (a device without a master, a drone without a creator), the action goes and the GM receives a note to rule on it.</p>\n<p>The actions without a roll (Change Icon, Invite Mark, Switch Interface Mode) and <strong>Grid-Hop</strong> are clicked in the unfolded list of the sheet's Matrix actions. Grid-Hop is a Complex Action without a test to a grid where you have access; without access, the window recalls that you must first Hack on the Fly or Brute Force against the grid (<em>Core Rulebook p. 234, 241</em>). <strong>Matrix Search</strong> has the type \"searched in your own host\", with a base time of one minute (<em>Core Rulebook p. 241</em>); the book does not give its threshold, the system takes 3, that of private data.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-marks.webp\" width=\"548\" alt=\"Two of the decker's marks on a samurai's implanted submachine gun: ① the diamonds above the slave, ② and above her commlink, PAN master, which receives them too. Only the person who placed the marks sees them.\" /><figcaption><strong>Figure 5.2.2</strong> — Two of the decker's marks on a samurai's implanted submachine gun: ① the diamonds above the slave, ② and above her commlink, PAN master, which receives them too. Only the person who placed the marks sees them.</figcaption></figure>\n\n<p>The sheet lists them: <strong>Marked devices</strong> (the marks you placed) and <strong>Marks</strong> (those placed on you), at the bottom of the Matrix tab. A reboot erases them all (<em>Core Rulebook p. 241</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p><p>← @UUID[.fRC5dKiNrKvL6oyH]{Launching a Matrix action} · @UUID[.EVMa7HcxhZkEmr6s]{Matrix Perception} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "EVMa7HcxhZkEmr6s",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.EVMa7HcxhZkEmr6s",
+      "name": "Matrix Perception",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>It is rolled from the sheet or from an icon's menu (<em>Core Rulebook p. 235-236, 241</em>).</p>\n<ol>\n<li><p>On an icon that is not running silent, it is a simple test. On a silent icon, an opposed test (Logic + Sleaze of the target), and it is the net hits that count.</p></li>\n<li><p>On the card, click <strong>Obtain information</strong>: the book's list opens, and you tick at most one piece of information per hit.</p></li>\n<li><p>The answers arrive in a <strong>private message</strong>, read by you and the GM only. The spotted icon appears in your crown; if you read its monitor, a bar is shown under it, and if you counted its marks, a ◇ followed by the number.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-perception.webp\" width=\"632\" alt=\"The list of information, after a three-hit Matrix Perception on the guard's commlink.\" /><figcaption><strong>Figure 5.2.3</strong> — The list of information, after a three-hit Matrix Perception on the guard's commlink.</figcaption></figure>\n\n<p>The system answers on its own everything that can be computed (monitor, programs, rating, commcode, attributes, icon type, grid, last action, number of marks, silent icons within 100 m): the GM's window only opens if a question falls to them, like \"a silent icon in this host?\"; they then type the answer, then <strong>Send</strong> or <strong>Decline</strong>. On a file, the three file questions are computed too (@UUID[.vGNMSTgsybnOEpcv]{files}). Any information obtained spots the icon, even silent (<em>Core Rulebook p. 236</em>). The spotting is lost when the icon or the observer reboots or jacks out, and when the icon succeeds at <strong>Hide</strong> (<em>Core Rulebook p. 235</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p><p>← @UUID[.QF63HC7WfY48gDMO]{Marks} · @UUID[.4bPHGrH2Rd7sMiHz]{The Overwatch Score and convergence} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4bPHGrH2Rd7sMiHz",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.4bPHGrH2Rd7sMiHz",
+      "name": "The Overwatch Score and convergence",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Each Attack or Sleaze action raises the hacker's Overwatch Score by the defender's hits; every fifteen minutes after the first point, it rises again by 2D6 rolled secretly by the GM; at 40, it is <strong>convergence</strong> (<em>Core Rulebook p. 231</em>).</p>\n<ul>\n<li><p><strong>The figure</strong> is at the bottom of the Matrix tab (<strong>Overwatch Score</strong>). The system raises it on its own at each defense. With the <strong>Overwatch Score kept by the gamemaster</strong> setting (ticked by default), the player does not see the figure rise: they learn it with the <strong>Check Overwatch Score</strong> action or by running the <strong>Baby monitor</strong> program (<em>Core Rulebook p. 231</em>).</p></li>\n<li><p><strong>The quarter-hour's 2D6</strong> are in the GM's hands with the system alone.</p></li>\n<li><p><strong>Rebooting</strong> (the ↻ icon next to the device's name, at the top of the Matrix tab) resets the score to 0 and erases the marks the hacker placed (<em>Core Rulebook p. 241</em>); a character under link-lock cannot reboot, they must first jack out.</p></li>\n</ul>\n\n<h4>Convergence</h4>\n<p>On the grid, convergence inflicts 12 boxes of Matrix damage to resist normally, forces the persona to reboot (marks erased, dumpshock if they were in VR) and reveals their physical location (<em>Core Rulebook p. 231</em>). In a host, there is neither damage nor dumpshock: the host places 3 marks on the persona and launches its IC (<em>Core Rulebook p. 247</em>).</p>\n<p><strong>The system alone does not trigger convergence</strong>: at 40, nothing happens, and the GM applies it by hand. The Matrice v1 module offers it to the GM, with an <strong>Apply the convergence</strong> button, and it is then the system that applies it: the <strong>Grid convergence</strong> card carries the resistance button (DV 12), then the forced reboot and a single dumpshock, even if the damage bricks the deck.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-2-convergence.webp\" width=\"343\" alt=\"A decker reaches 40: ① the Matrice v1 module's note to the GM, with its Apply the convergence button; ② the system's card and its Matrix damage resistance (DV 12), to be rolled by the player; ③ the GM's aside: forced reboot and physical location revealed.\" /><figcaption><strong>Figure 5.2.4</strong> — A decker reaches 40: ① the Matrice v1 module's note to the GM, with its Apply the convergence button; ② the system's card and its Matrix damage resistance (DV 12), to be rolled by the player; ③ the GM's aside: forced reboot and physical location revealed.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Three of DjamZ's rulings on convergence (08/10)</p><p><strong>No convergence without an active device</strong>: a persona with no device switched on at all (deck and commlink off) does not suffer it; \"you have to be connected to the Matrix to feel its wrath\". The GM receives a message saying so. A technomancer's living persona counts as a device, and an AI is always connected.</p>\n<p><strong>A convergence under 40 confirmed by the GM is accepted</strong>: rare and deliberate, but allowed.</p>\n<p><strong>Convergence on coming back online</strong>: the score stays at 40 or more as long as you do not reboot; as soon as a device switches back on without rebooting, the persona comes back into the Matrix and the Matrice v1 module immediately offers convergence (<em>Core Rulebook p. 231</em>).</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p><p>← @UUID[.EVMa7HcxhZkEmr6s]{Matrix Perception} · @UUID[.mFMAJ6RYR541KNqH]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "mFMAJ6RYR541KNqH",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.mFMAJ6RYR541KNqH",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Tab</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Overwatch Score kept by the gamemaster</strong></td><td>Matrix</td><td>ticked</td></tr>\n<tr><td><strong>Use Kill Code</strong> (support actions: Calibration, Denial of Service, I Am the Firewall…)</td><td>Matrix</td><td>unticked</td></tr>\n<tr><td><strong>Use Matrix Grids</strong> (grid-hopping penalty)</td><td>Matrix</td><td>ticked</td></tr>\n<tr><td><strong>Use Rigger 5 Matrix Actions</strong> (electronic warfare in a drone's menu, @UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.qnNWcUI0hRMbFhqD]{6.5})</td><td>Matrix</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It greys out the actions whose marks are missing, and says why.</p></li>\n<li><p>It rolls the test, targets the token and the device, and defends with the right device (master, slave, direct connection).</p></li>\n<li><p>It places the marks on the device and on its master, and draws them for whoever placed them.</p></li>\n<li><p>It recognizes an icon's owner and refuses others the actions reserved to them.</p></li>\n<li><p>It raises the Overwatch Score by the defender's hits, and clears it on reboot.</p></li>\n<li><p>It answers on its own the computable questions of Matrix Perception.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The quarter-hour's 2D6 and convergence, without the Matrice v1 module.</p></li>\n<li><p>Refusing the actions the book does not allow on an offline target or on a technomancer's persona: the menu does not look at the target's wireless.</p></li>\n<li><p>The answers to the Perception questions that fall to them (\"in this host\", files outside a File item).</p></li></ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Matrix actions and their marks: (<em>Core Rulebook p. 237-244</em>). Marks: (<em>Core Rulebook p. 236-237</em>). Matrix Perception: (<em>Core Rulebook p. 235-236</em>). Overwatch Score and convergence: (<em>Core Rulebook p. 231</em>); in a host: (<em>Core Rulebook p. 247</em>). <i>Kill Code</i> support actions: (<em>Kill Code p. 37-39</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN\">wiki: PAN crown</a> (menu, Perception), <a href=\"https://github.com/DjamZee/sr5/wiki/Couronne-du-PAN,-API-pour-les-modules\">wiki: API for modules</a> (convergence).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.lDEaMIJ23r49haVj]{5.2 The radial menu}</p><p>← @UUID[.4bPHGrH2Rd7sMiHz]{The Overwatch Score and convergence} · @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rs8f6el8wzmlvV4q",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.rs8f6el8wzmlvV4q",
+      "name": "5.3 Devices and modes",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Each wireless device has its mode, each Matrix user their interface mode, and each abrupt exit from VR its price. This chapter shows where these modes are set on the sheets, what the system does with them, then the special cases: scenery slaved to a host, technomancers, AIs.</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU}</p><p>← @UUID[.mFMAJ6RYR541KNqH]{What the system does and references} · @UUID[.WoVOldmeTE5XCncH]{Wireless on, running silent, offline} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WoVOldmeTE5XCncH",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.WoVOldmeTE5XCncH",
+      "name": "Wireless on, running silent, offline",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A weapon, an armor, an implant, a piece of gear, a device or a vehicle has its own mode: <strong>wireless on</strong>, <strong>running silent</strong> or <strong>offline</strong> (<em>Core Rulebook p. 235-236</em>).</p>\n\n<h4>Step by step: switching a device to silent running</h4>\n<ol>\n<li><p>Open the sheet of the item, carried by your character. Three buttons, in its header, give the mode; the current one is lit.</p></li>\n<li><p>Click <strong>running silent</strong>. In combat, entering or leaving silent running costs a <strong>Simple Action</strong> (<em>Core Rulebook p. 235</em>); switching the wireless off or on costs what it costs on the sheet. Outside combat, nothing is counted down.</p></li>\n<li><p>You can also do it from the icon's radial menu (@UUID[.fRC5dKiNrKvL6oyH]{the owner's actions}), or in the character sheet's lists, with the small silent-running icon next to the wireless icon.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-objet-modes.webp\" width=\"690\" alt=\"The header of a weapon's sheet: ① the three mode buttons, here wireless on.\" /><figcaption><strong>Figure 5.3.1</strong> — The header of a weapon's sheet: ① the three mode buttons, here wireless on.</figcaption></figure>\n\n<ul>\n<li><p><strong>Inherited from the master</strong>: a slave goes silent when its master does (<em>Kill Code p. 34</em>); its sheet says so (\"Silent through its master\"). <strong>Offline comes first</strong>: a device with its wireless off is out of the Matrix, whatever its silent mode.</p></li>\n<li><p><strong>The device in use</strong> (the PAN master) goes silent through the <strong>Running Silent</strong> box of the character's Matrix tab, which its buttons tick themselves: it is that box that carries the −2 dice to all Matrix actions (<em>Core Rulebook p. 235</em>).</p></li>\n<li><p><strong>What others see</strong>: a device switched to silent running disappears from the crown of whoever had not spotted it; a device already spotted stays (<em>Core Rulebook p. 235</em>).</p></li>\n<li><p><strong>Switching the wireless off</strong> is always a Free Action (<em>Core Rulebook p. 421</em>). Switching it on is too, unless the GM ticks <strong>Require a DNI to switch the wireless as a free action</strong>: without a DNI, it is then a Simple Action (<em>Core Rulebook p. 163, 165</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes} · @UUID[.SQU2aUz7dvodIt3J]{AR, cold-sim VR, hot-sim VR} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "SQU2aUz7dvodIt3J",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.SQU2aUz7dvodIt3J",
+      "name": "AR, cold-sim VR, hot-sim VR",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The interface mode is chosen in the character's Matrix tab, <strong>User Mode</strong> list: <strong>Augmented Reality</strong>, <strong>Cold-Sim Virtual Reality</strong> or <strong>Hot-Sim Virtual Reality</strong> (<em>Core Rulebook p. 229-230</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-fiche-matrice.webp\" width=\"311\" alt=\"A decker's Matrix tab: ① the device in use and its reboot button, ② the Running Silent box, ③ the user mode, ④ the Matrix resistances, including biofeedback and dumpshock, ⑤ the Overwatch Score.\" /><figcaption><strong>Figure 5.3.2</strong> — A decker's Matrix tab: ① the device in use and its reboot button, ② the Running Silent box, ③ the user mode, ④ the Matrix resistances, including biofeedback and dumpshock, ⑤ the Overwatch Score.</figcaption></figure>\n\n<table>\n<thead><tr><th>Mode</th><th>Initiative</th><th>What the system changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Augmented Reality</strong></td><td>the body's</td><td>no biofeedback, no dumpshock</td></tr>\n<tr><td><strong>Cold-Sim Virtual Reality</strong></td><td>Data Processing + Intuition, 3D6</td><td>biofeedback and dumpshock are Stun</td></tr>\n<tr><td><strong>Hot-Sim Virtual Reality</strong></td><td>Data Processing + Intuition, 4D6</td><td>+2 dice to all Matrix actions; biofeedback and dumpshock are Physical</td></tr>\n</tbody>\n</table>\n\n<h4>Biofeedback</h4>\n<p>An attack that inflicts biofeedback (Black IC, for example) only hits VR: Stun in cold sim, Physical in hot sim, resisted with Willpower + Firewall (<em>Core Rulebook p. 228</em>). The <strong>Biofeedback Damage</strong> line of the Matrix resistances gives the pool.</p>\n\n<h4>Dumpshock</h4>\n<p>Leaving the Matrix from VR without first switching back to AR triggers dumpshock: 6S in cold sim, 6P in hot sim, resisted with Willpower + Firewall, then −2 dice to all actions for (10 − Willpower) minutes (<em>Core Rulebook p. 229</em>). The system opens the <strong>Resist to Dumpshock</strong> window for the player when:</p>\n<ul>\n<li><p>the character jacks out, or reboots with the sheet's button (including a convergence or a reboot forced by an IC);</p></li>\n<li><p>their deck is bricked (full Matrix monitor): with no Firewall left, they resist with their Willpower alone (<em>Core Rulebook p. 229</em>);</p></li>\n<li><p>they switch off on the sheet the device through which they are connected, or equip another one.</p></li>\n</ul>\n<p>Switching a device's wireless off does not disconnect. To leave cleanly, switch back to <strong>Augmented Reality</strong>, then switch off. The rigger jumped into a drone has the same rules, described in the chapter @UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.c2kfVj88S2XB0ijl]{on the rigger's VR}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Jacking out under link-lock</p><p>Without link-lock, <strong>Jack Out</strong> succeeds automatically. Under link-lock, the player rolls the action; the GM clicks <strong>Jack Out resistance</strong> on their card, and each lock is compared with the same roll: only the locks beaten fall (<em>Core Rulebook p. 241, 243</em>).</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.WoVOldmeTE5XCncH]{Wireless on, running silent, offline} · @UUID[.C2nRyxGYGB4ozHTJ]{Drones, cameras and doors} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "C2nRyxGYGB4ozHTJ",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.C2nRyxGYGB4ozHTJ",
+      "name": "Drones, cameras and doors",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p><strong>A deployed drone</strong> is linked by a line to its rigger's PAN master, token to token; a drone ticked <strong>Slaved Device</strong> goes silent with that master and counts in its slots, whether it is a commlink, a cyberdeck or a console (<em>Core Rulebook p. 233, 266</em>). The rest is in the chapter @UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.FhRTLAI7RMJ8TvTP]{on the rigger console}.</p></li>\n<li><p><strong>A scenery device</strong> (camera, maglock door, turret) is a <strong>Device</strong> actor placed on the map. On its sheet, Matrix tab, the <strong>Slaved to</strong> field chooses its master: a host of the world, or a character's master device. The crown then draws the line between them, and the device defends with its master's pool when it is better (<em>Core Rulebook p. 233</em>).</p></li>\n<li><p>A host slaves as many devices as it likes, at any distance; a commlink or a deck slaves at most Rating × 3 (<em>Core Rulebook p. 233</em>).</p></li>\n<li><p><strong>A drone switched off</strong>: the owning player switches its wireless back on from their sheet, at the book's action cost (<em>Core Rulebook p. 233, 421</em>).</p></li>\n</ul>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Hosts slaved to other hosts (&quot;nodes&quot;)</p><p>The book never slaves a host to a host (<em>Core Rulebook p. 233</em>). The <strong>Hosts slaved to other hosts (\"nodes\")</strong> setting, Matrix tab, is unticked by default. Ticked, a host's sheet offers the other hosts in <strong>master of the PAN</strong> (neither itself, nor a host that already leads back up to it); the slaved host hooks onto its master's crown and defends with it when the master is stronger, like a device.</p></div>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-porte.webp\" width=\"1229\" alt=\"The sheet of a maglock door (Device actor): ① the Slaved to field, here a host; ② its crown, linked to the host's token on the map.\" /><figcaption><strong>Figure 5.3.3</strong> — The sheet of a maglock door (Device actor): ① the Slaved to field, here a host; ② its crown, linked to the host's token on the map.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.SQU2aUz7dvodIt3J]{AR, cold-sim VR, hot-sim VR} · @UUID[.82jNFTFDETJnwOUQ]{Technomancers, sprites, AIs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "82jNFTFDETJnwOUQ",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.82jNFTFDETJnwOUQ",
+      "name": "Technomancers, sprites, AIs",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<ul>\n<li><p>A technomancer's <strong>living persona</strong> is the master of their crown, with its own antenna as long as the character is awake (<em>Core Rulebook p. 251</em>). It has no PAN, except with the <strong>One with the Matrix</strong> quality (<em>Kill Code p. 97</em>). It goes silent like any persona, through the sheet's box or the crown's menu. Its Matrix damage is ticked as Stun (<em>Core Rulebook p. 228</em>). Its Resonance side is in the chapter @UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.DZjwUMabf6C396ud]{on technomancers}.</p></li>\n<li><p><strong>Undercover</strong>: a technomancer who equips a commlink appears to others as an ordinary commlink user (<em>Core Rulebook p. 251</em>); they can then no longer use their persona (<em>Data Trails p. 59</em>). Their persona is only shown, in grey, to their player and to the GM.</p></li>\n<li><p><strong>A compiled sprite</strong> is a persona in its own right, drawn where the technomancer stands; the line linking them is only shown to the player and the GM (<em>Core Rulebook p. 254</em>).</p></li>\n<li><p><strong>An AI</strong> is a character sheet whose Depth is active. Outside any device, it defends with its Willpower or its Intuition (<strong>AI outside a device</strong> setting), always acts through Emulate, and has neither link-lock nor reboot (<em>Data Trails p. 151, 154</em>). When the device that carries it is bricked, it is dissipated: the GM receives a dissipation card that they resolve with a click (<em>Data Trails p. 155-156</em>).</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-3-techno.webp\" width=\"440\" alt=\"A technomancer's crown: ① their living persona, master of the crown; ② one of their wireless devices, linked directly to the token: the living persona has no PAN.\" /><figcaption><strong>Figure 5.3.4</strong> — A technomancer's crown: ① their living persona, master of the crown; ② one of their wireless devices, linked directly to the token: the living persona has no PAN.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.C2nRyxGYGB4ozHTJ]{Drones, cameras and doors} · @UUID[.6tBbo4KfG1RXgBmJ]{Messages and calls by commcode} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6tBbo4KfG1RXgBmJ",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.6tBbo4KfG1RXgBmJ",
+      "name": "Messages and calls by commcode",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The commcode of a commlink, cyberdeck or rigger command console (a field of its sheet) is used to write and call (<em>Core Rulebook p. 242</em>). Such a device placed on a character immediately receives its commcode, in the format <strong>#XX-XXXX-XXXX-XX</strong>, and devices already in the world receive theirs at startup. The player can change it <strong>once</strong> (the field then locks); the GM, as often as they like (DjamZ's ruling).</p>\n<h4>Step by step: sending a message</h4>\n<ol>\n<li><p>Open messaging, by one of these paths: the speech-bubble icon to the right of the device sheet's <strong>Commcode</strong> field; the device's line in the <strong>Matrix</strong> tab of the character sheet; the token toolbar's button; or the <strong>Messaging (commcode)</strong> entry of the device's menu in the crown. Only its owner and the GM see it.</p></li>\n<li><p><strong>Messages</strong> tab: type the correspondent's commcode, or choose a contact from the <strong>Directory</strong>. Enter sends, Shift+Enter starts a new line.</p></li>\n<li><p>To call, click the handset. At the callee's, the window opens and rings: <strong>Answer</strong> or <strong>Decline</strong>. During the call, you can type your lines; <strong>Hang up</strong> ends it.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/5-3-messagerie.webp\" width=\"728\" alt=\"A commlink's commcode messaging: on the left the conversations, on the right the one open, with a commcode without a sheet held by the GM.\" /><figcaption><strong>Figure 5.3.5</strong> — A commlink's commcode messaging: on the left the conversations, on the right the one open, with a commcode without a sheet held by the GM.</figcaption></figure>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — messages and files encrypted with a key</p><p>The book knows no key encryption of messages (<em>Core Rulebook p. 242</em>). The <strong>Commcode message cipher (house rule)</strong> world setting, <strong>Other</strong> tab, unticked by default, adds one. Ticked, a conversation gains a <strong>Key</strong> row (which can be kept in the directory for that correspondent) and a padlock next to the message:</p>\n<ul>\n<li><p>Padlock ticked, the message goes encrypted, protected like a file: the hits of Computer + Logic [Data Processing] are its rating (<em>Core Rulebook p. 239</em>).</p></li>\n<li><p>The recipient reads the plain text if their key for that correspondent is the right one; otherwise, they see the cipher.</p></li>\n<li><p>Whoever intercepts the message with Snoop can <strong>Crack</strong> it like a file, Hacking + Logic [Attack] against rating × 2 (<em>Core Rulebook p. 241</em>): a net hit shows the plain text to that hacker alone.</p></li>\n<li><p>The GM always reads the plain text. The same encryption can be put on a file, whose contents are shown encrypted without the key.</p></li>\n</ul>\n<p>Outside the setting, the <strong>Cipher a text</strong> button of the GM's <strong>Commcode traffic</strong> window encrypts or decrypts any text, for a table riddle, and can post the cipher in the chat.</p></div>\n\n<h4>The directory</h4>\n<p>The <strong>Directory</strong> lists the commcodes the character knows, with a name, and the players' characters. The <strong>Targeted token</strong> button adds the commcode of the token you target. For an NPC, a request goes to the GM, who accepts or refuses it: accepted, the contact goes into the directory; in both cases, a private message tells you.</p>\n<p>An offline, jammed or bricked device sends and receives nothing (<em>Core Rulebook p. 421, 440, 228</em>); a message waits for its return (\"Pending\"), a call in progress is cut. Running silent does not prevent communicating. The GM sees all the traffic in the <strong>Commcode traffic</strong> window, and speaks there in the name of a commcode no sheet carries (a Mr. Johnson). A successful <strong>Snoop</strong> offers on its card to intercept the target's communications, valid as long as the mark stays (<em>Core Rulebook p. 242</em>); a successful <strong>Trace Icon</strong> offers to locate it (<em>Core Rulebook p. 243</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.82jNFTFDETJnwOUQ]{Technomancers, sprites, AIs} · @UUID[.JTUOaV4v6H0k7dSx]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "JTUOaV4v6H0k7dSx",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.JTUOaV4v6H0k7dSx",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Tab</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Require a DNI to switch the wireless as a free action</strong></td><td>Matrix</td><td>unticked</td></tr>\n<tr><td><strong>AI outside a device: attribute replacing Logic in defense and resistance</strong></td><td>Matrix</td><td>the higher of the two</td></tr>\n<tr><td><strong>Hosts slaved to other hosts (\"nodes\")</strong> (house rule)</td><td>Matrix</td><td>unticked</td></tr>\n<tr><td><strong>Commcode message cipher (house rule)</strong></td><td>Other</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>What the system does on its own</h4>\n<ul>\n<li><p>It keeps each device's mode, the master's inheritance, and the action's cost in combat.</p></li>\n<li><p>It applies the user mode: initiative, +2 dice in hot sim, the nature of biofeedback and dumpshock.</p></li>\n<li><p>It opens dumpshock for the right player, only once per exit.</p></li>\n<li><p>It creates the living persona of a technomancer who has none (GM connected).</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>The direct connection to a drone with its wireless off, when its owner has not switched it back on.</p></li>\n<li><p>The Machinist stream beyond the rigger console, and setting <strong>One with the Matrix</strong> on the persona's sheet when the quality does not carry its effect.</p></li>\n<li><p>An IC's second lock on a target already locked. (A forced reboot, or a chosen one if the GM lifted the Matrix family of the locks, removes the \"Link-locked\" effect by itself (<em>Core Rulebook p. 229</em>).)</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>User modes: (<em>Core Rulebook p. 229-230</em>). Biofeedback: (<em>Core Rulebook p. 228</em>). Dumpshock: (<em>Core Rulebook p. 229</em>). Running silent: (<em>Core Rulebook p. 235</em>). Living persona: (<em>Core Rulebook p. 251</em>); sprites: (<em>Core Rulebook p. 254</em>). AI: (<em>Data Trails p. 151-156</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki: Matrix, AI, devices and vehicles</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Fiche-de-personnage\">wiki: Character sheet</a> (Matrix tab).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.rs8f6el8wzmlvV4q]{5.3 Devices and modes}</p><p>← @UUID[.6tBbo4KfG1RXgBmJ]{Messages and calls by commcode} · @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vJCBuDzL8kRNmw7Y",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.vJCBuDzL8kRNmw7Y",
+      "name": "5.4 Hosts, IC, files",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>A host, an IC and a file are documents the GM prepares before the game. This chapter shows their sheets: the system computes a host's attributes from its type, lends these attributes to its IC, and plays the book's actions on files. The inside of the host as a map, the alert and turn-by-turn IC come from the Matrice v1 module (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.4V7hFPTyp4NVXfhI]{9.3}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU}</p><p>← @UUID[.JTUOaV4v6H0k7dSx]{What the system does and references} · @UUID[.9RZOwrvMbZLVLT9q]{The host and its type} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9RZOwrvMbZLVLT9q",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.9RZOwrvMbZLVLT9q",
+      "name": "The host and its type",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A host is a <strong>Device</strong> actor of the host type. The Mégapack provides ready-made models, by type and by rating.</p>\n\n<h4>Step by step: setting up a host</h4>\n<ol>\n<li><p>Open the host's sheet. Set its <strong>Device Rating</strong>.</p></li>\n<li><p>Choose its <strong>Host type</strong> (<em>Kill Code p. 43-46</em>): data, industry, destination, outdated, non-foundation or rogue. The four Matrix attributes are computed; the tooltip of each says whether it is \"set by the type\" or \"arranged by the type\".</p></li>\n<li><p>To rearrange the attributes the type leaves to choice, swap them on the sheet, as with a deck's. Changing the rating or the type redistributes in the default order.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-serveur.webp\" width=\"868\" alt=\"A host's sheet: ① the host type, ② its computed Matrix attributes, ③ the files it carries.\" /><figcaption><strong>Figure 5.4.1</strong> — A host's sheet: ① the host type, ② its computed Matrix attributes, ③ the files it carries.</figcaption></figure>\n\n<ul>\n<li><p><strong>None</strong> (the default) keeps manual entry. A host without a type that the GM never arranged gets the book's order: Attack = rating, Sleaze +1, Data Processing +2, Firewall +3 (<em>Core Rulebook p. 247</em>).</p></li>\n<li><p>A type replaces this array with its own (DjamZ's ruling); an attribute the book would put at 0 goes to 1. The behaviour specific to each type (IC, alerts, direct connections) is not automated by the system alone.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p><p>← @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files} · @UUID[.zs6TyeVxZEgp1XSK]{IC} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zs6TyeVxZEgp1XSK",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.zs6TyeVxZEgp1XSK",
+      "name": "IC",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>An IC is a <strong>Device</strong> actor of the IC type. On its sheet, the <strong>Host</strong> field (GM only) chooses the host it runs on (<em>Core Rulebook p. 246-247</em>).</p>\n<ul>\n<li><p>Attached, it takes its host's Attack, Sleaze, Data Processing and Firewall (<em>Core Rulebook p. 247</em>), and follows them when it changes (rating, type, arrangement), copies placed on the scene included. Its crown draws the line to the host.</p></li>\n<li><p>Its rating, which gives its attack pool (rating × 2), stays that of its sheet: give it the host's rating. The Matrice v1 module copies it on its own.</p></li>\n<li><p>IC are always in hot-sim VR, 4D6 initiative (<em>Core Rulebook p. 247</em>). Their attack is rolled from their sheet; the card carries the effects specific to each type (link-lock, forced reboot, mark placed).</p></li>\n<li><p><strong>Sleuther</strong>: each mark it placed on an avatar gives +2 dice to Matrix Perception and Matrix Search aimed at that avatar, for the legitimate user: the host, its other IC and its spider (DjamZ's ruling of 08/10) (<em>Kill Code p. 67-68</em>). The bonus is shown in the roll window, <strong>Sleuther IC marks</strong> line; with the Matrice v1 module, the spider receives it too (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.4V7hFPTyp4NVXfhI]{9.3}).</p></li>\n<li><p><strong>Blue Goo</strong> only explodes once (<em>Kill Code p. 67-68</em>): <strong>IC Explosion</strong> button (GM), on its resistance card or on the defense of the avatar that wounded it; DV equal to its Attack, then lock and mark offered; the IC goes out of the fight.</p></li>\n</ul>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-ci.webp\" width=\"868\" alt=\"The sheet of a Patrol IC: ① the Host field, ② its attributes, taken from the host.\" /><figcaption><strong>Figure 5.4.2</strong> — The sheet of a Patrol IC: ① the Host field, ② its attributes, taken from the host.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p><p>← @UUID[.9RZOwrvMbZLVLT9q]{The host and its type} · @UUID[.vGNMSTgsybnOEpcv]{Files} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vGNMSTgsybnOEpcv",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.vGNMSTgsybnOEpcv",
+      "name": "Files",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A file is an item carried by a host, a character, a drone or a device. It is a Matrix icon like any other (<em>Core Rulebook p. 236</em>): you perceive it, mark it, edit it, crack it, booby-trap it.</p>\n\n<h4>Step by step: creating a booby-trapped file</h4>\n<ol>\n<li><p>On the host's sheet (Matrix tab), <strong>Files</strong> block, click <strong>+</strong>, or drop a File item on the sheet.</p></li>\n<li><p>In the file's configuration tab, set its <strong>Protection</strong> (0 = none) and, GM only, its <strong>Data Bomb</strong>: its rating, whether it erases the file when it explodes, who placed it. The <strong>Contents</strong> (GM only) say what the file contains.</p></li>\n<li><p>The <strong>Last edit</strong> fills itself in when the file is edited in play (world date, author).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-4-fichier.webp\" width=\"718\" alt=\"A file's sheet: ① the protection, ② the data bomb, seen by the GM only, ③ the last edit.\" /><figcaption><strong>Figure 5.4.3</strong> — A file's sheet: ① the protection, ② the data bomb, seen by the GM only, ③ the last edit.</figcaption></figure>\n\n<p>The file has no rating: it defends with the ratings of the actor that carries it, and takes no Matrix damage (<em>Core Rulebook p. 227, 228</em>). In the crown, it hangs from its carrier's master device; its radial menu offers <strong>Edit File</strong>, <strong>Crack File</strong>, <strong>Set Data Bomb</strong> and <strong>Disarm Data Bomb</strong> (<em>Core Rulebook p. 239</em>).</p>\n<table>\n<thead><tr><th>Action</th><th>Marks</th><th>What the system does</th></tr></thead>\n<tbody>\n<tr><td><strong>Crack File</strong></td><td>1</td><td>the GM clicks the button by which the file opposes; a net hit breaks the protection</td></tr>\n<tr><td><strong>Set Data Bomb</strong></td><td>1</td><td>the player chooses the rating (at most the net hits); only one bomb per file</td></tr>\n<tr><td><strong>Disarm Data Bomb</strong></td><td>0</td><td>a net hit erases it; otherwise it explodes</td></tr>\n<tr><td><strong>Edit File</strong></td><td>1</td><td>\"Apply to the file\" button: a bomb without password explodes first; a protected file refuses; otherwise the last edit is written</td></tr>\n</tbody>\n</table>\n<p>A bomb that explodes inflicts (rating)D6 Matrix damage to the icon that triggered it, then erases itself, with the file if it was set that way (<em>Core Rulebook p. 239</em>). A bomb's password is known to whoever placed it and to the file's owner; the bomb comes before the protection (DjamZ's rulings, the book does not decide).</p><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p><p>← @UUID[.zs6TyeVxZEgp1XSK]{IC} · @UUID[.LJ3K91MNUlkJaQN9]{With the Matrice v1 module} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "LJ3K91MNUlkJaQN9",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.LJ3K91MNUlkJaQN9",
+      "name": "With the Matrice v1 module",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The system alone plays a host like the book: an icon, its IC, its files. The Matrice v1 module (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.4V7hFPTyp4NVXfhI]{its entry, 9.3}) makes it a map you walk through. What it adds to the sheets of this chapter:</p>\n<ul>\n<li><p><strong>Building the host</strong>: the host's crown offers <strong>Mount the host…</strong>; the spider's console, <strong>New host…</strong>, which creates, types and builds in one go. The host receives a scene divided into zones, and its nests (nested hosts, each with its type) (<em>Kill Code p. 43-46</em>).</p></li>\n<li><p><strong>IC</strong> are launched from the spider's console, are born in their zone and move towards the intruder each turn; their rating is copied from the host. Each mark an IC places remembers the host that launched it: Sleuther only gives its dice to that host's legitimate user (<em>Kill Code p. 67-68</em>).</p></li>\n<li><p><strong>The spiders</strong> designated on the host are its owners: they command its IC and its devices without a mark (<em>Kill Code p. 45</em>) (@UUID[.QF63HC7WfY48gDMO]{see 5.2}).</p></li>\n<li><p><strong>Files</strong> are stored in a zone (the Vault by default) and can only be targeted from it.</p></li>\n<li><p><strong>The host's alert</strong> and the site alarm are set in the crown or the console; the module offers convergence to the GM at 40, and it is the system that applies it (@UUID[.4bPHGrH2Rd7sMiHz]{see 5.2}).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p><p>← @UUID[.vGNMSTgsybnOEpcv]{Files} · @UUID[.bMoVS3e9j0m38ih6]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "bMoVS3e9j0m38ih6",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.bMoVS3e9j0m38ih6",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes a host's attributes from its rating and type, and lends them to its IC.</p></li>\n<li><p>It plays the four actions on files, bomb explosions, the last edit, and answers Perception questions about a file.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Without the Matrice v1 module: the host's alert, launching IC each turn, convergence in the host, personas entering and leaving.</p></li>\n<li><p>Transferring points of a rogue host, which is not entered on the sheet.</p></li>\n<li><p>The Detonator program (<em>Data Trails p. 56-57</em>), complex forms against bombs and encryption (<em>Kill Code p. 94</em>), recovering an erased file (<em>Data Trails p. 56</em>).</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Hosts, attributes, IC: (<em>Core Rulebook p. 246-249</em>). Host types: (<em>Kill Code p. 43-46</em>). Files and actions on them: (<em>Core Rulebook p. 227, 236, 239</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Matrice-IA-et-appareils\">wiki: Matrix, AI, devices and vehicles</a> (host type, IC), <a href=\"https://github.com/DjamZee/sr5/wiki/Fichiers\">wiki: Files</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU} &gt; @UUID[.vJCBuDzL8kRNmw7Y]{5.4 Hosts, IC, files}</p><p>← @UUID[.LJ3K91MNUlkJaQN9]{With the Matrice v1 module} · @UUID[.ORHyDcggOBWJk8Yy]{5.5 The \"Matrix\" lock} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ORHyDcggOBWJk8Yy",
+      "_key": "!journal.pages!CKM0UvZC23LLnCgv.ORHyDcggOBWJk8Yy",
+      "name": "5.5 The \"Matrix\" lock",
+      "type": "text",
+      "sort": 2600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>As for the other families (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{the rule locks}), the system refuses some Matrix actions in the name of the book. A table that plays more freely lifts these refusals by unticking the <strong>Matrix</strong> family: the action goes, the computations stay the book's, and the GM receives a whisper.</p>\n\n<h4>What the family covers</h4>\n<ul>\n<li><p>a Resonance action without Resonance (<em>Core Rulebook p. 239</em>);</p></li>\n<li><p>a drone with its wireless off targeted by a Matrix action, an IC, a complex form or a Resonance action (<em>Core Rulebook p. 421</em>);</p></li>\n<li><p>insufficient marks on the target or on a file, from the sheet as from the crown (<em>Core Rulebook p. 237</em>);</p></li>\n<li><p>an action reserved to the owner, attempted by another character (<em>Core Rulebook p. 237</em>);</p></li>\n<li><p>rebooting under link-lock (<em>Core Rulebook p. 229, 241</em>);</p></li>\n<li><p>Emulation beyond an AI's Depth (<em>Data Trails p. 154</em>);</p></li>\n<li><p><strong>I Am the Firewall</strong> beyond Data Processing, and <strong>Intervene</strong> for more than one ally (<em>Kill Code p. 37-38</em>);</p></li>\n<li><p>Snooping to see through a device without a mark (<em>Core Rulebook p. 242</em>);</p></li>\n<li><p>a full PAN beyond Rating × 3 (<em>Core Rulebook p. 233</em>).</p></li>\n</ul>\n\n<h4>Step by step: lifting the family</h4>\n<ol>\n<li><p>Open <strong>Shadowrun settings</strong>, <strong>Presets</strong> tab, <strong>Set the locks</strong> button.</p></li>\n<li><p>Untick <strong>Matrix</strong>; the preset switches to <strong>Custom</strong>. Save.</p></li>\n<li><p>In the radial menu, the actions greyed for lack of marks, Resonance or ownership become active again; their reason stays on hover.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/5-5-leve.webp\" width=\"771\" alt=\"Matrix family lifted: the same radial menu as above, ① the actions active again, ② their reason kept on hover.\" /><figcaption><strong>Figure 5.5.1</strong> — Matrix family lifted: the same radial menu as above, ① the actions active again, ② their reason kept on hover.</figcaption></figure>\n\n<h4>What lifting changes, and what it does not</h4>\n<ul>\n<li><p>A Resonance action goes with the sheet's Resonance (0 dice); Emulation keeps the rating entered, and the limit and penalty follow it; the drone with its wireless off defends and resists; Snooping lasts without a mark as long as the family stays lifted; the PAN accepts one device more than its maximum.</p></li>\n<li><p>The whisper to the GM says the action went, with the usual refusal as the reason, once per character and per turn. The player does not see it.</p></li>\n<li><p>Still closed, even lifted: a device running silent and unspotted (it has no icon to click), and any action when the character has neither commlink nor deck switched on.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>The locks of all families: @UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{8.2}. The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki: System settings</a> (Rule locks).</p></li>\n<li><p>Marks required: (<em>Core Rulebook p. 237</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.4vqbcO3M6A7CDlm1]{MENU}</p><p>← @UUID[.bMoVS3e9j0m38ih6]{What the system does and references}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

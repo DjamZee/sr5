@@ -1,0 +1,1229 @@
+{
+  "_id": "a0A5owDWyn9339sO",
+  "_key": "!journal!a0A5owDWyn9339sO",
+  "name": "3. Fighting",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 400000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "v1sy6q1A3WbLzLob",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.v1sy6q1A3WbLzLob",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part follows a fight from the first initiative to the last bandage: who acts when, how to shoot, throw a grenade or strike, how to defend and resist damage, then how to heal, poison or detox, and finally how to pick someone's pockets or run. Each chapter can be read on its own; the GM and the player each find in it the gestures that concern them.</p>\n<p>One principle runs through the whole part: <strong>almost everything is played from the previous chat card</strong>. The attack sets the defense button, the defense sets the resistance button, the resistance the damage button. Before attacking, target your opponent (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.9jXWevgNpySvo7Wz]{the token HUD}): without a target, the card has nobody to offer the response to.</p><table><tbody><tr><td><p>@UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.vdqzSQJsSq8mvqKb]{Initiative Passes}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.C9Btmx4cbjNuoi7a]{Action counters}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.9F7HzsqZCCyFgdfv]{The combatant menu: Edge, delay, reset}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.zazYeX6j2LJUFITG]{What costs initiative}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.AvygJ8SSoiLZHj5j]{The \"Actions and initiative\" lock (GM)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.KgTwFfLYe1jWzYhd]{Run &amp; Gun combat options (GM)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.s7CPQ3PiwJNvuBmZ]{Squad maneuvers}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.H33zaMIqPXcJQeEh]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.zHEr1baI74LwUpuo]{Range}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.PweWVX3c5dHC50Ul]{Light, visibility, wind}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.u9jjBFVO4x8wpNs8]{What the shooter sees}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.SAu1crQUHZjeZLXE]{Firing modes, bursts and recoil}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.KDrTdedvj07yFm5y]{Ammunition and reloading}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.qbtehlXOByaiAgGM]{Called shots}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.fCAHqi1ErtuCsTuC]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.ca10PTtdvwqLGNcR]{Scatter}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.XG9k932S7Uz5R8XO]{The blast}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.0TbGIcTZuT2oTpNG]{Explosive charges}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.YzLHaV4AP0G4C2M8]{Area spells that scatter}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.yxnagW3DqltaQg6S]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.Vyn8WQiJdVZr9ssx]{Reach}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.RSTdBVWH6Zp5Kdax]{Martial arts}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.4TMumyIwham3VEUL]{Grappling}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WCNXngY9C9wo3kJa]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.HxYeQa6b517Eo2te]{Defense options}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.GfRf5SykRDPA8aVn]{Resisting and applying damage}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.29AT1va2i4Hp6fdk]{Continuous damage}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.WHdQwuHPZyiYEqYf]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.FX5JLdTEleLhVlWg]{First aid and healing}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.49TtPxtEX0HcZ1vB]{Toxins}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.jU1LXrBnTs8n3l86]{Drugs}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.de9NtshWB4RvpTsA]{CFD and the infected (GM)}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.G21EPqipCfuLCZa1]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.OzFGmJbpqjWgZtec]{Concealing an item, frisking someone}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.qD27RWHRoy9TuPop]{Pickpocketing}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.AHFI77k4yz9xyzT4]{Running}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.DfrdXAMAyQMbufVc]{Related settings and references}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "IUNfbsSb66lrAYLT",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.IUNfbsSb66lrAYLT",
+      "name": "3.1 Initiative and actions",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>In Shadowrun, a fast character acts several times per Combat Turn, and each action they spend is counted down (<em>Core Rulebook p. 159-162</em>). Foundry's encounter tracker does it for you: it orders the combatants by Initiative Score, moves from one Initiative Pass to the next, and keeps for each the count of their Free, Simple and Complex Actions. The GM keeps control: they correct a counter with a click, give a character back their actions, and choose how far the system enforces the rule.</p>\n\n<h4>Step by step: starting a combat (GM)</h4>\n<ol>\n<li><p>Select the combatants' tokens, right-click one of them and click <strong>Toggle Combat State</strong>: they join the scene's encounter.</p></li>\n<li><p>Open the <strong>Combat</strong> tab of the sidebar (the two crossed swords).</p></li>\n<li><p>Click <strong>Roll All</strong> (the group icon, ①) or <strong>Roll NPCs</strong>, right next to it, if the players roll themselves. Each rolls the initiative that matches what they are doing: physical, astral or Matrix, the system chooses on its own.</p></li>\n<li><p>Click <strong>Begin Encounter</strong>. The first Initiative Pass opens (②) and the combatant with the highest score (④) takes the lead.</p></li>\n<li><p>When a combatant has finished, click <strong>Next Turn</strong> (the arrow at the bottom right of the tracker).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-suivi.webp\" width=\"330\" alt=\"The encounter tracker during the first pass: ① roll everyone's initiative, ② the current pass, ③ the action counters (free, simple, complex), ④ the Initiative Score.\" /><figcaption><strong>Figure 3.1.1</strong> — The encounter tracker during the first pass: ① roll everyone's initiative, ② the current pass, ③ the action counters (free, simple, complex), ④ the Initiative Score.</figcaption></figure>\n\n<p>Hovering over a line of the tracker highlights the combatant's token, without opening its PAN crown. Each line's initiative die turns red on hover. A combatant the GM hides stays in the GM's list, greyed, at its place in the turn order; the players do not see it. On the scene, the token of the combatant who has the lead carries the system's turn marker, DjamZ's ouroboros; a marker chosen in Foundry's combat settings takes precedence over it.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>@UUID[.vdqzSQJsSq8mvqKb]{Initiative Passes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "vdqzSQJsSq8mvqKb",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.vdqzSQJsSq8mvqKb",
+      "name": "Initiative Passes",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Under the turn number (Foundry's <strong>Round</strong>), the tracker shows the current <strong>Initiative Pass</strong>. When everyone has played, the system opens the next pass (<em>Core Rulebook p. 160</em>):</p>\n<ul>\n<li><p>it subtracts 10 from each Initiative Score;</p></li>\n<li><p>only the combatants whose score stays above 0 act again; the others have finished their Combat Turn;</p></li>\n<li><p>it gives their actions back to those who act again;</p></li>\n<li><p>it counts down the effects whose duration is counted in passes.</p></li>\n</ul>\n<p>At the next Combat Turn, initiative is rolled again and the previous turn's Edge expenses are forgotten. Each new turn also moves the world's clock forward by three seconds (<em>Core Rulebook p. 49</em>) (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.YRfJG9p6WnN6cUDi]{the clock}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions} · @UUID[.C9Btmx4cbjNuoi7a]{Action counters} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "C9Btmx4cbjNuoi7a",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.C9Btmx4cbjNuoi7a",
+      "name": "Action counters",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>On each line of the tracker, three figures (③): from left to right the <strong>Free</strong>, <strong>Simple</strong> and <strong>Complex</strong> Actions the combatant has left in the pass. They go down on their own when the character acts from their sheet: a shot takes a Simple Action, a spell a Complex Action, and a notification says what was taken and why.</p>\n<p>Simple and Complex are linked: per pass, you are entitled to two Simple Actions <strong>or</strong> one Complex Action, plus one Free Action (<em>Core Rulebook p. 162</em>). A Simple Action spent therefore removes the Complex Action, and a Complex Action removes both Simple ones.</p>\n\n<h4>Step by step: correcting a counter (GM)</h4>\n<ol>\n<li><p>Click a figure to remove one action of that type.</p></li>\n<li><p>Hold Shift and click to give one back.</p></li>\n</ol>\n<p>The system notes that the adjustment is manual. To give everything back at once, go through the right-click menu (below).</p>\n\n<h4>What a few gestures cost</h4>\n<table>\n<thead><tr><th>Gesture</th><th>Cost in combat</th></tr></thead>\n<tbody>\n<tr><td>Firing single shot or semi-automatic, throwing a weapon</td><td>a Simple Action (<em>Core Rulebook p. 165</em>)</td></tr>\n<tr><td>Firing a burst or full auto, attacking in melee, sprinting</td><td>a Complex Action (<em>Core Rulebook p. 167</em>)</td></tr>\n<tr><td>Casting a spell, using a skill in your own phase</td><td>a Complex Action (<em>Core Rulebook p. 167</em>)</td></tr>\n<tr><td>Switching a device's wireless</td><td>a Free Action (<em>Core Rulebook p. 163</em>); a Simple Action without a direct neural interface if the GM requires it (setting below) (<em>Core Rulebook p. 165</em>)</td></tr>\n<tr><td>Reloading, removing a clip</td><td>depending on the weapon and the clip, per the book's table (<em>Core Rulebook p. 167</em>)</td></tr>\n<tr><td>Rebooting your device from the sheet</td><td>a Complex Action</td></tr>\n<tr><td>Running</td><td>a Free Action per pass in which you move at a run (<em>Core Rulebook p. 162</em>) (@UUID[.AHFI77k4yz9xyzT4]{running})</td></tr>\n<tr><td>Defending, resisting damage or a spell</td><td>nothing: it is not an action</td></tr>\n<tr><td>A Perception asked for by the GM during someone else's phase</td><td>nothing: it is a reaction</td></tr>\n</tbody>\n</table>\n<p>Outside combat, nothing is counted down: activating a focus, switching a wireless or rebooting before the fight does not lower the counters.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">NPCs with unlinked tokens: play from the token</p><p>The sheet opened from the actors tab is the base actor's, which is none of its tokens: its rolls do not count down actions and do not touch initiative. For a guard, a ganger or any NPC in several copies, open the sheet with a double click on <strong>its token</strong>.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.vdqzSQJsSq8mvqKb]{Initiative Passes} · @UUID[.9F7HzsqZCCyFgdfv]{The combatant menu: Edge, delay, reset} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "9F7HzsqZCCyFgdfv",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.9F7HzsqZCCyFgdfv",
+      "name": "The combatant menu: Edge, delay, reset",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A right-click on a line of the tracker opens the combatant menu. The system adds its own entries to Foundry's.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-menu.webp\" width=\"323\" alt=\"The right-click menu on a combatant: ① Seize the initiative and ② Blitz spend a point of Edge, ③ gives the combatant all their actions back, ④ makes them delay their action.\" /><figcaption><strong>Figure 3.1.2</strong> — The right-click menu on a combatant: ① Seize the initiative and ② Blitz spend a point of Edge, ③ gives the combatant all their actions back, ④ makes them delay their action.</figcaption></figure>\n\n<ul>\n<li><p><strong>Seize the initiative</strong>: the character goes to the head of the order; <strong>Blitz</strong>: their initiative is rerolled with five dice (<em>Core Rulebook p. 161</em>). Both cost a point of Edge, and the system refuses, saying so, when none is left.</p></li>\n<li><p><strong>-1</strong>, <strong>-5</strong>, <strong>-10 Initiative Score</strong>: to apply by hand a cost the system does not know.</p></li>\n<li><p><strong>Reset actions</strong> (GM only): the combatant gets back their Free Action, their two Simple and their Complex Action, as at the start of a pass.</p></li>\n<li><p><strong>Delaying action</strong>: the combatant leaves the order and takes the lead again when they decide (<em>Core Rulebook p. 161</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.C9Btmx4cbjNuoi7a]{Action counters} · @UUID[.zazYeX6j2LJUFITG]{What costs initiative} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zazYeX6j2LJUFITG",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.zazYeX6j2LJUFITG",
+      "name": "What costs initiative",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Some choices do not take an action but Initiative points, which the tracker removes at once (<em>Core Rulebook p. 168</em>):</p>\n<table>\n<thead><tr><th>Choice</th><th>Cost</th></tr></thead>\n<tbody>\n<tr><td>Full defense (box in the defense window)</td><td>−10</td></tr>\n<tr><td>Active defense: dodge, block, parry</td><td>depending on the defense (@UUID[.IwEisvMqg55fA2Ez]{defending})</td></tr>\n<tr><td>Interrupt Action</td><td>usually −5, sometimes −10</td></tr>\n</tbody>\n</table>\n<p>Full defense and active defense are paid together: the score must exceed their combined cost, strictly (11 or more for full defense alone). Two interrupts played in a single gesture add their costs. When the score is not enough, the system refuses the choice and says which of the two figures is short.</p>\n<p>Wounds lower the Initiative Score by their modifier, once per wound, and give it back when they heal (<em>Core Rulebook p. 169</em>). For the hacker who interrupts an action thanks to a Watchdog mark, see @UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.lDEaMIJ23r49haVj]{the radial menu}.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.9F7HzsqZCCyFgdfv]{The combatant menu: Edge, delay, reset} · @UUID[.AvygJ8SSoiLZHj5j]{The \"Actions and initiative\" lock (GM)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AvygJ8SSoiLZHj5j",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.AvygJ8SSoiLZHj5j",
+      "name": "The \"Actions and initiative\" lock (GM)",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>By default, the system follows the book: a Simple or Complex Action is played in your own phase (<em>Core Rulebook p. 162</em>), and a score of 0 or less only leaves a Free Action (<em>Core Rulebook p. 160</em>). What it does with an action the character no longer has is set in the <strong>Rule locks</strong> window.</p>\n\n<h4>Step by step: setting the actions lock</h4>\n<ol>\n<li><p>Open <strong>Shadowrun settings</strong> (<strong>Settings</strong> tab, <strong>Configure Settings</strong>, <strong>Open the settings</strong>), <strong>Presets</strong> tab, then click <strong>Set the locks</strong>.</p></li>\n<li><p>Tick family by family yourself. To tick or untick everything at once, go through the Presets menu (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.MxHL8At1JidYvFM3]{see 8.1}).</p></li>\n<li><p>The <strong>Actions and initiative</strong> family (②) covers reloading without the necessary action, interrupting without enough initiative, parrying or blocking without the skill, and Edge during an extended test.</p></li>\n<li><p>The <strong>Block an action the character no longer has</strong> box (③) only targets missing actions: ticked, a Simple or Complex Action with no action available, or at 0 initiative or less, is refused without spending anything.</p></li>\n<li><p>Click <strong>Save</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-1-verrous.webp\" width=\"590\" alt=\"The rule locks window: ① what a ticked or unticked box means, ② the &quot;Actions and initiative&quot; family, ③ the box that blocks an action the character no longer has.\" /><figcaption><strong>Figure 3.1.3</strong> — The rule locks window: ① what a ticked or unticked box means, ② the \"Actions and initiative\" family, ③ the box that blocks an action the character no longer has.</figcaption></figure>\n\n<p>An unticked family changes no computation: the action goes through, the counters go down as usual, and the GM gets a whisper, once per character and per Combat Turn. Outside your own phase, there is only ever a warning, even with the box ticked. The detail of the other families is in the chapter @UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.yj32FTBiKvVIyGIf]{on the rule locks}.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">A new world asks the question once</p><p>On the first load of a new world, a window asks the GM for their automation: <strong>Advanced</strong> (the book, all boxes ticked), <strong>Light</strong> (everything unticked) or <strong>Custom</strong> (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.Gfk5zUuTaOqS9vUv]{the first launch}). A world updated from an older version keeps the choice it had: box ③ stays unticked there.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.zazYeX6j2LJUFITG]{What costs initiative} · @UUID[.KgTwFfLYe1jWzYhd]{Run &amp; Gun combat options (GM)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "KgTwFfLYe1jWzYhd",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.KgTwFfLYe1jWzYhd",
+      "name": "Run &amp; Gun combat options (GM)",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Run &amp; Gun offers six rules to speed up or harden combat (<em>Run & Gun p. 107-110</em>). They are six world settings of the <strong>Combat</strong> tab, unticked by default as the book wants:</p>\n<table>\n<thead><tr><th>Setting</th><th>Ticked, the system…</th></tr></thead>\n<tbody>\n<tr><td><strong>RG1</strong>: no attack limit per Action Phase</td><td>notes the choice (the system already did not count attacks per phase).</td></tr>\n<tr><td><strong>RG2</strong>: target size modifiers</td><td>adds or removes dice to the attack according to the target's Strength + Body (a troll at 20 gives +2 dice).</td></tr>\n<tr><td><strong>RG3</strong>: movement-based modifiers</td><td>removes dice from the attack against a character who moved, and from their own defense, according to the meters covered.</td></tr>\n<tr><td><strong>RG4</strong>: alternative initiative</td><td>makes the highest score act, which immediately loses 10; the order is redone after each action.</td></tr>\n<tr><td><strong>RG5</strong>: aiming for the gaps in armor</td><td>removes the target's armor (minus AP) from the attack pool, and no longer counts it when resisting damage.</td></tr>\n<tr><td><strong>RG6</strong>: increased damage against defenseless targets</td><td>increases the DV when the defense pool drops below 0.</td></tr>\n</tbody>\n</table>\n<p>Each line appears in the attack or defense window when it applies, and stays editable. The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki: Initiative tracker (RG4)</a>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.AvygJ8SSoiLZHj5j]{The \"Actions and initiative\" lock (GM)} · @UUID[.s7CPQ3PiwJNvuBmZ]{Squad maneuvers} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "s7CPQ3PiwJNvuBmZ",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.s7CPQ3PiwJNvuBmZ",
+      "name": "Squad maneuvers",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A small trained team coordinates its moves through combat maneuvers: 11 from Run &amp; Gun and 5 from <i>Street Lethal</i> (<em>Run & Gun p. 98-104</em>). The leader launches them from their <strong>Small Unit Tactics</strong> knowledge skill.</p>\n<ol>\n<li><p>On the leader's sheet, click the <strong>Small Unit Tactics</strong> knowledge skill: the <strong>Combat maneuver</strong> window opens.</p></li>\n<li><p>Choose the maneuver. The book's threshold is offered; the GM can set another one depending on the team's preparation (<em>Run & Gun p. 99</em>).</p></li>\n<li><p>Tick <strong>The team needs explanations (leader's complex action)</strong> if the maneuver is new: a Complex Action, Simple with a tactical network (TacNet) II or III (<em>Run & Gun p. 104</em>). Click <strong>Launch the maneuver</strong>.</p></li>\n<li><p>On the card, each member selects their token and clicks <strong>Join</strong>: Small Unit Tactics, or Intuition − 1 without the skill, plus the TacNet bonus. Then the leader rolls their <strong>Leader's test</strong>, with the teamwork bonus already counted (<em>Core Rulebook p. 49</em>).</p></li>\n</ol>\n<p>The GM reads the result. Successful, the maneuver gives its bonus to all until the end of the Combat Turn; failed, all have a defense penalty for the pass, for the whole turn on a critical glitch. These bonuses and penalties arrive already ticked in the members' roll windows; the initiative of a maneuver and that of the tactical network (+5; +10 / +5 / +5) are added at once. <strong>End the maneuver</strong> removes its effects. The effects on opponents, surprise and counter-maneuvers are written on the card and stay with the GM.</p>\n<figure><img src=\"systems/sr5/manuel/captures/3-1-manoeuvre.webp\" width=\"556\" alt=\"The Combat maneuver window: the chosen maneuver, its threshold and its explanations.\" /><figcaption><strong>Figure 3.1.4</strong> — The Combat maneuver window: the chosen maneuver, its threshold and its explanations.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.KgTwFfLYe1jWzYhd]{Run &amp; Gun combat options (GM)} · @UUID[.H33zaMIqPXcJQeEh]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "H33zaMIqPXcJQeEh",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.H33zaMIqPXcJQeEh",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It counts down the actions spent from the sheet, opens the passes and gives actions back to those who act again.</p></li>\n<li><p>It removes the initiative cost of full defense, active defenses and interrupts, and the wound penalty.</p></li>\n<li><p>It warns about an action played outside your phase or at 0 initiative, including for an NPC played by the GM.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Enforces the countdown when the <strong>Block an action the character no longer has</strong> box is unticked.</p></li>\n<li><p>Removes initiative for costs the system does not know (right-click menu) and decides on surprise.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions and initiative</strong></td><td>Rule locks</td><td>ticked</td></tr>\n<tr><td><strong>Block an action the character no longer has</strong></td><td>Rule locks</td><td>ticked with advanced automation, unticked with light</td></tr>\n<tr><td><strong>Require a DNI to switch the wireless as a free action</strong></td><td>Shadowrun settings, Matrix tab</td><td>unticked</td></tr>\n<tr><td><strong>Calendar: combat advances the clock</strong></td><td>Shadowrun settings, Calendar tab</td><td>ticked</td></tr>\n<tr><td>Run &amp; Gun options <strong>RG1</strong> to <strong>RG6</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Initiative, passes, Edge and delay: (<em>Core Rulebook p. 159-161</em>); actions: (<em>Core Rulebook p. 162-168</em>); Edge: (<em>Core Rulebook p. 56</em>); Run &amp; Gun options: (<em>Run & Gun p. 107-110</em>).</p></li>\n<li><p>The detail, edge cases included: <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki: Initiative tracker</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IUNfbsSb66lrAYLT]{3.1 Initiative and actions}</p><p>← @UUID[.s7CPQ3PiwJNvuBmZ]{Squad maneuvers} · @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WCDbwwcR26uXK8o0",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.WCDbwwcR26uXK8o0",
+      "name": "3.2 Shooting",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A shot in Shadowrun depends on distance, light, fog, wind, what the shooter sees and the recoil of their weapon. The system measures the distance between the two tokens, reads the scene's conditions and the vision switched on in the sheet, counts bullets and recoil, then fills in the attack window: all you have left to do is check and roll.</p>\n\n<h4>Step by step: shooting an opponent</h4>\n<ol>\n<li><p>Select your token, then target the opponent (right-click their token, then the target in the HUD, or the T key while hovering over it). One target at a time: with two, the shot is refused.</p></li>\n<li><p>Open your sheet at the weapons tab and click the figure in the weapon's <strong>DP</strong> (dice pool) column.</p></li>\n<li><p>The <strong>Attack with</strong> window opens, already filled in. Check the firing mode, range and modifiers; unfold a section by clicking its title to see the detail.</p></li>\n<li><p>Click <strong>Roll Dice</strong>. The attack card arrives in the chat with the <strong>Defend</strong> button for the target (@UUID[.IwEisvMqg55fA2Ez]{defending and resisting damage}).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-tir.webp\" width=\"494\" alt=\"The attack window of a heavy pistol, target at 7.5 m under partial light: ① the scene's environment, ② the firing mode, ③ range, ④ recoil, ⑤ called shots, ⑥ ammunition left.\" /><figcaption><strong>Figure 3.2.1</strong> — The attack window of a heavy pistol, target at 7.5 m under partial light: ① the scene's environment, ② the firing mode, ③ range, ④ recoil, ⑤ called shots, ⑥ ammunition left.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.H33zaMIqPXcJQeEh]{Related settings and references} · @UUID[.zHEr1baI74LwUpuo]{Range} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zHEr1baI74LwUpuo",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.zHEr1baI74LwUpuo",
+      "name": "Range",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The system measures the distance with Foundry's ruler, converts it to meters (a scene in feet is understood), then compares it with the weapon's four ranges (<em>Core Rulebook p. 185</em>):</p>\n<table>\n<thead><tr><th>Range</th><th>Penalty</th></tr></thead>\n<tbody>\n<tr><td>Short</td><td>—</td></tr>\n<tr><td>Medium</td><td>−1</td></tr>\n<tr><td>Long</td><td>−3</td></tr>\n<tr><td>Extreme</td><td>−6</td></tr>\n<tr><td>Beyond extreme</td><td>shot refused</td></tr>\n</tbody>\n</table>\n<p>The bounds are included: a target exactly 5 m from a heavy pistol is at short range. Firearms have fixed ranges; those of bows, crossbows and thrown weapons depend on the Strength of whoever holds them: read them on the weapon's sheet, they change from one character to another. In the window, the <strong>Range (combined with environment)</strong> line (③) offers the step measured; you can choose another.</p>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">What size of square?</p><p>The book's ranges are in meters: the system converts the scene's grid on its own. For a tactical map, keep Foundry's setting, 1.5 m per square (5 feet): it is what most commercial maps assume (@UUID[Compendium.sr5.manual.JournalEntry.arMGpK6RvbR3sLNQ.JournalEntryPage.ve0BXl53k8qhNxKU]{scenes}).</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting} · @UUID[.PweWVX3c5dHC50Ul]{Light, visibility, wind} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "PweWVX3c5dHC50Ul",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.PweWVX3c5dHC50Ul",
+      "name": "Light, visibility, wind",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Each scene carries four conditions, which the GM sets in the scene's configuration.</p>\n\n<h4>Step by step: setting a scene's environment (GM)</h4>\n<ol>\n<li><p>In the <strong>Scenes</strong> tab, right-click the scene and choose <strong>Configure</strong>.</p></li>\n<li><p>Open the <strong>Environmental Modifiers</strong> tab.</p></li>\n<li><p>Choose <strong>Visibility</strong> (①), <strong>Light</strong> (②), <strong>Glare</strong> (③) and <strong>Wind</strong> (④), then click <strong>Save Changes</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-scene.webp\" width=\"576\" alt=\"The scene's configuration, Environmental Modifiers tab: ① visibility, ② light, ③ glare, ④ wind.\" /><figcaption><strong>Figure 3.2.2</strong> — The scene's configuration, Environmental Modifiers tab: ① visibility, ② light, ③ glare, ④ wind.</figcaption></figure>\n\n<p>The system keeps the most penalizing condition, and goes up one step when several are equally severe (<em>Core Rulebook p. 173</em>). Range counts as one more condition: a medium range (−1) under partial light (−1) gives −3, not −2. The window keeps the <strong>Environmental Modifiers</strong> line (①) and only adds to the range line what range changes.</p>\n<table>\n<thead><tr><th>Roll</th><th>What counts</th></tr></thead>\n<tbody>\n<tr><td>Shot</td><td>visibility, light and glare, wind, range</td></tr>\n<tr><td>Defense against a shot</td><td>visibility, light and glare, as seen by the defender (neither wind nor range)</td></tr>\n<tr><td>Melee</td><td>visibility, light and glare (not wind)</td></tr>\n<tr><td>Visual Perception</td><td>visibility, light and glare</td></tr>\n</tbody>\n</table>\n<p>The scene read is the one displayed on screen. Light and glare form a single column of the table: the system takes the worse of the two, it does not add them.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.zHEr1baI74LwUpuo]{Range} · @UUID[.u9jjBFVO4x8wpNs8]{What the shooter sees} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "u9jjBFVO4x8wpNs8",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.u9jjBFVO4x8wpNs8",
+      "name": "What the shooter sees",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Visions mostly soften the light line. The character switches them on themselves on their sheet, and their token immediately sees the scene differently.</p>\n\n<h4>Step by step: switching on a vision</h4>\n<ol>\n<li><p>Open the sheet at the qualities tab: the <strong>Vision types</strong> block lists the visions the character has.</p></li>\n<li><p>Click the pin of the vision you want: it switches on and switches the others off. <strong>Natural vision</strong> (①) switches everything off and restores ordinary sight.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-vision.webp\" width=\"331\" alt=\"The vision block of a samurai with cybereyes: ① natural vision, on, ② low-light vision, off. Below, what the visions remove from the scene's conditions.\" /><figcaption><strong>Figure 3.2.3</strong> — The vision block of a samurai with cybereyes: ① natural vision, on, ② low-light vision, off. Below, what the visions remove from the scene's conditions.</figcaption></figure>\n\n<table>\n<thead><tr><th>Vision on</th><th>Effect on the modifiers</th></tr></thead>\n<tbody>\n<tr><td>Low-light vision</td><td>partial and weak light count as full light; nothing in total darkness (<em>Core Rulebook p. 175</em>)</td></tr>\n<tr><td>Thermographic vision</td><td>light and visibility go up one step: total darkness only costs −3 (<em>Core Rulebook p. 175</em>)</td></tr>\n<tr><td>Ultrasound</td><td>light raised by three steps, visibility by one</td></tr>\n<tr><td>Astral perception</td><td>everything goes up four steps; switching to it costs a Simple Action</td></tr>\n</tbody>\n</table>\n<p>Cybereyes replace the metatype's vision: an elf with cybereyes loses their low-light vision, unless they bought it back as an enhancement (<em>Core Rulebook p. 94</em>). A flashlight mounted on the weapon only counts for shots made with that weapon: it provides partial light, and the low-light version brings total darkness down to −3 for those who see in dim light (<em>Run & Gun p. 54</em>). Switched on, it also dazzles the target of the shot: the target defends with at least a weak glare, if the light suits its vision, minus its flare compensation (<em>Run & Gun p. 54, Core Rulebook p. 173</em>). The detail of visions on the map, including ultrasound that pierces invisibility: <a href=\"https://github.com/DjamZee/sr5/wiki/Types-de-vision\">wiki: Vision types</a>.</p>\n\n<h4>The screen and the dice: two separate things</h4>\n<ul>\n<li><p><strong>What Foundry shows</strong> depends on the light sources placed on the scene (lamps, ambient lights) and on the scene's darkness, a Foundry setting.</p></li>\n<li><p><strong>What the system counts for the dice</strong> are the conditions of the scene's <strong>Environmental Modifiers</strong> tab, corrected by the vision pinned on the sheet.</p></li>\n</ul>\n<p>The two do not talk to each other: the darkness set in Foundry does not fill in the Light line of the rolls, and the Light line does not change the picture. Set both when you prepare a night scene.</p>\n<table>\n<thead><tr><th>Vision</th><th>On screen</th></tr></thead>\n<tbody>\n<tr><td>Natural vision</td><td>you see what is lit; in complete darkness, nothing</td></tr>\n<tr><td>Low-light vision</td><td>dim light becomes full light: the weak halo of a lamp becomes as bright as its centre. In complete darkness, it changes nothing, on screen or with the dice (<em>Core Rulebook p. 175, 444</em>)</td></tr>\n<tr><td>Thermographic vision</td><td>sees heat, in the dark too, up to 30 m by default (adjustable)</td></tr>\n<tr><td>Ultrasound</td><td>\"sees\" shapes up to 50 m, reveals the invisible, stops at walls</td></tr>\n<tr><td>Astral perception</td><td>a greyed, bluish picture of the whole scene, up to 300 m by default, which shows auras; switching costs a Simple Action</td></tr>\n</tbody>\n</table>\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">&quot;My low-light vision is useless&quot;</p><p>On a fully dark scene, with no lamp at all, a samurai with low-light vision sees no better than anyone else: that is the rule, not a fault. Place a few weak lights (moon, distant neon, street lamps): low-light vision then has something to amplify.</p></div>\n<ul>\n<li><p>A vision the character has but has not <strong>pinned</strong> gives neither the picture nor the dice correction.</p></li>\n<li><p>An <strong>unlinked</strong> token only follows its own sheet: open the sheet from the token to pin its vision.</p></li>\n<li><p>An Awakened character who perceives the astral also finds <strong>Astral Perception</strong> in the <strong>Vision types</strong> block: it is the same pin as in the <strong>Astral Plane</strong> block (@UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.DZqLEimyQwylLGta]{see 4.3}). For a spirit, it is always on (<em>Core Rulebook p. 301</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.PweWVX3c5dHC50Ul]{Light, visibility, wind} · @UUID[.SAu1crQUHZjeZLXE]{Firing modes, bursts and recoil} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "SAu1crQUHZjeZLXE",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.SAu1crQUHZjeZLXE",
+      "name": "Firing modes, bursts and recoil",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Firing Mode</strong> list (②) only offers the weapon's modes: single shot, semi-automatic, semi-automatic burst, burst fire, full auto, suppressive fire (<em>Core Rulebook p. 178-180</em>). The number of bullets is written next to the mode, and the cost follows the book: Simple Action for single shot, semi-automatic and a short burst, Complex Action for long bursts and full auto (<em>Core Rulebook p. 165, 167</em>). Suppressive fire requires 20 bullets in the weapon (<em>Core Rulebook p. 180</em>).</p>\n<p>Recoil builds up as long as the shooter does not stop firing (<em>Core Rulebook p. 176</em>): the <strong>Recoil</strong> line (④) shows the compensation of the weapon and accessories and the bullets already fired, and the pool shown takes it into account. It drops back to zero as soon as the shooter devotes an action to something else (<em>Core Rulebook p. 176</em>); the two-arrow icon, under the unfolded <strong>Recoil</strong> line, resets it by hand. Changing the firing mode in the window is paid when you shoot; closing the window without shooting costs nothing.</p>\n<p>A shotgun also has the choke list (<strong>Choke settings</strong>): narrow, medium or wide spread (<em>Core Rulebook p. 181</em>). With no choice, the weapon is on narrow spread, as its sheet shows (the book gives no default, this is DjamZ's ruling). A flamethrower offers <strong>Fanning</strong>.</p>\n\n<h4>Weapon traits</h4>\n<p>On a weapon's sheet, a few traits change its figures by default:</p>\n<ul>\n<li><p><strong>Instrument of death</strong>: Accuracy −1, Availability +2, price doubled (<em>No Future</em>, p. 152-153).</p></li>\n<li><p><strong>Special modification</strong> (DV +1, AP −1, Accuracy +1, recoil compensation +1, Concealability −1, Reach +1): cumulative, for the Better Than Bad quality (<em>Better Than Bad p. 161</em>).</p></li>\n<li><p><strong>Net</strong>, <strong>XL net</strong>, <strong>ShockNet</strong>: the weapon throws a net (@UUID[.HxYeQa6b517Eo2te]{see 3.5}). The compendium's nets are recognized by their name.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.u9jjBFVO4x8wpNs8]{What the shooter sees} · @UUID[.KDrTdedvj07yFm5y]{Ammunition and reloading} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "KDrTdedvj07yFm5y",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.KDrTdedvj07yFm5y",
+      "name": "Ammunition and reloading",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The sheet keeps count of bullets: each shot removes those of the chosen mode, and the system refuses a mode that requires more bullets than are left.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-2-armes.webp\" width=\"602\" alt=\"The ranged weapons block: the Ammo column gives the bullets left out of the clip's capacity; on the right, the two-arrow icon reloads the weapon.\" /><figcaption><strong>Figure 3.2.4</strong> — The ranged weapons block: the Ammo column gives the bullets left out of the clip's capacity; on the right, the two-arrow icon reloads the weapon.</figcaption></figure>\n\n<h4>Step by step: reloading</h4>\n<ol>\n<li><p>Keep ammunition of the right type on the sheet (<strong>Ammunition</strong> block, under the weapons).</p></li>\n<li><p>Click the two arrows (<strong>Reload Weapon</strong>) at the end of the weapon's line. The system draws on your ammunition and counts down the action the weapon requires.</p></li>\n<li><p>For a removable clip, a left click on the <strong>Ammo</strong> column inserts a clip, a right click removes it.</p></li>\n</ol>\n<p>The cost follows the book's table (<em>Core Rulebook p. 167</em>): inserting or removing a clip, Simple Action; filling a clip, a cylinder or an internal magazine, Complex Action for (Agility) rounds; nocking an arrow, Simple Action. With the weapon's wireless on, removing the clip and changing the firing mode become Free Actions (<em>Core Rulebook p. 425, 432</em>); if the GM ticks <strong>Require a DNI to switch the wireless as a free action</strong>, only for a character linked by direct neural interface. A full weapon says so, and nothing is spent.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Reload without spending an action (house rule)</strong>, Combat tab of Shadowrun settings, unticked by default. Ticked, reloading in combat costs no action when ammunition of the right type is in the inventory, and filling a clip completely becomes possible. Removing a clip on its own keeps its cost.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.SAu1crQUHZjeZLXE]{Firing modes, bursts and recoil} · @UUID[.qbtehlXOByaiAgGM]{Called shots} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "qbtehlXOByaiAgGM",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.qbtehlXOByaiAgGM",
+      "name": "Called shots",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Called shots</strong> list (⑤) offers the Run &amp; Gun options: disarm, specific target (a precise location), trick shot, shake up, vitals, through and into, bull's-eye burst… (<em>Run & Gun p. 110-119</em>). The system applies the penalty, then offers the effects on the card (stunned, knocked down…). Martial arts techniques that reduce a penalty reduce it here by default (@UUID[.eWTrOUQuSfM2Rf1a]{melee}). The <strong>Use Called Shots</strong> setting (Combat tab, ticked by default) removes the list when unticked.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.KDrTdedvj07yFm5y]{Ammunition and reloading} · @UUID[.fCAHqi1ErtuCsTuC]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "fCAHqi1ErtuCsTuC",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.fCAHqi1ErtuCsTuC",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It measures the distance in meters and chooses the range step; it refuses a shot beyond extreme range.</p></li>\n<li><p>It applies the scene's worst condition, extra step included, corrected by the shooter's active vision, then by the defender's for their defense.</p></li>\n<li><p>It counts down bullets, builds up recoil and counts down the action of the shot and of reloading.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Adds the circumstances the scene does not carry (thermal smoke, glass in front of an ultrasound sensor) in <strong>Various Modifiers</strong>.</p></li>\n<li><p>Judges line of sight: the system measures distance, not obstacles.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Range and targets</strong></td><td>Rule locks</td><td>ticked (shots beyond extreme and multiple targets refused)</td></tr>\n<tr><td><strong>Ammunition and weapons</strong></td><td>Rule locks</td><td>ticked</td></tr>\n<tr><td><strong>Use Called Shots</strong></td><td>Shadowrun settings, Combat tab</td><td>ticked</td></tr>\n<tr><td><strong>Reload without spending an action (house rule)</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked</td></tr>\n<tr><td><strong>Cybereyes replace natural vision</strong></td><td>Shadowrun settings, Perception and vision tab</td><td>ticked</td></tr>\n<tr><td><strong>Thermographic vision range</strong></td><td>Shadowrun settings, Perception and vision tab</td><td>30 m (the book gives none)</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Environment and visions: (<em>Core Rulebook p. 173-175</em>); recoil and firing modes: (<em>Core Rulebook p. 176-180</em>); choke: (<em>Core Rulebook p. 181</em>); ranges: (<em>Core Rulebook p. 185</em>); reloading: (<em>Core Rulebook p. 167</em>); called shots: (<em>Run & Gun p. 110-119</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Portees-couvert-environnement\">wiki: Ranges, cover and environment</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Types-de-vision\">wiki: Vision types</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Plafond-des-augmentations-et-rechargement\">wiki: reloading</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.WCDbwwcR26uXK8o0]{3.2 Shooting}</p><p>← @UUID[.qbtehlXOByaiAgGM]{Called shots} · @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "sE0YQ8jUQdwkduTP",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.sE0YQ8jUQdwkduTP",
+      "name": "3.3 Grenades, templates, scatter",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A grenade does not aim at an opponent: it aims at a point, and it can miss it. The system places on the scene a template the size of the blast, has the scatter die rolled when the thrower misses their landing point, moves the template that many meters in the right direction, then offers each person caught in the blast to resist, with damage that drops as you move away from the centre (<em>Core Rulebook p. 181-183</em>).</p>\n\n<h4>Step by step: throwing a grenade</h4>\n<ol>\n<li><p>Select your token. On the sheet, weapons tab, click the grenade's dice pool (<strong>Grenades</strong> block).</p></li>\n<li><p>The blast template appears at the mouse pointer: bring it onto the target point and click the map to place it.</p></li>\n<li><p>The <strong>Attack with</strong> window opens: range is computed there from the thrower's Strength, as for a thrown weapon. Roll: it is Throwing Weapons + Agility [Physical], threshold 3, as a Simple Action (<em>Core Rulebook p. 181</em>).</p></li>\n<li><p>With 3 hits or more, the grenade lands where you wanted. Otherwise, the card carries the <strong>Scatter</strong> button: click it (next step by step).</p></li>\n<li><p>Each person caught in the blast clicks <strong>Take On Damage</strong>, with their own character selected; for NPCs, the GM selects their token. You do not defend against a blast: you resist it.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-3-carte.webp\" width=\"334\" alt=\"The card of a grenade that missed its landing point: ① the throw's result, ② the Scatter button, ③ the icon that removes the template. The resistance button is for each person caught in the blast.\" /><figcaption><strong>Figure 3.3.1</strong> — The card of a grenade that missed its landing point: ① the throw's result, ② the Scatter button, ③ the icon that removes the template. The resistance button is for each person caught in the blast.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.fCAHqi1ErtuCsTuC]{Related settings and references} · @UUID[.ca10PTtdvwqLGNcR]{Scatter} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ca10PTtdvwqLGNcR",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.ca10PTtdvwqLGNcR",
+      "name": "Scatter",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: making the grenade scatter</h4>\n<ol>\n<li><p>Click <strong>Scatter</strong> on the throw's card (the thrower or the GM).</p></li>\n<li><p>The system rolls the distance, 1D6 meters minus hits for a standard grenade, and the direction on 2D6 on the book's diagram, oriented from the thrower towards the target point: a 7 goes beyond the target, a 2 or a 12 comes back towards the thrower (<em>Core Rulebook p. 182</em>).</p></li>\n<li><p>The template of this throw moves that many meters, and the card shows <strong>Scatter : N m</strong>.</p></li>\n</ol>\n\n<table>\n<thead><tr><th>Projectile</th><th>Scatter</th></tr></thead>\n<tbody>\n<tr><td>Standard grenade</td><td>1D6 − hits, in meters</td></tr>\n<tr><td>Aerodynamic grenade</td><td>2D6 − hits</td></tr>\n<tr><td>Grenade launcher</td><td>3D6 − hits</td></tr>\n</tbody>\n</table>\n<p>At 0 hits, the grenade scatters the whole distance rolled. Scatter is counted in meters, not in squares: on a 1.5 m grid, 3 meters make two squares. Only whoever placed the template, or the GM, can scatter or remove it. If the template has been removed, resisting is refused: without a template, there is no point left to measure from.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p><p>← @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter} · @UUID[.XG9k932S7Uz5R8XO]{The blast} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "XG9k932S7Uz5R8XO",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.XG9k932S7Uz5R8XO",
+      "name": "The blast",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The template's radius is the book's, in meters, whatever the scene's unit. Damage drops with distance from the centre, by the number given in the sheet's <strong>Blast</strong> column (\"16 / −2\": 16 at the centre, 2 less per meter) (<em>Core Rulebook p. 183</em>). A person too far to take any damage has nothing to resist: the button says so.</p>\n<p>The grenade launcher follows the same path, with Heavy Weapons + Agility [Accuracy], a scatter of 3D6 and no <strong>Defend</strong> button (<em>Core Rulebook p. 181-182</em>). A shot beyond extreme range is refused, and its template removed.</p>\n<p>Fixed-radius grenades (flash-bang, gas, smoke) reach nobody beyond their 10 m (<em>Core Rulebook p. 435</em>). The airburst link removes 2 m of scatter per hit, wireless on (<em>Core Rulebook p. 431</em>). The paint grenade does no damage, in a 10 m radius (<em>Run & Gun p. 102</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-3-deviation.webp\" width=\"680\" alt=\"A grenade that scatters: ① the target point, on the guard, ② the template's centre after scatter.\" /><figcaption><strong>Figure 3.3.2</strong> — A grenade that scatters: ① the target point, on the guard, ② the template's centre after scatter.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p><p>← @UUID[.ca10PTtdvwqLGNcR]{Scatter} · @UUID[.0TbGIcTZuT2oTpNG]{Explosive charges} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "0TbGIcTZuT2oTpNG",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.0TbGIcTZuT2oTpNG",
+      "name": "Explosive charges",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A gear item becomes an explosive when you choose its <strong>Explosive</strong> in its sheet: ten compounds (plastic, ANFO, dynamite, TNT…) (<em>Run & Gun p. 191</em>), a quantity in kilos (or liters) and the <strong>Homemade</strong> box for a black market batch.</p>\n<ol>\n<li><p>In the inventory, click the bomb icon on the line: the <strong>Explosive charge</strong> window opens.</p></li>\n<li><p>Set the kilos used, the hits of the Demolitions test (each raises or lowers the effective rating by 1), the placement (free, against the target ×2, tamped ×4), the blast (circular or directional), the detonator's rating (<em>Run & Gun p. 176-178, 194-195</em>).</p></li>\n<li><p>Read the DV (effective rating × square root of the kilos, rounded up (<em>Run & Gun p. 176</em>)), the blast range, the background count created from 35P, and, with <strong>Compare with</strong>, the thresholds of materials and vehicles (<em>Run & Gun p. 179</em>).</p></li>\n<li><p>Click <strong>Place the blast and set it off</strong>, place the template: the GM computes the explosion and posts the card. Each character caught in it selects their token and clicks <strong>Resist the blast</strong>, at their distance, as for a grenade.</p></li>\n</ol>\n<p>A low-end detonator can fail; a homemade batch has a secret deviation, set and seen by the GM only (<em>Run & Gun p. 177</em>). Detonating cord, simultaneous or confined explosions and bringing down a building stay with the GM (<em>Core Rulebook p. 183</em>).</p>\n<figure><img src=\"systems/sr5/manuel/captures/3-3-charge.webp\" width=\"468\" alt=\"The Explosive charge window: the charge, the placement, the blast, then the computed DV.\" /><figcaption><strong>Figure 3.3.3</strong> — The Explosive charge window: the charge, the placement, the blast, then the computed DV.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p><p>← @UUID[.XG9k932S7Uz5R8XO]{The blast} · @UUID[.YzLHaV4AP0G4C2M8]{Area spells that scatter} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "YzLHaV4AP0G4C2M8",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.YzLHaV4AP0G4C2M8",
+      "name": "Area spells that scatter",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>An indirect area combat spell is cast like a grenade: Spellcasting + Magic [Force], threshold 3, and it scatters 2D6 meters minus hits when the threshold is missed (<em>Core Rulebook p. 283</em>). The spell's card then carries the same <strong>Scatter</strong> button, which moves the template of that casting. With 3 hits or more, the target defends normally. At 0 hits, the spell fails and nothing goes off (DjamZ's ruling). Casting itself is described with magic (@UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.L8wj3Cf3WQVKImL5]{casting a spell}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p><p>← @UUID[.0TbGIcTZuT2oTpNG]{Explosive charges} · @UUID[.yxnagW3DqltaQg6S]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "yxnagW3DqltaQg6S",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.yxnagW3DqltaQg6S",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It places the template at the blast's size, converts meters into the scene's unit and computes range from Strength.</p></li>\n<li><p>It rolls the distance and direction of scatter, moves the template of the throw concerned and computes everyone's damage according to their distance from the centre.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Judges the walls and obstacles that stop a blast: the template does not take them into account.</p></li>\n<li><p>Has NPCs caught in the blast resist, by selecting their token.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Range and targets</strong> (extreme range)</td><td>Rule locks</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Grenades, scatter and blast: (<em>Core Rulebook p. 181-183</em>); indirect area spells: (<em>Core Rulebook p. 283</em>); explosives: (<em>Run & Gun p. 171-196</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Portees-couvert-environnement\">wiki: Ranges, cover and environment</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Sorts-de-zone-et-contresort\">wiki: Area spells and counterspelling</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Manoeuvres-et-explosifs\">wiki: Squad maneuvers and explosives</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.sE0YQ8jUQdwkduTP]{3.3 Grenades, templates, scatter}</p><p>← @UUID[.YzLHaV4AP0G4C2M8]{Area spells that scatter} · @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "eWTrOUQuSfM2Rf1a",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.eWTrOUQuSfM2Rf1a",
+      "name": "3.4 Melee, martial arts, grappling",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A melee attack is rolled like a shot, from the weapon's line, but it costs a Complex Action (<em>Core Rulebook p. 167</em>) and depends on reach rather than range. The system checks that the target is within arm's length, offers the melee modifiers and called shots, applies the martial arts techniques the character knows and, if the GM switches it on, tracks grappling: who holds whom, the hold's value and how to get out of it.</p>\n\n<h4>Step by step: striking an opponent</h4>\n<ol>\n<li><p>Select your token and target the opponent, on a neighbouring square (or further if the weapon has reach).</p></li>\n<li><p>On the sheet, weapons tab, click the melee weapon's dice pool (<strong>Melee Weapons</strong> block; <strong>Unarmed</strong> for a punch).</p></li>\n<li><p>In the <strong>Attack with</strong> window, tick what applies in the <strong>Modifiers</strong> and choose a called shot if needed, then click <strong>Roll Dice</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-melee.webp\" width=\"494\" alt=\"The window of a katana attack, modifiers unfolded: ① the charge, ② superior position, ③ friends in melee, ④ melee called shots.\" /><figcaption><strong>Figure 3.4.1</strong> — The window of a katana attack, modifiers unfolded: ① the charge, ② superior position, ③ friends in melee, ④ melee called shots.</figcaption></figure>\n\n<p>The boxes follow the melee modifiers table (<em>Core Rulebook p. 187</em>): <strong>Attacker making charging attack</strong> (+2, and the running −2 does not apply), <strong>Attacker has superior position</strong> (+2), <strong>Attacker has friends in melee</strong>, <strong>Opponent prone</strong>, <strong>Attacker is using off-hand weapon</strong>, <strong>Touch-only attack</strong>… The <strong>Running</strong> box ticks itself when the token runs (@UUID[.AHFI77k4yz9xyzT4]{running}). Light and visibility count in melee as for shooting, wind does not (@UUID[.PweWVX3c5dHC50Ul]{the environment}).</p>\n<p>An unarmed weapon can carry the <strong>Kick</strong> trait: a \"Weapons / DV\" effect aimed at <strong>Kick</strong> then only adds to it, without touching punches. That is what Satyr Legs need, +2 to kicking attacks (<em>Run Faster p. 118</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.yxnagW3DqltaQg6S]{Related settings and references} · @UUID[.Vyn8WQiJdVZr9ssx]{Reach} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Vyn8WQiJdVZr9ssx",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.Vyn8WQiJdVZr9ssx",
+      "name": "Reach",
+      "type": "text",
+      "sort": 2600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The book gives no melee distance: reach modifies the defense (<em>Core Rulebook p. 186</em>). To decide who is in range on the map, the system follows a simple convention: <strong>a target on a neighbouring square is always in range, and each point of reach adds a square</strong>. The diagonal counts as neighbouring; a large token is measured from its nearest square.</p>\n<table>\n<thead><tr><th>Weapon</th><th>Attack range</th></tr></thead>\n<tbody>\n<tr><td>Unarmed, knife (reach —)</td><td>the neighbouring square</td></tr>\n<tr><td>Telescoping staff, staff (reach 1)</td><td>two squares</td></tr>\n<tr><td>Combat axe (reach 2)</td><td>three squares</td></tr>\n</tbody>\n</table>\n<p>A troll adds their natural reach of 1 to their weapon's. Beyond, an orange warning \"The target is too far away\" is shown and the roll does not go. Without a target, the attack goes without a distance check. Melee range follows the scene's scale: on a city map with large squares, it becomes generous.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling}</p><p>← @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling} · @UUID[.RSTdBVWH6Zp5Kdax]{Martial arts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "RSTdBVWH6Zp5Kdax",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.RSTdBVWH6Zp5Kdax",
+      "name": "Martial arts",
+      "type": "text",
+      "sort": 2700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Run &amp; Gun's martial arts techniques (in the Mégapack, martial arts folder) are dropped on the sheet like an item; they join the <strong>Martial Arts</strong> block of the weapons tab, with their style in the <strong>Style</strong> column. A table that plays DjamZ's revised martial arts takes them from a separate module (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.G5lt3ucuBihlzQCc]{see 9.10}).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-arts-martiaux.webp\" width=\"602\" alt=\"An adept's Martial Arts block: their techniques, and in the header ① Escape and ② Clinch (grappling switched on).\" /><figcaption><strong>Figure 3.4.2</strong> — An adept's Martial Arts block: their techniques, and in the header ① Escape and ② Clinch (grappling switched on).</figcaption></figure>\n\n<ul>\n<li><p><strong>A technique learned applies by default</strong>: it reduces the penalty of the called shot it covers, usually by 1 (<em>Run & Gun p. 110, 137-139</em>). Thus Dim Mak reduces the penalty of a shot to the knee, and Liberating Claws that of Disarm. The reduction only counts if the matching called shot is chosen in the window.</p></li>\n<li><p>Techniques that are a choice at the moment of the roll, like <strong>All-Out Attack</strong> or <strong>Balestra</strong> (<em>Run & Gun p. 121</em>), become a box to tick in the roll window.</p></li>\n<li><p>To aim at a precise spot, choose <strong>Specific target</strong> then the spot: the location's penalty (from −6 to −10) replaces that of the called shot, reduced by the technique that covers it (<em>Run & Gun p. 112-114</em>). The location's effects stay for the GM to apply.</p></li>\n</ul>\n\n<h4>Step by step: breaking free from a clinch or a pin</h4>\n<ol>\n<li><p>In the header of the <strong>Martial Arts</strong> block, click the <strong>Escape (clinch or subdue)</strong> icon (①): it is a Complex Action, Unarmed Combat + Strength [Physical] (<em>Run & Gun p. 122</em>).</p></li>\n<li><p>The threshold is the hold's value. With grappling switched on, it fills itself in; otherwise, type it in the window.</p></li>\n<li><p>Roll. The card says \"free\" or \"still clinched or pinned\". With the <strong>Counter-grapple</strong> technique, a successful escape also offers to reverse the situation (<em>Run & Gun p. 137-138</em>).</p></li>\n</ol><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling}</p><p>← @UUID[.Vyn8WQiJdVZr9ssx]{Reach} · @UUID[.4TMumyIwham3VEUL]{Grappling} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4TMumyIwham3VEUL",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.4TMumyIwham3VEUL",
+      "name": "Grappling",
+      "type": "text",
+      "sort": 2800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Grappling tracking is a book option the GM switches on in <strong>Shadowrun settings</strong>, <strong>Combat</strong> tab: <strong>Use the grappling system</strong> (unticked by default, the page reloads). Unticked, nothing changes: escape keeps its threshold to type in, and the GM tracks grappling by hand.</p>\n\n<h4>Step by step: clinching an opponent (grappling on)</h4>\n<ol>\n<li><p>Select your token, target the opponent in contact, then click the <strong>Clinch</strong> icon (②) of the Martial Arts block: Agility + Gymnastics [Physical] against Reaction + Intuition (<em>Run & Gun p. 120</em>).</p></li>\n<li><p>On the card, the defender clicks <strong>Defend</strong>. For an NPC, the GM <strong>first selects the defender's token</strong>: the defense against a clinch starts from the selected token.</p></li>\n<li><p>If the attacker wins by at least one hit, the defense card offers <strong>Clinch (hold: N)</strong>: click. Both tokens carry the hold's state (<strong>Clinching an opponent</strong> and <strong>Clinched</strong>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-4-prise.webp\" width=\"334\" alt=\"The hold card: ① what the hold changes (escape threshold, superior position, reach, weapon penalties), ② the button to let go.\" /><figcaption><strong>Figure 3.4.3</strong> — The hold card: ① what the hold changes (escape threshold, superior position, reach, weapon penalties), ② the button to let go.</figcaption></figure>\n\n<p>The hold is worth the net hits of the test that set it; it is the escape threshold. During a clinch, the one clinching has superior position (+2, ticked on its own), reach is cancelled between the two, and each suffers a penalty with their weapons: the melee weapon's reach, the hold's value with a weapon that shoots (<em>Run & Gun p. 120-121</em>).</p>\n<ul>\n<li><p><strong>Subdue (grappling)</strong>: with an unarmed attack, this called shot without penalty deals no damage; if Strength and net hits exceed the defender's Physical limit, the card offers <strong>Pin down</strong> (<em>Core Rulebook p. 194</em>). The pinned character counts as prone for whoever attacks them.</p></li>\n<li><p><strong>Strengthen the hold (grappling)</strong>, against your partner: net hits add to the hold, or reduce it if the defender wins (<em>Core Rulebook p. 195</em>).</p></li>\n<li><p><strong>Crush</strong> and <strong>Let go</strong>: buttons of the hold card, visible to the GM and to the one holding. Crushing deals Stun damage equal to Strength, without a test.</p></li>\n<li><p><strong>Reverse the situation</strong>: with the technique, the character held tries the reversal; successful, the roles swap (<em>Run & Gun p. 112</em>). The Counter-grapple and Reversal techniques come from the Mégapack.</p></li>\n</ul>\n<p>The hold undoes itself when one of the two is unconscious or dead, at the end of combat, or when a token disappears. A hold weakened down to 0 stays in place: only escape frees (DjamZ's ruling).</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling}</p><p>← @UUID[.RSTdBVWH6Zp5Kdax]{Martial arts} · @UUID[.WCNXngY9C9wo3kJa]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WCNXngY9C9wo3kJa",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.WCNXngY9C9wo3kJa",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 2900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It refuses an attack out of reach and counts down the attack's Complex Action.</p></li>\n<li><p>It applies the reduction of known techniques and ticks superior position in a hold.</p></li>\n<li><p>With grappling, it sets the linked states, computes the hold and the escape threshold, and undoes the hold if one goes down.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Maintaining the hold (a Complex Action each phase), which the card recalls without counting it down.</p></li>\n<li><p>Counters and reversals as interrupts, the grapplers' shared movement, the −1 per wounded arm, throws (<em>Run & Gun p. 114, 119-120, 124</em>).</p></li>\n<li><p>The effects of a location (stunned, slowed…).</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Use the grappling system</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked</td></tr>\n<tr><td><strong>Melee: ignore the environment when it is equal for both</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked (GM's option (<em>Core Rulebook p. 187</em>))</td></tr>\n<tr><td><strong>Use Called Shots</strong></td><td>Shadowrun settings, Combat tab</td><td>ticked</td></tr>\n<tr><td><strong>Range and targets</strong> (reach)</td><td>Rule locks</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Melee, reach and modifiers: (<em>Core Rulebook p. 186-187</em>); subduing and superior position: (<em>Core Rulebook p. 194-195</em>); called shots and locations: (<em>Run & Gun p. 110-114</em>); clinch and escape: (<em>Run & Gun p. 120-122</em>); techniques: (<em>Run & Gun p. 137-139</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Arts-martiaux\">wiki: Martial arts</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Lutte\">wiki: Grappling</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.eWTrOUQuSfM2Rf1a]{3.4 Melee, martial arts, grappling}</p><p>← @UUID[.4TMumyIwham3VEUL]{Grappling} · @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "IwEisvMqg55fA2Ez",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.IwEisvMqg55fA2Ez",
+      "name": "3.5 Defending and resisting damage",
+      "type": "text",
+      "sort": 3000000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>An attack is resolved in three chat cards: the attack, the target's defense, then resisting the damage. Each card carries the button for the next, reserved to whoever must click: the owner of the character targeted, or the GM for an NPC. At the end, a last button ticks the monitor's boxes, and the system draws the consequences: wound modifier, initiative, knockdown, unconsciousness.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-5-enchainement.webp\" width=\"335\" alt=\"The chain in the chat: ① the attack and its Defend button, ② the target's defense, ③ the damage resistance and its Apply Damage button.\" /><figcaption><strong>Figure 3.5.1</strong> — The chain in the chat: ① the attack and its Defend button, ② the target's defense, ③ the damage resistance and its Apply Damage button.</figcaption></figure>\n\n<h4>Step by step: defending then resisting damage</h4>\n<ol>\n<li><p>On the attack card, click <strong>Defend</strong>. The <strong>Defense Test</strong> window opens with Reaction + Intuition and the known modifiers.</p></li>\n<li><p>If needed, choose an active defense, cover or full defense (see below), then click <strong>Roll Dice</strong>.</p></li>\n<li><p>If the attacker wins, the defense card shows the <strong>Take On Damage</strong> button with the Damage Value and armor penetration: click it. The resistance window counts Body and armor, reduced by penetration (<em>Core Rulebook p. 169-172</em>).</p></li>\n<li><p>Roll, then click <strong>Apply Damage</strong> on the resistance card. The boxes are ticked, and the card shows \"… damage applied\".</p></li>\n</ol>\n<p>If the defense wins, the card says <strong>Successful Defense</strong> and the exchange stops there. A target only defends once against the same attack: the button stays for the other targets, and the GM can reopen a defense by clicking themselves. An NPC's button belongs to the GM; it is reserved to the player for their character.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.WCNXngY9C9wo3kJa]{Related settings and references} · @UUID[.HxYeQa6b517Eo2te]{Defense options} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "HxYeQa6b517Eo2te",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.HxYeQa6b517Eo2te",
+      "name": "Defense options",
+      "type": "text",
+      "sort": 3100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<figure><img src=\"systems/sr5/manuel/captures/3-5-defense.webp\" width=\"494\" alt=\"A guard's defense against a katana strike: ① cumulative defense, ② active defense (block, dodge, parry), ③ full defense.\" /><figcaption><strong>Figure 3.5.2</strong> — A guard's defense against a katana strike: ① cumulative defense, ② active defense (block, dodge, parry), ③ full defense.</figcaption></figure>\n\n<ul>\n<li><p><strong>Cumulative defense</strong> (①): each defense already made in the Combat Turn removes one die from the next (<em>Core Rulebook p. 189</em>). The system counts on its own; the arrows icon resets the counter.</p></li>\n<li><p><strong>Active Defense</strong> (②): in melee, <strong>Block</strong> (Unarmed Combat, empty hands), <strong>Dodge</strong> (Gymnastics) or parry with a club or blade (<strong>Parry (Clubs)</strong>, <strong>Parry (Blades)</strong>) adds the skill to the pool; against a shot, only dodging is possible. Each costs 5 Initiative points and only counts for this test (<em>Core Rulebook p. 188, 190</em>).</p></li>\n<li><p><strong>Cover</strong>: <strong>Partial Cover</strong> or <strong>Good Cover</strong>, to choose according to the scene; on a tie, the target is hit through its cover (<em>Core Rulebook p. 188-190</em>).</p></li>\n<li><p><strong>Full Defense</strong> (③): Willpower is added to all the character's defenses until the end of the Combat Turn, for 10 Initiative points (<em>Core Rulebook p. 168, 190</em>). The effect is set on the token and the points removed in the tracker.</p></li>\n</ul>\n<p>The system refuses an active or full defense the Initiative Score can no longer pay for (the combined cost must be exceeded), and a parry or a block without the skill, as long as the <strong>Actions and initiative</strong> family of the locks is ticked (@UUID[.zazYeX6j2LJUFITG]{what costs initiative}). The <strong>Prone</strong>, <strong>Running</strong> and <strong>Receiving a charge</strong> boxes follow the defender's state; the penalties of a burst or a shotgun apply on their own according to the attack's firing mode (<em>Core Rulebook p. 190</em>); the card names the burst penalty.</p>\n\n<h4>Under suppressive fire: hitting the dirt</h4>\n<p>The card of a suppressive fire carries, next to <strong>Defend</strong>, the <strong>Hit the dirt</strong> button: instead of the Reaction + Edge test, the character drops prone with their Free Action if they have one left, otherwise with the \"Hit the Dirt\" interrupt (−5 initiative) (<em>Core Rulebook p. 168, 181</em>). They are prone (getting up costs a Simple Action) and still suffer the area's penalty. A character already on the ground who clicks <strong>Defend</strong> rolls nothing.</p>\n\n<h4>Caught in a net</h4>\n<p>A net lands on any successful attack, grazes included: the defense card carries <strong>Apply: caught in the net (threshold N)</strong>, N being the net hits. The target is subdued (<em>Core Rulebook p. 194</em>) and counted as prone for the attacks aimed at it. Its card gives it <strong>Get free from the net</strong>: Complex Action, Unarmed Combat or Escape Artist + Agility [Physical], the better of the two, with −2 Agility in an XL net for a normal-size target and +2 for a troll in a standard net (<em>Run & Gun p. 25, 28</em>). A net without DV does no damage; the ShockNet is electrical, strikes even on a graze (<em>Core Rulebook p. 173-174</em>), and its second charge goes off at the start of the next turn if the target is still caught.</p>\n<p>The penalty of suppressive fire applies to all the character's actions until the end of the Combat Turn, whether they are down or back up (<em>Core Rulebook p. 180</em>): getting up does not erase it. The roll window names it <strong>Special effect (Suppressive Fire)</strong>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage}</p><p>← @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage} · @UUID[.GfRf5SykRDPA8aVn]{Resisting and applying damage} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "GfRf5SykRDPA8aVn",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.GfRf5SykRDPA8aVn",
+      "name": "Resisting and applying damage",
+      "type": "text",
+      "sort": 3200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Apply Damage</strong> button ticks the boxes over the real length of the monitor and immediately draws the consequences, announced by a notification:</p>\n<ul>\n<li><p><strong>Wound modifier</strong>: it applies to all following rolls and to the Initiative Score (\"Initiative modified by −3\").</p></li>\n<li><p><strong>Knockdown</strong>: if the damage exceeds the Physical limit, or reaches 10 boxes, the character is knocked down (<em>Core Rulebook p. 194</em>).</p></li>\n<li><p><strong>Full monitor</strong>: excess Stun goes to Physical; a character with a full monitor is knocked out, a spirit disrupted, a grunt out of the fight (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.zTUmA3mt43LczZFb]{condition monitors and wounds}).</p></li>\n</ul>\n<p>For damage to a character that is not their own, the player goes through the GM: the request is sent to them, and they apply it with a click. The GM can also tick or untick the boxes by hand on the sheet.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage}</p><p>← @UUID[.HxYeQa6b517Eo2te]{Defense options} · @UUID[.29AT1va2i4Hp6fdk]{Continuous damage} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "29AT1va2i4Hp6fdk",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.29AT1va2i4Hp6fdk",
+      "name": "Continuous damage",
+      "type": "text",
+      "sort": 3300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Fire, acid and electricity keep acting after the attack (<em>Core Rulebook p. 170-171</em>). The effect is set on the target at the same time as the damage; in the following turns, its card offers <strong>Take On Continuous Damage</strong> with the current Damage Value:</p>\n<ul>\n<li><p><strong>fire</strong>: it burns until put out, and the card gives the turn's Damage Value;</p></li>\n<li><p><strong>acid</strong>: the value drops each turn, and the acid eats away at the armor;</p></li>\n<li><p><strong>electricity</strong>: it extends the duration of its effects (disorientation, initiative).</p></li>\n</ul>\n<p>A spirit's Engulf is resisted the same way, phase after phase, with the value recomputed on the spirit. When the fire goes out or the target gets out of it, the GM removes the effect from the token.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage}</p><p>← @UUID[.GfRf5SykRDPA8aVn]{Resisting and applying damage} · @UUID[.WHdQwuHPZyiYEqYf]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "WHdQwuHPZyiYEqYf",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.WHdQwuHPZyiYEqYf",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 3400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It offers the defense to the attack's target, counts cumulative defense, the penalties of the firing mode and of the environment as seen by the defender.</p></li>\n<li><p>It removes the initiative of active defenses and full defense, and sets the full defense effect.</p></li>\n<li><p>It ticks the boxes, applies the wound modifier to initiative, knocks down and knocks out according to the rule.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Chooses cover according to the scene, and judges a shot into melee (who risks being hit) (<em>Core Rulebook p. 190</em>).</p></li>\n<li><p>Removes continuous damage effects when the target has got out of them.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions and initiative</strong> (active defenses without initiative or without the skill)</td><td>Rule locks</td><td>ticked</td></tr>\n<tr><td><strong>Melee: ignore the environment when it is equal for both</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Damage and special damage: (<em>Core Rulebook p. 169-172</em>); defense and modifiers: (<em>Core Rulebook p. 188-190</em>); full defense and interrupts: (<em>Core Rulebook p. 168</em>); knockdown: (<em>Core Rulebook p. 194</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Messages-de-chat\">wiki: Reading a chat message</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki: Condition monitors</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.IwEisvMqg55fA2Ez]{3.5 Defending and resisting damage}</p><p>← @UUID[.29AT1va2i4Hp6fdk]{Continuous damage} · @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OfYcF73Vpf9a2rkr",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.OfYcF73Vpf9a2rkr",
+      "name": "3.6 After combat",
+      "type": "text",
+      "sort": 3500000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>When the bullets fall silent, there remains healing, recovery, and sometimes handling a poison, a drug or a disease. The system computes first aid and healing and ticks the boxes for you; it applies a toxin from the attack to the damage; it follows a drug from intake to crash. Long-running afflictions (diseases, CFD, the hunger of the infected) advance with the world's clock, and nothing moves in them without a click from the GM.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.WHdQwuHPZyiYEqYf]{Related settings and references} · @UUID[.FX5JLdTEleLhVlWg]{First aid and healing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "FX5JLdTEleLhVlWg",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.FX5JLdTEleLhVlWg",
+      "name": "First aid and healing",
+      "type": "text",
+      "sort": 3600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: giving first aid</h4>\n<ol>\n<li><p>Select the healer's token and target the wounded (that is the patient: without a target, the system takes the selected token).</p></li>\n<li><p>On the healer's sheet, skills tab, click <strong>First Aid</strong>.</p></li>\n<li><p>In the window, choose the <strong>Conditions</strong> (①), from <strong>Good</strong> (medical facility) to <strong>Terrible</strong> (gunfire, storm), and the <strong>Healing supplies</strong> (②): <strong>None</strong>, <strong>Improvised</strong> or <strong>Wireless medkit/autodoc</strong>. The patient's boxes (③) follow the healing modifiers table (<em>Core Rulebook p. 207</em>).</p></li>\n<li><p>Roll. The test is at threshold 2, and each hit beyond heals one box, without exceeding the First Aid rating (<em>Core Rulebook p. 206</em>): the card shows <strong>Heal N damage boxes</strong>, or a failure.</p></li>\n<li><p>Click the card's button. If the patient has two monitors, the system asks which one to heal.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-soins.webp\" width=\"494\" alt=\"The first aid window: ① the conditions, ② the healing supplies, ③ the Awakened or Emerged patient, ④ the box that makes it an extended test.\" /><figcaption><strong>Figure 3.6.1</strong> — The first aid window: ① the conditions, ② the healing supplies, ③ the Awakened or Emerged patient, ④ the box that makes it an extended test.</figcaption></figure>\n\n<p>First aid only applies once per set of wounds, and not after magical healing (<em>Core Rulebook p. 206</em>). A patient in full armor (<strong>Full armor</strong> box on the armor worn) only receives half the effects, rounded up. A critical glitch adds 1D3 boxes. First aid heals neither a device nor a drone.</p>\n\n<h4>Step by step: natural recovery</h4>\n<ol>\n<li><p>On the wounded character's sheet, click the monitor's <strong>name</strong>, at the bottom: <strong>Stun</strong> or <strong>Physical</strong> (a right-click, on the other hand, resets the monitor).</p></li>\n<li><p>The healing window offers the same healing conditions; roll. It is an extended test: the card's <strong>New roll</strong> button rerolls, and the healing button unticks the boxes.</p></li>\n</ol>\n<p>Stun heals before Physical: as long as the character has Stun damage, natural recovery of Physical is refused (<em>Core Rulebook p. 206</em>). The Medicine skill goes through the same window. Magical healing and the Heal spell are described with magic (@UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.L8wj3Cf3WQVKImL5]{casting a spell}) (<em>Core Rulebook p. 209</em>).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Healing under fire (Bullets &amp; Bandages)</p><p>Two book options, unticked by default in <strong>Shadowrun settings</strong>, <strong>Body, health and augmentations</strong> tab: <strong>Healing under fire</strong> (a wound of 5 Physical boxes or more bleeds until stabilized; the first aid window offers <strong>Treatment</strong>, stabilization or <strong>Diagnosis</strong>) and <strong>Advanced medkits (Bullets &amp; Bandages)</strong> (the medkit's rating in dice, one charge per patient) (<em>Bullets & Bandages p. 14-19</em>). The GM applies each bleeding box themselves, with a click on its card.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p><p>← @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat} · @UUID[.49TtPxtEX0HcZ1vB]{Toxins} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "49TtPxtEX0HcZ1vB",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.49TtPxtEX0HcZ1vB",
+      "name": "Toxins",
+      "type": "text",
+      "sort": 3700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A toxin is a full-fledged item: the GM creates it, edits it and puts it on a weapon, a grenade or a critter's natural weapon. The Mégapack and the \"[fr] Drogues\" compendium provide some thirty of them, checked against the book; the <strong>Book toxins</strong> button, at the top of the <strong>Items</strong> tab (GM), creates the core rulebook's toxins in a folder of the world, without duplicates.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-toxine.webp\" width=\"694\" alt=\"A toxin's sheet, configuration tab: ① its vectors, ② its speed, Power, penetration and damage, ③ its effects and the special effect written on the card, ④ the disease section.\" /><figcaption><strong>Figure 3.6.2</strong> — A toxin's sheet, configuration tab: ① its vectors, ② its speed, Power, penetration and damage, ③ its effects and the special effect written on the card, ④ the disease section.</figcaption></figure>\n\n<h4>Step by step: poisoning a weapon (GM)</h4>\n<ol>\n<li><p>Open the weapon's sheet, configuration tab: under the damage, a <strong>Drop a toxin from the world or a compendium here</strong> area is waiting.</p></li>\n<li><p>Drag the toxin there from the Items tab or a compendium. The weapon switches to <strong>Toxin</strong> damage and keeps a copy of its profile; the arrows resynchronize it after a change to the original toxin.</p></li>\n</ol>\n\n<h4>Step by step: resisting and applying</h4>\n<ol>\n<li><p>The attack and the defense are played as usual. If the attack lands, the target clicks <strong>Resist toxin</strong>: Body + Willpower + the rating of their protection, each hit removing one point of Power (<em>Core Rulebook p. 408</em>). The <strong>Doses received at once</strong> field adds 1 Power per extra dose.</p></li>\n<li><p>The GM clicks <strong>Apply Toxin Effect</strong> when the indicated turn comes: damage and effects (disorientation, nausea, paralysis…) fall at once, and the special effect is shown as text.</p></li>\n</ol>\n<p>A gas mask grants immunity to inhaled toxins, chemical seal to contact and inhaled ones, as long as the item is active; the message says what protected (<em>Core Rulebook p. 408</em>). Antidote patches (Chrome Flesh) remove their rating from the Power (<em>Chrome Flesh p. 150</em>). Diseases (a toxin that comes back, <strong>Pathogen</strong> box) and radiation are declared by the GM, then advance with the clock: see <a href=\"https://github.com/DjamZee/sr5/wiki/Toxines\">wiki: Toxins</a>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p><p>← @UUID[.FX5JLdTEleLhVlWg]{First aid and healing} · @UUID[.jU1LXrBnTs8n3l86]{Drugs} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "jU1LXrBnTs8n3l86",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.jU1LXrBnTs8n3l86",
+      "name": "Drugs",
+      "type": "text",
+      "sort": 3800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A drug goes into the sheet's gear. On its line, a single badge follows its phase.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-drogue.webp\" width=\"598\" alt=\"A drug on the sheet: ① the quantity (left click to remove some, right click to add), ② the phase badge.\" /><figcaption><strong>Figure 3.6.3</strong> — A drug on the sheet: ① the quantity (left click to remove some, right click to add), ② the phase badge.</figcaption></figure>\n\n<h4>Step by step: taking a drug</h4>\n<ol>\n<li><p>Click the badge (②): the character takes the drug, one dose is removed and the effects of the high apply.</p></li>\n<li><p>Click again when the high ends: the crash effects replace those of the high.</p></li>\n<li><p>A last click ends the drug. A right-click by the GM resets it.</p></li>\n</ol>\n<p>Taking a drug costs no action. An overdose opens the matching resistance window, and the addiction test follows the book (<em>Core Rulebook p. 410-415</em>); the <strong>Withdrawal: test modifier by level</strong> setting (Body, health and augmentations tab) quantifies the craving if the GM wishes.</p>\n\n<h4>Step by step: designing a drug</h4>\n<ol>\n<li><p>Click <strong>Drug designer</strong>, at the top of the sidebar's <strong>Items</strong> tab: the button is there for the GM, and for the player whose character has the Chemistry skill (or when the GM has lifted the \"Items\" family of the locks). A list, at the top of the designer, chooses for which character; the GM also finds the world's items there. A player's request goes to the GM (<em>Chrome Flesh p. 190-192</em>).</p></li>\n<li><p>Choose the <strong>Base</strong> (①), then the level of each <strong>Block</strong> wanted (②), the <strong>Enhancers</strong> (③), the grade and the type of addiction. The result (effects, speed, duration, crash, addiction, availability, price) is computed as you go (<em>Chrome Flesh p. 190-192</em>).</p></li>\n<li><p>Click <strong>Create the drug</strong>. The GM's is created at once; the player's waits for the GM's validation, who receives it as a whisper with the <strong>Review the drug</strong> button.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-6-concepteur.webp\" width=\"930\" alt=\"The drug designer: ① the base, ② the blocks and their level, ③ the enhancers; below, the grade and the resulting drug.\" /><figcaption><strong>Figure 3.6.4</strong> — The drug designer: ① the base, ② the blocks and their level, ③ the enhancers; below, the grade and the resulting drug.</figcaption></figure>\n\n<p>A recipe contrary to the book is flagged in red and cannot be created. The crafting test (Chemistry + Logic) remains to be played by hand.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p><p>← @UUID[.49TtPxtEX0HcZ1vB]{Toxins} · @UUID[.de9NtshWB4RvpTsA]{CFD and the infected (GM)} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "de9NtshWB4RvpTsA",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.de9NtshWB4RvpTsA",
+      "name": "CFD and the infected (GM)",
+      "type": "text",
+      "sort": 3900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Two afflictions specific to the supplements are tracked from the sheet, by the GM only, and advance with the world's clock (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.aK1sRuW82YTF1xdL]{the calendar}):</p>\n<ul>\n<li><p><strong>CFD treatment</strong> (<em>Dark Terrors p. 82-87</em>): on the sheet of a character who has a Nanite Volume, the <strong>Administer a treatment</strong> link injects Overwriter nanites or NanoScrub. The Overwriters fight the nanites at the end of each Combat Turn, or all at once with <strong>Resolve (out of combat)</strong>; NanoScrub acts hour by hour. The implants a complication would destroy wait for the GM's <strong>Destroy</strong> button.</p></li>\n<li><p><strong>The hunger of the infected</strong> (<em>Core Rulebook p. 401</em>): on the sheet of a critter that drains Essence, the <strong>Track hunger</strong> link makes it lose one point of Essence per lunar month; each power used offers to bring the loss forward by a week. When a victim drops to 0 Essence near a critter with the Infection power, the GM can try contagion (<em>Core Rulebook p. 398</em>).</p></li>\n</ul>\n<p>The detail of these two trackers: <a href=\"https://github.com/DjamZee/sr5/wiki/Traitement-du-SFC\">wiki: CFD treatment</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Infectes\">wiki: The infected</a>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p><p>← @UUID[.jU1LXrBnTs8n3l86]{Drugs} · @UUID[.G21EPqipCfuLCZa1]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "G21EPqipCfuLCZa1",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.G21EPqipCfuLCZa1",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 4000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes first aid and healing, halves them through full armor, unticks the boxes and refuses Physical recovery as long as Stun remains.</p></li>\n<li><p>It applies a toxin from the attack to the damage, protections and doses included, and follows a drug from intake to crash.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Decides when a toxin's effect falls (the turn shown on the card) and clicks.</p></li>\n<li><p>Advances diseases, radiation, CFD and hunger by moving the clock forward, and confirms each step.</p></li>\n<li><p>Has the crafting test of a drug played, and the traits some blocks give.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Body and healing</strong> (Stun first, missing medkit…)</td><td>Rule locks</td><td>ticked</td></tr>\n<tr><td><strong>Healing under fire (Bullets &amp; Bandages)</strong></td><td>Shadowrun settings, Body, health and augmentations tab</td><td>unticked</td></tr>\n<tr><td><strong>Advanced medkits (Bullets &amp; Bandages)</strong></td><td>Shadowrun settings, Body, health and augmentations tab</td><td>unticked</td></tr>\n<tr><td><strong>Withdrawal: test modifier by level</strong></td><td>Shadowrun settings, Body, health and augmentations tab</td><td>None (the book does not give a figure)</td></tr>\n<tr><td><strong>Diseases: show everything to players</strong></td><td>Shadowrun settings, Body, health and augmentations tab</td><td>unticked</td></tr>\n<tr><td><strong>Essence Loss: length of a lunar month (days)</strong></td><td>Shadowrun settings, Body, health and augmentations tab</td><td>29.5</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>First aid and healing: (<em>Core Rulebook p. 205-207</em>); magical healing: (<em>Core Rulebook p. 209</em>); toxins: (<em>Core Rulebook p. 408-410</em>); drugs: (<em>Core Rulebook p. 410-415</em>); customized drugs: (<em>Chrome Flesh p. 190-192</em>); CFD: (<em>Dark Terrors p. 82-87</em>); the infected: (<em>Core Rulebook p. 398-401</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Moniteurs-de-condition\">wiki: Condition monitors and healing</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Toxines\">wiki: Toxins</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Concepteur-de-drogue\">wiki: Drug designer</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.OfYcF73Vpf9a2rkr]{3.6 After combat}</p><p>← @UUID[.de9NtshWB4RvpTsA]{CFD and the infected (GM)} · @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "rFtgYlpeaeOfBymt",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.rFtgYlpeaeOfBymt",
+      "name": "3.7 Stealth, running",
+      "type": "text",
+      "sort": 4100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>Hiding a pistol under your jacket, frisking a suspect, picking a guard's pockets or slipping a tracker into a bag: the book settles them all with the same opposed test of Palming against Perception (<em>Core Rulebook p. 420</em>). The system plays it from start to finish, keeping it secret: the thief's roll and the target's go privately to the GM, and it is the GM who moves the item. Running, for its part, changes the dice of a whole Combat Turn: the system sets the state on the token and ticks the right boxes.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU}</p><p>← @UUID[.G21EPqipCfuLCZa1]{Related settings and references} · @UUID[.OzFGmJbpqjWgZtec]{Concealing an item, frisking someone} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "OzFGmJbpqjWgZtec",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.OzFGmJbpqjWgZtec",
+      "name": "Concealing an item, frisking someone",
+      "type": "text",
+      "sort": 4200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: concealing an item on yourself</h4>\n<ol>\n<li><p>On the sheet, unfold the item's line by clicking its name (a weapon, a piece of armor, gear, a device).</p></li>\n<li><p>Click the <strong>Conceal on oneself</strong> tag (①): Palming + Agility [Physical], a Complex Action. The card is whispered to the GM.</p></li>\n<li><p>The item keeps its hits: a crossed-out eye follows its name on the sheet. To take it out, click the take-out button (<strong>Take out: …</strong>), or equip the weapon: a weapon in hand is never concealed.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-cacher.webp\" width=\"598\" alt=\"The unfolded line of a pistol: ① the Conceal on oneself tag.\" /><figcaption><strong>Figure 3.7.1</strong> — The unfolded line of a pistol: ① the Conceal on oneself tag.</figcaption></figure>\n\n<h4>Step by step: searching or frisking</h4>\n<ol>\n<li><p>Target the token to examine.</p></li>\n<li><p>On the <strong>Perception</strong> line of the skills tab, click the magnifying glass (①) to look for a concealed item, or the hand (②) for a frisk, in contact. Choose the skill and, for a frisk, the attribute (Intuition or Agility).</p></li>\n<li><p>The GM receives the request and clicks <strong>Resolve</strong>: they tick the situation (\"searching carefully\", \"distracted\") and add a free modifier. The system rolls one test per hidden item.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-fouille.webp\" width=\"622\" alt=\"The Perception line: ① looking for a concealed item, ② frisking.\" /><figcaption><strong>Figure 3.7.2</strong> — The Perception line: ① looking for a concealed item, ② frisking.</figcaption></figure>\n\n<p>An item is found if the searcher gets at least one hit and at least as many as whoever hid it: a tie goes to the searcher. In a frisk, a negative concealability is halved and a positive one doubled (<em>Core Rulebook p. 420</em>). The searcher only learns what they find; it is up to the GM to say whether they confiscate. Only items hidden with the button are searched for: a weapon simply worn under a coat is left to the GM's judgment.</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running}</p><p>← @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running} · @UUID[.qD27RWHRoy9TuPop]{Pickpocketing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "qD27RWHRoy9TuPop",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.qD27RWHRoy9TuPop",
+      "name": "Pickpocketing",
+      "type": "text",
+      "sort": 4300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: picking someone's pockets</h4>\n<ol>\n<li><p>Select your token, then right-click the target, on a neighbouring square. The HUD opens on it even if you do not own it, with the <strong>Pickpocket</strong> hand (①) and, if you carry a small item, <strong>Plant an object</strong> (②).</p></li>\n<li><p>Click the hand. A window asks what you are after (optional: \"his commlink\", \"at random\"); this text will be shown on the card.</p></li>\n<li><p>Roll Palming + Agility [Physical]. The card goes privately to the GM: the target knows nothing. In combat, theft costs a Complex Action. Without Palming learned, the roll is refused (<em>Core Rulebook p. 133</em>).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-hud-vol.webp\" width=\"290\" alt=\"A guard's HUD as seen by the thief's player: ① Pickpocket, ② Plant an object.\" /><figcaption><strong>Figure 3.7.3</strong> — A guard's HUD as seen by the thief's player: ① Pickpocket, ② Plant an object.</figcaption></figure>\n\n<h4>Step by step: the GM's answer</h4>\n<ol>\n<li><p>On the thief's card, click <strong>Target's Perception</strong> (button visible to the GM only).</p></li>\n<li><p>Choose the item (small ones first, or <strong>Random</strong>), the quantity for a stack, and the situation: <strong>Target distracted</strong>, <strong>Target watching their belongings</strong>, <strong>Diversion</strong> (<em>Core Rulebook p. 135</em>). Confirm the thief's hits.</p></li>\n<li><p>The system rolls the target's Perception + Intuition [Mental], with the item's concealability as a modifier, then offers the fitting button: <strong>Lift: …</strong> if the thief wins, <strong>Noticed: tell the target</strong> otherwise (a tie goes to the target).</p></li>\n</ol>\n<p>Only small items (up to +2 concealability) can be stolen; an item stored in a locked container is not offered. With a glitch, the item goes through but the target feels something; on a critical glitch, the thief is caught red-handed. Planting an item follows the same path in the other direction. These follow-ups with no written rule are DjamZ's rulings, detailed on <a href=\"https://github.com/DjamZee/sr5/wiki/Vol-a-la-tire\">wiki: Pickpocketing</a>.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Pickpocketing: the thief chooses the object</strong>, Looting and spoils tab of Shadowrun settings, unticked by default (the book leaves the choice to the GM). Ticked, the thief chooses themselves, before their roll, among the target's small items; the GM keeps the Perception, the quantity and the transfer.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running}</p><p>← @UUID[.OzFGmJbpqjWgZtec]{Concealing an item, frisking someone} · @UUID[.AHFI77k4yz9xyzT4]{Running} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "AHFI77k4yz9xyzT4",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.AHFI77k4yz9xyzT4",
+      "name": "Running",
+      "type": "text",
+      "sort": 4400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A character who goes beyond their walking rate is running until the end of the Combat Turn: +2 dice to their defenses, −2 to their actions, except Sprinting and charging (<em>Core Rulebook p. 161-162, 176, 189</em>).</p>\n\n<h4>Step by step: running</h4>\n<ol>\n<li><p>Right-click your token and open the palette of movement types (the walker icon).</p></li>\n<li><p>Choose <strong>Run</strong> (①) or <strong>Sprint</strong> (②), then move the token. During a combat that has begun, it receives the <strong>Running</strong> state, which falls off on its own at the next Combat Turn or at the end of the encounter.</p></li>\n<li><p>To sprint further, roll the <strong>Sprint</strong> test from the sheet (movement block): Running + Strength [Physical], 2 m per hit (1 m for a dwarf or a troll).</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/3-7-course.webp\" width=\"389\" alt=\"The token HUD, movement palette open: ① Run, ② Sprint.\" /><figcaption><strong>Figure 3.7.4</strong> — The token HUD, movement palette open: ① Run, ② Sprint.</figcaption></figure>\n\n<p>As you drag the token, the path takes the colour of the pace, counting the meters already done in the turn: green up to walking, yellow up to running, red beyond. With the <strong>Running</strong> state, the roll window ticks on its own <strong>Running</strong> (−2) on actions, <strong>Attacker running</strong> on a shot and the +2 on defenses; nothing on Sprinting or on resistance tests. A melee attack's charge box removes the −2. All these boxes can still be unticked.</p>\n<p>Running costs a Free Action per pass in which the token moves at a run (<em>Core Rulebook p. 162</em>). Each Sprint test made in combat in consecutive phases inflicts 1S fatigue, then 2S, 3S… resisted with Body + Willpower, without armor: it is the GM who sees the window open and rolls it (<em>Core Rulebook p. 172</em>).</p><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running}</p><p>← @UUID[.qD27RWHRoy9TuPop]{Pickpocketing} · @UUID[.DfrdXAMAyQMbufVc]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DfrdXAMAyQMbufVc",
+      "_key": "!journal.pages!a0A5owDWyn9339sO.DfrdXAMAyQMbufVc",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 4500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It keeps the hits of a concealed item, rolls one test per item during a search and only shows the searcher what they find.</p></li>\n<li><p>It routes the theft and its answer through the GM, recounts the hits announced and moves the item at the GM's click.</p></li>\n<li><p>It sets and removes the Running state, ticks the running modifiers, counts down the Free Action and the sprint fatigue.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Decides what a searcher confiscates, and about a weapon carried without having been hidden with the button.</p></li>\n<li><p>Counts the fatigue of a long run outside combat, which is measured in minutes.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting</th><th>Where</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Pickpocketing: the thief chooses the object</strong></td><td>Shadowrun settings, Looting and spoils tab</td><td>unticked</td></tr>\n<tr><td><strong>Put the \"Running\" status on from the distance covered</strong></td><td>Shadowrun settings, Combat tab</td><td>unticked (only the Run or Sprint choice in the HUD sets the state)</td></tr>\n<tr><td><strong>Objects</strong> (Palming required) and <strong>Range and targets</strong> (frisking in contact)</td><td>Rule locks</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Palming: (<em>Core Rulebook p. 133</em>); concealed items: (<em>Core Rulebook p. 420</em>); Perception modifiers: (<em>Core Rulebook p. 135</em>); movement and running: (<em>Core Rulebook p. 161-162</em>); fatigue: (<em>Core Rulebook p. 172</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Vol-a-la-tire\">wiki: Pickpocketing</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Course\">wiki: Running</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.v1sy6q1A3WbLzLob]{MENU} &gt; @UUID[.rFtgYlpeaeOfBymt]{3.7 Stealth, running}</p><p>← @UUID[.AHFI77k4yz9xyzT4]{Running}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

@@ -1,0 +1,635 @@
+{
+  "_id": "arMGpK6RvbR3sLNQ",
+  "_key": "!journal!arMGpK6RvbR3sLNQ",
+  "name": "8. The GM's settings and tools",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 900000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "B5EmlntQSZv5gpAj",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.B5EmlntQSZv5gpAj",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part is meant for the gamemaster (the GM). It describes what is set once, at the start of a campaign: the <strong>Shadowrun settings</strong> window, tab by tab, the rule locks, preparing scenes. It then describes the tools used during play: random tables, the compendium browser, macros, combat tracking. It ends with the list of what the system does not do and what the GM does by hand.</p>\n<p>Nothing in it is secret: a player who knows what the GM ticked understands better why the system refuses an action, or lets it through.</p><table><tbody><tr><td><p>@UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.MxHL8At1JidYvFM3]{Presets}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.a95MvmxE6XNgksed]{Combat, Magic, Matrix, Rigging}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.yCge0Y6F4Mxd0krx]{Perception, body, items}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.opRbNrlGCRvMndk9]{Shop and calendar}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.jB4WF7e1RQt0eerp]{PAN crown, Gamemaster's tools, Interface}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.yj32FTBiKvVIyGIf]{8.2 Rule locks}</p></td><td><p>GM</p></td></tr><tr><td><p>@UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.VAAr4vuqbXXUJWrZ]{Environment, noise, background count}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.DEVleAz00ugXwFCf]{Shared vision and cameras}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.2z1uuQO8oVEhfnQs]{Related settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.S2R2SocjATdC39nc]{8.4 Random tables}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.yKv3PGD1muSSHP7e]{Drawing and handing out}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.HzK6G6t8NVbyVKgR]{A compendium as a table}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.udEQ3UgqUkVrbJjG]{The compendium browser}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.A77eQ6o6bNnZDpHq]{Macros}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Jx5pEe4TrSVhk7Mi]{Resetting actions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.h15X4DuiRuXEPEsx]{The implant register and the active GM}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.VQ6AnlZW13Gcola2]{8.6 What the system does not do}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.UFQYAW7GfUT7ye0q]{Combat, magic, Matrix}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.StKYGhkWHwOfIboc]{Body, items, vehicles, table}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "EVmnGJKbAtj857w9",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.EVmnGJKbAtj857w9",
+      "name": "8.1 The Shadowrun settings window",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>All the system's settings are gathered in a single window, sorted into tabs: the supplements' optional rules, the shop's figures, the calendar, the display. A new world starts with the core rulebook's values: you have nothing to touch to play by the book. This chapter tells you, tab by tab, what each box changes, so that you only tick what your table really wants.</p>\n\n<h4>Step by step: opening the window</h4>\n<ol>\n<li><p>Open the <strong>Settings</strong> tab (the cog, at the bottom of the sidebar), then <strong>Configure Settings</strong>.</p></li>\n<li><p>In the system's section, click <strong>Open the settings</strong>. The <strong>Shadowrun settings</strong> window opens (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.Gfk5zUuTaOqS9vUv]{the first launch of a world} shows this first visit in pictures).</p></li>\n<li><p>Choose a tab in the left column. The figure in square brackets to the right of each tab says how many settings it contains.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-combat.webp\" width=\"792\" alt=\"The Combat tab. Each line carries its name, a tag when it departs from the core rulebook, its explanation and, in italics, its default value.\" /><figcaption><strong>Figure 8.1.1</strong> — The Combat tab. Each line carries its name, a tag when it departs from the core rulebook, its explanation and, in italics, its default value.</figcaption></figure>\n\n<h4>Reading a line</h4>\n<ul>\n<li><p><strong>The name and the explanation</strong> say what the box changes and cite the relevant page of the book.</p></li>\n<li><p><strong>The blue tag</strong> <strong>book option</strong> flags an optional rule printed in a book: the core rulebook or a supplement.</p></li>\n<li><p><strong>The red tag</strong> <strong>house rule</strong> flags a rule no book gives. It is always unticked, or set to the book's value, by default.</p></li>\n<li><p><strong>The default</strong>, in italics at the end of the explanation (\"Default: unticked.\"), is the value of a new world: the book's, or the system's when the book gives no figure.</p></li>\n<li><p>A line without a tag sets how the system applies the book's rule, or its display.</p></li>\n</ul>\n\n<h4>Step by step: finding a setting</h4>\n<ol>\n<li><p>Type a word in the search field, at the top left: \"house\", \"book option\", \"drone\", \"Essence\"…</p></li>\n<li><p>The figures next to the tabs update: they count the settings that match. Tabs at <strong>[0]</strong> turn grey.</p></li>\n<li><p>Click a tab that has matches to see them. The cross to the right of the field clears the search.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-recherche.webp\" width=\"792\" alt=\"&quot;maison&quot; (&quot;house&quot;) typed in the search field (French interface): the tabs count the House Rules, here those of the Looting and spoils tab.\" /><figcaption><strong>Figure 8.1.2</strong> — \"maison\" (\"house\") typed in the search field (French interface): the tabs count the House Rules, here those of the Looting and spoils tab.</figcaption></figure>\n\n<h4>Saving, cancelling, reloading</h4>\n<ul>\n<li><p><strong>Save Changes</strong>, at the bottom right, saves all the tabs at once. Some settings only take effect after a page reload; Foundry then asks a single question, \"reload now?\". For a world setting, <strong>Yes</strong> also reloads the page of every connected person. <strong>No</strong> keeps your choices, which will apply at the next reload.</p></li>\n<li><p><strong>Reset Defaults</strong>, at the bottom left, puts the values of a new world back into the window. Nothing is saved until you click <strong>Save Changes</strong>; close the window to give up.</p></li>\n</ul>\n\n<h4>What the player sees</h4>\n<p>The window opens for everyone, but a player only sees their personal settings there: the <strong>PAN crown</strong> and <strong>Interface</strong> tabs, without the lines only the GM sets. World settings and the GM's buttons (locks, shop, factions) do not appear.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-1-joueuse.webp\" width=\"792\" alt=\"The same window opened from a player's account: only their personal settings.\" /><figcaption><strong>Figure 8.1.3</strong> — The same window opened from a player's account: only their personal settings.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">World setting or personal setting?</p><p>A <strong>world setting</strong> applies to the whole table and changes the rules applied: only the GM sets it. A <strong>personal setting</strong> only changes the screen of the person who chooses it (appearance, hover help, opening of PAN crowns): each sets it for themselves, on their own computer.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>@UUID[.MxHL8At1JidYvFM3]{Presets} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "MxHL8At1JidYvFM3",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.MxHL8At1JidYvFM3",
+      "name": "Presets",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Presets</strong> tab, at the top of the window, has a button reserved to the GM: <strong>Choose a preset</strong>. It sets a way of playing in one go; afterwards, each setting stays editable in its tab.</p>\n<h4>Step by step: applying a preset</h4>\n<ol>\n<li><p>Choose the <strong>Automation</strong>: <strong>Light</strong> (locks lifted, no automatic \"Running\" state, the clock does not move in combat, purchases delivered at once) or <strong>Advanced</strong> (the book). Leave <strong>— Change nothing —</strong> not to touch it.</p></li>\n<li><p>Choose the <strong>Rules</strong>: <strong>Books and supplements</strong> (the books' options ticked, House Rules unticked), <strong>House rules</strong> (House Rules ticked, the books' options at the core rulebook) or <strong>Both</strong>.</p></li>\n<li><p>Read the <strong>What will change</strong> list: each setting, its current value and the new one. Then click <strong>Apply</strong>; the reload is offered if a setting requires it.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/8-1-prereglages.webp\" width=\"608\" alt=\"Choosing a preset: Light automation, rules unchanged, and the &quot;What will change&quot; list.\" /><figcaption><strong>Figure 8.1.4</strong> — Choosing a preset: Light automation, rules unchanged, and the \"What will change\" list.</figcaption></figure>\n<p>The same tab carries, under <strong>Rule locks</strong>, the <strong>Set the locks</strong> button and the <strong>The gamemaster is never stopped by rule locks</strong> box (@UUID[.yj32FTBiKvVIyGIf]{see 8.2}): the old locks tab is merged into it.</p>\n<p><strong>Save my settings</strong> keeps all the world settings and locks as they are, with the date; <strong>Restore my settings</strong> puts them back, after a confirmation. No preset touches Run &amp; Gun's RG1 to RG6 options (the book wants them chosen one by one (<em>Run & Gun p. 107</em>)), settings with a choice or a number, or personal settings.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p><p>← @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window} · @UUID[.a95MvmxE6XNgksed]{Combat, Magic, Matrix, Rigging} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "a95MvmxE6XNgksed",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.a95MvmxE6XNgksed",
+      "name": "Combat, Magic, Matrix, Rigging",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>These four tabs decide which supplement rules the system applies. Only switch on what your table uses: each option adds choices in the roll windows and lines on the sheets.</p>\n\n<h4>Combat</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Use Called Shots</strong></td><td>ticked</td><td>Called shots appear in the attack window (<em>Run & Gun p. 110-119</em>).</td></tr>\n<tr><td><strong>Use the grappling system</strong></td><td>unticked</td><td>Clinch, pin, escape and reversal, with their states on the tokens (<em>Core Rulebook p. 194-195</em>) (@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.eWTrOUQuSfM2Rf1a]{melee}).</td></tr>\n<tr><td><strong>Put the \"Running\" status on from the distance covered</strong></td><td>unticked</td><td>Ticked, a token that covers more than its walking rate in the turn receives the \"Running\" state, even without having chosen the Run action (<em>Core Rulebook p. 161-162</em>).</td></tr>\n<tr><td><strong>Melee: ignore the environment when it is equal for both</strong></td><td>unticked</td><td>The book's GM option: the same light and visibility penalty on both sides is ignored in melee (<em>Core Rulebook p. 187</em>).</td></tr>\n<tr><td><strong>Reload without spending an action (house rule)</strong></td><td>unticked</td><td>See the box below.</td></tr>\n<tr><td><strong>Healing under fire (Bullets &amp; Bandages)</strong></td><td>unticked</td><td>Serious wounds that get worse until stabilized, diagnosis, enhanced treatment (<em>Bullets & Bandages p. 14-16</em>).</td></tr>\n<tr><td><strong>Advanced medkits (Bullets &amp; Bandages)</strong></td><td>unticked</td><td>The medkit's rating becomes a dice bonus, its charges go down by one per patient (<em>Bullets & Bandages p. 16-19</em>).</td></tr>\n<tr><td>Run &amp; Gun options <strong>RG1</strong> to <strong>RG6</strong></td><td>unticked</td><td>Attack limit, target size, movement speed, alternative initiative, armor as a penalty, increased DV (<em>Run & Gun p. 107-110</em>) (@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.KgTwFfLYe1jWzYhd]{see 3.1}).</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Reload without spending an action.</strong> The book charges reloading in actions (<em>Core Rulebook p. 165</em>). Ticked, reloading in combat costs nothing when ammunition of the right type is in the inventory; removing a clip on its own keeps its cost.</p></div>\n\n<h4>Magic</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Reagent rules</strong></td><td>Core Rulebook</td><td>A single stock of drams (<em>Core Rulebook p. 316-318</em>), or Shadow Spells' raw, refined and radical reagents, or Forbidden Arcana's with their Limit and Drain bonuses.</td></tr>\n<tr><td><strong>Spirits: attribute resisting the Drain of an innate spell</strong></td><td>Charisma</td><td>The book leaves the choice between Intuition and Charisma to the GM (<em>Core Rulebook p. 401</em>): choose here.</td></tr>\n<tr><td><strong>Homunculus: material Armor as Armor</strong></td><td>unticked</td><td>See the box below.</td></tr>\n<tr><td><strong>Mask of the mentor</strong></td><td>unticked</td><td>Optional rule: the magician reduces their Drains by 1, the adept gains one power point (<em>Forbidden Arcana p. 182</em>).</td></tr>\n<tr><td><strong>Spirit leash (Forbidden Arcana p. 176)</strong></td><td>unticked</td><td>Optional rule: the leash counts as a sustained spell, and a spirit that succeeds enough offers the GM to test the leash (<em>Forbidden Arcana p. 182</em>).</td></tr>\n<tr><td><strong>Spell Shaping: cost of one bubble</strong></td><td>1</td><td>How many shaping points spare a character: the book does not convert the bubble into squares (<em>Core Rulebook p. 326</em>) (@UUID[Compendium.sr5.manual.JournalEntry.jMw5X886fcLXtB6O.JournalEntryPage.jaRKuOQo9qZOsEmZ]{see 4.1}).</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Homunculus: material Armor as Armor.</strong> The book gives the homunculus its material's Structure as Body, and no Armor (<em>Core Rulebook p. 298</em>). Ticked, it also receives that material's Armor as Armor.</p></div>\n\n<h4>Matrix</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Require a DNI to switch the wireless as a free action</strong></td><td>unticked</td><td>Ticked, each sheet's <strong>Wired by DNI</strong> box decides whether switching a device's wireless on is a Free Action or a Simple Action (<em>Core Rulebook p. 163, 165</em>). Switching the wireless off is always free.</td></tr>\n<tr><td><strong>Use Matrix Grids</strong></td><td>ticked</td><td>Public and local grids, and the grid-hopping penalty (<em>Core Rulebook p. 233-234</em>).</td></tr>\n<tr><td><strong>Use Kill Code</strong></td><td>unticked</td><td>Adds Kill Code's Matrix rules.</td></tr>\n<tr><td><strong>AI outside a device: attribute replacing Logic in defense and resistance</strong></td><td>the higher of the two</td><td>The book does not say which of Willpower or Intuition replaces Logic (<em>Data Trails p. 151</em>): choose here.</td></tr>\n<tr><td><strong>Overwatch Score kept by the gamemaster</strong></td><td>ticked</td><td>The book's rule: only the GM sees the figure rise; the player learns it by checking it (<em>Core Rulebook p. 231</em>).</td></tr>\n<tr><td><strong>Hosts slaved to other hosts (\"nodes\")</strong> (house rule)</td><td>unticked</td><td>Ticked, a host can have another as its master (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.C2nRyxGYGB4ozHTJ]{see 5.3}). The book never slaves a host (<em>Core Rulebook p. 233</em>).</td></tr>\n</tbody>\n</table>\n\n<h4>Rigging</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Use Rigger 5 Matrix Actions</strong></td><td>unticked</td><td>Adds the Matrix actions specific to rigging.</td></tr>\n<tr><td><strong>Advanced driving rules (Rigger 5.0)</strong></td><td>unticked</td><td>Rigger 5.0's chases (<em>Rigger 5.0 p. 173-182</em>) instead of the core rulebook's (<em>Core Rulebook p. 203-204</em>) (@UUID[Compendium.sr5.manual.JournalEntry.5afKb26kGAzDG0I9.JournalEntryPage.Kyp3B3PN2QJ1zfc3]{chases}).</td></tr>\n<tr><td><strong>Drone modifications</strong></td><td>Slots</td><td>The main rule's slots (<em>Rigger 5.0 p. 151</em>), or the optional rule's Modification Points (<em>Rigger 5.0 p. 122-124</em>). Vehicles always keep their slots.</td></tr>\n</tbody>\n</table><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p><p>← @UUID[.MxHL8At1JidYvFM3]{Presets} · @UUID[.yCge0Y6F4Mxd0krx]{Perception, body, items} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "yCge0Y6F4Mxd0krx",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.yCge0Y6F4Mxd0krx",
+      "name": "Perception, body, items",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Perception and vision</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Cybereyes replace natural vision</strong></td><td>ticked</td><td>The rule: cybereyes remove the metatype's vision, unless it was bought back as an enhancement (<em>Core Rulebook p. 94</em>).</td></tr>\n<tr><td><strong>Low-light vision range</strong></td><td>0</td><td>0: low-light vision only sees what is lit, as the book says (<em>Core Rulebook p. 173</em>).</td></tr>\n<tr><td><strong>Thermographic vision range</strong></td><td>30</td><td>See the box below.</td></tr>\n<tr><td><strong>Ultrasound vision range</strong></td><td>50</td><td>The book's value (<em>Core Rulebook p. 173</em>).</td></tr>\n<tr><td><strong>Astral Perception range</strong></td><td>300</td><td>Viewing distance in the astral plane, in meters.</td></tr>\n<tr><td><strong>Green-tinted low-light vision</strong></td><td>unticked</td><td>See the box below.</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Thermographic vision range.</strong> The book gives no range: 30 meters is a comfort choice, to change according to your table.</p>\n<p><strong>Green-tinted low-light vision.</strong> A visual convention, not a rule: the book only says you see normally in low light (<em>Core Rulebook p. 444</em>). Ticked, what a token sees in low-light vision takes the tint of night-vision goggles, when a single token is selected.</p></div>\n\n<h4>Body, health and augmentations</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Flight skill for characters</strong></td><td>unticked</td><td>Adds the Flight skill to the Athletics group of the sheets, for a table that plays winged metatypes.</td></tr>\n<tr><td><strong>Augmentation cap</strong></td><td>+4 at most over the natural attribute</td><td>The book's rule (<em>Core Rulebook p. 94</em>); or only the metatype's augmented maximum; or no cap. The attribute's tooltip shows the real value and the value kept.</td></tr>\n<tr><td><strong>Essence holes (Chrome Flesh p. 74)</strong></td><td>unticked</td><td>Optional rule: the Essence lost by removing an implant serves as credit for implants installed afterwards (<em>Chrome Flesh p. 72</em>).</td></tr>\n<tr><td><strong>Augmentation bundles (Chrome Flesh p. 96)</strong></td><td>unticked</td><td>Optional rule: a box ticked by the GM reduces the Essence of an implant of a complete bundle by 10% (<em>Chrome Flesh p. 92</em>).</td></tr>\n<tr><td><strong>Withdrawal: test modifier by level</strong></td><td>None</td><td>The book asks for modifiers according to the degree of addiction without giving figures (<em>Core Rulebook p. 415</em>). The craving penalty option (<strong>Craving penalty: −2 / −4 / −4 / −6</strong>) takes the values of p. 79 (DjamZ's ruling).</td></tr>\n<tr><td><strong>Diseases: show everything to players</strong></td><td>unticked</td><td>Ticked, the player also sees the disease's Power and the number of tests.</td></tr>\n<tr><td><strong>Essence Loss: length of a lunar month (days)</strong></td><td>29.5</td><td>An infected loses 1 point of Essence per lunar month (<em>Core Rulebook p. 401</em>); the book does not give the month a figure.</td></tr>\n</tbody>\n</table>\n\n<h4>Looting and spoils</h4>\n<p>This tab used to be called \"Items and storage\". The <strong>Starting kit</strong> setting (ticked by default) gives each player character created in the world a backpack, a locker and an empty standard credstick (<em>Run Faster p. 228-229</em>) (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.auDjqd2HZaWxiGoy]{see 7.3}). The three others are House Rules: they are unticked by default.</p>\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Pickpocketing: the thief chooses the object.</strong> The book leaves the GM to choose the item lifted (<em>Core Rulebook p. 420</em>). Ticked, the thief chooses it before their roll, without the GM's validation.</p>\n<p><strong>Leave spoils on death</strong> and <strong>Share of gear left (%)</strong> (50 by default). On a character's death, a bag appears on their body with part of what they carried: each item has this percentage chance of falling into it. No rule provides for it. The gear that fell leaves the body: undoing a death requires picking the bag up.</p></div>\n<p>The garage and the lockpick set, which used to be here, have become boxes of the Objects family of the rule locks (@UUID[.yj32FTBiKvVIyGIf]{chapter 8.2}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p><p>← @UUID[.a95MvmxE6XNgksed]{Combat, Magic, Matrix, Rigging} · @UUID[.opRbNrlGCRvMndk9]{Shop and calendar} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "opRbNrlGCRvMndk9",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.opRbNrlGCRvMndk9",
+      "name": "Shop and calendar",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Shop</h4>\n<p>The tab starts with the <strong>Configure the shop</strong> button: the compendiums the shop sells, and who can buy. Its use, the GM's vendors and fencing are described in the chapter @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.VJKiwMTDWIl9kXMx]{on the GM's shop}. The figures that follow are the book's: only touch them if your table plays otherwise.</p>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Shop: gamma grade (Chrome Flesh p. 74)</strong></td><td>unticked</td><td>Offers gammaware for purchase, never in creation mode (<em>Chrome Flesh p. 72</em>).</td></tr>\n<tr><td><strong>Shop: greyware (Better Than Bad p. 142)</strong></td><td>unticked</td><td>Offers greyware for cyberware only, creation included (<em>Better Than Bad p. 158</em>).</td></tr>\n<tr><td><strong>Shop: creation level</strong></td><td>Experienced runner (Availability 12, rating 6)</td><td>The caps on gear bought in creation mode: street level, experienced runner, prime runner (<em>Core Rulebook p. 64</em>) or <strong>Custom (values below)</strong>, which uses the next two values.</td></tr>\n<tr><td><strong>Shop: highest Availability at creation (custom)</strong> and highest rating</td><td>12 and 6</td><td>Only used at the custom level.</td></tr>\n<tr><td><strong>Shop: surcharge per bonus die</strong> and <strong>Shop: maximum bonus dice bought</strong></td><td>25% and 12</td><td>Paying more to gain dice on the Availability test (<em>Core Rulebook p. 418</em>).</td></tr>\n<tr><td>The five \"Fence: …\" settings</td><td>25%, 5%, 10, 5%, 6</td><td>The starting point, the step per hit, the threshold to find a buyer, the share paid by a contact and the buyer's pool (<em>Core Rulebook p. 419</em>). The book does not give a figure for the last one.</td></tr>\n<tr><td><strong>Shop: the market is open to players</strong></td><td>ticked</td><td>Unticked, the player only buys from the vendors placed by the GM.</td></tr>\n<tr><td><strong>Shop: banner folder</strong></td><td>the Mégapack's if it is active</td><td>The folder of the vendors' banners; the field shows the Mégapack's folder when it is active.</td></tr>\n<tr><td><strong>Shop: availability test at a vendor's too</strong></td><td>unticked</td><td>By default, an item on the shelf is already found and bought without a test (<em>Core Rulebook p. 418</em>).</td></tr>\n<tr><td><strong>Shop: contact types that deal in goods</strong></td><td>a list of words</td><td>A contact whose type contains one of these words gives +2 dice (Haggling) on the Availability test.</td></tr>\n<tr><td><strong>Delivery of purchases</strong></td><td>After the search delay</td><td>The item paid for waits \"On order\" on the sheet until the deadline (<em>Core Rulebook p. 418</em>), and the GM delivers it with a click. <strong>Immediate</strong> delivers at cash-out.</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules</p><p><strong>Express delivery</strong>, <strong>Express: surcharge (%)</strong> (25) and <strong>Express: delay divided by</strong> (2). Absent from the book. Ticked, the player can choose express when ordering: a surcharge on the base price, a divided delay. It is more advantageous than the book's surcharge (<em>Core Rulebook p. 418</em>), and that is intended.</p></div>\n\n<h4>Calendar</h4>\n<table>\n<thead><tr><th>Setting</th><th>Default</th><th>What it changes</th></tr></thead>\n<tbody>\n<tr><td><strong>Calendar: start year</strong></td><td>2070</td><td>The world's hour zero falls on 1 January of that year. Changing it shifts all the world's dates, deadlines included.</td></tr>\n<tr><td><strong>Calendar: combat advances the clock</strong></td><td>ticked</td><td>Each Combat Turn moves the time forward by 3 seconds (<em>Core Rulebook p. 49</em>).</td></tr>\n<tr><td><strong>Calendar: show deadlines to players</strong></td><td>unticked</td><td>Ticked, the player also receives their character's deadlines (withdrawal, rent), without the GM's buttons.</td></tr>\n</tbody>\n</table>\n<p>The year and combat have no effect when a calendar module is active (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.aK1sRuW82YTF1xdL]{the calendar}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p><p>← @UUID[.yCge0Y6F4Mxd0krx]{Perception, body, items} · @UUID[.jB4WF7e1RQt0eerp]{PAN crown, Gamemaster's tools, Interface} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "jB4WF7e1RQt0eerp",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.jB4WF7e1RQt0eerp",
+      "name": "PAN crown, Gamemaster's tools, Interface",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>PAN crown</h4>\n<p>Three world settings, then three personal settings each chooses for themselves. Their effect is shown in the chapter @UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.4tswtGQqbgDVe9IS]{on the PAN crown}.</p>\n<table>\n<thead><tr><th>Setting</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Visibility of PAN crowns</strong>: the devices spotted according to the book (<em>Core Rulebook p. 235-237</em>), or only those the GM reveals</td><td>GM, for the world</td><td>Book rules</td></tr>\n<tr><td><strong>Ambience ceiling of the PAN crowns</strong>: the richest animation allowed at the table</td><td>GM, for the world</td><td>Spectacular</td></tr>\n<tr><td><strong>Gamemaster's reveal of a device</strong>: to the whole table, or player by player</td><td>GM, for the world</td><td>To the whole table</td></tr>\n<tr><td><strong>Opening the PAN crowns</strong>: hover, HUD button or always visible</td><td>each for themselves</td><td>On hover</td></tr>\n<tr><td><strong>AR view key</strong>: toggle or hold (M key by default)</td><td>each for themselves</td><td>Toggle</td></tr>\n<tr><td><strong>Ambience of the PAN crowns</strong>: static, sober or spectacular, without going over the ceiling</td><td>each for themselves</td><td>Sober</td></tr>\n</tbody>\n</table>\n\n<h4>Gamemaster's tools</h4>\n<ul>\n<li><p><strong>Factions</strong>, <strong>Open factions</strong> button: faction reputation (<em>Cutting Aces p. 156</em>), described in the chapter @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.VJKiwMTDWIl9kXMx]{on the GM's shop and factions}.</p></li>\n<li><p><strong>Repair Negotiation</strong>, <strong>Open</strong> button: actors and contacts imported before a fix of the system may have lost their Negotiation skill (0). The window lists those whose original compendium gives more; tick what applies (the <strong>Repair all (ticks every sheet at 0 in the list)</strong> box ticks all the sheets at 0 in the list), then confirm. Each correction only applies once per sheet.</p></li>\n<li><p><strong>Check the players' rolls</strong> (unticked): unticked, a player's roll, made for a character they own, is taken as is, like the GM's. Ticked, the system recounts its hits on the dice and in the sheet's pool, and warns the GM of a discrepancy. In both cases, a roll made for a character you do not own is refused, and the GM keeps the <strong>A player asks the GM</strong> window. Unticked, three confirmations no longer open: that of an effect that reads the hits, that of an IC's attack rolled by a player, and that of a toxin card.</p></li>\n<li><p><strong>Item effects written by the gamemaster only</strong> (unticked): ticked, only the GM adds, edits or removes an item's effects; the player sees them without being able to change them, and the GM sees each change of effects made from another computer go by.</p></li>\n<li><p><strong>Creature powers compendium</strong>, <strong>Sprite powers compendium</strong> and <strong>Base weapons compendium</strong> (Automatic): where the system looks for the powers and natural attacks of a summoned spirit or a compiled sprite. <strong>Automatic</strong> reads the Mégapack, then the official compendiums module as a fallback. If you use a content module of your own, point these three settings at its compendium. Under each, the \"+\" adds your own compendiums, read after the main one: what they bring that is new is given, nothing is doubled. By default, none.</p></li>\n<li><p><strong>Tokens created in play</strong>, <strong>Configure tokens</strong> button: for the spirits, sprites, IC, devices and hosts, drones and vehicles, agents the system creates, the size, disposition, name and bars displayed, the two bars and the token vision they receive. \"—\" keeps the original behaviour, which stays the default; a token already placed does not change.</p></li>\n<li><p><strong>Cutting Aces social rules</strong> (ticked): the social maneuvers and con steps offered in the roll window (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.eaKmcOBAtqQ9rBzh]{see 2.2}).</p></li>\n<li><p><strong>Con tracker</strong>, <strong>Open the tracker</strong> button: the window of the three-phase con (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.Vig8guILL3yvgIjc]{see 7.2}).</p></li>\n</ul>\n<p>The <strong>Other</strong> tab, last, carries the <strong>Commcode message cipher (house rule)</strong>, unticked by default (@UUID[Compendium.sr5.manual.JournalEntry.CKM0UvZC23LLnCgv.JournalEntryPage.6tBbo4KfG1RXgBmJ]{see 5.3}).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Summonings that arrive empty?</p><p>If neither the Mégapack nor the official compendiums module is active, <strong>Automatic</strong> finds nothing, and the GM is warned by a message that stays on screen. Then come here and choose the compendium that contains your powers.</p></div>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Repairing Negotiation in a large world</p><p>The window reads every actor and every contact of the world, and fetches their original in the compendiums before showing up. In a world of several hundred actors, it can take several minutes to open, showing nothing in the meantime: do not click a second time, wait for it to appear.</p></div>\n\n<h4>Interface</h4>\n<table>\n<thead><tr><th>Setting</th><th>For whom</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Appearance</strong>: Shadowrun 5 or 6 Theme (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.Pr4eleOT7yPQN1jR]{themes})</td><td>each for themselves</td><td>Shadowrun 5 Theme</td></tr>\n<tr><td><strong>Show Help Window</strong> (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.onM6wQeM2Rn5e8sp]{hover help})</td><td>each for themselves</td><td>ticked</td></tr>\n<tr><td><strong>Rule reminders</strong>: unticked, cards, roll windows, notifications and help no longer show references to book pages; the rules apply the same way (reload)</td><td>GM, for the world</td><td>ticked</td></tr>\n<tr><td><strong>Hide the roll on random tables</strong>: the die and its face disappear from draw cards, the result stays</td><td>GM, for the world</td><td>unticked</td></tr>\n<tr><td><strong>Effects carried by the target or by an area</strong>: what the caster of an effect carried by another character sees (name, neutral label, or nothing). An effect carried by a player character is always named.</td><td>GM, for the world</td><td>Name of the effect and of its bearer</td></tr>\n<tr><td><strong>Show Development Logs</strong> and <strong>Development Logs Filter</strong>: technical messages in the browser console</td><td>each for themselves</td><td>unticked, Errors only</td></tr>\n</tbody>\n</table>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Reporting a bug</p><p>The development log is only for diagnosing a problem. To report a bug, switch it on with the <strong>Debug (includes all messages)</strong> filter, reproduce the problem, then attach what the browser console shows (F12 key). Switch it off afterwards.</p></div>\n\n<h4>References</h4>\n<ul>\n<li><p>The exhaustive detail of each setting, with its history: <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki: System settings</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.EVmnGJKbAtj857w9]{8.1 The Shadowrun settings window}</p><p>← @UUID[.opRbNrlGCRvMndk9]{Shop and calendar} · @UUID[.yj32FTBiKvVIyGIf]{8.2 Rule locks} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "yj32FTBiKvVIyGIf",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.yj32FTBiKvVIyGIf",
+      "name": "8.2 Rule locks",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>In several places, the system refuses an action in the name of a rule of the book: no action left in the pass, a target out of range, not enough ammunition, a spirit already bound, missing marks… A table that plays more freely can lift these refusals, family by family. A lifted family lets the action go; the computations do not change (a penalty stays a penalty, a clip never goes below zero), and the GM is warned.</p>\n\n<h4>Step by step: setting the locks</h4>\n<ol>\n<li><p>Open <strong>Shadowrun settings</strong>, <strong>Presets</strong> tab (the first), then click <strong>Set the locks</strong>. The button only appears for the GM.</p></li>\n<li><p>Tick or untick the families and their boxes. To tick or untick everything at once, go through the Presets menu, advanced or light automation (@UUID[.MxHL8At1JidYvFM3]{see 8.1}).</p></li>\n<li><p>The <strong>The gamemaster is never stopped by rule locks</strong> box, in the Presets tab, under the button (unticked by default): ticked, a GM's action always goes, and a notification tells them which rule they passed; players always follow the boxes.</p></li>\n<li><p>Click <strong>Save</strong>. The change applies at once, without a reload.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-2-verrous.webp\" width=\"568\" alt=\"The rule locks window: the families, each with what it covers.\" /><figcaption><strong>Figure 8.2.1</strong> — The rule locks window: the families, each with what it covers.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-2-verrous-objets.webp\" width=\"568\" alt=\"The bottom of the same window: the Objects family, its two boxes, and the Save button.\" /><figcaption><strong>Figure 8.2.2</strong> — The bottom of the same window: the Objects family, its two boxes, and the Save button.</figcaption></figure>\n\n<h4>The seven families</h4>\n<table>\n<thead><tr><th>Family</th><th>What it refuses when ticked</th></tr></thead>\n<tbody>\n<tr><td><strong>Actions and initiative</strong></td><td>Reloading without the necessary action, interrupting without enough initiative, parrying or blocking without the skill, spending Edge during an extended test (<em>Core Rulebook p. 161-168, 190-191</em>). Its <strong>Block an action the character no longer has</strong> box also refuses an action when the pass has none left, or when the Initiative Score is at 0 or less (<em>Core Rulebook p. 160-163</em>); it only lifts that refusal.</td></tr>\n<tr><td><strong>Range and targets</strong></td><td>Shooting beyond extreme range (<em>Core Rulebook p. 185</em>), striking out of reach, aiming at several targets with a single attack, fanning fire beyond limits, frisking without being in contact, picking a lock at a distance.</td></tr>\n<tr><td><strong>Ammunition and weapons</strong></td><td>A firing mode without enough ammunition (<em>Core Rulebook p. 176</em>), some reloads in combat, the wireless of a Vintage weapon, an accessory beyond capacity (<em>Core Rulebook p. 444</em>).</td></tr>\n<tr><td><strong>Magic</strong></td><td>Any magic under Blight, a ritual without a valid circle, shaping beyond Magic (<em>Core Rulebook p. 326</em>), a spirit already bound, a preparation at Force 0.</td></tr>\n<tr><td><strong>Matrix</strong></td><td>A Resonance action without Resonance, an action on a device with its wireless off, insufficient marks (<em>Core Rulebook p. 237</em>), rebooting under link-lock, Emulation beyond Depth, a full PAN, shared vision without a mark.</td></tr>\n<tr><td><strong>Body and healing</strong></td><td>A rejected implant (quality, second bone lacing), a purchase that would drop Essence to 0 (<em>Core Rulebook p. 52</em>), natural healing of Stun first (<em>Core Rulebook p. 206</em>), Better Than Bad's healing, a missing medkit (<em>Core Rulebook p. 207</em>).</td></tr>\n<tr><td><strong>Objects</strong></td><td>A full storage, pickpocketing and concealing without Palming (<em>Core Rulebook p. 133</em>), a grapple hold on someone already held, the drug designer without Chemistry, a vehicle modification beyond its slots. Its two boxes: <strong>Check the lifestyle behind a garage</strong> (<em>Run Faster p. 221</em>) and <strong>Lockpicking requires a lockpick set</strong> (<em>Core Rulebook p. 447</em>); each only plays if the family is ticked.</td></tr>\n</tbody>\n</table>\n\n<h4>What happens when a family is lifted</h4>\n<ul>\n<li><p><strong>The action goes</strong>, with what the sheet allows. A barrage fire with 3 bullets goes with 3 bullets; a Resonance action without Resonance goes with 0 dice; a pickpocketing without Palming goes with the sheet's pool (0 dice), and the GM adds what they judge in the <strong>Miscellaneous</strong> modifier.</p></li>\n<li><p><strong>The GM receives a whisper</strong> in the chat, of the type \"<em>Clo: rule \"Ammunition and weapons\" lifted, the action went. Reason for the refusal lifted: …</em>\", only once per character, per message and per Combat Turn. The player who acted does not see it. Without a GM connected, the action goes without a whisper; the GM who acts themselves receives a simple notification.</p></li>\n<li><p><strong>What Blight removes stays removed</strong>: the Magic family lifted lets the spell be cast, but a focus activated under Blight gives nothing. To lift the whole effect, remove Blight from the sheet.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">What is never lifted</p><p>The locks touch neither the registers and fields reserved to the GM, nor single-use cards (you do not resist the same attack twice), nor the nuyen, reagents and Edge already spent, nor Foundry's permissions, nor the outcomes of a computation: a target outside a spell's area stays outside the area, a threshold not reached stays failed. The shop keeps its own rules in the <strong>Shop</strong> tab.</p></div>\n\n<h4>A new world, an updated world</h4>\n<p>A <strong>new world</strong> starts by the book. On its first load, a window asks the GM once for their automation: <strong>Advanced</strong> (the book), <strong>Light</strong> or <strong>Custom</strong>. Closing it applies <strong>Advanced</strong> (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.Gfk5zUuTaOqS9vUv]{the first launch of a world}).</p>\n<p>An <strong>existing world</strong> never sees this window, and does not change behaviour on update: the <strong>Block an action the character no longer has</strong> box takes over the old setting of the same name, unticked by default, and the world arrives as <strong>Custom</strong>.</p>\n\n<h4>What to do with a refusal</h4>\n<ul>\n<li><p><strong>The player</strong> reads the message: it says which rule refuses, often with its page. If the game situation justifies an exception, ask the GM for it rather than working around the sheet.</p></li>\n<li><p><strong>The GM</strong> has three answers: apply the rule; lift the family for the scene, then tick it again; or, for an isolated case, have the action played with a <strong>Miscellaneous</strong> modifier when the sheet allows it.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>The detail of each refusal and of what happens when it is lifted: <a href=\"https://github.com/DjamZee/sr5/wiki/Reglages-du-systeme\">wiki: System settings, Rule locks section</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>← @UUID[.jB4WF7e1RQt0eerp]{PAN crown, Gamemaster's tools, Interface} · @UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ve0BXl53k8qhNxKU",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.ve0BXl53k8qhNxKU",
+      "name": "8.3 Scenes",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>What you set on a scene applies on its own to all the rolls made on it: light and visibility to attacks, Matrix Noise to Matrix actions, background count to spells. Foundry's scene configuration receives three tabs from the system for this.</p>\n\n<h4>Step by step: opening the configuration</h4>\n<ol>\n<li><p>In the scene navigation, at the top left, right-click the scene, then <strong>Configure</strong>.</p></li>\n<li><p>The system's three tabs follow Foundry's: <strong>Environmental Modifiers</strong>, <strong>Matrix Noise</strong> and <strong>Background Count</strong>.</p></li>\n<li><p>Set them, then save at the bottom of the window.</p></li>\n</ol><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>← @UUID[.yj32FTBiKvVIyGIf]{8.2 Rule locks} · @UUID[.VAAr4vuqbXXUJWrZ]{Environment, noise, background count} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VAAr4vuqbXXUJWrZ",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.VAAr4vuqbXXUJWrZ",
+      "name": "Environment, noise, background count",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong>Environmental Modifiers.</strong> Choose a situation for <strong>Visibility</strong>, <strong>Light</strong>, <strong>Glare</strong> and <strong>Wind</strong>. As the book wants, the system keeps the worst and applies it to the tests concerned: the modifiers do not add up (<em>Core Rulebook p. 173</em>). Each character's visions soften them, and shooting range goes into the same table. The modifier appears in the roll window, in the folded section of environment modifiers.</p>\n<figure><img src=\"systems/sr5/manuel/captures/8-3-environnement.webp\" width=\"560\" alt=\"The Environmental Modifiers tab: four situations, then the radiation severity.\" /><figcaption><strong>Figure 8.3.1</strong> — The Environmental Modifiers tab: four situations, then the radiation severity.</figcaption></figure>\n<p>At the bottom of the tab, <strong>Radiation severity</strong> sets the intensity of an irradiated area (<em>Run & Gun p. 152-156</em>). Nothing happens as long as you do not click <strong>Expose to radiation</strong>, which opens the list of exposed characters.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-bruit.webp\" width=\"560\" alt=\"The Matrix Noise tab: the scene's spam zone and static zone.\" /><figcaption><strong>Figure 8.3.2</strong> — The Matrix Noise tab: the scene's spam zone and static zone.</figcaption></figure>\n<p><strong>Matrix Noise.</strong> Choose the <strong>Spam zone</strong> (ads and traffic, from downtown to a mass gathering) and the <strong>Static zone</strong> (abandoned building, Barrens, remote place…) (<em>Core Rulebook p. 230-231</em>). The noise applies to Matrix actions made from the scene, along with the noise of distance.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-champ-magique.webp\" width=\"560\" alt=\"The Background Count tab: the astral phenomenon, the rating and the aspect.\" /><figcaption><strong>Figure 8.3.3</strong> — The Background Count tab: the astral phenomenon, the rating and the aspect.</figcaption></figure>\n<p><strong>Background count.</strong> Set the <strong>Background Count rating</strong> and its <strong>Alignment</strong>: a count aspected towards a tradition helps it instead of hindering it (<em>Street Grimoire p. 30</em>). The <strong>Astral phenomenon</strong> menu fills both in with a click (<em>Aetherology p. 32-34</em>); you can then change them within the book's range. The count applies to spells, preparations, rituals and powers cast on the scene.</p>\n<p>The displayed scene's noise and background count are recalled at the bottom left of the screen, under the list of connected people (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.o25ieQmnMSZt0yYC]{the screen at a glance}).</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Meters, feet and square size</p><p>Shadowrun writes all its distances in meters. Foundry's <strong>Grid</strong> tab lets you choose the scene's unit: the system converts feet to meters before comparing a distance with a range, and draws templates at the right size. Only the meter and the foot are recognized; any other unit is read as meters. A new scene is born at 1.5 m per square; a scene created before the conversion keeps its square size: set it to 1.5 m if it was at 1 m.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes}</p><p>← @UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes} · @UUID[.DEVleAz00ugXwFCf]{Shared vision and cameras} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DEVleAz00ugXwFCf",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.DEVleAz00ugXwFCf",
+      "name": "Shared vision and cameras",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A player can see through the eyes of a drone, a camera or any device that has sensors: because its owner shares its feed (<em>Invite Mark</em>), because a hacker hacked it (<em>Snoop</em>) (<em>Core Rulebook p. 242</em>), or because a rigger is jumped into it.</p>\n\n<h4>Step by step: sharing a camera's view (GM)</h4>\n<ol>\n<li><p>Right-click the camera's or drone's token: the HUD shows an eye, <strong>Share vision</strong>.</p></li>\n<li><p>Click it. Tick the players who should see, then click <strong>Share vision</strong>.</p></li>\n<li><p>Each now sees on the map what the device sees, in addition to what their own tokens see. A hidden camera stays hidden: you see through it without seeing it.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-3-vision-hud.webp\" width=\"203\" alt=\"A camera's HUD: the &quot;Share vision&quot; eye, at the bottom of the left column.\" /><figcaption><strong>Figure 8.3.4</strong> — A camera's HUD: the \"Share vision\" eye, at the bottom of the left column.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-3-vision-partage.webp\" width=\"452\" alt=\"The sharing window: one box per player of the world, here two.\" /><figcaption><strong>Figure 8.3.5</strong> — The sharing window: one box per player of the world, here two.</figcaption></figure>\n\n<p>A drone's owner makes the same gesture from their drone's HUD; in combat, sharing costs them a Simple Action, outside combat nothing. The GM pays nothing. A successful Snoop gives the hacker a \"See through…\" button on the defense card, valid as long as they keep a mark on the device.</p>\n<p>Whoever sees through a device finds, at the bottom left, the <strong>You see through</strong> box with the name of each device; the crossed-out eye stops seeing through it. Vision also stops on its own when the mark disappears, when the wireless is switched off, or when the device is bricked or destroyed.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes}</p><p>← @UUID[.VAAr4vuqbXXUJWrZ]{Environment, noise, background count} · @UUID[.2z1uuQO8oVEhfnQs]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "2z1uuQO8oVEhfnQs",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.2z1uuQO8oVEhfnQs",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It applies to each roll the environment, noise and background count of the scene where the token is.</p></li>\n<li><p>It converts feet to meters and draws each template at the book's radius, even if it goes off the map.</p></li>\n<li><p>It stops a shared vision whose mark, wireless or device has disappeared.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Changes the environment when the scene changes (night falls, the smoke clears).</p></li>\n<li><p>Displays the scene where the action takes place when a character has tokens on several scenes: the system reads the one the GM is looking at.</p></li>\n<li><p>Exposes characters to radiation with a click, when the story calls for it.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Melee: ignore the environment when it is equal for both</strong> (Combat)</td><td>unticked</td></tr>\n<tr><td><strong>Low-light vision range</strong>, <strong>Thermographic vision range</strong>, <strong>Ultrasound vision range</strong>, <strong>Astral Perception range</strong> (Perception and vision)</td><td>0, 30, 50, 300</td></tr>\n<tr><td>The <strong>Matrix</strong> family of the locks (shared vision without a mark)</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Environmental modifiers: (<em>Core Rulebook p. 173</em>). Spam and static zones: (<em>Core Rulebook p. 230-231</em>). Invite Mark and Snoop: (<em>Core Rulebook p. 242</em>).</p></li>\n<li><p>The detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Configuration-de-scene\">wiki: Scene configuration</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Vision-partagee\">wiki: Shared vision and cameras</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ve0BXl53k8qhNxKU]{8.3 Scenes}</p><p>← @UUID[.DEVleAz00ugXwFCf]{Shared vision and cameras} · @UUID[.S2R2SocjATdC39nc]{8.4 Random tables} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "S2R2SocjATdC39nc",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.S2R2SocjATdC39nc",
+      "name": "8.4 Random tables",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>Foundry draws a random line from a table. The system adds what you need to build a loot table (how many draws, how many copies, how many nuyen), to hand out what comes out, and to draw directly from a compendium without building a table.</p>\n\n<h4>Step by step: building a loot table</h4>\n<ol>\n<li><p>Create a table in the sidebar's <strong>Rollable Tables</strong> tab, or open one. Click <strong>Edit</strong>, at the top right of the sheet, then the <strong>Summary</strong> tab.</p></li>\n<li><p>Under <strong>Roll Formula</strong>, fill in <strong>Number of draws</strong> (for example <code>3</code> or <code>1d4+1</code>): the table is drawn that many times at once, and everything arrives on a single card.</p></li>\n<li><p>Fill in <strong>Nuyen found</strong> (for example <code>2d6*100</code>) if the loot contains money. Left empty, the table gives no money.</p></li>\n<li><p>On a line, click the cog on the right, then fill in <strong>Quantity</strong> under <strong>Weight</strong> (for example <code>2d6</code>): the line gives that many copies. A quantity on a line that refers to another table rerolls that sub-table: <code>1d3</code> gives one to three different weapons, not three times the same.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-config.webp\" width=\"732\" alt=\"A table's sheet in edit mode, Summary tab: Number of draws and Nuyen found are added by the system, and the draw-with-replacement box is explained.\" /><figcaption><strong>Figure 8.4.1</strong> — A table's sheet in edit mode, Summary tab: Number of draws and Nuyen found are added by the system, and the draw-with-replacement box is explained.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-4-ligne.webp\" width=\"572\" alt=\"A line's configuration: the Quantity field, under the weight.\" /><figcaption><strong>Figure 8.4.2</strong> — A line's configuration: the Quantity field, under the weight.</figcaption></figure>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Good to know</p><p>A quantity never makes a line disappear: write a \"Nothing\" line if the table must be able to give nothing. An incomprehensible formula does not block the game: the GM is warned and the table draws once. Sub-tables nest at most five levels deep. A table without replacement drawn more times than it has lines is put back into play: you always get the number asked for.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>← @UUID[.2z1uuQO8oVEhfnQs]{Related settings and references} · @UUID[.yKv3PGD1muSSHP7e]{Drawing and handing out} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "yKv3PGD1muSSHP7e",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.yKv3PGD1muSSHP7e",
+      "name": "Drawing and handing out",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>Draw the table as usual. The card groups identical results (<strong>×3</strong>), then carries one line per thing to hand out.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-carte.webp\" width=\"300\" alt=\"The card of a triple draw: identical draws grouped in a single line (×2), the loot to give, the nuyen to pay out, and Draw again. Share only appears on a private or blind card.\" /><figcaption><strong>Figure 8.4.3</strong> — The card of a triple draw: identical draws grouped in a single line (×2), the loot to give, the nuyen to pay out, and Draw again. Share only appears on a private or blind card.</figcaption></figure>\n\n<ul>\n<li><p>On a loot line, <strong>Hand over</strong> copies the items that came out of the compendiums onto the selected character. Select a single token: with two tokens selected, nothing is given. Any actor can receive: a character, an NPC, a safehouse.</p></li>\n<li><p>On the nuyen line, <strong>Hand over</strong> (GM only) shares the nuyen equally between the selected player characters, without loss to rounding. The button only works once; the sum appears on the sheet as an ordinary gain. To cancel, delete the line on the sheet. Equal sharing is a table comfort: the book does not say how a team splits what it finds.</p></li>\n<li><p><strong>Draw again</strong> redoes the same draw, in the same mode (public, private, blind), on a new card.</p></li>\n<li><p><strong>Share</strong> makes public a card drawn privately or blind.</p></li>\n</ul>\n<p>The GM sees these buttons on all cards; the player, only on their own draws. When the card was drawn by a player, the hand-over buttons first show the GM what is going to be handed over; if they refuse, nothing is handed over.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.S2R2SocjATdC39nc]{8.4 Random tables}</p><p>← @UUID[.S2R2SocjATdC39nc]{8.4 Random tables} · @UUID[.HzK6G6t8NVbyVKgR]{A compendium as a table} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "HzK6G6t8NVbyVKgR",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.HzK6G6t8NVbyVKgR",
+      "name": "A compendium as a table",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>No need to build a table to pull out an item, an actor or a journal at random.</p>\n\n<h4>Step by step: drawing at random from a compendium</h4>\n<ol>\n<li><p>In the sidebar's <strong>Compendium Packs</strong> tab, right-click a compendium. The same entry exists in the menu of an open compendium's window, on a folder inside a compendium (the draw is then made in that folder), and in the compendium browser, where the draw is made among what the filters leave visible.</p></li>\n<li><p>Choose <strong>Draw at random</strong>.</p></li>\n<li><p>Enter the number of draws (1 by default, 100 at most), then confirm. Each entry has the same chance of coming out; the usual card arrives, with the hand-over button for items. Nothing is created in the world.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-4-menu-compendium.webp\" width=\"313\" alt=\"The right-click on a compendium: Draw at random and Create a weighted table.\" /><figcaption><strong>Figure 8.4.4</strong> — The right-click on a compendium: Draw at random and Create a weighted table.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/8-4-tirer.webp\" width=\"412\" alt=\"The window that asks how many draws.\" /><figcaption><strong>Figure 8.4.5</strong> — The window that asks how many draws.</figcaption></figure>\n\n<h4>Step by step: creating a weighted table (GM)</h4>\n<ol>\n<li><p>In the same place, choose <strong>Create a weighted table</strong>. The window lists the entries alphabetically, each with a weight of 1.</p></li>\n<li><p>Give each entry a weight: 3 comes out three times as often as 1; 0 does not go into the table. <strong>Filter by name</strong> hides lines, <strong>Exclude hidden</strong> sets to 0 everything the filter hides, <strong>All to 1</strong> sets all weights back to 1.</p></li>\n<li><p>Click <strong>Create the table</strong>. The table is created in the world, with a formula that exactly covers the weights, and opens. You can then add a number of draws, quantities or nuyen to it.</p></li>\n</ol>\n\n<h4>Related settings and references</h4>\n<table>\n<thead><tr><th>Setting (tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Hide the roll on random tables</strong> (Interface)</td><td>unticked</td></tr>\n</tbody>\n</table>\n<p>Showing the die or not is also decided table by table, with the <strong>Display Roll Formula to Chat</strong> box of the <strong>Summary</strong> tab. The detail, and moving over from the old Better Roll Tables module: <a href=\"https://github.com/DjamZee/sr5/wiki/Tables-aleatoires\">wiki: Random tables</a>. The nuyen paid out: @UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.auDjqd2HZaWxiGoy]{money and credsticks}.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.S2R2SocjATdC39nc]{8.4 Random tables}</p><p>← @UUID[.yKv3PGD1muSSHP7e]{Drawing and handing out} · @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "ZsMzujTz8nKfUE5I",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.ZsMzujTz8nKfUE5I",
+      "name": "8.5 Browser, macros, implant register",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>Four everyday tools: finding an item in all the compendiums at once, putting a roll in the macro bar, giving a combatant back their actions, and knowing what the active GM keeps during play.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>← @UUID[.HzK6G6t8NVbyVKgR]{A compendium as a table} · @UUID[.udEQ3UgqUkVrbJjG]{The compendium browser} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "udEQ3UgqUkVrbJjG",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.udEQ3UgqUkVrbJjG",
+      "name": "The compendium browser",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: looking for an item</h4>\n<ol>\n<li><p>Open the sidebar's <strong>Compendium Packs</strong> tab and click <strong>Compendium Browser</strong>, at the top of the list.</p></li>\n<li><p>Choose a type in the left panel (weapons, augmentations, spells, vehicles, actors…): the filters specific to that type appear (subtype, rating, availability, price…). The number of entries of each subtype is shown. Under the types, on the left, are the <strong>Open the shop</strong>, <strong>Draw at random</strong> and <strong>Create a weighted table</strong> buttons; the count of results is at the bottom, near <strong>Load More</strong>.</p></li>\n<li><p>Narrow down with the search field, then drag the entry found onto a sheet, or onto the scene for an actor.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-5-navigateur.webp\" width=\"972\" alt=\"The compendium browser: the types on the left, the filters, the list.\" /><figcaption><strong>Figure 8.5.1</strong> — The compendium browser: the types on the left, the filters, the list.</figcaption></figure>\n<p>The browser only reads the compendiums your role can see: a player does not find there what the GM keeps for themselves. It also serves as a shop and as a starting point to draw at random among what the filters leave visible (@UUID[Compendium.sr5.manual.JournalEntry.bqnSE0NCUfCmiCd8.JournalEntryPage.zKky8MvmSeq77inw]{the shop}, @UUID[.S2R2SocjATdC39nc]{random tables}).</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register}</p><p>← @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register} · @UUID[.A77eQ6o6bNnZDpHq]{Macros} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "A77eQ6o6bNnZDpHq",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.A77eQ6o6bNnZDpHq",
+      "name": "Macros",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: putting a roll in the bar</h4>\n<ol>\n<li><p>Open the character's sheet.</p></li>\n<li><p>Drag a weapon, a spell, a preparation, a complex form or an adept power that requires a roll onto a slot of the macro bar, at the bottom of the screen. A skill, a Matrix action or a Resonance action are dragged the same way.</p></li>\n<li><p>The system makes the macro, with the name and image of what you dragged. A click rolls the test.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/8-5-macro.webp\" width=\"792\" alt=\"A weapon dragged into the bar (①): the macro carries its name and image.\" /><figcaption><strong>Figure 8.5.2</strong> — A weapon dragged into the bar (①): the macro carries its name and image.</figcaption></figure>\n<p>An item macro plays for the selected character, or for your user's: the same button serves each for their own character. An item that requires no roll makes no macro, and the system says so rather than create an inert button.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register}</p><p>← @UUID[.udEQ3UgqUkVrbJjG]{The compendium browser} · @UUID[.Jx5pEe4TrSVhk7Mi]{Resetting actions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Jx5pEe4TrSVhk7Mi",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.Jx5pEe4TrSVhk7Mi",
+      "name": "Resetting actions",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The system counts down each combatant's actions at each pass (@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.IUNfbsSb66lrAYLT]{initiative and actions}). When a countdown must be corrected, the GM gives a combatant back all their actions.</p>\n<ol>\n<li><p>In the sidebar's <strong>Combat</strong> tab, right-click the combatant.</p></li>\n<li><p>Choose <strong>Reset actions</strong>: they get back their Free Action, their two Simple Actions or their Complex Action, as at the start of a pass.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/8-5-actions-neuf.webp\" width=\"313\" alt=\"A combatant's menu: Reset actions, GM only.\" /><figcaption><strong>Figure 8.5.3</strong> — A combatant's menu: Reset actions, GM only.</figcaption></figure>\n<p>The same menu carries the initiative removals (−1, −5, −10), <strong>Seize the initiative</strong>, <strong>Blitz</strong> and <strong>Delaying action</strong>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register}</p><p>← @UUID[.A77eQ6o6bNnZDpHq]{Macros} · @UUID[.h15X4DuiRuXEPEsx]{The implant register and the active GM} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "h15X4DuiRuXEPEsx",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.h15X4DuiRuXEPEsx",
+      "name": "The implant register and the active GM",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>active GM</strong>'s browser (the first GM connected) keeps several registers during play: the implant register (the Essence and bundle fields only the GM fills in), the register of shop orders, diseases, infections, healing, factions. There is nothing to open: these registers work on their own. What you need to know is what they ask of the table.</p>\n<ul>\n<li><p><strong>Stay connected</strong> during play. Shop deliveries, the tracking of diseases and healing, and requests made to the GM (damage on a character that is not their own, for example) go through the active GM's browser. Without a GM connected, nothing is checked; when the next GM arrives, the implant fields that do not match their register are put back in order.</p></li>\n<li><p><strong>A message \"Only the active GM…\"</strong> means the action must be done from the active GM's computer. With two GMs connected, it is the first to arrive.</p></li>\n<li><p><strong>A GM alert in normal play</strong> (a reserved field \"reset\", when nobody did anything unusual) is a bug in the system: report it.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Navigateur-de-compendiums\">wiki: Compendium browser</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Macros\">wiki: Macros</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Outils-du-MJ\">wiki: GM tools</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Tracker-d-initiative\">wiki: Initiative tracker</a>.</p></li>\n<li><p>Counting down actions per pass: (<em>Core Rulebook p. 162-163</em>).</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.ZsMzujTz8nKfUE5I]{8.5 Browser, macros, implant register}</p><p>← @UUID[.Jx5pEe4TrSVhk7Mi]{Resetting actions} · @UUID[.VQ6AnlZW13Gcola2]{8.6 What the system does not do} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VQ6AnlZW13Gcola2",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.VQ6AnlZW13Gcola2",
+      "name": "8.6 What the system does not do",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>The system automates a lot, not everything. Here are the gestures that stay with the GM, sorted by domain. None prevents playing: for each, the line says what you do by hand. Some are choices (the book leaves the decision to the GM, or automating it would cost more than it brings): they are flagged as such.</p><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU}</p><p>← @UUID[.h15X4DuiRuXEPEsx]{The implant register and the active GM} · @UUID[.UFQYAW7GfUT7ye0q]{Combat, magic, Matrix} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "UFQYAW7GfUT7ye0q",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.UFQYAW7GfUT7ye0q",
+      "name": "Combat, magic, Matrix",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Combat</h4>\n<ul>\n<li><p><strong>A single attack per phase</strong> <em>(choice: \"let's stay flexible\", DjamZ's ruling)</em>. The system warns about an action outside your phase but lets two attacks go with two Simple Actions. Enforce the rule yourself (<em>Core Rulebook p. 164</em>).</p></li>\n<li><p><strong>Changing mode, getting up, taking cover without an action.</strong> These gestures are not blocked when the character no longer has the necessary action. Rule on it at the table.</p></li>\n<li><p><strong>Active defenses from supplements.</strong> They have neither a limit nor a check of their action cost: count the action and the limit yourself.</p></li>\n<li><p><strong>Smoke on the shooter's side.</strong> When the shooter is in the smoke and the target outside, the system applies visibility without trying to cancel it. Correct the modifier in the roll window if you judge otherwise.</p></li>\n<li><p><strong>Situational effects on Initiative and Reach.</strong> A situational effect cannot modify them: adjust them on the sheet for the duration of the effect.</p></li>\n<li><p><strong>Unlinked NPC shooting from its directory sheet.</strong> Progressive recoil only counts for the token present in the combat: have the NPC shoot from its token.</p></li>\n<li><p><strong>Accessories recognized by their name.</strong> The weapon light, the red-dot sight, the laser sight, the holographic sight, the scope and the recoil systems are recognized by their name: renamed, they no longer act. Keep their original name.</p></li>\n<li><p><strong>Laser weapons.</strong> The drop in DV with range only plays on a weapon that carries the \"Laser weapon\" trait: put the trait on a weapon from a source other than the Mégapack.</p></li>\n<li><p><strong>Smartlink mounted in a scope.</strong> It does not make the weapon's smartgun play: apply it by hand.</p></li>\n<li><p><strong>Diagonal scatter, Second Chance and glitch, clinch penalty against another target</strong> <em>(choices, DjamZ's rulings)</em>: the system does what is described in the chapters @UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.sE0YQ8jUQdwkduTP]{on grenades} and @UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.eWTrOUQuSfM2Rf1a]{on melee}; nothing to do.</p></li>\n</ul>\n\n<h4>Magic</h4>\n<ul>\n<li><p><strong>Environment and indirect spells.</strong> Neither the casting nor the defense of an indirect spell read visibility or light. Add the modifier in the roll window if you judge it applies.</p></li>\n<li><p><strong>Counterspelling and protection foci</strong> <em>(choice)</em>. Only the most powerful counts, and it is always applied: remove it if its category does not fit.</p></li>\n<li><p><strong>Caster deleted.</strong> If the actor sustaining an effect is deleted, the linked resistances stop without warning: remove or recast the effect.</p></li>\n<li><p><strong>Grey mana armor against a beneficial spell.</strong> There is no resistance roll, so the armor does not play: apply its rating by hand if the spell must be resisted.</p></li>\n<li><p><strong>Illusion spell: physical or mana.</strong> The illusionist's choice is not modelled: choose the spell's category according to their decision.</p></li>\n<li><p><strong>Decrease Reflexes.</strong> The spell also lowers Matrix and astral Initiatives: correct them if needed.</p></li>\n<li><p><strong>Increase and Decrease Noise.</strong> These spells set no effect: apply them at the table.</p></li>\n<li><p><strong>A spirit's Force, a sprite's level</strong> <em>(choice)</em>. The owner can change them on the sheet: watch the value at summoning.</p></li>\n</ul>\n\n<h4>Matrix</h4>\n<ul>\n<li><p><strong>Convergence.</strong> At an Overwatch Score of 40, nothing triggers in the system alone: apply convergence by hand.</p></li>\n<li><p><strong>An AI's program cap</strong> <em>(choice)</em>. Beyond it, a warning is shown without blocking: decide whether one program too many must be removed.</p></li>\n<li><p><strong>Spam modified.</strong> Changing a Spam's value does not change the effect already set: remove the effect and set it again.</p></li>\n<li><p><strong>Second link-lock by an IC.</strong> On a target already locked, the IC's lock button is hidden: set the second lock by hand.</p></li>\n<li><p><strong>AI outside any device.</strong> It is immune to link-lock (<em>Data Trails p. 151</em>), but the card offers it anyway: do not click, or remove the \"Link-locked\" effect from its sheet.</p></li>\n<li><p><strong>DSP weapons without a device.</strong> Against a target with no active device, the pulse does nothing: it is up to the GM to adjust if it should target another device, carried by the target or by a neighbour.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.VQ6AnlZW13Gcola2]{8.6 What the system does not do}</p><p>← @UUID[.VQ6AnlZW13Gcola2]{8.6 What the system does not do} · @UUID[.StKYGhkWHwOfIboc]{Body, items, vehicles, table} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "StKYGhkWHwOfIboc",
+      "_key": "!journal.pages!arMGpK6RvbR3sLNQ.StKYGhkWHwOfIboc",
+      "name": "Body, items, vehicles, table",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Healing and augmentations</h4>\n<ul>\n<li><p><strong>First aid through full armor.</strong> The card announces the whole number of boxes; only half is applied at the click, with a notification: trust the notification.</p></li>\n<li><p><strong>Improvised supplies.</strong> The penalty is applied, but the new attempt at twice the delay is not tracked: count it yourself.</p></li>\n<li><p><strong>Adrenaline pump.</strong> Deactivate it on the sheet when its effect ends.</p></li>\n<li><p><strong>First aid on an AI.</strong> The roll is offered and would remove boxes from its core, which is Matrix damage: answer \"No\" to the request.</p></li>\n<li><p><strong>Two bone lacings already active.</strong> The refusal holds at installation and activation, but two bone lacings already active stay so: deactivate or remove the old one.</p></li>\n<li><p><strong>Implant delivered inactive</strong> <em>(choice)</em>. A purchased implant arrives inactive; Essence only goes down once its box is ticked: tick it at installation.</p></li>\n<li><p><strong>Hydraulic jacks.</strong> Jumping and reduced falling are not computed (<em>Core Rulebook p. 458</em>): count them.</p></li>\n</ul>\n\n<h4>Items, drugs and effects</h4>\n<ul>\n<li><p><strong>Items placed before an update.</strong> They keep their old effects: delete them from the sheet and take them again from the compendium.</p></li>\n<li><p><strong>\"Of your choice\" bonuses</strong> <em>(choice)</em>. The item arrives with a default choice: edit the effect according to the character's.</p></li>\n<li><p><strong>Addiction qualities</strong> <em>(choice)</em>. They are not provided: create them if needed.</p></li>\n<li><p><strong>Overdose.</strong> An effect described only in a drug's text is not read (<em>Core Rulebook p. 415</em>): then apply the overdose by hand.</p></li>\n<li><p><strong>\"Grey mana\" effect modified.</strong> Editing the item can erase the effect's target: take the item again from the Mégapack.</p></li>\n</ul>\n\n<h4>Vehicles and shop</h4>\n<ul>\n<li><p><strong>GEVs.</strong> Speed is not computed: enter it by hand.</p></li>\n<li><p><strong>Metavariants' rent.</strong> The rent counts the five metatypes, not the surcharge of a metavariant or of a quality: debit it with a loss transaction.</p></li>\n<li><p><strong>Shop in a small window.</strong> Below about 1,100 pixels wide, the names column disappears: enlarge the window.</p></li>\n</ul>\n\n<h4>At the table, with several GMs or several scenes</h4>\n<ul>\n<li><p><strong>The active GM leaves during a request.</strong> The request is lost, and the player is warned: they click again, the request goes to the GM who stays.</p></li>\n<li><p><strong>Jamming with two GMs connected.</strong> Jamming and noise or background count templates may count twice: a single GM connected during these scenes, or remove the \"jammed\" effects left on the sheets.</p></li>\n<li><p><strong>A container's lock.</strong> If the GM closes their browser while a request is waiting, their choice is lost: make the request again.</p></li>\n<li><p><strong>A sheet's data.</strong> Foundry sends each computer the actors' data, and a sheet's owner can write to it, their money included. The system recomputes what counts and warns the GM; keep an eye on the accounts and on the combat tracker, and check an unexpected card before validating it.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>The list kept up to date, with the date of each limit: <a href=\"https://github.com/DjamZee/sr5/wiki/Limites-connues\">wiki: Known limits</a>. A limit lifted by a later version leaves it and appears in the <a href=\"https://github.com/DjamZee/sr5/wiki/Changelog\">wiki: Changelog</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.B5EmlntQSZv5gpAj]{MENU} &gt; @UUID[.VQ6AnlZW13Gcola2]{8.6 What the system does not do}</p><p>← @UUID[.UFQYAW7GfUT7ye0q]{Combat, magic, Matrix}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

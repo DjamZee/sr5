@@ -1,0 +1,689 @@
+{
+  "_id": "bqnSE0NCUfCmiCd8",
+  "_key": "!journal!bqnSE0NCUfCmiCd8",
+  "name": "7. Buying, selling, living",
+  "folder": "kJNvGtZefbB9GIOf",
+  "sort": 800000,
+  "ownership": {
+    "default": 2
+  },
+  "flags": {},
+  "categories": [],
+  "pages": [
+    {
+      "_id": "Bny2vhbixifttrfK",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.Bny2vhbixifttrfK",
+      "name": "MENU",
+      "type": "text",
+      "sort": 100000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>This part follows the character's money: how they gear up at the shop, how the GM keeps their merchants and buys back the loot, where nuyen and rent live, and how the world's clock makes orders arrive and deadlines fall due. The player mostly reads chapters 7.1 and 7.3; the GM reads all four.</p>\n<p>The system applies here the core rulebook's buying and reselling rules (<em>Core Rulebook p. 417-419</em>). This manual does not copy them: it shows the windows, says what the system computes on its own and what stays in the GM's hands.</p><table><tbody><tr><td><p>@UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p></td><td><p>Player</p></td></tr><tr><td><p>&emsp;@UUID[.oWsse7X06aNkVpuz]{The shop window}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.6BUwVHBpL3loQaYF]{Buying: the cart, the test, the till}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Ga0gO6SMY0vVY4nv]{Delivery}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.nejrzviZ0D1jpTjm]{Gearing up during creation}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.oJidqmfjizxDUjzt]{Implants: grades and Essence}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.HA3thjxEZp1b1Bwv]{What the system does, settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p></td><td><p>GM</p></td></tr><tr><td><p>&emsp;@UUID[.GhvHZiEOvNRmUArw]{Configuring the shop}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.DacFECvJtqV9g4Gd]{Vendors}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.2LvxxwcOSdgiTH6h]{Reselling: fencing}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.l8rRYGR64VWk7joD]{The information broker}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.mMDyWNoSU9tpR5kD]{Factions}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.Vig8guILL3yvgIjc]{Tracking cons}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.buYFUZvPmkEXBidv]{The GM's settings and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.thCvdVd0A90MS7Hu]{Accounts}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.4LEyPQ9AgJkFgbA1]{Cash: credsticks}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.65rJIY7hXJu0RL8b]{Lifestyle}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.O9C65CpkGH7Oku4d]{What the system does and references}</p></td><td><p></p></td></tr><tr><td><p>@UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar}</p></td><td><p>All</p></td></tr><tr><td><p>&emsp;@UUID[.k6HPPvnYtpX7FlMJ]{Events}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.pwCb4DcvUXgqhV9V]{The GM's deadlines}</p></td><td><p></p></td></tr><tr><td><p>&emsp;@UUID[.1VkMQQvx0DjUOQRQ]{Related settings and references}</p></td><td><p></p></td></tr></tbody></table>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "zKky8MvmSeq77inw",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.zKky8MvmSeq77inw",
+      "name": "7.1 The player's shop",
+      "type": "text",
+      "sort": 200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">Player</strong></p><h4>What it is for</h4>\n<p>The shop is the window where you buy gear: weapons, armor, implants, electronics, drugs, foci, vehicles… It reads the compendiums the GM has put on sale, shows for each item its Availability, its search delay and its price, rolls the Availability test, debits your accounts and puts the item on your sheet, at once or after the delay, according to the GM's settings.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU}</p><p>@UUID[.oWsse7X06aNkVpuz]{The shop window} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "oWsse7X06aNkVpuz",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.oWsse7X06aNkVpuz",
+      "name": "The shop window",
+      "type": "text",
+      "sort": 300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: opening the shop</h4>\n<ol>\n<li><p>Open your character's sheet, <strong>Gear</strong> tab, and click <strong>Shop</strong> in the <strong>Finances</strong> block. The window opens with your character already chosen as the buyer.</p></li>\n<li><p>You can also click the cart icon of the sidebar (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.mKZ6bak91UOPwDlM]{see the sidebar}), then choose the buyer at the top of the right column.</p></li>\n<li><p>On the first opening of the session, the shop reads its shelves (\"Reading the shelves…\"): a few seconds with the Mégapack, then it answers at once.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-1-fenetre.webp\" width=\"1412\" alt=\"The shop, Weapons shelf: ① the Shelves and Vendors tabs, then the shelves, ② the items, ③ the till. The GM also sees, at the bottom of the till, the GM block.\" /><figcaption><strong>Figure 7.1.1</strong> — The shop, Weapons shelf: ① the Shelves and Vendors tabs, then the shelves, ② the items, ③ the till. The GM also sees, at the bottom of the till, the GM block.</figcaption></figure>\n\n<p>The window has three columns:</p>\n<ul class=\"legende\">\n<li><p><strong>① The shelves</strong> (left): <strong>All</strong>, then Weapons (foldable), Ammunition, Armor, Cyberware, Bioware, Other augmentations, Electronics and programs, Gear, Vehicles, Drones, Drugs and toxins, Magic (foci)… An empty shelf is not shown; the number of items follows each shelf. When the GM has opened shops, two tabs appear above, <strong>Shelves</strong> (the market) and <strong>Vendors</strong> (with their number), then the choice of vendor (@UUID[.DacFECvJtqV9g4Gd]{see vendors}).</p></li>\n<li><p><strong>② The items</strong> (centre): the filters at the top, then one line per item. A click on the line opens the item's sheet.</p></li>\n<li><p><strong>③ The till</strong> (right): the <strong>Buyer</strong> and their balance, <strong>Searched by</strong> (yourself or a contact) with the <strong>Surcharge</strong>, the <strong>Cart</strong>, then the <strong>Test the cart Availability</strong>, Pay and <strong>Sell gear</strong> buttons.</p></li>\n</ul>\n\n<p>The shop only sells goods: qualities, spells, powers, martial arts and spirit types are never on the shelves. In the list of buyers you only see the characters you own. The balance shown is that of your accounts (@UUID[.auDjqd2HZaWxiGoy]{see money}).</p>\n\n<h4>Reading a line</h4>\n<figure><img src=\"systems/sr5/manuel/captures/7-1-ligne.webp\" width=\"896\" alt=\"Three lines of the Cyberware shelf: ① the Availability, ② the badge, ③ the delay, ④ the grade, ⑤ the price (in red: more than the balance).\" /><figcaption><strong>Figure 7.1.2</strong> — Three lines of the Cyberware shelf: ① the Availability, ② the badge, ③ the delay, ④ the grade, ⑤ the price (in red: more than the balance).</figcaption></figure>\n<ul class=\"legende\">\n<li><p><strong>① The Availability</strong>: a number alone for a legal item, followed by <strong>R</strong> in amber if it is restricted, by <strong>F</strong> on a red background if it is forbidden. A dash flags a standard good, bought without a test (<strong>no test (p. 420)</strong>) (<em>Core Rulebook p. 417-418</em>).</p></li>\n<li><p><strong>② The badge</strong> compares the searcher's pool, surcharge included, with the Availability: green when the pool exceeds it by two dice or more, orange within one die, red below. It is a guide, not a probability; the text next to it gives both figures (\"15 dice against 11\").</p></li>\n<li><p><strong>③ The delay</strong>: that of the delivery times table for the item's price (<em>Core Rulebook p. 418</em>), before any roll; \"immediate\" for a standard good.</p></li>\n<li><p><strong>④ The grade</strong>, for an implant: used, standard, alphaware… The line's price, Availability and Essence follow the chosen grade (@UUID[.oJidqmfjizxDUjzt]{see implants}).</p></li>\n<li><p><strong>⑤ The price</strong>, in red if it exceeds what you have left once the cart is paid; then the quantity, the die (<strong>Test availability</strong> of this line alone) and the cart (<strong>Add to cart</strong>).</p></li>\n</ul>\n\n<h4>Step by step: finding an item</h4>\n<ol>\n<li><p>Choose a shelf on the left, or type part of the name in <strong>Search a name…</strong>: accents and capitals do not count. The English name works too, when the item carries one: \"imaging scope\" finds the French-named scope. Hover over a name to read its English name. The Mégapack puts one on most of its items; the official compendiums module has none.</p></li>\n<li><p>Narrow down if needed with <strong>Max price</strong> and <strong>Max Avail</strong>, or switch off one of the three legality chips (<strong>Legal</strong>, <strong>Restricted (R)</strong>, <strong>Forbidden (F)</strong>).</p></li>\n<li><p>Tick <strong>Only what I can afford</strong> to keep only what your balance covers, cart already filled deducted.</p></li>\n<li><p>The eraser clears all the filters; the arrows (<strong>Read the compendiums again</strong>) reread the shelves if the GM has just changed a compendium.</p></li>\n</ol><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop} · @UUID[.6BUwVHBpL3loQaYF]{Buying: the cart, the test, the till} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "6BUwVHBpL3loQaYF",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.6BUwVHBpL3loQaYF",
+      "name": "Buying: the cart, the test, the till",
+      "type": "text",
+      "sort": 400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: buying</h4>\n<ol>\n<li><p>On the item's line, set the quantity (and an implant's grade), then click the cart: the item goes into the <strong>Cart</strong>. Alphaware eyes and standard eyes make two separate lines.</p></li>\n<li><p>In <strong>Searched by</strong>, leave <strong>Myself</strong> or choose one of your contacts: it is then the contact who searches, with their Connection. A contact whose type is a dealer (fixer, fence, arms dealer, talismonger…) also gets two specialization dice.</p></li>\n<li><p>Choose a <strong>Surcharge</strong> if you want to pay more to search better: each step adds a die to the test (<em>Core Rulebook p. 418</em>). The surcharge is charged when you cash out.</p></li>\n<li><p>Click <strong>Test the cart Availability</strong>. Each line makes its own test: they are separate searches. An <strong>Availability test</strong> card arrives in the chat.</p></li>\n<li><p>The card arrives folded: click its header to read the detail of each line. Then click <strong>Cash the purchase</strong>. The price is debited from your accounts and the item leaves for your sheet.</p></li>\n</ol>\n\n<p>Under the cart's total, the shop announces what you will have left, the longest delay and the implants' total Essence. A line that will not pass the till (creation limit exceeded, grade no longer offered) is struck through in red: hover over it to know why.</p>\n<figure><img src=\"systems/sr5/manuel/captures/7-1-panier.webp\" width=\"300\" alt=\"The till: the buyer and their balance, the search entrusted to a contact (their dice pool), the cart, its total and the longest delay.\" /><figcaption><strong>Figure 7.1.3</strong> — The till: the buyer and their balance, the search entrusted to a contact (their dice pool), the cart, its total and the longest delay.</figcaption></figure>\n<figure><img src=\"systems/sr5/manuel/captures/7-1-carte-dispo.webp\" width=\"488\" alt=\"The test card, unfolded: the contact's pool, then for each line the hits, the result and the delay obtained.\" /><figcaption><strong>Figure 7.1.4</strong> — The test card, unfolded: the contact's pool, then for each line the hits, the result and the delay obtained.</figcaption></figure>\n\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The GM rolls the dice</p><p>When you click a test button, your browser only sends a request to the connected GM. Their computer recomputes the pool, the Availability and the price from the catalogue, rolls the dice and posts the card. <strong>Without a GM connected, no test takes place</strong>: a message tells you, try again when they are there.</p></div>\n\n<h4>What the card says</h4>\n<p>The test is an opposed Negotiation + Charisma test against the Availability rating (<em>Core Rulebook p. 418</em>). The card gives for each line the pool, the hits, the result and the delay obtained:</p>\n<ul>\n<li><p><strong>Success</strong>: your net hits shorten the search delay.</p></li>\n<li><p><strong>Tie</strong>: the item is found, in twice the time.</p></li>\n<li><p><strong>Failure</strong>: the line carries a <strong>Try again</strong> button. The book requires waiting twice the delay (<em>Core Rulebook p. 418</em>): the GM checks on the world's clock that this time has passed, then rerolls themselves. You can change the surcharge before asking again.</p></li>\n<li><p><strong>Critical glitch</strong>: the item cannot be found, with no new attempt.</p></li>\n</ul>\n<p>The delay is always read on the item's <strong>base price</strong>, never on the price inflated by the surcharge. A standard good, for its part, is paid directly with the Pay button, without a test.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.oWsse7X06aNkVpuz]{The shop window} · @UUID[.Ga0gO6SMY0vVY4nv]{Delivery} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Ga0gO6SMY0vVY4nv",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.Ga0gO6SMY0vVY4nv",
+      "name": "Delivery",
+      "type": "text",
+      "sort": 500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>By default, an item with an Availability does not arrive at once: it is found after its search delay, counted on the world's clock (@UUID[.aK1sRuW82YTF1xdL]{see the calendar}).</p>\n\n<h4>Step by step: following an order</h4>\n<ol>\n<li><p>At cash-out, the order is paid: the expense appears in your accounts. The item waits in the <strong>On order</strong> block of the <strong>Gear</strong> tab, with its arrival date.</p></li>\n<li><p>When the clock reaches that date, the line shows <strong>Arrived, waiting for the GM</strong>. The GM receives a deadline card with the <strong>Deliver</strong> button: <strong>nothing arrives without their click</strong>.</p></li>\n<li><p>To give it up, click 🚫 (<strong>Ask the GM to cancel</strong>): the GM accepts or refuses, and the answer arrives in the chat.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-1-en-commande.webp\" width=\"584\" alt=\"The sheet's On order block: an order arrived that waits for the GM, another on its way with its arrival date.\" /><figcaption><strong>Figure 7.1.5</strong> — The sheet's On order block: an order arrived that waits for the GM, another on its way with its arrival date.</figcaption></figure>\n\n<p>These do not wait for their delay: standard goods, what one of the GM's vendors already has on the shelf, what the GM places themselves, and the purchases of a character in creation (below). If the GM chose an <strong>Immediate</strong> delivery, everything arrives at cash-out.</p>\n\n<div style=\"border:2px dashed #b7791f;border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, #b7791f 8%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">House Rules — Express delivery</p><p>The book does not provide for paying to be delivered faster: its only way is the surcharge on the test. If the GM has ticked express delivery, the test card offers an <strong>Express</strong> box above the cash-out button: tick it before cashing out, and each line that waits costs a percentage of its base price more, for a divided delay. It is more advantageous than the book's surcharge, and that is intended. Unticked by default.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.6BUwVHBpL3loQaYF]{Buying: the cart, the test, the till} · @UUID[.nejrzviZ0D1jpTjm]{Gearing up during creation} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "nejrzviZ0D1jpTjm",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.nejrzviZ0D1jpTjm",
+      "name": "Gearing up during creation",
+      "type": "text",
+      "sort": 600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The GM can mark your character <strong>In creation</strong> (the sheet's header menu). The till then shows <strong>Character in creation</strong> with the level of play's limits (for example \"Avail ≤ 12, rating ≤ 6\"):</p>\n<ul>\n<li><p>a line beyond the allowed Availability or rating is greyed, and the till refuses it (<em>Core Rulebook p. 62, 418</em>);</p></li>\n<li><p>only the used, standard and alphaware grades are offered for implants (<em>Core Rulebook p. 451</em>);</p></li>\n<li><p>each purchase is debited: your creation nuyen are counted on their own;</p></li>\n<li><p><strong>each purchase arrives at once on the sheet</strong>, even if the table plays with delayed delivery: no order or search delay at creation. This holds at the shop, at the GM's vendors and at the dealership;</p></li>\n<li><p>removing an implant gives its Essence back, without leaving a hole.</p></li>\n</ul>\n<p>When the GM chooses <strong>Creation over</strong>, purchases wait for their delay again. The detail of creation is in the chapter @UUID[Compendium.sr5.manual.JournalEntry.alO5hpfQ7tFsXvfi.JournalEntryPage.nnAVUfmnLgdl6XgA]{Gearing up at creation}.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.Ga0gO6SMY0vVY4nv]{Delivery} · @UUID[.oJidqmfjizxDUjzt]{Implants: grades and Essence} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "oJidqmfjizxDUjzt",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.oJidqmfjizxDUjzt",
+      "name": "Implants: grades and Essence",
+      "type": "text",
+      "sort": 700000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>On each cyberware or bioware line, the grade selector changes the price, Availability and Essence shown, according to the book's table (<em>Core Rulebook p. 451</em>). The implant installed keeps its grade; its sheet computes the rest.</p>\n<ul>\n<li><p><strong>The Essence shown is that of your body</strong>: the shop takes into account your qualities (Sensitive System, Biocompatibility) and your treatments. Changing the buyer changes the figures.</p></li>\n<li><p><strong>At 0 Essence, it is death</strong> (<em>Core Rulebook p. 52</em>): the till refuses a purchase that would drop your Essence to 0 or less, and says how low it would drop.</p></li>\n<li><p>The gamma and greyware grades are supplement options the GM switches on; greyware for an Awakened character requires a confirmation before purchase, because it costs a point of Magic.</p></li>\n</ul>\n<p>The detail (Adapsin, Transhuman Prototype, Essence lost on removal) is in <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">the wiki: Shop and fencing</a>.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.nejrzviZ0D1jpTjm]{Gearing up during creation} · @UUID[.HA3thjxEZp1b1Bwv]{What the system does, settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "HA3thjxEZp1b1Bwv",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.HA3thjxEZp1b1Bwv",
+      "name": "What the system does, settings and references",
+      "type": "text",
+      "sort": 800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes prices as at the till (rating, accessories, grade, quantity of a box of ammunition).</p></li>\n<li><p>It has each test rolled by the connected GM, shortens or doubles the delay according to the result, charges the surcharge.</p></li>\n<li><p>It debits your accounts with an expense line, and dates the order on the world's clock.</p></li>\n<li><p>It marks the expense and each item it pays for with the same purchase identifier: who paid, where (shop, vendor, creation, Equip mode), when and how much. The GM reads this trace under each line of the gear bought (\"Bought by … — shop, on …\"); the Character Designer uses it to refund a purchase (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.FY83GXbOqmVz6WN9]{see 9.5}).</p></li>\n<li><p>It refuses a purchase beyond the creation limits or that would kill the character for lack of Essence.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Delivers each order that has arrived, with a click, and answers cancellation requests.</p></li>\n<li><p>Judges the consequences of a glitch or a critical glitch on the test.</p></li>\n<li><p>Adjusts prices to the local market if they want, through their vendors' margin (<em>Core Rulebook p. 417</em>).</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Shop tab of Shadowrun settings)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Delivery of purchases</strong></td><td>after the search delay</td></tr>\n<tr><td><strong>Shop: creation level</strong></td><td>Experienced runner (Availability 12, rating 6)</td></tr>\n<tr><td><strong>Shop: surcharge per bonus die</strong></td><td>25% of the price</td></tr>\n<tr><td><strong>Shop: maximum bonus dice bought</strong></td><td>12</td></tr>\n<tr><td><strong>Shop: contact types that deal in goods</strong></td><td>fixer, fence, arms dealer, talismonger…</td></tr>\n<tr><td><strong>Shop: gamma grade (Chrome Flesh p. 74)</strong>, <strong>Shop: greyware (Better Than Bad p. 142)</strong></td><td>unticked</td></tr>\n<tr><td><strong>Express delivery (house rule)</strong></td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Availability, test, delays, surcharge: (<em>Core Rulebook p. 417-418</em>). Gear limits at creation: (<em>Core Rulebook p. 62</em>). Implant grades: (<em>Core Rulebook p. 451</em>).</p></li>\n<li><p>The exhaustive detail: <a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki: Shop and fencing</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.zKky8MvmSeq77inw]{7.1 The player's shop}</p><p>← @UUID[.oJidqmfjizxDUjzt]{Implants: grades and Essence} · @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "VJKiwMTDWIl9kXMx",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.VJKiwMTDWIl9kXMx",
+      "name": "7.2 The GM's shop, fencing, factions",
+      "type": "text",
+      "sort": 900000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">GM</strong></p><h4>What it is for</h4>\n<p>This chapter gives the GM the controls of their table's economy: choosing what the shop sells and to whom, placing gear without charging for it, keeping merchants who have a real stock and a cashbox, buying back the characters' loot and following their reputation with factions. Everything can be set; the default values are the book's.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU}</p><p>← @UUID[.HA3thjxEZp1b1Bwv]{What the system does, settings and references} · @UUID[.GhvHZiEOvNRmUArw]{Configuring the shop} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "GhvHZiEOvNRmUArw",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.GhvHZiEOvNRmUArw",
+      "name": "Configuring the shop",
+      "type": "text",
+      "sort": 1000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>Step by step: choosing the shelves and the buyers</h4>\n<ol>\n<li><p>Open <strong>Shadowrun settings</strong>, <strong>Shop</strong> tab, and click <strong>Configure the shop</strong>.</p></li>\n<li><p>In <strong>Shop shelves</strong>, tick the compendiums sold. The others stay browsable in the compendium browser.</p></li>\n<li><p>In <strong>Buyers</strong>, choose who can buy: player characters (the default), the actors of a folder, the actors on which you ticked \"Can buy\" (⋮ menu of their sheet), or either. Then <strong>Save</strong>.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-configurer.webp\" width=\"652\" alt=\"Configuring the shop: the compendiums sold and who can buy (dark theme).\" /><figcaption><strong>Figure 7.2.1</strong> — Configuring the shop: the compendiums sold and who can buy (dark theme).</figcaption></figure>\n\n<p>To take an item off sale (a prototype, a unique weapon), open its sheet in an unlocked compendium and choose <strong>Not for sale / prototype</strong> in its ⋮ menu: the player no longer sees it anywhere, you see it marked, without a buy button.</p>\n<p>Unticking <strong>Shop: the market is open to players</strong> closes the market: the player can then only buy from your vendors.</p>\n\n<h4>The GM's two boxes</h4>\n<p>At the bottom of the till, the GM has two boxes:</p>\n<ul>\n<li><p><strong>Equip</strong>: the list of recipients becomes all the actors of the world, and placing is free, without test or transaction; prototypes and all grades are allowed. A message, which only you see, keeps a trace of the placement. An unlinked token is not in the list: to equip a single token, drag the item onto the sheet opened from that token.</p></li>\n<li><p><strong>Creation mode</strong>: for the whole table, adds without debiting or testing, with the creation limits of the chosen level. For a single character, prefer their sheet's <strong>In creation</strong> mark (@UUID[.nejrzviZ0D1jpTjm]{see 7.1}).</p></li>\n</ul>\n\n\n\n<h4>Delivering and cancelling orders</h4>\n<p>When an order falls due, you receive the whispered deadlines card with <strong>Deliver</strong>. In the sheet's <strong>On order</strong> block, you also have 📦 (<strong>Deliver now</strong>, before the deadline) and 🚫 (cancel and refund). The refund is based on what your computer recorded at purchase; an order placed without a GM connected is recorded on your return, and is therefore refunded like the others. With two GMs, only the active GM delivers.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions} · @UUID[.DacFECvJtqV9g4Gd]{Vendors} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "DacFECvJtqV9g4Gd",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.DacFECvJtqV9g4Gd",
+      "name": "Vendors",
+      "type": "text",
+      "sort": 1100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A vendor is an NPC (Grunt) who carries a storage of the <strong>Shop</strong> type. What is stored in it is their stock: real items, sold once. The player never opens their sheet: everything goes through their counter.</p>\n\n<h4>Step by step: creating a vendor from a template</h4>\n<ol>\n<li><p>In the shop, click <strong>New vendor</strong>.</p></li>\n<li><p>Choose a <strong>Template</strong> (Shadow armorer, Street doc, Talismonger, Street dealer, Information broker…), a <strong>Name</strong>, a banner, and tick or not <strong>Linked token</strong>: linked, a single stock; unlinked, each token is a separate shop.</p></li>\n<li><p>Confirm. The system creates the Grunt, their configured shop and their cashbox, fills it and opens it for you. It is closed to the player as long as you have not ticked \"Open to players\".</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-nouveau-vendeur.webp\" width=\"652\" alt=\"The New vendor window: the template, the name, the linked token and the banner.\" /><figcaption><strong>Figure 7.2.2</strong> — The New vendor window: the template, the name, the linked token and the banner.</figcaption></figure>\n\n<p>A template's shelves, margin and maximum Availability are game choices, not rules: the book gives none. The Mégapack also provides ready vendors (NPC › Vendors folder) and banners, which the shop takes by default; the <strong>Shop: banner folder</strong> setting then shows the Mégapack's folder. The Character Designer's NPC generator also creates vendors (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.FY83GXbOqmVz6WN9]{see 9.5}). A vendor's sheet, like any NPC's, lists their storages.</p>\n\n<h4>The vendor's shop sheet</h4>\n<p>Open the Grunt's sheet, storages tab, then the storage's sheet: its configuration tab shows the <strong>Vendor's shop</strong> block.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-fiche-vendeur.webp\" width=\"658\" alt=\"The Shop storage's sheet: general information, Vendor's shop block, then restocking.\" /><figcaption><strong>Figure 7.2.3</strong> — The Shop storage's sheet: general information, Vendor's shop block, then restocking.</figcaption></figure>\n\n<ul class=\"legende\">\n<li><p><strong>Shop name</strong>, <strong>Banner (3:1)</strong>, <strong>Portrait</strong>, <strong>Accent colour</strong>: the look of the window.</p></li>\n<li><p>\"Open to players\": unticked, only the GM can enter.</p></li>\n<li><p><strong>Margin (%)</strong>: added to the book's price, negative for a discounter. That is how you adjust prices to the local market (<em>Core Rulebook p. 417</em>).</p></li>\n<li><p><strong>Cashbox</strong>: a credstick of the vendor (<strong>Give it a credstick</strong> button). Without a cashbox, nothing is sold.</p></li>\n<li><p><strong>The GM approves each sale</strong>: each purchase opens an Accept / Refuse window for you.</p></li>\n<li><p><strong>Restock</strong>: shelves, legality, <strong>Restock max availability</strong>, <strong>Items per shelf</strong>, <strong>Quantity per stack</strong>. The restock button fills the stock at random from the compendiums sold; <strong>Empty the stock</strong> removes it. No clock: you restock when you want.</p></li>\n<li><p><strong>On order</strong>: the items of their shelves they do not have in stock appear \"on order\"; it is the vendor who searches for them, with their own pool (<em>Core Rulebook p. 418</em>).</p></li>\n<li><p><strong>Contact</strong> and <strong>Negotiation pool</strong>: who searches for them. Drag a contact onto their shop window to make it their searcher; otherwise the pool comes from their sheet, or from the template's 8 dice.</p></li>\n<li><p><strong>Client contacts</strong> and <strong>Buys outside its shelves</strong>: used for reselling (below).</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Right after loading, be patient</p><p>The session's first reading of the shelves takes a few seconds, and restocking shows nothing during that time. Do not click again: the first restock would come through late and double the stock.</p></div>\n\n<h4>What the player sees</h4>\n<ol>\n<li><p>A double click or a right-click on an open vendor's token opens their shop, on their stock (never their sheet); the GM has a <strong>Shop</strong> button for this in the token HUD. In the shop, the <strong>Vendors</strong> tab also switches from the market to the open shops.</p></li>\n<li><p>The shop name is shown at the top; each line in stock carries \"N on the shelf\" and the vendor's price. What is on the shelf is already found: no test, delivered at once.</p></li>\n<li><p><strong>Pay with</strong> offers their accounts or a credstick they carry.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-comptoir.webp\" width=\"1412\" alt=\"The counter as seen by the player: the shop name, the &quot;on the shelf&quot; and &quot;on order&quot; lines, Pay with. No GM block.\" /><figcaption><strong>Figure 7.2.4</strong> — The counter as seen by the player: the shop name, the \"on the shelf\" and \"on order\" lines, Pay with. No GM block.</figcaption></figure>\n\n<p>Each purchase is a request to your computer, which rechecks everything (buyer, shop open, stock, recomputed price, balance) before the item and the money move. The money goes into the vendor's cashbox. Two people taking the last copy at the same time: only one gets it.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.GhvHZiEOvNRmUArw]{Configuring the shop} · @UUID[.2LvxxwcOSdgiTH6h]{Reselling: fencing} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "2LvxxwcOSdgiTH6h",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.2LvxxwcOSdgiTH6h",
+      "name": "Reselling: fencing",
+      "type": "text",
+      "sort": 1200000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The till's <strong>Sell gear</strong> button opens the list of what the character owns that has a price. There are three ways to sell, all on the item's <strong>listed price</strong>, never on what it cost (an implant is resold at the price of its standard grade) (<em>Core Rulebook p. 419</em>).</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-revendre.webp\" width=\"632\" alt=\"The Sell gear window: what the character owns, the choice of the contact who fences, and the ways to sell (dark theme).\" /><figcaption><strong>Figure 7.2.5</strong> — The Sell gear window: what the character owns, the choice of the contact who fences, and the ways to sell (dark theme).</figcaption></figure>\n\n<ul>\n<li><p><strong>Sell to the contact</strong>: the contact takes the item on the spot, without a test, for a share of the listed price per point of Loyalty (<em>Core Rulebook p. 419</em>). A card arrives in the chat; its <strong>Cash the sale</strong> button removes the item and pays the price, only once.</p></li>\n<li><p><strong>Find a buyer</strong>: an extended test to find the buyer, then an opposed test for the price (<em>Core Rulebook p. 419</em>). The book does not give the buyer's pool: the system gives them 6 dice, and it is a setting.</p></li>\n<li><p>Selling to a vendor, from their shop: they only buy back their shelves (unless <strong>Buys outside its shelves</strong>). Their <strong>Client contacts</strong> resell at the contact's share, without a test; the others go through an opposed negotiation test against them. It is you who rolls the test and writes the offer; the player clicks <strong>Accept the offer</strong> or <strong>Decline</strong>.</p></li>\n</ul>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Every resale to a vendor goes through you</p><p>When the player accepts an offer, a window opens for you: for each item, its name, its type, its figures, those of the reference item and the price offered, with a warning when they do not match. You accept, refuse or correct the price. A credstick still loaded is not bought back: it must be emptied first.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.DacFECvJtqV9g4Gd]{Vendors} · @UUID[.l8rRYGR64VWk7joD]{The information broker} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "l8rRYGR64VWk7joD",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.l8rRYGR64VWk7joD",
+      "name": "The information broker",
+      "type": "text",
+      "sort": 1300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>A vendor of the <strong>Information broker</strong> template sells information rather than items: fifteen types of data, each with its price range (<em>Cutting Aces p. 148-150</em>). The <strong>Information for sale</strong> button of their shop name opens their window; the GM sees this button at any vendor's.</p>\n<h4>Step by step: buying a piece of information</h4>\n<ol>\n<li><p>The player chooses the character, a type of data, writes about whom or what, then <strong>Order</strong>.</p></li>\n<li><p>The GM sees the request under <strong>For the gamemaster</strong>. They set the price (a price outside the range is flagged, not refused), write what the file contains, choose the reliability (sound, partly wrong, false (<em>Core Rulebook p. 389</em>)), then <strong>Quote this price</strong> — or <strong>Not found</strong>.</p></li>\n<li><p>The player sees the price in large type, under <strong>Your answer</strong>, next to the character's balance, and pays or refuses.</p></li>\n<li><p>The GM clicks <strong>Deliver the file</strong>: a <strong>File</strong> item arrives in the buyer's inventory, with what the GM wrote.</p></li>\n</ol>\n<p>To sell, the character offers a file from their inventory to the broker; the GM makes an offer, the character sells or refuses, and keeps their copy. Each request says who buys and who sells, and shows its steps (Requested → Price quoted → Paid → Delivered; Offered → Offer received → Sold), the outcome in red if it fails. The tabs read from each side: \"The broker sells / The broker buys\" for the GM, \"Buy information / Sell a file / My requests\" for the player. Reliability and the GM's notes are only seen by them.</p>\n<figure><img src=\"systems/sr5/manuel/captures/7-2-courtier.webp\" width=\"908\" alt=\"The broker's window, GM side: a request to handle, with its steps.\" /><figcaption><strong>Figure 7.2.6</strong> — The broker's window, GM side: a request to handle, with its steps.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.2LvxxwcOSdgiTH6h]{Reselling: fencing} · @UUID[.mMDyWNoSU9tpR5kD]{Factions} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "mMDyWNoSU9tpR5kD",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.mMDyWNoSU9tpR5kD",
+      "name": "Factions",
+      "type": "text",
+      "sort": 1400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The system tracks each character's reputation with factions (gang, corporation, district, syndicate…) according to the faction reputation rule (<em>Cutting Aces p. 156-160</em>). You alone write it; the player reads it on their sheet.</p>\n\n<h4>Step by step: keeping a faction</h4>\n<ol>\n<li><p>Click the <strong>Factions</strong> button of the token controls, next to the chase one (only the GM sees it); or open <strong>Shadowrun settings</strong>, <strong>Gamemaster's tools</strong> tab, then <strong>Open factions</strong>; or the group icon of a sheet's <strong>Faction reputation</strong> box (Social tab).</p></li>\n<li><p>Create the faction: a name and a type. The pencil lets you rename it, write a note and tick its <strong>Enemies</strong>.</p></li>\n<li><p>Select its NPCs' tokens on the scene, then <strong>Add selected tokens</strong>. Also add the contacts of the characters who belong to it.</p></li>\n<li><p>For a reputation movement, choose the faction, tick the characters (the list has a search, without accents or capitals, and is sorted: players' characters first, ticked first) and a <strong>Reason</strong>: the book's points fill in and stay editable. Left <strong>pending</strong>, they all apply at the end of the mission with <strong>End of mission: apply pending movements</strong>, as the book wants.</p></li>\n<li><p>For a reputation expense (a more influential contact, a new contact, a service…), choose it and click <strong>Spend</strong>; the score cannot go below zero.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-2-factions.webp\" width=\"768\" alt=\"The Factions window: a faction, its member and its contact, a character's reputation, then the reputation movements (dark theme).\" /><figcaption><strong>Figure 7.2.7</strong> — The Factions window: a faction, its member and its contact, a character's reputation, then the reputation movements (dark theme).</figcaption></figure>\n\n<p>The Corporate topology module links each corporation of its map to a faction of this window (@UUID[Compendium.sr5.manual.JournalEntry.LY0gP2n4uytah6mP.JournalEntryPage.hu1TCY7d5cZXfs3p]{see 9.9}).</p>\n<p>Afterwards, when a character makes a social test targeting an NPC who is a member of a faction, the roll window sets the NPC's attitude in advance according to the reputation (<em>Core Rulebook p. 140</em>). The line stays editable: a well-disposed member can always lie. Nothing moves reputation on its own: it is up to you to judge whether the deed is known.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.l8rRYGR64VWk7joD]{The information broker} · @UUID[.Vig8guILL3yvgIjc]{Tracking cons} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "Vig8guILL3yvgIjc",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.Vig8guILL3yvgIjc",
+      "name": "Tracking cons",
+      "type": "text",
+      "sort": 1500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><em>Cutting Aces</em>'s three-phase con is kept in the <strong>Con tracker</strong> window, reserved to the GM (<em>Cutting Aces p. 162-164</em>); it also opens from <strong>Shadowrun settings</strong>, <strong>Gamemaster's tools</strong> tab.</p>\n<h4>Step by step: setting up a con</h4>\n<ol>\n<li><p>Click the masks-shaped button of the token controls, then <strong>New con</strong>: a name, long or short, the mark (an actor or the targeted token) and the grifters to tick.</p></li>\n<li><p>Preparation: record each step (investigation, Matrix searches, surveillance, assessment, props made or bought). For oppositions, the window rolls the mark's dice blind, or takes the hits you type. The two gauges at the top keep the <strong>Intel Level</strong> and the <strong>Prop Rating</strong>.</p></li>\n<li><p>Bait, reinforcement and exit: the player rolls them from their grifter's sheet (@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.eaKmcOBAtqQ9rBzh]{see 2.2}). On the mark's resistance card, click the con's record button: the result is already read (the mark took the bait, suspicious, exposed…).</p></li>\n<li><p>Con finished against a member of a faction: <strong>Record in the factions</strong> sets the book's reputation movement, pending (<em>Cutting Aces p. 158</em>).</p></li>\n</ol>\n<p>The window's log keeps each step. Every figure can be corrected by hand; nothing is recorded without your click.</p>\n<figure><img src=\"systems/sr5/manuel/captures/7-2-arnaques.webp\" width=\"728\" alt=\"The Con tracker window: a long con in progress, its two gauges and the log of steps.\" /><figcaption><strong>Figure 7.2.8</strong> — The Con tracker window: a long con in progress, its two gauges and the log of steps.</figcaption></figure><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.mMDyWNoSU9tpR5kD]{Factions} · @UUID[.buYFUZvPmkEXBidv]{The GM's settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "buYFUZvPmkEXBidv",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.buYFUZvPmkEXBidv",
+      "name": "The GM's settings and references",
+      "type": "text",
+      "sort": 1600000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It rechecks each purchase and each resale on your computer, and refuses what does not pass.</p></li>\n<li><p>It puts the money of a purchase into the vendor's cashbox, and takes out that of a resale.</p></li>\n<li><p>It keeps the register of orders and factions, which you alone write.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Restocks their vendors, delivers orders, accepts or corrects each resale to a vendor.</p></li>\n<li><p>Records each reputation movement and applies the pending movements at the end of the mission.</p></li>\n<li><p>Decides the consequences of a fencing glitch or critical glitch.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Shop tab)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Shop: the market is open to players</strong></td><td>ticked</td></tr>\n<tr><td><strong>Shop: availability test at a vendor's too</strong></td><td>unticked (what is on the shelf is already found)</td></tr>\n<tr><td><strong>Shop: banner folder</strong></td><td>empty (the Mégapack's if it is active)</td></tr>\n<tr><td><strong>Fence: share of the listed price</strong> and <strong>Fence: percentage per net hit</strong></td><td>25% and 5%</td></tr>\n<tr><td><strong>Fence: threshold to find a buyer</strong></td><td>10</td></tr>\n<tr><td><strong>Fence: share paid by a contact</strong></td><td>5% per point of Loyalty</td></tr>\n<tr><td><strong>Fence: the buyer's dice pool</strong></td><td>6 (the book does not give it)</td></tr>\n<tr><td><strong>Cutting Aces social rules</strong> (GM tab)</td><td>ticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Prices and market: (<em>Core Rulebook p. 417</em>). Fencing: (<em>Core Rulebook p. 419</em>). NPC attitude: (<em>Core Rulebook p. 140</em>). Factions: (<em>Cutting Aces p. 156-160</em>). Cons: (<em>Cutting Aces p. 162-164</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Boutique-et-fourgue\">wiki: Shop and fencing</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Factions\">wiki: Factions</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Social-de-Cutting-Aces\">wiki: Cutting Aces social rules</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.VJKiwMTDWIl9kXMx]{7.2 The GM's shop, fencing, factions}</p><p>← @UUID[.Vig8guILL3yvgIjc]{Tracking cons} · @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "auDjqd2HZaWxiGoy",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.auDjqd2HZaWxiGoy",
+      "name": "7.3 Money, credsticks, lifestyle",
+      "type": "text",
+      "sort": 1700000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>A character has two kinds of money. Their <strong>accounts</strong> are a register of gains and expenses, on their sheet: they can neither be given nor stolen. Their <strong>cash</strong> is loaded on certified credsticks, items they carry: they can be given, stolen and leave no trace (<em>Core Rulebook p. 442</em>). This chapter shows both, then the lifestyle, which costs a rent each month.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU}</p><p>← @UUID[.buYFUZvPmkEXBidv]{The GM's settings and references} · @UUID[.thCvdVd0A90MS7Hu]{Accounts} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "thCvdVd0A90MS7Hu",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.thCvdVd0A90MS7Hu",
+      "name": "Accounts",
+      "type": "text",
+      "sort": 1800000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The sheet's <strong>Gear</strong> tab shows the <strong>Finances</strong> block: <strong>Current Nuyens</strong>, <strong>Total Gained</strong> and <strong>Total Spent</strong>. These figures are not typed in: they are computed from the <strong>Gains</strong> and <strong>Expenses</strong> lines below.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-finances.webp\" width=\"594\" alt=\"The sheet's Gear tab: ① Finances, ② Cash carried, ③ Gains, ④ Expenses (between the two, the pending orders).\" /><figcaption><strong>Figure 7.3.1</strong> — The sheet's Gear tab: ① Finances, ② Cash carried, ③ Gains, ④ Expenses (between the two, the pending orders).</figcaption></figure>\n\n<h4>Step by step: recording a payment</h4>\n<ol>\n<li><p>In <strong>Gains</strong>, click the ＋: a line appears.</p></li>\n<li><p>Give it a name (\"Aztechnology run pay\") and an amount. The total follows.</p></li>\n<li><p>A mistake? Correct the faulty line: the account stays right, and the history can be reread at any time. A click on the <strong>Gains</strong> or <strong>Expenses</strong> title folds or unfolds its lines.</p></li>\n</ol>\n<p>Each shop purchase adds an expense line on its own; each resale, a gain line. The system never writes directly into the total.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">The GM keeps an eye on the history</p><p>As everywhere in Foundry, the player who owns a sheet can write whatever they want in it, including a gain line. The system only prevents being credited from what you wrote yourself: refunds, resales and payments go through the GM. A line added by hand shows in the history.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle}</p><p>← @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle} · @UUID[.4LEyPQ9AgJkFgbA1]{Cash: credsticks} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "4LEyPQ9AgJkFgbA1",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.4LEyPQ9AgJkFgbA1",
+      "name": "Cash: credsticks",
+      "type": "text",
+      "sort": 1900000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The <strong>Cash carried</strong> block, just above the gains, totals what the character carries on credsticks, then gives one line per stick: what it holds and its capacity.</p>\n\n<h4>Step by step: loading or emptying a credstick</h4>\n<ol>\n<li><p>On the stick's line, click ⬇️ (<strong>Withdraw onto the stick</strong>): the money leaves your accounts (a \"Withdrawal\" expense line) and loads the stick. Enter the amount: the window announces the maximum, which is the smaller of your balance and the room left on the stick.</p></li>\n<li><p>Click ⬆️ (<strong>Deposit from the stick</strong>) to put the stick's money back into your accounts, as a gain.</p></li>\n<li><p>To pay someone in cash, drag the credstick from your sheet onto theirs: the nuyen leave with the stick.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-retirer.webp\" width=\"602\" alt=\"Withdrawing onto the stick: the system announces the maximum possible.\" /><figcaption><strong>Figure 7.3.2</strong> — Withdrawing onto the stick: the system announces the maximum possible.</figcaption></figure>\n\n<p>A stick left in a safehouse stays there with its contents; a stick on a body is picked up like a weapon, and a pickpocket can take it (@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.rFtgYlpeaeOfBymt]{see stealth}). NPCs, vehicles and bags have no accounts, but can carry credsticks: that is how a vendor has a cashbox.</p>\n\n<h4>Marking an item as a credstick (GM)</h4>\n<p>Credsticks come from the content modules (the Mégapack), and from the starting kit (below). To make one yourself, open a gear item's sheet, configuration tab, and tick <strong>Certified credstick</strong>: two fields appear, <strong>Loaded</strong> and <strong>Capacity</strong> (0 = no cap).</p>\n\n<h4>The starting kit</h4>\n<p>Each player character created in the world receives three items: a <strong>Backpack</strong> storage (Pack, 20 ¥), a <strong>Locker</strong> storage (Safehouse) and an empty <strong>Standard credstick</strong>, certified up to 5,000 ¥ (<em>Run Faster p. 228-229, Core Rulebook p. 440</em>). It only receives what it lacks, also after <strong>Import Data</strong>; a character pulled from a compendium (pregens, NPCs and critters of the Mégapack) and the characters already in the world receive nothing. The <strong>Starting kit</strong> setting (<strong>Looting and spoils</strong> tab, ticked by default) switches it off. The Mégapack also sells the <strong>Backpack</strong> at the shop.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle}</p><p>← @UUID[.thCvdVd0A90MS7Hu]{Accounts} · @UUID[.65rJIY7hXJu0RL8b]{Lifestyle} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "65rJIY7hXJu0RL8b",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.65rJIY7hXJu0RL8b",
+      "name": "Lifestyle",
+      "type": "text",
+      "sort": 2000000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The lifestyle says where and how the character lives, and what it costs them each month (<em>Core Rulebook p. 369-370</em>). It goes in the sheet's <strong>Social</strong> tab, <strong>Lifestyles</strong> block, as an item: drag one from a compendium, or create it with the block's ＋.</p>\n\n<h4>Step by step: setting up a lifestyle</h4>\n<ol>\n<li><p>Open its sheet. The summary tab gives the address, the <strong>Linked Identity</strong>, the <strong>Prepaid Months</strong> and the month's <strong>Rent Cost</strong>, metatype included; hover over the cost to see its detail in the hover help (@UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.onM6wQeM2Rn5e8sp]{see hover help}).</p></li>\n<li><p>In the configuration tab, choose the <strong>Lifestyle Type</strong> (<strong>Streets</strong>, <strong>Squatter</strong>, <strong>Low</strong>, <strong>Medium</strong>, <strong>High</strong>, <strong>Luxury</strong>, and those of the supplements: <strong>Bolt Hole</strong>, <strong>Traveler</strong>, <strong>Commercial</strong>). The <strong>Comforts &amp; Necessities</strong>, <strong>Security</strong> and <strong>Neighborhood</strong> scores follow.</p></li>\n<li><p>Add <strong>Options</strong> (options and entertainment) with the ＋: each option changes the price and the points as its line provides.</p></li>\n<li><p>Enter how many months are paid in advance in <strong>Prepaid Months</strong>, or tick <strong>Bought</strong> if the character owns it: they no longer have a rent.</p></li>\n<li><p>Without a month paid in advance, choose in the configuration tab the date of the <strong>First debit</strong>: the day the first rent will fall due. The summary shows \"to choose\" as long as it is missing, and nothing is claimed until then. Once set, the line becomes <strong>Next debit</strong>: only the GM can still correct it.</p></li>\n</ol>\n<figure><img src=\"systems/sr5/manuel/captures/7-3-premier-debit.webp\" width=\"658\" alt=\"A rented lifestyle with no month paid: the &quot;First debit&quot; line, to choose.\" /><figcaption><strong>Figure 7.3.3</strong> — A rented lifestyle with no month paid: the \"First debit\" line, to choose.</figcaption></figure>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-3-style-de-vie.webp\" width=\"980\" alt=\"The summary of a Low lifestyle, rented, with two months paid: for a troll character, the rent is doubled; with the mouse on the cost, the hover help gives its detail (base, then the metatype).\" /><figcaption><strong>Figure 7.3.4</strong> — The summary of a Low lifestyle, rented, with two months paid: for a troll character, the rent is doubled; with the mouse on the cost, the hover help gives its detail (base, then the metatype).</figcaption></figure>\n\n<h4>Rent, every month</h4>\n<p>A rented lifestyle counts down its paid months on the world's clock (<em>Core Rulebook p. 370</em>). When they run out, or on the first debit date of a lifestyle rented with no month paid, the GM receives a deadline card with <strong>Debit one month</strong>: the click records an expense at the lifestyle's price, dated on the world's day, and pushes the deadline back a month (@UUID[.pwCb4DcvUXgqhV9V]{see deadlines}). A bought lifestyle is not counted down.</p>\n<p>The month's price takes the character's metatype into account: more expensive for a dwarf, twice as much for a troll (<em>Core Rulebook p. 66</em>). The adjustment bears on the lifestyle, its options and its assets, but not on modifications, outings or services, which are added after it (<em>Hard Targets p. 140</em>). The surcharge of metavariants (gnome, cyclops…) is not known to the system: it stays manual.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle}</p><p>← @UUID[.4LEyPQ9AgJkFgbA1]{Cash: credsticks} · @UUID[.O9C65CpkGH7Oku4d]{What the system does and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "O9C65CpkGH7Oku4d",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.O9C65CpkGH7Oku4d",
+      "name": "What the system does and references",
+      "type": "text",
+      "sort": 2100000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It computes the balance from the lines, and adds a line at each purchase, resale, withdrawal or deposit.</p></li>\n<li><p>It caps a withdrawal at the balance and the stick's capacity.</p></li>\n<li><p>It computes the lifestyle's price (type, options, metatype) and counts down the paid months.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Clicks <strong>Debit one month</strong> at each rent deadline.</p></li>\n<li><p>Checks in the summary of each lifestyle rented with no month paid that the first debit date is chosen, and corrects it if needed.</p></li>\n<li><p>Adds a metavariant's surcharge to the rent.</p></li>\n<li><p>Keeps an eye on the accounts' history.</p></li>\n</ul>\n\n<h4>References</h4>\n<ul>\n<li><p>Certified credstick: (<em>Core Rulebook p. 442</em>). Lifestyles: (<em>Core Rulebook p. 369-370</em>). Cost by metatype: (<em>Core Rulebook p. 66</em>); order of computation: (<em>Hard Targets p. 140</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Argent-et-creditubes\">wiki: Money and credsticks</a>, <a href=\"https://github.com/DjamZee/sr5/wiki/Calendrier\">wiki: Calendar (rent)</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.auDjqd2HZaWxiGoy]{7.3 Money, credsticks, lifestyle}</p><p>← @UUID[.65rJIY7hXJu0RL8b]{Lifestyle} · @UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "aK1sRuW82YTF1xdL",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.aK1sRuW82YTF1xdL",
+      "name": "7.4 The calendar",
+      "type": "text",
+      "sort": 2200000,
+      "title": {
+        "show": true,
+        "level": 1
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p><strong style=\"border:1px solid currentColor;border-radius:3px;padding:0 4px;font-size:0.85em;white-space:nowrap\">All</strong></p><h4>What it is for</h4>\n<p>The world has a Sixth World date and time. The chapter @UUID[Compendium.sr5.manual.JournalEntry.UtP5ShuRjXa3JrEZ.JournalEntryPage.YRfJG9p6WnN6cUDi]{The clock and the calendar} shows the clock and its buttons; this one shows what follows the clock: the events the GM dates, and the deadlines the system makes fall due on their own (orders, rents, drugs, timed effects, withdrawal). Nothing is debited, removed or rolled without the GM's click.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU}</p><p>← @UUID[.O9C65CpkGH7Oku4d]{What the system does and references} · @UUID[.k6HPPvnYtpX7FlMJ]{Events} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "k6HPPvnYtpX7FlMJ",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.k6HPPvnYtpX7FlMJ",
+      "name": "Events",
+      "type": "text",
+      "sort": 2300000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>The GM keeps a list of dated events: a meeting, a contract's deadline, a delay given by a Johnson…</p>\n\n<h4>Step by step: creating an event (GM)</h4>\n<ol>\n<li><p>Open the month view (the clock's <strong>Month view</strong> button) and click a day, or <strong>Add an event</strong>.</p></li>\n<li><p>Give a title, a date and a time (midnight by default), and choose who sees it: <strong>The GM only</strong> (the default) or <strong>Everyone</strong>.</p></li>\n<li><p>If needed, drag a journal or a journal page into the linked journal field. Dragging a journal directly onto a day of the grid opens the same window, already filled in.</p></li>\n<li><p>Confirm. The day is underlined in the grid, and the event is added to the month's list, with a pencil to edit it and a bin to delete it.</p></li>\n</ol>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-4-evenement.webp\" width=\"420\" alt=\"The month view with two events (one visible to all, the other to the GM only, marked with a crossed-out eye), and the window opened by a click on a day.\" /><figcaption><strong>Figure 7.4.1</strong> — The month view with two events (one visible to all, the other to the GM only, marked with a crossed-out eye), and the window opened by a click on a day.</figcaption></figure>\n\n<p>The player only sees the \"Everyone\" events, with their linked journal if they are allowed to read it, and without any button.</p>\n\n<h4>The reminder</h4>\n<p>When the clock passes an event's date, the GM receives one whispered message per event, even if the clock jumps several days at once. An event is only reminded once; pushed back to a future date, it rearms. The player does not receive a reminder.</p><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar}</p><p>← @UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar} · @UUID[.pwCb4DcvUXgqhV9V]{The GM's deadlines} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "pwCb4DcvUXgqhV9V",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.pwCb4DcvUXgqhV9V",
+      "name": "The GM's deadlines",
+      "type": "text",
+      "sort": 2400000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<p>When the clock passes a duration or a deadline, the GM receives a whispered card that gathers everything that has just happened at that clock movement. Each line carries the button of the action to take; a line dealt with is marked <strong>Done</strong> or <strong>Removed</strong>, and the button does not come back on reload.</p>\n\n<figure><img src=\"systems/sr5/manuel/captures/7-4-echeances.webp\" width=\"348\" alt=\"The deadlines card, whispered to the GM: an order that has arrived, with Deliver and Show the player.\" /><figcaption><strong>Figure 7.4.2</strong> — The deadlines card, whispered to the GM: an order that has arrived, with <strong>Deliver</strong> and <strong>Show the player</strong>.</figcaption></figure>\n\n<table>\n<thead><tr><th>What happens</th><th>The button</th><th>Where to read more</th></tr></thead>\n<tbody>\n<tr><td>A shop order arrives</td><td><strong>Deliver</strong></td><td>@UUID[.Ga0gO6SMY0vVY4nv]{7.1}</td></tr>\n<tr><td>A lifestyle's paid months run out</td><td><strong>Debit one month</strong></td><td>@UUID[.65rJIY7hXJu0RL8b]{7.3}</td></tr>\n<tr><td>An effect in minutes, hours, days, weeks or months expires</td><td><strong>Remove</strong> or <strong>Remove all</strong></td><td>@UUID[Compendium.sr5.manual.JournalEntry.hqT1pRAqlBA4yN9s.JournalEntryPage.5yJeJYQzl8Pk5Nc8]{effects}</td></tr>\n<tr><td>A drug goes into its crash, or the crash ends</td><td><strong>Start the crash</strong>, <strong>End the crash</strong></td><td>@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.OfYcF73Vpf9a2rkr]{after combat}</td></tr>\n<tr><td>A withdrawal test is due (<em>Core Rulebook p. 77</em>)</td><td><strong>Roll the withdrawal test</strong></td><td>@UUID[Compendium.sr5.manual.JournalEntry.a0A5owDWyn9339sO.JournalEntryPage.OfYcF73Vpf9a2rkr]{after combat}</td></tr>\n</tbody>\n</table>\n\n<p>By default, deadlines stay with the GM. A line's <strong>Show the player</strong> button sends it, as text and without a button, to the player who owns the character; the <strong>Calendar: show deadlines to players</strong> setting does it for all. Moving the clock back before a deadline rearms it.</p>\n\n<p>In combat, each new turn moves the time forward by three seconds (<em>Core Rulebook p. 49</em>). After an extended test, the active GM is offered to move the clock forward by the time the test took; they confirm first.</p>\n\n<div style=\"border:2px solid var(--sr-ui-border-color, #2a9d8f);border-radius:4px;padding:4px 12px;margin:12px 0;background:color-mix(in srgb, var(--sr-ui-border-color, #2a9d8f) 7%, transparent)\"><p style=\"font-weight:bold;text-transform:uppercase;margin:6px 0\">Already using a calendar module?</p><p>If a calendar module is active (Simple Calendar Reborn, Seasons &amp; Stars…), the system shows neither its clock nor its events and lets that module handle the date and combat. Deliveries, rents, drugs and timed effects keep following the world's time.</p></div><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar}</p><p>← @UUID[.k6HPPvnYtpX7FlMJ]{Events} · @UUID[.1VkMQQvx0DjUOQRQ]{Related settings and references} →</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    },
+    {
+      "_id": "1VkMQQvx0DjUOQRQ",
+      "_key": "!journal.pages!bqnSE0NCUfCmiCd8.1VkMQQvx0DjUOQRQ",
+      "name": "Related settings and references",
+      "type": "text",
+      "sort": 2500000,
+      "title": {
+        "show": true,
+        "level": 2
+      },
+      "image": {},
+      "text": {
+        "format": 1,
+        "content": "<h4>What the system does on its own</h4>\n<ul>\n<li><p>It dates orders, rents, drugs, effects and withdrawals on the clock, and gathers them in a GM card at each movement.</p></li>\n<li><p>It reminds the GM of each event only once, and moves the time forward by three seconds per Combat Turn.</p></li>\n</ul>\n\n<h4>What the GM does by hand</h4>\n<ul>\n<li><p>Moves the clock forward when time passes in the story.</p></li>\n<li><p>Clicks each deadline button: deliver, debit, remove, roll.</p></li>\n</ul>\n\n<h4>Related settings</h4>\n<table>\n<thead><tr><th>Setting (Calendar tab)</th><th>Default</th></tr></thead>\n<tbody>\n<tr><td><strong>Calendar: start year</strong></td><td>2070 (changing it shifts all the world's dates)</td></tr>\n<tr><td><strong>Calendar: combat advances the clock</strong></td><td>ticked</td></tr>\n<tr><td><strong>Calendar: show deadlines to players</strong></td><td>unticked</td></tr>\n</tbody>\n</table>\n\n<h4>References</h4>\n<ul>\n<li><p>Length of a combat turn: (<em>Core Rulebook p. 49</em>). Withdrawal: (<em>Core Rulebook p. 77</em>). Months of rent paid in advance: (<em>Core Rulebook p. 370</em>).</p></li>\n<li><p><a href=\"https://github.com/DjamZee/sr5/wiki/Calendrier\">wiki: Calendar</a>.</p></li>\n</ul><hr /><p><strong>Backlinks:</strong> @UUID[.Bny2vhbixifttrfK]{MENU} &gt; @UUID[.aK1sRuW82YTF1xdL]{7.4 The calendar}</p><p>← @UUID[.pwCb4DcvUXgqhV9V]{The GM's deadlines}</p>"
+      },
+      "video": {
+        "controls": true,
+        "volume": 0.5
+      },
+      "src": null,
+      "system": {},
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "category": null
+    }
+  ]
+}

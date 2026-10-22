@@ -1327,7 +1327,7 @@
 	"SR5.BrowserScene": "Scène",
 	"SR5.CompendiumBrowser": "Navigateur de compendiums",
 	"SR5.Manual": "Manuel",
-	"SR5.ManualMissing": "Le compendium du manuel (sr5.manuel) n'est pas installé.",
+	"SR5.ManualMissing": "Les compendiums du manuel (sr5.manuel, sr5.manual) ne sont pas installés.",
 	"SR5.ManualEmpty": "Le manuel est vide dans cette copie du système, qui n'a pas été compilée. Le MJ ferme Foundry, lance « npm run build:packs » dans le dossier du système, puis relance Foundry ; ou installez le système publié, par son manifeste. Le manuel existe aussi en PDF, joint à la version.",
 	"SR5.CompendiumDraw": "Tirer au hasard",
 	"SR5.CompendiumDrawBrowserHint": "Tire au hasard parmi tout ce que les filtres laissent voir, toutes pages comprises.",
