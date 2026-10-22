@@ -2,15 +2,16 @@
 <div class="SRBlockSheet">
 	<ul>
 		<li class="grid SR-LigneEnTete">
-			<div class="col-4 SR-TextUppercase">{{localize 'SR5.Addiction'}}</div>
+			{{!-- Narrow sheet: the threshold takes two columns and the weeks an icon, so no header spills over its neighbour --}}
+			<div class="col-3 SR-TextUppercase">{{localize 'SR5.Addiction'}}</div>
             <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionTestTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionTestMsg'}}">{{localize 'SR5.AddictionTestShort'}}</div>
-            <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionThresholdTitle'}}"
+            <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionThresholdTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionThresholdMsg'}}">{{localize 'SR5.ThresholdShort'}}</div>
             <div class="col-2 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionLevelTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionLevelMsg'}}">{{localize 'SR5.AddictionLevel'}}</div>
             <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionWeekTitle'}}"
-			data-helpMessage="{{localize 'SR5.HELP_AddictionWeekMsg'}}">{{localize 'SR5.WeeksShort'}}</div>
+			data-helpMessage="{{localize 'SR5.HELP_AddictionWeekMsg'}}"><i class="fas fa-calendar-week" aria-label="{{localize 'SR5.WeeksShort'}}"></i></div>
             <div class="col-1 SR-TextCenter" data-helpTitle="{{localize 'SR5.HELP_AddictionShotTitle'}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionShotMsg'}}">{{localize 'SR5.ShotsShort'}}</div>
             <div class="col-1 SR-TextRight" data-helpTitle="{{localize 'SR5.HELP_DrugDeleteAll'}}"
@@ -20,7 +21,7 @@
 		{{#each actor.system.addictions as |a i|}}
         {{#if (and (gt shot.value 0) (ne addiction.type '') )}}
 		<li class="subItemManagement grid" data-key="{{@key}}">
-			<div class="col-4">
+			<div class="col-3">
 				<p>{{name}} ({{findTranslation 'addictionTypesShort' addiction.type}})</p>
 			</div>
 			<!-- SR5 p. 415: Body + Willpower when physiological, Logic + Willpower when psychological, both tests when both -->
@@ -38,7 +39,7 @@
 				  data-helpDetails="system.resistances.addiction.psychological">{{@root.actor.system.resistances.addiction.psychological.dicePool}}</span>
 				{{/if}}
 			</div>
-			<div class="col-1 SR-TextCenter changeValueByClick" data-binding="system.addictions.{{i}}.addiction.threshold"
+			<div class="col-2 SR-TextCenter changeValueByClick" data-binding="system.addictions.{{i}}.addiction.threshold"
 			data-helpTitle="{{localize 'SR5.HELP_AddictionThreshold' key=name}}"
 			data-helpMessage="{{localize 'SR5.HELP_AddictionThresholdMsg'}}">
                 <p>{{addiction.threshold}}</p>

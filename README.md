@@ -9,7 +9,7 @@ français et en anglais. Projet de fans, gratuit, **sans lien avec Catalyst Game
 Editions**.
 
 Il prolonge le système `sr5` créé par **Karmaroms** et **deurk** (avec Michel_Platinium), repris et poursuivi par DjamZ
-depuis 2026. Version actuelle : **1.0** (numéro technique 13.1.0 : le premier chiffre suit la version de Foundry).
+depuis 2026. Version actuelle : **1.0.1** (numéro technique 13.1.1 : le premier chiffre suit la version de Foundry).
 
 ## Ce que contient le système (et ce qu'il ne contient pas)
 
@@ -20,7 +20,7 @@ depuis 2026. Version actuelle : **1.0** (numéro technique 13.1.0 : le premier c
   sur le modèle de Chummer.
 - **Aucun texte des livres.** Les descriptions disent ce que fait l'objet ou l'état et renvoient à la page (« SR5 p. 432 ») :
   il vous faut vos livres pour le texte complet.
-- Un manuel intégré (compendium « Manuel ») et un [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
+- Un manuel intégré (compendium « Manuel Shadowrun 5 », et « Shadowrun 5 Manual » en anglais) et un [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
 
 ## Installation
 
@@ -60,7 +60,7 @@ An **unofficial** implementation of the Shadowrun fifth edition roleplaying game
 English. A free fan project, **not affiliated with Catalyst Game Labs, The Topps Company or Black Book Editions**.
 
 It carries on the `sr5` system created by **Karmaroms** and **deurk** (with Michel_Platinium), taken over by DjamZ in
-2026. Current version: **1.0** (technical number 13.1.0: the first digit follows the Foundry version).
+2026. Current version: **1.0.1** (technical number 13.1.1: the first digit follows the Foundry version).
 
 ## What the system holds (and what it does not)
 
@@ -70,7 +70,7 @@ It carries on the `sr5` system created by **Karmaroms** and **deurk** (with Mich
 - Compendiums of items, archetypes and tables (Megapack Lite): **names, numbers and the book page**, the Chummer way.
 - **No text from the books.** Descriptions say what an item or a condition does and point to the page ("SR5 p. 431"):
   you need your books for the full text.
-- A built-in manual ("Manuel" compendium) and a [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
+- A built-in manual ("Shadowrun 5 Manual" compendium, "Manuel Shadowrun 5" in French) and a [wiki](https://github.com/DjamZee/sr5-unofficial/wiki).
 
 ## Installation
 

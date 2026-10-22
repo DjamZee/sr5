@@ -1,150 +1,94 @@
-# Release Process
+# Publier une version / Release process
 
-This document describes how to create releases for the Shadowrun 5 System.
+[English below](#english)
 
-## Tag Format
+Ce document décrit comment sort une version de **Shadowrun 5 (unofficial)** sur le dépôt
+[DjamZee/sr5-unofficial](https://github.com/DjamZee/sr5-unofficial).
 
-All releases follow [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`):
+## Numéros de version
 
-| Type | Tag format | Example | Branch | GitHub release |
-|------|-----------|---------|--------|----------------|
-| **Pre-release** | `X.Y.Z-<identifier>.N` | `13.0.1-alpha.3` | any (except main) | Pre-release |
-| **Stable release** | `X.Y.Z` | `13.0.1` | `main` | Release |
+| Affiché | Version technique (`system.json`, `package.json`) | Étiquette Git |
+|---|---|---|
+| 1.0 | `13.1.0` | `v13.1.0` |
+| 1.0.1 | `13.1.1` | `v13.1.1` |
 
-Supported pre-release identifiers: `alpha`, `beta`, `rc`, `dev`, `snapshot`, `canary`.
+Le premier nombre de la version technique suit la version majeure de Foundry visée (13 pour Foundry V13). Une
+version corrective (1.0.x) fait monter le dernier nombre ; une version qui ajoute des fonctionnalités (1.x) fait
+monter le deuxième. L'étiquette porte un `v` devant.
 
-### MAJOR version rule
+## Les deux adresses du manifeste
 
-The **MAJOR** version number must match the Foundry VTT major version the system targets. For example, if the system is built for Foundry V13, all tags must start with `13.x.x`:
+- `manifest` : `https://github.com/DjamZee/sr5-unofficial/releases/latest/download/system.json` — ne change
+  jamais ; c'est l'adresse que les MJ collent dans Foundry et que Foundry relit pour proposer les mises à jour.
+- `download` : `https://github.com/DjamZee/sr5-unofficial/releases/download/v<version>/sr5.zip` — change à chaque
+  version.
 
-| Foundry version | Valid tags |
-|----------------|-----------|
-| V13 | `13.0.0`, `13.1.0-alpha.1`, `13.2.3-rc.2` |
-| V14 | `14.0.0`, `14.0.1-beta.1`, `14.1.0-dev.3` |
+`releases/latest` ignore les prereleases : **une version publique ne se publie jamais en prerelease**, sinon le
+manifeste de tous les MJ répondrait 404.
 
-The **MINOR** and **PATCH** numbers are system-specific and independent from Foundry's own minor/patch versions. They track the system's own changes (new features, bug fixes, etc.), not Foundry updates.
+## Étapes
 
-When Foundry releases a new major version, bump the MAJOR and reset MINOR and PATCH (e.g. `13.2.1` -> `14.0.0-alpha.1`).
+1. **Version** : mettre la version technique dans `system.json` (`version`, `download`) et `package.json`, puis
+   `npm install --package-lock-only` pour le verrou. Commit seul.
+2. **Construire** : `npm run build:megapack` (packs du Mégapack Lite livré avec le système ; il lui faut les sources
+   du Mégapack, privées), `npm run build:packs`, puis `npm run check` (doit être vert, Lite « conforme »).
+3. **Archive** `sr5.zip`, avec un dossier racine `sr5/` : `system.json`, `LICENSE`, les `.md` de la racine,
+   `modules/`, `css/`, `templates/`, `lang/`, `assets/`, `packs/`, `manuel/`, `megapack/` **sans** `megapack/src/` ni
+   `megapack/BUILD.json`. On en retire les `__mocks__` et les fichiers de travail des packs (`LOCK`, `LOG`,
+   `LOG.old` : un `LOCK` livré rend le pack illisible). Les mainteneurs la construisent par un script qui vérifie la
+   version, les deux adresses, la présence de chaque pack et des images citées par le manuel.
+4. **Release GitHub** `v<version>`, **pas en prerelease**, avec les assets nommés **exactement** `system.json` et
+   `sr5.zip`, plus les PDF du manuel (`Manuel-SR5.pdf`, `Manual-SR5.pdf`). Corps : notes en français puis en
+   anglais.
+5. **Wiki** : la section ouverte du [Changelog](https://github.com/DjamZee/sr5-unofficial/wiki/Changelog) prend le
+   nom de la version.
 
-## Creating a Release
+## Ce que fait GitHub
 
-Just run `npm run release` and follow the prompts. The script guides you through version selection, validates everything, and creates the tag for you.
+- `controle.yml` : `npm ci` puis `npm run check` à chaque poussée sur `main` et à chaque pull request. Sans les
+  sources privées, le contrôle du Mégapack Lite est sauté.
+- `annonce-discord.yml` : à la publication d'une release, l'annonce part sur le Discord (secret `DISCORD_WEBHOOK`).
+  Lancement à la main possible, à blanc par défaut.
 
-### Interactive mode
+Le script `npm run release` hérité de shadowfoundry n'est pas utilisé : il refuse les étiquettes en `v` et les
+versions stables hors de `main`.
 
-This is the recommended way to release. Run without arguments:
+<a id="english"></a>
 
-```bash
-npm run release
-```
+## English
 
-The script reads the current version and branch, then offers contextual choices:
+How a version of **Shadowrun 5 (unofficial)** is released on
+[DjamZee/sr5-unofficial](https://github.com/DjamZee/sr5-unofficial).
 
-```
-Current version: 13.0.1-alpha.7  (branch: dev)
+### Version numbers
 
-  Continue current release (13.0.1):
-    1. Next alpha             → 13.0.1-alpha.8
-       Keep adding changes to this release.
-    2. Promote to beta        → 13.0.1-beta.1
-       No more new features — only bug fixes and testing from now on.
+Displayed 1.0 = technical version `13.1.0` (`system.json`, `package.json`) = Git tag `v13.1.0`; 1.0.1 = `13.1.1` =
+`v13.1.1`. The first number follows the Foundry major version (13). A fix release bumps the last number, a feature
+release the middle one.
 
-  Start a new release:
-    3. New patch release      → 13.0.2-alpha.1
-       Start fresh for a new round of fixes (close 13.0.1 cycle).
-    4. New minor release      → 13.1.0-alpha.1
-       Start fresh for a bigger release with new features.
+### Manifest addresses
 
-    5. Enter manually
+- `manifest`: `https://github.com/DjamZee/sr5-unofficial/releases/latest/download/system.json` — never changes.
+- `download`: `https://github.com/DjamZee/sr5-unofficial/releases/download/v<version>/sr5.zip` — per version.
 
-Choice [1]:
-```
+`releases/latest` ignores pre-releases: **a public version is never published as a pre-release.**
 
-After the script completes, push the commit and tag:
+### Steps
 
-```bash
-git push origin HEAD --tags   # pre-release (from dev or feature branch)
-git push origin main --tags   # stable (from main)
-```
+1. Set the version in `system.json` (`version`, `download`) and `package.json`, then
+   `npm install --package-lock-only`. Commit.
+2. `npm run build:megapack` (Megapack Lite packs shipped with the system; needs the private Megapack sources),
+   `npm run build:packs`, `npm run check` (green, Lite "conforme").
+3. Build `sr5.zip` with a `sr5/` root folder: `system.json`, `LICENSE`, root `.md` files, `modules/`, `css/`,
+   `templates/`, `lang/`, `assets/`, `packs/`, `manuel/`, `megapack/` **without** `megapack/src/` and
+   `megapack/BUILD.json`; no `__mocks__`, no pack work files (`LOCK`, `LOG`, `LOG.old`).
+4. GitHub release `v<version>`, **not a pre-release**, assets named exactly `system.json` and `sr5.zip`, plus the
+   manual PDFs. Body: French notes, then English.
+5. Wiki: the open section of the Changelog takes the version name.
 
-### Direct mode (advanced)
+### What GitHub runs
 
-If you already know the exact version, you can skip the interactive menu:
+- `controle.yml`: `npm ci` + `npm run check` on every push to `main` and every pull request.
+- `annonce-discord.yml`: Discord announcement when a release is published (secret `DISCORD_WEBHOOK`).
 
-```bash
-npm run release -- 13.0.1-alpha.3   # pre-release (from any non-main branch)
-npm run release -- 13.0.1            # stable release (from main branch only)
-```
-
-### What `npm run release` does
-
-1. Offers interactive version selection (if no version argument given)
-2. Validates the version format (semver)
-3. Checks the working directory is clean (no uncommitted changes)
-4. Checks you are on the correct branch (main for stable, non-main for pre-release)
-5. Checks the tag does not already exist
-6. Bumps version in `system.json` and `package.json`
-7. Regenerates `package-lock.json`
-8. Runs `npm run check` (lint, tests, CSS build, validators)
-9. Commits the version bump
-10. Creates the git tag
-
-### Pre-release progression examples
-
-```
-13.0.0-alpha.1  ->  13.0.0-alpha.2  ->  13.0.0-alpha.3
-                                              |
-                                        13.0.0-beta.1   ->  13.0.0-beta.2
-                                                                  |
-                                                            13.0.0-rc.1  ->  13.0.0-rc.2
-                                                                                  |
-                                                                              13.0.0  (stable)
-```
-
-## What the CI Does
-
-When a tag is pushed, a single workflow (`shadowfoundry-release-system.yml`) runs and automatically detects whether it is a pre-release or stable release:
-
-1. **Installs** dependencies and **runs** `npm run check` (lint, tests, validators)
-2. **Verifies** the tag is on the correct branch (`main` for stable, non-main for pre-releases)
-3. **Patches** the manifest with the correct version, manifest URL, and download URL
-4. **Creates** a zip archive containing only the release contents (allowlist-based packaging)
-5. **Creates** a GitHub release with:
-   - The system zip (`sr5_<tag>.zip`)
-   - A standalone `system.json` (for Foundry manifest updates)
-   - Auto-generated release notes with chronological commit history since the previous tag of the same kind
-6. **Updates** the persistent pre-release manifest (for pre-releases only) -- uploads `system.json` to a dedicated `pre-release-<identifier>` GitHub release, providing a stable manifest URL per channel
-7. **Sends** a Discord notification:
-   - Public repos: text message with link to the GitHub release page
-   - Private repos: text message + zip file upload (chunked if over 9.9 MB)
-
-## Manifest URLs
-
-Each release type has a stable manifest URL that always points to the latest release of that kind:
-
-| Channel | Manifest URL |
-|---------|-------------|
-| Stable | `https://github.com/<owner>/<repo>/releases/latest/download/system.json` |
-| Alpha | `https://github.com/<owner>/<repo>/releases/download/pre-release-alpha/system.json` |
-| Beta | `https://github.com/<owner>/<repo>/releases/download/pre-release-beta/system.json` |
-| RC | `https://github.com/<owner>/<repo>/releases/download/pre-release-rc/system.json` |
-| Dev | `https://github.com/<owner>/<repo>/releases/download/pre-release-dev/system.json` |
-
-Users can install from any channel by using the corresponding manifest URL in Foundry's system installer. The manifest is automatically updated each time a new release of that type is published.
-
-## Discord Notifications
-
-| Release type | Secret | Channel |
-|-------------|--------|---------|
-| Pre-release | `DISCORD_ALPHA_CHANNEL_URL` | Alpha/testing channel |
-| Stable | `DISCORD_STABLE_CHANNEL_URL` | Stable release channel |
-
-## Invalid Tags (Ignored)
-
-The following tag formats will **not** trigger any release:
-
-- `v13.0.0` -- `v` prefix not allowed
-- `13.0.0-alpha` -- missing `.N` numeric suffix
-- `13.0.0-alpha-3` -- must use dot (`.`) not hyphen (`-`) before the number
-- `13.0.0-alpha.3.extra` -- extra segments not allowed
-- `foo`, `my-tag` -- not semver
+The inherited `npm run release` script is not used (it rejects `v` tags and stable versions outside `main`).

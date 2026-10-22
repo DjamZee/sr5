@@ -54,7 +54,7 @@ body:
     attributes:
       label: Pack de compendium
       description: Quel pack de compendium contient l'entrée (si connu) ?
-      placeholder: "fr-weapons"
+      placeholder: "SR5 - Objets"
     validations:
       required: false
 

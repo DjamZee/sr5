@@ -18,7 +18,7 @@
   "readme": "https://github.com/DjamZee/sr5-unofficial#readme",
   "bugs": "https://github.com/DjamZee/sr5-unofficial/issues",
   "changelog": "https://github.com/DjamZee/sr5-unofficial/releases",
-  "version": "13.1.0",
+  "version": "13.1.1",
   "compatibility": {
     "minimum": "13",
     "maximum": "13",
@@ -132,7 +132,7 @@
   "socket": true,
   "url": "https://github.com/DjamZee/sr5-unofficial",
   "manifest": "https://github.com/DjamZee/sr5-unofficial/releases/latest/download/system.json",
-  "download": "https://github.com/DjamZee/sr5-unofficial/releases/download/v13.1.0/sr5.zip",
+  "download": "https://github.com/DjamZee/sr5-unofficial/releases/download/v13.1.1/sr5.zip",
   "background": "systems/sr5/assets/img/accueil.webp",
   "initiative": "1d6",
   "flags": {
