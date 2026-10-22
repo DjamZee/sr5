@@ -13,6 +13,9 @@ import {
   SR5
 } from "../../config.js"
 import {
+  verdictCall
+} from "../../system/house-rule-hooks.js"
+import {
   answerOf, checkChoices, entryOf, forgetHolder, intelEntry, intelFor, intelKey, intelUpdateData, perceptionBudget, PERCEPTION_ENTRIES, silentAround, sourceOf
 } from "./pan-perception.js"
 import {
@@ -578,7 +581,8 @@ export async function answerPerception(request, sender){
     } : null, choices: checked.choices, answers: {
     }
   }
-  Hooks.callAll("sr5.matrixPerceptionInfo", context)
+  // Each provider in turn, the answers of one that throws thrown away (verdictCall, house-rule-hooks.js)
+  verdictCall(context, ["answers"])("sr5.matrixPerceptionInfo", context)
   let typed = {
     ...context.answers
   }

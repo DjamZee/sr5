@@ -58,10 +58,40 @@ function pick(data, keys) {
 }
 
 /**
- * Call each subscriber of `hook` with `data`, as Hooks.callAll would (Hooks.events[hook], in order, a `once` one taken
- * off before it is called), but keeping the answer each subscriber leaves only when it does not throw: before each,
- * the fields named in `answers` (what the system reads back) are copied; a subscriber that throws gets them restored
- * and its error logged. False when that copy cannot be made and a subscriber threw: the caller then keeps the book.
+ * Call each subscriber of `hook` with `args`, as Hooks.callAll would (Hooks.events[hook], in order, a `once` one taken
+ * off before it is called), but undoing what a subscriber that throws wrote: `save()` is taken before each, and
+ * `restore(saved)` given back when it throws (its error logged). A `restore` that answers false stops there: the
+ * caller then keeps the book.
+ * @param {string} hook
+ * @param {Array} args what every subscriber is called with
+ * @param {() => *} save what the system reads back, copied
+ * @param {(saved) => (boolean|void)} restore puts the copy back
+ * @param {object} [hooks] Foundry's Hooks (injected in the tests)
+ * @returns {boolean} false when a `restore` answered false
+ */
+export function guardedCall(hook, args, save, restore, hooks = globalThis.Hooks) {
+  const entries = Array.from(hooks?.events?.[hook] ?? [])
+  for (const entry of entries) {
+    const fn = typeof entry === "function" ? entry : entry?.fn
+    if (typeof fn !== "function") continue
+    if (entry.once) hooks.off?.(hook, entry.id)
+    const before = save()
+    try {
+      const result = fn(...args)
+      // An async subscriber: its error comes later and is only logged; what it writes after its first await is too late
+      if (typeof result?.then === "function") result.then(null, error => console.error(`SR5 | ${hook}: a subscriber failed`, error))
+    } catch (error) {
+      console.error(`SR5 | ${hook}: a subscriber failed, its answer thrown away`, error)
+      if (restore(before) === false) return false
+    }
+  }
+  return true
+}
+
+/**
+ * Call each subscriber of `hook` with `data`, keeping the answer each subscriber leaves only when it does not throw:
+ * before each, the fields named in `answers` (what the system reads back) are copied; a subscriber that throws gets
+ * them restored. False when that copy cannot be made and a subscriber threw: the caller then keeps the book.
  * @param {string} hook
  * @param {object} data the object handed to every subscriber, in turn
  * @param {string[]} answers the fields of `data` the system reads back
@@ -69,23 +99,23 @@ function pick(data, keys) {
  * @returns {boolean}
  */
 export function callSubscribers(hook, data, answers, hooks = globalThis.Hooks) {
-  const entries = Array.from(hooks?.events?.[hook] ?? [])
-  for (const entry of entries) {
-    const fn = typeof entry === "function" ? entry : entry?.fn
-    if (typeof fn !== "function") continue
-    if (entry.once) hooks.off?.(hook, entry.id)
-    const before = copyOf(pick(data, answers))
-    try {
-      const result = fn(data)
-      // An async subscriber: its error comes later and is only logged; what it writes after its first await is too late
-      if (typeof result?.then === "function") result.then(null, error => console.error(`SR5 | ${hook}: a subscriber failed`, error))
-    } catch (error) {
-      console.error(`SR5 | ${hook}: a subscriber failed, its answer thrown away`, error)
-      if (!before) return false
-      Object.assign(data, before)
-    }
-  }
-  return true
+  return guardedCall(hook, [data], () => copyOf(pick(data, answers)), before => {
+    if (!before) return false
+    Object.assign(data, before)
+  }, hooks)
+}
+
+/**
+ * A `call(hook, ...args)` for the verdict hooks of the Matrix and of the crown (matrix-hooks.js, pan-hooks.js,
+ * direct-connection.js…), in place of Hooks.callAll: the subscribers one by one, and the fields `answers` of `verdict`
+ * put back as they were before a subscriber that throws (D1 of the relecture du 21/10: Foundry's callAll keeps what a
+ * failing subscriber wrote). The fields are plain values: their copy never fails.
+ */
+export function verdictCall(verdict, answers, hooks = globalThis.Hooks) {
+  return (hook, ...args) => guardedCall(hook, args, () => copyOf(pick(verdict, answers)), before => {
+    if (!before) return false
+    Object.assign(verdict, before)
+  }, hooks)
 }
 
 /** Run the subscribers; false when the book must be kept */

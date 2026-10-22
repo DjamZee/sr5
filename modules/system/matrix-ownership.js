@@ -27,6 +27,9 @@ function idsOf(actor){
 }
 
 import {
+  verdictCall
+} from "./house-rule-hooks.js"
+import {
   isSceneryDevice
 } from "./pan-candidates.js"
 
@@ -97,7 +100,7 @@ export function ownerOf(target, {
 
 /**
  * Asks the modules whether the actor administers the host (a spider of it, KC p. 51): true, false, or null when no
- * module knows. A failing subscriber is logged by Foundry and counts for nothing
+ * module knows. A failing subscriber is logged and counts for nothing
  */
 export function administratorByHook({
   actor, target, host
@@ -105,7 +108,8 @@ export function administratorByHook({
   const verdict = {
     actor, target, host, administrator: null
   }
-  globalThis.Hooks?.callAll?.("sr5.matrixAdministrator", verdict)
+  // Each subscriber in turn, the answer of one that throws thrown away (verdictCall, house-rule-hooks.js)
+  verdictCall(verdict, ["administrator"])("sr5.matrixAdministrator", verdict)
   return typeof verdict.administrator === "boolean" ? verdict.administrator : null
 }
 
