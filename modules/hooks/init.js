@@ -166,6 +166,9 @@ import {
   factionRegistryApi
 } from "../interface/faction-registry.js"
 import {
+  commcodeApi, contactsApi
+} from "../interface/commcode-api.js"
+import {
   SR5PanCrown
 } from "../canvas/pan-crown/pan-crown.js"
 import {
@@ -469,6 +472,9 @@ export async function sr5HookInit() {
     // The sprite types for the modules: register a type of their own during init or setup (sprite-types.js).
     // The Fading attribute has its hook, sr5.fadingResistance (fading-resistance.js)
     spriteTypes: spriteTypesApi,
+    // The messaging between commcodes and the contacts for the modules (API pour CONTACTS, landing-metroplexes-sr5)
+    commcode: commcodeApi(),
+    contacts: contactsApi(),
   }
 
   // Register DataModels

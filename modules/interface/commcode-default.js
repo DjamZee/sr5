@@ -4,6 +4,9 @@
 import {
   needsCommcode, generateCommcode
 } from "../system/commcode-rules.js"
+import {
+  worldContacts
+} from "./contact-commcode.js"
 
 /** The commcodes already given in the world: the devices of the actors, and those of the tokens of the scenes */
 export function worldCommcodes() {
@@ -13,6 +16,8 @@ export function worldCommcodes() {
   }
   for (const actor of game.actors ?? []) read(actor)
   for (const scene of game.scenes ?? []) for (const token of scene.tokens ?? []) if (!token.actorLink) read(token.actor)
+  // ...and those of the contacts played without a sheet (API pour CONTACTS)
+  for (const contact of worldContacts()) if (contact.system?.commcode) codes.push(contact.system.commcode)
   return codes
 }
 

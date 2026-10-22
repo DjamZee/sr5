@@ -3,7 +3,7 @@ import {
 } from "./faction-registry.js"
 import {
   FACTION_TYPES, FACTION_REASONS, FACTION_SPENDS, ENEMY_REASON,
-  attitudeShift, canSpend, longConPenalty, sameGameMonth
+  ATTITUDES, attitudeShift, shiftAttitude, canSpend, longConPenalty, sameGameMonth
 } from "./faction-rules.js"
 import {
   worldTimeToComponents, calendarStartYear
@@ -82,6 +82,23 @@ export class SR5FactionsApp extends foundry.applications.api.HandlebarsApplicati
     return app.render({
       force: true
     })
+  }
+
+  /**
+   * For the modules (API pour CONTACTS): game.sr5.factions.attitudeShift(score), the steps of the Faction
+   * Reputation Consequences table (Cutting Aces p. 160), -4 to +4; shiftAttitude(base, steps), an NPC attitude of
+   * SR5 p. 142 moved by those steps; attitudes, those attitudes friendliest first
+   */
+  static attitudeShift(score){
+    return attitudeShift(score)
+  }
+
+  static shiftAttitude(base, steps){
+    return shiftAttitude(base, steps)
+  }
+
+  static get attitudes(){
+    return [...ATTITUDES]
   }
 
   static get characters(){

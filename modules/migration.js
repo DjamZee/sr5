@@ -7,6 +7,9 @@ import {
 import {
   MEGAPACK_IDS
 } from "./system/megapack.js"
+import {
+  contactCommcodeFromFlag
+} from "./interface/contact-commcode.js"
 
 export default class Migration {
 
@@ -157,6 +160,54 @@ export default class Migration {
     // The world flag is written as every GM register is, in its turn (gm-ledger.js)
     await updateLedger("migrationHeadcaseNanite", () => true)
     return true
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The commcodes the Landing Page's CONTACTS kept in its flag become the contact's field (API pour CONTACTS).
+   * At every load, by the active gamemaster: it only writes the contacts that have a flag and no commcode, so it is
+   * cheap and catches up with the flags the module still writes until it moves to the API. World actors, unlinked
+   * tokens and world items; compendiums are not read (the module flags a contact when its character calls it).
+   * @return {Promise<number>} the contacts written
+   */
+  async migrateContactCommcodes() {
+    if (!game.user?.isActiveGM) return 0
+    let written = 0
+    const holders = [...game.actors.contents]
+    for (const s of game.scenes.contents) {
+      for (const t of s.tokens.contents) {
+        if (!t.actorLink && t.actor) holders.push(t.actor)
+      }
+    }
+    for (const holder of holders) {
+      const updates = holder.items.filter(i => i.type === "itemContact").map(i => ({
+        _id: i.id, ...contactCommcodeFromFlag(i)
+      })).filter(u => Object.keys(u).length > 1)
+      if (!updates.length) continue
+      try {
+        await holder.updateEmbeddedDocuments("Item", updates, {
+          render: false
+        })
+        written += updates.length
+      } catch (err) {
+        err.message = `Failed sr5 contact commcode migration for Actor ${holder.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    for (const item of game.items.contents) {
+      const updateData = contactCommcodeFromFlag(item)
+      if (foundry.utils.isEmpty(updateData)) continue
+      try {
+        await item.update(updateData)
+        written++
+      } catch (err) {
+        err.message = `Failed sr5 contact commcode migration for Item ${item.name}: ${err.message}`
+        console.error(err)
+      }
+    }
+    if (written) SR5_SystemHelpers.srLog(2, `Contact commcodes taken from the Landing Page's flags: ${written}`)
+    return written
   }
 
   /* -------------------------------------------- */

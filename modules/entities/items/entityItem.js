@@ -32,6 +32,9 @@ import {
   worldCommcodes
 } from "../../interface/commcode-default.js"
 import {
+  contactCommcodeFromFlag
+} from "../../interface/contact-commcode.js"
+import {
   SR5_CharacterUtility 
 } from "../actors/utilityActor.js"
 import {
@@ -204,6 +207,9 @@ export class SR5Item extends Item {
         "system.commcode": commcode, "system.commcodeEdited": false
       })
     }
+    //API pour CONTACTS: a contact brought from before the field keeps the commcode the Landing Page flagged on it
+    const contactCommcode = contactCommcodeFromFlag(this)
+    if (!foundry.utils.isEmpty(contactCommcode)) this.updateSource(contactCommcode)
     const defaultImg = `systems/sr5/assets/img/items/${data.type}.svg`
     if (!data.img || data.img === "icons/svg/item-bag.svg") {
       this.updateSource({

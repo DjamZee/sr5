@@ -260,6 +260,9 @@ const ACTIONS = {
   ask: askFavor, obtained: favorObtained, service: serviceDone, repay, improve, adjust, intimidate
 }
 
+/** The actions a module may ask by game.sr5.contacts.favor(item, kind) */
+export const FAVOR_ACTIONS = Object.keys(ACTIONS)
+
 /** The button of the sheet: data-favor names the action. */
 export function onFavorAction(item, kind) {
   if (!item?.isOwner) return ui.notifications.warn(L("SR5.FAVOR_NotOwner"))
