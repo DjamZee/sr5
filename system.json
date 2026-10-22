@@ -1,15 +1,23 @@
 {
   "id": "sr5",
-  "title": "Shadowrun 5",
-  "license": "https://github.com/shadowfoundry/sr5/blob/main/LICENCE.md",
-  "description": "A comprehensive ruleset to play Shadowrun 5th Edition with Foundry VTT.",
+  "title": "Shadowrun 5 (unofficial)",
+  "license": "https://github.com/DjamZee/sr5-unofficial/blob/main/LICENSE",
+  "description": "A comprehensive ruleset to play Shadowrun 5th Edition with Foundry VTT. Unofficial fan project, not affiliated with Catalyst Game Labs or The Topps Company.",
   "authors": [
     {
       "name": "Karmaroms, deurk, Michel_Platinium",
-      "url": "https://github.com/shadowfoundry/sr5",
+      "url": "https://github.com/shadowfoundry",
+      "flags": {}
+    },
+    {
+      "name": "DjamZ",
+      "url": "https://github.com/DjamZee",
       "flags": {}
     }
   ],
+  "readme": "https://github.com/DjamZee/sr5-unofficial#readme",
+  "bugs": "https://github.com/DjamZee/sr5-unofficial/issues",
+  "changelog": "https://github.com/DjamZee/sr5-unofficial/releases",
   "version": "13.0.0-djamz.17",
   "compatibility": {
     "minimum": "13",
@@ -111,9 +119,9 @@
     }
   ],
   "socket": true,
-  "url": "https://github.com/shadowfoundry/sr5",
-  "manifest": "https://github.com/shadowfoundry/sr5/releases/latest/download/system.json",
-  "download": "https://github.com/shadowfoundry/sr5/releases/download/12.0.1/sr5.zip",
+  "url": "https://github.com/DjamZee/sr5-unofficial",
+  "manifest": "https://github.com/DjamZee/sr5-unofficial/releases/latest/download/system.json",
+  "download": "https://github.com/DjamZee/sr5-unofficial/releases/download/13.1.0/sr5.zip",
   "background": "systems/sr5/assets/img/accueil.webp",
   "initiative": "1d6",
   "flags": {
