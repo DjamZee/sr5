@@ -3,561 +3,561 @@
   "entrees": {
     "SR5.IceAcid_GE": {
       "fr": "<p>Chaque attaque avec au moins 1 succès excédentaire retire 1 point au Firewall de la cible. Une fois le Firewall à 0, chaque succès excédentaire vaut alors 1 case de dommages matriciels. Les pertes se cumulent jusqu'au reboot de l'appareil.</p><p><em>SR5 p. 249</em></p>",
-      "en": "<p>Each attack with at least 1 net hit lowers the target's Firewall by 1. Once Firewall is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 249</em></p>",
-      "source": "SR5 p. 249",
+      "en": "<p>Each attack with at least 1 net hit lowers the target's Firewall by 1. Once Firewall is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 249 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceBinder_GE": {
       "fr": "<p>Chaque attaque avec au moins 1 succès excédentaire retire 1 point au Traitement de données de la cible. Une fois cet attribut à 0, chaque succès excédentaire vaut alors 1 case de dommages matriciels. Les pertes se cumulent jusqu'au reboot de l'appareil.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Each attack with at least 1 net hit lowers the target's Data Processing by 1. Once that attribute is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Each attack with at least 1 net hit lowers the target's Data Processing by 1. Once that attribute is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceBlack_GE": {
       "fr": "<p>Une attaque réussie verrouille la connexion de la cible et inflige VD = Attaque + 1 par succès excédentaire + 2 par mark du serveur sur elle, en dommages matriciels, plus autant de biofeedback physique.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>A successful attack link-locks the target and deals DV = Attack + 1 per net hit + 2 per host mark on it as Matrix damage, plus the same amount of physical biofeedback.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>A successful attack link-locks the target and deals DV = Attack + 1 per net hit + 2 per host mark on it as Matrix damage, plus the same amount of physical biofeedback.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceBlaster_GE": {
       "fr": "<p>Dite aussi CI grise. Une attaque réussie verrouille la connexion de la cible et inflige VD = Attaque + 1 par succès excédentaire + 2 par mark, en dommages matriciels, plus autant de biofeedback, toujours étourdissant.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Also called grey IC. A successful attack link-locks the target and deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage, plus the same amount of biofeedback, always Stun.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Also called grey IC. A successful attack link-locks the target and deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage, plus the same amount of biofeedback, always Stun.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceBloodhound_GE": {
       "fr": "<p>Mélange de Patrouilleuse et de Traqueuse : elle surveille le serveur et, dès qu'elle repère une activité illégale, cherche à poser deux marks ou plus sur le fautif pour découvrir sa position physique. Tant qu'elle traque, elle ne patrouille plus.</p><p><em>DT p. 80</em></p>",
-      "en": "<p>A mix of Patrol and Track IC: it watches the host and, as soon as it spots illegal activity, tries to put two or more marks on the culprit to learn their physical location. While it is tracking, it no longer patrols.</p><p><em>DT p. 80</em></p>",
-      "source": "DT p. 80",
+      "en": "<p>A mix of Patrol and Track IC: it watches the host and, as soon as it spots illegal activity, tries to put two or more marks on the culprit to learn their physical location. While it is tracking, it no longer patrols.</p><p><em>DT p. 76</em></p>",
+      "source": "DT p. 80 ; EN : DT p. 76",
       "garder": false,
       "note": ""
     },
     "SR5.IceBlueGoo_GE": {
       "fr": "<p>Quand un avatar lui inflige des dommages matriciels, elle explose et disparaît : le serveur oppose Indice × 2 [Attaque] à Logique + Firewall. Si ça touche, l'avatar résiste à VD = Attaque, reçoit une mark du serveur et voit sa connexion verrouillée jusqu'à ce qu'il réussisse à se débrancher.</p><p><em>KC p. 74</em></p>",
-      "en": "<p>When an avatar deals Matrix damage to it, it blows up and is gone: the host rolls Rating × 2 [Attack] against Logic + Firewall. On a hit, the avatar resists DV = Attack, gets a host mark and stays link-locked until it manages to jack out.</p><p><em>KC p. 74</em></p>",
-      "source": "KC p. 74",
+      "en": "<p>When an avatar deals Matrix damage to it, it blows up and is gone: the host rolls Rating × 2 [Attack] against Logic + Firewall. On a hit, the avatar resists DV = Attack, gets a host mark and stays link-locked until it manages to jack out.</p><p><em>KC p. 68</em></p>",
+      "source": "KC p. 74 ; EN : KC p. 68",
       "garder": false,
       "note": "Arbitrage du 08/10 (registre) : explosion = VD Attaque seule, verrou, mark, la CI disparaît."
     },
     "SR5.IceCatapult_GE": {
       "fr": "<p>Avec des succès excédentaires, elle retire 1 point au Firewall de la cible (rendu au reboot) et lui inflige autant de cases d'étourdissement que de succès excédentaires, +1 par mark. Elle ne verrouille pas la connexion.</p><p><em>DT p. 80</em></p>",
-      "en": "<p>With net hits, it lowers the target's Firewall by 1 (restored on reboot) and deals as many boxes of Stun as net hits, +1 per mark. It does not link-lock.</p><p><em>DT p. 80</em></p>",
-      "source": "DT p. 80",
+      "en": "<p>With net hits, it lowers the target's Firewall by 1 (restored on reboot) and deals as many boxes of Stun as net hits, +1 per mark. It does not link-lock.</p><p><em>DT p. 76</em></p>",
+      "source": "DT p. 80 ; EN : DT p. 76",
       "garder": false,
       "note": ""
     },
     "SR5.IceCrash_GE": {
       "fr": "<p>Si le serveur a une mark sur la cible et que l'attaque obtient au moins 1 succès excédentaire, un programme actif de la cible, tiré au hasard, plante ; il ne se relance qu'après un reboot.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>If the host has a mark on the target and the attack gets at least 1 net hit, one of the target's running programs, chosen at random, crashes; it cannot run again until a reboot.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>If the host has a mark on the target and the attack gets at least 1 net hit, one of the target's running programs, chosen at random, crashes; it cannot run again until a reboot.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceFlicker_GE": {
       "fr": "<p>Une attaque réussie verrouille la connexion et pose une mark. À deux marks, la cible est éjectée de la Matrice (choc d'éjection s'il y a lieu), mais son avatar reste sur place, inerte, pendant [Indice d'appareil] tours ou jusqu'à reconnexion par le même appareil : les autres CI peuvent encore l'analyser ou le tracer.</p><p><em>KC p. 74</em></p>",
-      "en": "<p>A successful attack link-locks and places a mark. At two marks, the target is dropped from the Matrix (dumpshock if relevant), but their avatar stays behind, inert, for [Device Rating] rounds or until they log back in with the same device: other IC can still analyze or trace it.</p><p><em>KC p. 74</em></p>",
-      "source": "KC p. 74",
+      "en": "<p>A successful attack link-locks and places a mark. At two marks, the target is dropped from the Matrix (dumpshock if relevant), but their avatar stays behind, inert, for [Device Rating] rounds or until they log back in with the same device: other IC can still analyze or trace it.</p><p><em>KC p. 67</em></p>",
+      "source": "KC p. 74 ; EN : KC p. 67",
       "garder": false,
       "note": ""
     },
     "SR5.IceJammer_GE": {
       "fr": "<p>Chaque attaque avec au moins 1 succès excédentaire retire 1 point à l'Attaque de la cible. Une fois l'Attaque à 0, chaque succès excédentaire vaut alors 1 case de dommages matriciels. Les pertes se cumulent jusqu'au reboot de l'appareil.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Each attack with at least 1 net hit lowers the target's Attack by 1. Once Attack is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Each attack with at least 1 net hit lowers the target's Attack by 1. Once Attack is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceKiller_GE": {
       "fr": "<p>CI de cybercombat de base : chaque attaque réussie inflige VD = Attaque + 1 par succès excédentaire + 2 par mark, en dommages matriciels.</p><p><em>SR5 p. 251</em></p>",
-      "en": "<p>Basic cybercombat IC: each successful attack deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage.</p><p><em>SR5 p. 251</em></p>",
-      "source": "SR5 p. 251",
+      "en": "<p>Basic cybercombat IC: each successful attack deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 251 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceMarker_GE": {
       "fr": "<p>Chaque attaque avec au moins 1 succès excédentaire retire 1 point à la Corruption de la cible. Une fois la Corruption à 0, chaque succès excédentaire vaut alors 1 case de dommages matriciels. Les pertes se cumulent jusqu'au reboot de l'appareil.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Each attack with at least 1 net hit lowers the target's Sleaze by 1. Once Sleaze is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Each attack with at least 1 net hit lowers the target's Sleaze by 1. Once Sleaze is at 0, it deals 1 DV of Matrix damage per net hit instead. Losses stack until the device reboots.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IcePatrol_GE": {
       "fr": "<p>N'attaque jamais : elle fait des perceptions matricielles sur les icônes du serveur pour repérer les intrus et transmet ce qu'elle voit au serveur. Une mark déjà posée vaut accès légitime ; c'est l'acte de la poser qui est illégal. Elle ne subit pas de dommages en cas d'échec. Presque tous les serveurs en font tourner une en permanence.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Never attacks: it runs Matrix Perception on the icons in the host to find intruders and passes what it sees to the host. A mark already in place counts as legitimate access; placing one is what is illegal. It takes no damage when it fails. Almost every host keeps one running at all times.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Never attacks: it runs Matrix Perception on the icons in the host to find intruders and passes what it sees to the host. A mark already in place counts as legitimate access; placing one is what is illegal. It takes no damage when it fails. Almost every host keeps one running at all times.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceProbe_GE": {
       "fr": "<p>Chaque « attaque » réussie donne au serveur et à ses CI une mark de plus sur la cible, jusqu'à trois.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>Each successful \"attack\" gives the host and its IC one more mark on the target, up to three.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>Each successful \"attack\" gives the host and its IC one more mark on the target, up to three.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceScramble_GE": {
       "fr": "<p>Si le serveur a trois marks sur la cible et que l'attaque obtient au moins 1 succès excédentaire, l'appareil de la cible reboote aussitôt ; en RV, choc d'éjection.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>If the host has three marks on the target and the attack gets at least 1 net hit, the target's device reboots at once; in VR, dumpshock follows.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>If the host has three marks on the target and the attack gets at least 1 net hit, the target's device reboots at once; in VR, dumpshock follows.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceShocker_GE": {
       "fr": "<p>Ne fait pas de dommages matriciels : une attaque réussie retire 5 au Score d'initiative de la cible. Souvent lancée avec d'autres CI.</p><p><em>DT p. 80</em></p>",
-      "en": "<p>Deals no Matrix damage: a successful attack takes 5 off the target's Initiative Score. Often run alongside other IC.</p><p><em>DT p. 80</em></p>",
-      "source": "DT p. 80",
+      "en": "<p>Deals no Matrix damage: a successful attack takes 5 off the target's Initiative Score. Often run alongside other IC.</p><p><em>DT p. 76</em></p>",
+      "source": "DT p. 80 ; EN : DT p. 76",
       "garder": false,
       "note": ""
     },
     "SR5.IceSleuther_GE": {
       "fr": "<p>Une attaque réussie pose une mark ; chaque mark donne +2 dés à l'utilisateur légitime pour les recherches et les perceptions matricielles qui visent la cible. Tant que la mark reste, la CI sait par quelles grilles et quels serveurs passe l'avatar. Ces marks s'effacent normalement.</p><p><em>KC p. 74</em></p>",
-      "en": "<p>A successful attack places a mark; each mark gives the legitimate user +2 dice on Matrix Search and Matrix Perception aimed at the target. While the mark stays, the IC knows which grids and hosts the avatar visits. These marks can be erased normally.</p><p><em>KC p. 74</em></p>",
-      "source": "KC p. 74",
+      "en": "<p>A successful attack places a mark; each mark gives the legitimate user +2 dice on Matrix Search and Matrix Perception aimed at the target. While the mark stays, the IC knows which grids and hosts the avatar visits. These marks can be erased normally.</p><p><em>KC p. 67</em></p>",
+      "source": "KC p. 74 ; EN : KC p. 67",
       "garder": false,
       "note": "Arbitrage du 08/10 (registre) : « utilisateur légitime » = le serveur, ses CI et son spider."
     },
     "SR5.IceSparky_GE": {
       "fr": "<p>Version renforcée de la Tueuse : chaque attaque réussie inflige VD = Attaque + 1 par succès excédentaire + 2 par mark, en dommages matriciels, plus autant de biofeedback.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>A stronger Killer: each successful attack deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage, plus the same amount of biofeedback.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>A stronger Killer: each successful attack deals DV = Attack + 1 per net hit + 2 per mark as Matrix damage, plus the same amount of biofeedback.</p><p><em>SR5 p. 248</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 248",
       "garder": false,
       "note": ""
     },
     "SR5.IceTarBaby_GE": {
       "fr": "<p>Une attaque réussie verrouille la connexion de la cible ; si elle l'est déjà, elle pose une mark à la place, jusqu'à trois.</p><p><em>SR5 p. 250</em></p>",
-      "en": "<p>A successful attack link-locks the target; if it already is, the IC places a mark instead, up to three.</p><p><em>SR5 p. 250</em></p>",
-      "source": "SR5 p. 250",
+      "en": "<p>A successful attack link-locks the target; if it already is, the IC places a mark instead, up to three.</p><p><em>SR5 p. 249</em></p>",
+      "source": "SR5 p. 250 ; EN : SR5 p. 249",
       "garder": false,
       "note": ""
     },
     "SR5.IceTrack_GE": {
       "fr": "<p>Quand le serveur tient deux marks ou plus sur le persona et que l'attaque obtient au moins 1 succès excédentaire, le serveur et ses propriétaires apprennent où se trouve physiquement le personnage, et le signalent en général aux autorités.</p><p><em>SR5 p. 251</em></p>",
-      "en": "<p>If the attack gets at least 1 net hit and the host has two or more marks on the persona, the host and its owners learn where the character physically is, and usually report it to the authorities.</p><p><em>SR5 p. 251</em></p>",
-      "source": "SR5 p. 251",
+      "en": "<p>If the attack gets at least 1 net hit and the host has two or more marks on the persona, the host and its owners learn where the character physically is, and usually report it to the authorities.</p><p><em>SR5 p. 249</em></p>",
+      "source": "SR5 p. 251 ; EN : SR5 p. 249",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionBreakFile_GE": {
       "fr": "<p>Clé sans action correspondante dans les livres : pour ôter la protection d'un fichier, voir Pirater un fichier.</p><p><em>SR5 p. 242</em></p>",
-      "en": "<p>Key with no matching action in the books: to remove a file's protection, see Crack File.</p><p><em>SR5 p. 242</em></p>",
-      "source": "SR5 p. 242",
+      "en": "<p>Key with no matching action in the books: to remove a file's protection, see Crack File.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 242 ; EN : SR5 p. 238",
       "garder": false,
       "note": "Clé orpheline (aucun usage dans le code de l'alpha, texte vide FR et EN). Renvoi vers Pirater un fichier p. 242."
     },
     "SR5.MatrixActionBreakTargetLock_GE": {
       "fr": "<p>Action simple contre un ennemi qui vous a (ou semble vous avoir) en acquisition : chaque succès net retire 1 succès à son acquisition. Réduction du bruit de votre CCR en bonus.</p><p><em>R5 p. 35</em></p>",
-      "en": "<p>Simple Action against an enemy that has (or may have) a sensor lock on you: each net hit removes 1 hit from their lock. Your RCC's Noise Reduction rating adds to the pool.</p><p><em>R5 p. 35</em></p>",
-      "source": "R5 p. 35",
+      "en": "<p>Simple Action against an enemy that has (or may have) a sensor lock on you: each net hit removes 1 hit from their lock. Your RCC's Noise Reduction rating adds to the pool.</p><p><em>R5 p. 30</em></p>",
+      "source": "R5 p. 35 ; EN : R5 p. 30",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionBruteForce_GE": {
       "fr": "<p>Pose une mark sans permission, en misant sur l'Attaque (pendant de Hacker à la volée). En option, 1 case de dommages matriciels par tranche de 2 succès excédentaires (résistance : Firewall + Indice d'appareil).</p><p><em>SR5 p. 242</em></p>",
-      "en": "<p>Places a mark without permission, relying on Attack (the counterpart of Hack on the Fly). Optionally, 1 DV of Matrix damage per 2 full net hits, resisted with Device Rating + Firewall.</p><p><em>SR5 p. 242</em></p>",
-      "source": "SR5 p. 242",
+      "en": "<p>Places a mark without permission, relying on Attack (the counterpart of Hack on the Fly). Optionally, 1 DV of Matrix damage per 2 full net hits, resisted with Device Rating + Firewall.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 242 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionCalibration_GE": {
       "fr": "<p>Action simple : chaque tranche de 2 succès ajoute 1 au Score d'initiative actuel de personas sur lesquels vous avez une mark, au plus autant que votre Traitement de données. Le score baisse ensuite à chaque tour, comme d'ordinaire.</p><p><em>KC p. 43</em></p>",
-      "en": "<p>Simple Action: each 2 hits add 1 to the current Initiative Score of personas you have a mark on, up to your Data Processing in number. The score then drops each Combat Turn as usual.</p><p><em>KC p. 43</em></p>",
-      "source": "KC p. 43",
+      "en": "<p>Simple Action: each 2 hits add 1 to the current Initiative Score of personas you have a mark on, up to your Data Processing in number. The score then drops each Combat Turn as usual.</p><p><em>KC p. 37</em></p>",
+      "source": "KC p. 43 ; EN : KC p. 37",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionChangeIcon_GE": {
       "fr": "<p>Action simple, propriétaire : donne à l'icône ciblée (la vôtre comprise) une apparence que vous avez conçue ou copiée. Une perception matricielle n'est pas trompée, un regard rapide peut l'être.</p><p><em>SR5 p. 239</em></p>",
-      "en": "<p>Simple Action, owner: gives the target icon (your own included) a look you designed or copied. Matrix Perception sees through it; a quick glance may not.</p><p><em>SR5 p. 239</em></p>",
-      "source": "SR5 p. 239",
+      "en": "<p>Simple Action, owner: gives the target icon (your own included) a look you designed or copied. Matrix Perception sees through it; a quick glance may not.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 239 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionCheckOverwatchScore_GE": {
       "fr": "<p>Action simple : vous apprenez votre Score de Surveillance actuel, c'est-à-dire à quel point la convergence approche.</p><p><em>SR5 p. 246</em></p>",
-      "en": "<p>Simple Action: you learn your current Overwatch Score, meaning how close convergence is.</p><p><em>SR5 p. 246</em></p>",
-      "source": "SR5 p. 246",
+      "en": "<p>Simple Action: you learn your current Overwatch Score, meaning how close convergence is.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 246 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionConfusePilot_GE": {
       "fr": "<p>Action complexe contre un appareil doté d'un Autopilote (drone, véhicule autonome, poste de tir) : en cas de réussite, il fait aussitôt un test d'Autopilote × 2 de seuil égal à la moitié de vos succès nets pour savoir ce qu'il fait. Réduction du bruit de votre CCR en bonus.</p><p><em>R5 p. 34</em></p>",
-      "en": "<p>Complex Action against a device with a Pilot (drone, autonomous vehicle, gun emplacement): on a success, it immediately rolls Pilot × 2 with a threshold of half your net hits to see what it does next. Your RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 34</em></p>",
-      "source": "R5 p. 34",
+      "en": "<p>Complex Action against a device with a Pilot (drone, autonomous vehicle, gun emplacement): on a success, it immediately rolls Pilot × 2 with a threshold of half your net hits to see what it does next. Your RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 30</em></p>",
+      "source": "R5 p. 34 ; EN : R5 p. 30",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionControlDevice_GE": {
       "fr": "<p>Vous agissez à travers un appareil que vous contrôlez assez, votre commlink ou votre deck faisant office de télécommande. Le coût et le test suivent l'action effectuée.</p><p><em>SR5 p. 239</em></p>",
-      "en": "<p>You act through a device you control well enough, with your commlink or deck as a remote. Cost and test depend on the action performed.</p><p><em>SR5 p. 239</em></p>",
-      "source": "SR5 p. 239",
+      "en": "<p>You act through a device you control well enough, with your commlink or deck as a remote. Cost and test depend on the action performed.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 239 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionCrackFile_GE": {
       "fr": "<p>Une mark requise : ôte la protection d'un fichier pour le rendre lisible. Inutile sur un fichier non protégé.</p><p><em>SR5 p. 242</em></p>",
-      "en": "<p>One mark needed: strips a file's protection so it can be read. Pointless on an unprotected file.</p><p><em>SR5 p. 242</em></p>",
-      "source": "SR5 p. 242",
+      "en": "<p>One mark needed: strips a file's protection so it can be read. Pointless on an unprotected file.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 242 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionCrashProgram_GE": {
       "fr": "<p>Une mark requise : visez un programme actif de la cible, connu par perception matricielle ou vu à l'œuvre. En cas de réussite il s'arrête et ne se relance qu'après le reboot de son appareil.</p><p><em>SR5 p. 243</em></p>",
-      "en": "<p>One mark needed: pick a program the target is running, known through Matrix Perception or seen in use. On a success it stops and cannot restart until its device reboots.</p><p><em>SR5 p. 243</em></p>",
-      "source": "SR5 p. 243",
+      "en": "<p>One mark needed: pick a program the target is running, known through Matrix Perception or seen in use. On a success it stops and cannot restart until its device reboots.</p><p><em>SR5 p. 238</em></p>",
+      "source": "SR5 p. 243 ; EN : SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionDataSpike_GE": {
       "fr": "<p>Attaque matricielle contre un persona ou un appareil : VD = Attaque + 1 par succès excédentaire + 2 par mark sur la cible, résistés avec Indice d'appareil + Firewall.</p><p><em>SR5 p. 242</em></p>",
-      "en": "<p>Matrix attack on a persona or device: DV = Attack + 1 per net hit + 2 per mark on the target, resisted with Device Rating + Firewall.</p><p><em>SR5 p. 242</em></p>",
-      "source": "SR5 p. 242",
+      "en": "<p>Matrix attack on a persona or device: DV = Attack + 1 per net hit + 2 per mark on the target, resisted with Device Rating + Firewall.</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 242 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionDenialOfService_GE": {
       "fr": "<p>Vise un appareil ou un PAN sans fil : jusqu'au début du tour de combat suivant, tous les tests faits avec l'appareil subissent −2 par succès net. Chaque mark sur un PAN ennemi étend l'effet à deux appareils asservis de plus.</p><p><em>KC p. 43</em></p>",
-      "en": "<p>Targets a wireless device or PAN: until the start of the next Combat Turn, every test made with the device takes −2 per net hit. Each mark on an enemy PAN extends the effect to two more slaved devices.</p><p><em>KC p. 43</em></p>",
-      "source": "KC p. 43",
+      "en": "<p>Targets a wireless device or PAN: until the start of the next Combat Turn, every test made with the device takes −2 per net hit. Each mark on an enemy PAN extends the effect to two more slaved devices.</p><p><em>KC p. 37</em></p>",
+      "source": "KC p. 43 ; EN : KC p. 37",
       "garder": false,
       "note": "Arbitrage du 28/09 (registre) : test de l'en-tête (Cybercombat + Logique [Attaque] contre Volonté + Firewall), pas celui du corps."
     },
     "SR5.MatrixActionDetectTargetLock_GE": {
       "fr": "<p>Action gratuite, propriétaire : vous détectez une acquisition active qui vous vise (seuil 2). Il faut un commlink, un deck ou une CCR sans fil ; la Réduction du bruit de la CCR s'ajoute à la réserve.</p><p><em>R5 p. 34</em></p>",
-      "en": "<p>Free Action, owner: you detect an active sensor lock on you (threshold 2). Requires a wireless commlink, deck or RCC; the RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 34</em></p>",
-      "source": "R5 p. 34",
+      "en": "<p>Free Action, owner: you detect an active sensor lock on you (threshold 2). Requires a wireless commlink, deck or RCC; the RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 30</em></p>",
+      "source": "R5 p. 34 ; EN : R5 p. 30",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionDisarmDataBomb_GE": {
       "fr": "<p>Contre une bombe matricielle déjà repérée : au moins 1 succès net l'efface ; sinon elle explose, inflige ses dommages et détruit peut-être son fichier.</p><p><em>SR5 p. 240</em></p>",
-      "en": "<p>Against a Data Bomb already spotted: at least 1 net hit deletes it; otherwise it goes off, deals its damage and may destroy its file.</p><p><em>SR5 p. 240</em></p>",
-      "source": "SR5 p. 240",
+      "en": "<p>Against a Data Bomb already spotted: at least 1 net hit deletes it; otherwise it goes off, deals its damage and may destroy its file.</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 240 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionEditFile_GE": {
       "fr": "<p>Une mark requise : permet de créer, changer, dupliquer, supprimer ou protéger un fichier, un détail par action (quelques lignes, un élément d'image, 2 ou 3 secondes de son ou de vidéo). Une retouche continue se refait à chaque tour. Échoue d'office sur un fichier protégé ; une bombe matricielle présente vous saute dessus.</p><p><em>SR5 p. 240</em></p>",
-      "en": "<p>One mark needed: create, change, copy, delete or protect a file, one detail per action (a few lines, one image element, 2 or 3 seconds of audio or video). A running edit must be repeated each turn. Fails outright on a protected file; a Data Bomb on it goes off on you.</p><p><em>SR5 p. 240</em></p>",
-      "source": "SR5 p. 240",
+      "en": "<p>One mark needed: create, change, copy, delete or protect a file, one detail per action (a few lines, one image element, 2 or 3 seconds of audio or video). A running edit must be repeated each turn. Fails outright on a protected file; a Data Bomb on it goes off on you.</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 240 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionEnterOrExitHost_GE": {
       "fr": "<p>Sans test : entrer dans un serveur demande une mark dessus, en sortir ne demande rien. Certaines CI peuvent vous empêcher de ressortir.</p><p><em>SR5 p. 240</em></p>",
-      "en": "<p>No test: entering a host requires a mark on it, leaving requires nothing. Some IC can keep you from getting out.</p><p><em>SR5 p. 240</em></p>",
-      "source": "SR5 p. 240",
+      "en": "<p>No test: entering a host requires a mark on it, leaving requires nothing. Some IC can keep you from getting out.</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 240 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionEraseMark_GE": {
       "fr": "<p>Supprime une mark posée sur votre persona ou sur une autre icône.</p><p><em>SR5 p. 240</em></p>",
-      "en": "<p>Removes a mark placed on your persona or on another icon.</p><p><em>SR5 p. 240</em></p>",
-      "source": "SR5 p. 240",
+      "en": "<p>Removes a mark placed on your persona or on another icon.</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 240 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionEraseMatrixSignature_GE": {
       "fr": "<p>Efface la signature matricielle laissée par un être de résonance (technomancien, sprite).</p><p><em>SR5 p. 240</em></p>",
-      "en": "<p>Deletes the Matrix signature left behind by a Resonance being (technomancer, sprite).</p><p><em>SR5 p. 240</em></p>",
-      "source": "SR5 p. 240",
+      "en": "<p>Deletes the Matrix signature left behind by a Resonance being (technomancer, sprite).</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 240 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionFormatDevice_GE": {
       "fr": "<p>Trois marks requises : au prochain reboot, l'appareil s'éteint pour de bon jusqu'au remplacement de son logiciel. Il perd ses bonus sans fil et l'accès à la Matrice mais reste utilisable à la main (poignée, détente…).</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>Three marks needed: at its next reboot, the device shuts down for good until its software is replaced. It loses its wireless bonuses and Matrix access but still works by hand (handle, trigger…).</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>Three marks needed: at its next reboot, the device shuts down for good until its software is replaced. It loses its wireless bonuses and Matrix access but still works by hand (handle, trigger…).</p><p><em>SR5 p. 239</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 239",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionGarbageInGarbageOut_GE": {
       "fr": "<p>Trois marks requises : échange, sur un appareil, une commande d'entrée unique contre une commande de sortie unique ; impossible de le reprogrammer en entier. Le MJ juge ce qui peut s'échanger ; un reboot remet tout en ordre.</p><p><em>DT p. 185</em></p>",
-      "en": "<p>Three marks needed: swaps a single input command with a single output command on one device; it cannot be reprogrammed wholesale. The GM decides what can be swapped; a reboot puts everything back.</p><p><em>DT p. 185</em></p>",
-      "source": "DT p. 185",
+      "en": "<p>Three marks needed: swaps a single input command with a single output command on one device; it cannot be reprogrammed wholesale. The GM decides what can be swapped; a reboot puts everything back.</p><p><em>DT p. 178</em></p>",
+      "source": "DT p. 185 ; EN : DT p. 178",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionGridHop_GE": {
       "fr": "<p>Sans test : vous passez sur une grille à laquelle vous avez accès. Sans accès, il faut Passer en force ou Hacker à la volée. Impossible depuis l'intérieur d'un serveur.</p><p><em>SR5 p. 244</em></p>",
-      "en": "<p>No test: you move to a grid you have access to. Without access, use Brute Force or Hack on the Fly. Not possible from inside a host.</p><p><em>SR5 p. 244</em></p>",
-      "source": "SR5 p. 244",
+      "en": "<p>No test: you move to a grid you have access to. Without access, use Brute Force or Hack on the Fly. Not possible from inside a host.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 244 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionHackOnTheFly_GE": {
       "fr": "<p>Pose une mark sans permission, en misant sur la Corruption (pendant de Passer en force). Chaque tranche de 2 succès excédentaires vaut aussi 1 succès de perception matricielle sur la cible.</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>Places a mark without permission, relying on Sleaze (the counterpart of Brute Force). Each 2 full net hits also count as 1 hit of Matrix Perception on the target.</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>Places a mark without permission, relying on Sleaze (the counterpart of Brute Force). Each 2 full net hits also count as 1 hit of Matrix Perception on the target.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionHaywire_GE": {
       "fr": "<p>Contre un persona hors RV : toutes les fonctions sans fil et PAN de la cible s'arrêtent (le matériel marche encore à la main). Elle s'en sort par un test étendu Logique + Informatique [Traitement de données] de seuil = vos succès nets, une action simple par essai, ou par un reboot. Une complication ajoute 1 succès net à l'attaquant ; un échec critique oblige à réinstaller tout le PAN.</p><p><em>KC p. 43</em></p>",
-      "en": "<p>Against a persona not in VR: all of the target's wireless and PAN functions stop (hardware still works by hand). They recover with an extended Computer + Logic [Data Processing] test, threshold = your net hits, one Simple Action per try, or by rebooting. A glitch adds 1 net hit to the attacker; a critical glitch forces a reinstall of the whole PAN.</p><p><em>KC p. 43</em></p>",
-      "source": "KC p. 43",
+      "en": "<p>Against a persona not in VR: all of the target's wireless and PAN functions stop (hardware still works by hand). They recover with an extended Computer + Logic [Data Processing] test, threshold = your net hits, one Simple Action per try, or by rebooting. A glitch adds 1 net hit to the attacker; a critical glitch forces a reinstall of the whole PAN.</p><p><em>KC p. 38</em></p>",
+      "source": "KC p. 43 ; EN : KC p. 38",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionHide_GE": {
       "fr": "<p>Vous échappez à une icône qui vous a repéré : elle doit refaire une perception matricielle pour vous retrouver. Impossible si elle a une mark sur vous.</p><p><em>SR5 p. 244</em></p>",
-      "en": "<p>You slip away from an icon that spotted you: it needs a new Matrix Perception to find you. Not possible if it has a mark on you.</p><p><em>SR5 p. 244</em></p>",
-      "source": "SR5 p. 244",
+      "en": "<p>You slip away from an icon that spotted you: it needs a new Matrix Perception to find you. Not possible if it has a mark on you.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 244 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionIAmTheFirewall_GE": {
       "fr": "<p>Action complexe (ou d'interruption à −5 d'initiative) : vos succès s'ajoutent en dés aux tests de défense des alliés qui reçoivent votre flux RA, au plus autant d'alliés que votre Traitement de données, jusqu'à votre prochaine passe d'initiative.</p><p><em>KC p. 43</em></p>",
-      "en": "<p>Complex Action (or Interrupt at −5 Initiative): your hits add as dice to the Defense tests of allies who receive your AR feed, up to your Data Processing in number, until your next Initiative Pass.</p><p><em>KC p. 43</em></p>",
-      "source": "KC p. 43",
+      "en": "<p>Complex Action (or Interrupt at −5 Initiative): your hits add as dice to the Defense tests of allies who receive your AR feed, up to your Data Processing in number, until your next Initiative Pass.</p><p><em>KC p. 38</em></p>",
+      "source": "KC p. 43 ; EN : KC p. 38",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionIntervene_GE": {
       "fr": "<p>Action d'interruption (−5 d'initiative), si l'appareil qui attaque est sans fil et que vous le voyez venir : vos succès s'ajoutent au test de défense du propriétaire d'un appareil asservi à votre PAN, pour cette défense seulement.</p><p><em>KC p. 43</em></p>",
-      "en": "<p>Interrupt Action (−5 Initiative), if the attacking device is wireless and you are aware of it: your hits add to the Defense test of the owner of a device slaved to your PAN, for that defense only.</p><p><em>KC p. 43</em></p>",
-      "source": "KC p. 43",
+      "en": "<p>Interrupt Action (−5 Initiative), if the attacking device is wireless and you are aware of it: your hits add to the Defense test of the owner of a device slaved to your PAN, for that defense only.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 43 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionInviteMark_GE": {
       "fr": "<p>Propriétaire, sans test : vous autorisez une icône à vous marker, en fixant combien de marks, leur durée et celle de l'offre. L'invité marke en action gratuite. L'offre se retire tant qu'elle n'est pas prise ; après, il faut Effacer une mark ou rebooter.</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>Owner, no test: you allow an icon to mark yours, setting how many marks, their duration and how long the offer lasts. The invitee marks with a Free Action. The offer can be withdrawn until taken; after that, use Erase Mark or reboot.</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>Owner, no test: you allow an icon to mark yours, setting how many marks, their duration and how long the offer lasts. The invitee marks with a Free Action. The offer can be withdrawn until taken; after that, use Erase Mark or reboot.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionJackOut_GE": {
       "fr": "<p>Action simple : vous quittez la Matrice et votre appareil reboote ; choc d'éjection si vous étiez en RV. Ne s'applique qu'à vous-même ; sous verrouillage, un test est nécessaire.</p><p><em>SR5 p. 244</em></p>",
-      "en": "<p>Simple Action: you leave the Matrix and your device reboots; dumpshock if you were in VR. Works only on yourself; if link-locked, a test is needed.</p><p><em>SR5 p. 244</em></p>",
-      "source": "SR5 p. 244",
+      "en": "<p>Simple Action: you leave the Matrix and your device reboots; dumpshock if you were in VR. Works only on yourself; if link-locked, a test is needed.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 244 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionJamSignals_GE": {
       "fr": "<p>Propriétaire : votre appareil sans fil devient un brouilleur. Tant qu'il ne sert à aucune autre action matricielle, vos succès s'ajoutent au Bruit de toute action matricielle faite par ou contre un appareil dans un rayon de 100 m.</p><p><em>SR5 p. 239</em></p>",
-      "en": "<p>Owner: your wireless device becomes a jammer. As long as it is used for no other Matrix action, your hits add to the Noise of every Matrix action made by or against a device within 100 m.</p><p><em>SR5 p. 239</em></p>",
-      "source": "SR5 p. 239",
+      "en": "<p>Owner: your wireless device becomes a jammer. As long as it is used for no other Matrix action, your hits add to the Noise of every Matrix action made by or against a device within 100 m.</p><p><em>SR5 p. 240</em></p>",
+      "source": "SR5 p. 239 ; EN : SR5 p. 240",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionJumpIntoRiggedDevice_GE": {
       "fr": "<p>Trois marks, RV, câblage de contrôle et appareil interfacé requis : vous plongez dans le véhicule ou le drone. Pas de test pour le propriétaire ou qui a sa permission. Son icône rejoint votre persona. Une seule personne plongée à la fois.</p><p><em>SR5 p. 243</em></p>",
-      "en": "<p>Three marks, VR, a control rig and a rigger-adapted device are needed: you jump into the vehicle or drone. No test for the owner or someone with their permission. Its icon joins your persona. Only one person jumped in at a time.</p><p><em>SR5 p. 243</em></p>",
-      "source": "SR5 p. 243",
+      "en": "<p>Three marks, VR, a control rig and a rigger-adapted device are needed: you jump into the vehicle or drone. No test for the owner or someone with their permission. Its icon joins your persona. Only one person jumped in at a time.</p><p><em>SR5 p. 241</em></p>",
+      "source": "SR5 p. 243 ; EN : SR5 p. 241",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionLoadProgram_GE": {
       "fr": "<p>Action gratuite : charge un programme dans un emplacement libre.</p><p><em>SR5 p. 229</em></p>",
-      "en": "<p>Free Action: loads a program into a free slot.</p><p><em>SR5 p. 229</em></p>",
-      "source": "SR5 p. 229",
+      "en": "<p>Free Action: loads a program into a free slot.</p><p><em>SR5 p. 228</em></p>",
+      "source": "SR5 p. 229 ; EN : SR5 p. 228",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionMasquerade_GE": {
       "fr": "<p>Deux marks sur le persona imité et deux sur l'icône à tromper : chaque succès net la convainc pendant une minute que vous êtes l'autre (appels, messagerie, réseaux…). Sans effet sur les transferts de propriété ou bancaires ; vous n'êtes jamais propriétaire de ses appareils. Si le persona imité se déconnecte, les marks tombent.</p><p><em>KC p. 44</em></p>",
-      "en": "<p>Two marks on the persona you copy and two on the icon you fool: each net hit convinces it for one minute that you are the other one (calls, mail, social feeds…). No effect on ownership changes or bank transfers; you never count as owner of their devices. If the copied persona logs off, the marks are lost.</p><p><em>KC p. 44</em></p>",
-      "source": "KC p. 44",
+      "en": "<p>Two marks on the persona you copy and two on the icon you fool: each net hit convinces it for one minute that you are the other one (calls, mail, social feeds…). No effect on ownership changes or bank transfers; you never count as owner of their devices. If the copied persona logs off, the marks are lost.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 44 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionMatrixPerception_GE": {
       "fr": "<p>Trouve des icônes ou analyse un objet matriciel : chaque succès net répond à une question (type, indice, marks portées, fichiers, grille, présence d'icônes en mode silencieux…).</p><p><em>SR5 p. 242</em></p>",
-      "en": "<p>Finds icons or analyzes a Matrix object: each net hit answers one question (type, rating, marks on it, files, grid, silent-running icons nearby…).</p><p><em>SR5 p. 242</em></p>",
-      "source": "SR5 p. 242",
+      "en": "<p>Finds icons or analyzes a Matrix object: each net hit answers one question (type, rating, marks on it, files, grid, silent-running icons nearby…).</p><p><em>SR5 p. 241</em></p>",
+      "source": "SR5 p. 242 ; EN : SR5 p. 241",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionMatrixSearch_GE": {
       "fr": "<p>Recherche d'information : le seuil et le temps de base dépendent du sujet et de la zone fouillée. Le temps est divisé par les succès au-delà du seuil ; en cas d'échec, il est dépensé en entier.</p><p><em>SR5 p. 244</em></p>",
-      "en": "<p>Information search: threshold and base time depend on the topic and the area searched. The time is divided by hits beyond the threshold; on a failure, the full time is spent.</p><p><em>SR5 p. 244</em></p>",
-      "source": "SR5 p. 244",
+      "en": "<p>Information search: threshold and base time depend on the topic and the area searched. The time is divided by hits beyond the threshold; on a failure, the full time is spent.</p><p><em>SR5 p. 241</em></p>",
+      "source": "SR5 p. 244 ; EN : SR5 p. 241",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionPopupCybercombat_GE": {
       "fr": "<p>Contre un persona hors RV en RA sans fil : malus égal aux succès nets sur toutes ses actions jusqu'au début de votre prochain tour de combat. Version Cybercombat : inflige en plus autant de dommages matriciels.</p><p><em>KC p. 45</em></p>",
-      "en": "<p>Against a persona not in VR using wireless AR: penalty equal to net hits on all their actions until the start of your next Combat Turn. Cybercombat version: also deals that much Matrix damage.</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>Against a persona not in VR using wireless AR: penalty equal to net hits on all their actions until the start of your next Combat Turn. Cybercombat version: also deals that much Matrix damage.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionPopupHacking_GE": {
       "fr": "<p>Contre un persona hors RV en RA sans fil : malus égal aux succès nets sur toutes ses actions jusqu'au début de votre prochain tour de combat. Version Hacking : les succès nets valent aussi une perception matricielle sur la cible.</p><p><em>KC p. 45</em></p>",
-      "en": "<p>Against a persona not in VR using wireless AR: penalty equal to net hits on all their actions until the start of your next Combat Turn. Hacking version: net hits also count as a Matrix Perception on the target.</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>Against a persona not in VR using wireless AR: penalty equal to net hits on all their actions until the start of your next Combat Turn. Hacking version: net hits also count as a Matrix Perception on the target.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionRebootDevice_GE": {
       "fr": "<p>Trois marks (pas de test pour le propriétaire) : l'appareil s'éteint et revient à la fin du tour de combat suivant, hors Matrice entre-temps. Persona : SS remis à 0, marks effacées ; choc d'éjection en RV. Ni serveur, ni être vivant, ni sprite ; impossible sous verrouillage.</p><p><em>SR5 p. 244</em></p>",
-      "en": "<p>Three marks (no test for the owner): the device shuts down and comes back at the end of the next Combat Turn, off the Matrix meanwhile. Persona: OS reset to 0, marks wiped; dumpshock in VR. Not hosts, living beings or sprites; not possible while link-locked.</p><p><em>SR5 p. 244</em></p>",
-      "source": "SR5 p. 244",
+      "en": "<p>Three marks (no test for the owner): the device shuts down and comes back at the end of the next Combat Turn, off the Matrix meanwhile. Persona: OS reset to 0, marks wiped; dumpshock in VR. Not hosts, living beings or sprites; not possible while link-locked.</p><p><em>SR5 p. 242</em></p>",
+      "source": "SR5 p. 244 ; EN : SR5 p. 242",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSendMessage_GE": {
       "fr": "<p>Une mark requise, sans test : envoie une phrase, une image ou un fichier à un commcode connu (un paragraphe par IND), ou ouvre un flux en direct vers un ou plusieurs destinataires.</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>One mark needed, no test: sends a sentence, an image or a file to a known commcode (a paragraph through DNI), or opens a live feed to one or more recipients.</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>One mark needed, no test: sends a sentence, an image or a file to a known commcode (a paragraph through DNI), or opens a live feed to one or more recipients.</p><p><em>SR5 p. 242</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 242",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSetDataBomb_GE": {
       "fr": "<p>Une mark requise : piège un fichier d'une bombe d'indice choisi, au plus vos succès nets, avec un mot de passe, en décidant si elle efface le fichier. Une seule par fichier. Elle explose sur qui touche au fichier sans le mot de passe : (indice)D6 dommages matriciels, puis s'efface. Repérable par perception matricielle.</p><p><em>SR5 p. 243</em></p>",
-      "en": "<p>One mark needed: traps a file with a bomb of chosen rating, up to your net hits, with a passcode, deciding whether it deletes the file. One per file. It goes off on anyone handling the file without the passcode: (Rating)D6 Matrix damage, then deletes itself. Can be found with Matrix Perception.</p><p><em>SR5 p. 243</em></p>",
-      "source": "SR5 p. 243",
+      "en": "<p>One mark needed: traps a file with a bomb of chosen rating, up to your net hits, with a passcode, deciding whether it deletes the file. One per file. It goes off on anyone handling the file without the passcode: (Rating)D6 Matrix damage, then deletes itself. Can be found with Matrix Perception.</p><p><em>SR5 p. 242</em></p>",
+      "source": "SR5 p. 243 ; EN : SR5 p. 242",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSnoop_GE": {
       "fr": "<p>Une mark requise : tant que la mark tient, vous captez le trafic matriciel de la cible, en direct ou enregistré si vous avez de quoi le stocker.</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>One mark needed: as long as the mark holds, you intercept the target's Matrix traffic, live or recorded if you have storage.</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>One mark needed: as long as the mark holds, you intercept the target's Matrix traffic, live or recorded if you have storage.</p><p><em>SR5 p. 242</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 242",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSpoofCommand_GE": {
       "fr": "<p>Une mark sur l'icône imitée, aucune sur la cible : l'appareil ou l'agent ciblé prend votre ordre pour celui de son propriétaire. Sans effet sur CI, sprites, serveurs et personas.</p><p><em>SR5 p. 241</em></p>",
-      "en": "<p>One mark on the icon you imitate, none on the target: the target device or agent takes your command as its owner's. No effect on IC, sprites, hosts or personas.</p><p><em>SR5 p. 241</em></p>",
-      "source": "SR5 p. 241",
+      "en": "<p>One mark on the icon you imitate, none on the target: the target device or agent takes your command as its owner's. No effect on IC, sprites, hosts or personas.</p><p><em>SR5 p. 242</em></p>",
+      "source": "SR5 p. 241 ; EN : SR5 p. 242",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSquelch_GE": {
       "fr": "<p>Action simple : l'appareil ciblé ne peut plus appeler ni envoyer de message pendant autant de minutes que de succès nets.</p><p><em>KC p. 45</em></p>",
-      "en": "<p>Simple Action: the target device cannot call or send messages for as many minutes as net hits.</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>Simple Action: the target device cannot call or send messages for as many minutes as net hits.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSubvertInfrastructure_GE": {
       "fr": "<p>Une mark sur le serveur : chaque succès net vous donne la main sur un appareil simple asservi à ce serveur (feux, distributeurs, électroménager… au choix du MJ), tous de même sorte. Jamais pour attaquer ; garder le contrôle coûte une action complexe par tour.</p><p><em>KC p. 45</em></p>",
-      "en": "<p>One mark on the host: each net hit puts one simple device slaved to that host under your control (traffic lights, vending machines, appliances… GM's call), all of one kind. Never for attacks; keeping control costs a Complex Action each turn.</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>One mark on the host: each net hit puts one simple device slaved to that host under your control (traffic lights, vending machines, appliances… GM's call), all of one kind. Never for attacks; keeping control costs a Complex Action each turn.</p><p><em>KC p. 39</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 39",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSuppressNoise_GE": {
       "fr": "<p>Action complexe, propriétaire : vos succès réduisent le Bruit entre vous et vos drones ou véhicules jusqu'à la fin du tour, en plus des autres réductions. Réduction du bruit de la CCR en bonus.</p><p><em>R5 p. 35</em></p>",
-      "en": "<p>Complex Action, owner: your hits cut the Noise between you and your drones or vehicles until the end of the turn, on top of other reductions. The RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 35</em></p>",
-      "source": "R5 p. 35",
+      "en": "<p>Complex Action, owner: your hits cut the Noise between you and your drones or vehicles until the end of the turn, on top of other reductions. The RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 30</em></p>",
+      "source": "R5 p. 35 ; EN : R5 p. 30",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSwapTwoPrograms_GE": {
       "fr": "<p>Échange un programme actif contre un programme en mémoire.</p><p><em>SR5 p. 229</em></p>",
-      "en": "<p>Swaps a running program for one in storage.</p><p><em>SR5 p. 229</em></p>",
-      "source": "SR5 p. 229",
+      "en": "<p>Swaps a running program for one in storage.</p><p><em>SR5 p. 228</em></p>",
+      "source": "SR5 p. 229 ; EN : SR5 p. 228",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSwitchInterfaceMode_GE": {
       "fr": "<p>Action simple : passe de la RA à la RV ou l'inverse. En RV, votre corps devient inerte.</p><p><em>SR5 p. 239</em></p>",
-      "en": "<p>Simple Action: switches from AR to VR or back. In VR, your body goes limp.</p><p><em>SR5 p. 239</em></p>",
-      "source": "SR5 p. 239",
+      "en": "<p>Simple Action: switches from AR to VR or back. In VR, your body goes limp.</p><p><em>SR5 p. 243</em></p>",
+      "source": "SR5 p. 239 ; EN : SR5 p. 243",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionSwitchTwoMatrixAttributes_GE": {
       "fr": "<p>Action gratuite : intervertit deux attributs matriciels de votre deck.</p><p><em>SR5 p. 229</em></p>",
-      "en": "<p>Free Action: swaps two Matrix attributes on your deck.</p><p><em>SR5 p. 229</em></p>",
-      "source": "SR5 p. 229",
+      "en": "<p>Free Action: swaps two Matrix attributes on your deck.</p><p><em>SR5 p. 228</em></p>",
+      "source": "SR5 p. 229 ; EN : SR5 p. 228",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionTag_GE": {
       "fr": "<p>Action simple : marquez autant de cibles d'un même PAN, en vue, que de succès nets (+ niveau du PI-Tac). Les alliés qui voient les ORA ignorent jusqu'à 2 dés de malus de visibilité et de lumière en attaque à distance contre elles et gagnent une prise de visée gratuite par passe. Une action simple par tour pour les maintenir.</p><p><em>KC p. 45</em></p>",
-      "en": "<p>Simple Action: tag as many targets in sight on one PAN as net hits (+ PI-Tac level). Allies who see AROs ignore up to 2 dice of visibility and light penalties on ranged attacks against them and get one free Take Aim per pass. A Simple Action each turn keeps them up.</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>Simple Action: tag as many targets in sight on one PAN as net hits (+ PI-Tac level). Allies who see AROs ignore up to 2 dice of visibility and light penalties on ranged attacks against them and get one free Take Aim per pass. A Simple Action each turn keeps them up.</p><p><em>KC p. 40</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 40",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionTargetDevice_GE": {
       "fr": "<p>Action complexe sur un appareil sans fil repéré : jusqu'à la fin du tour, les autopilotes et porteurs de smartlink ou de senseurs asservis à votre CCR gagnent autant de dés que vos succès nets pour l'attaquer. Réduction du bruit de la CCR en bonus.</p><p><em>R5 p. 34</em></p>",
-      "en": "<p>Complex Action on a wireless device you spotted: until the end of the turn, pilots and smartlink or sensor users slaved to your RCC gain dice equal to your net hits to attack it. The RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 34</em></p>",
-      "source": "R5 p. 34",
+      "en": "<p>Complex Action on a wireless device you spotted: until the end of the turn, pilots and smartlink or sensor users slaved to your RCC gain dice equal to your net hits to attack it. The RCC's Noise Reduction adds to the pool.</p><p><em>R5 p. 30</em></p>",
+      "source": "R5 p. 34 ; EN : R5 p. 30",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionTraceIcon_GE": {
       "fr": "<p>Deux marks requises : vous découvrez où se trouve physiquement un appareil ou un persona, et le savez tant qu'il vous reste une mark dessus. Sans effet sur serveurs et CI.</p><p><em>SR5 p. 246</em></p>",
-      "en": "<p>Two marks needed: you learn where a device or persona physically is, and keep knowing it while you still have a mark on it. No effect on hosts or IC.</p><p><em>SR5 p. 246</em></p>",
-      "source": "SR5 p. 246",
+      "en": "<p>Two marks needed: you learn where a device or persona physically is, and keep knowing it while you still have a mark on it. No effect on hosts or IC.</p><p><em>SR5 p. 243</em></p>",
+      "source": "SR5 p. 246 ; EN : SR5 p. 243",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionTrackback_GE": {
       "fr": "<p>Propriétaire, sur une grille seulement : remonte une mark repérée sur votre appareil jusqu'à celui qui l'a posée. Test étendu de 30 minutes, seuil 10 + Corruption du persona fautif. En mode silencieux, la piste s'arrête près de lui.</p><p><em>DT p. 185</em></p>",
-      "en": "<p>Owner, on a grid only: follows a mark spotted on your device back to whoever placed it. Extended test, 30-minute interval, threshold 10 + that persona's Sleaze. If it runs silent, the trail ends near it.</p><p><em>DT p. 185</em></p>",
-      "source": "DT p. 185",
+      "en": "<p>Owner, on a grid only: follows a mark spotted on your device back to whoever placed it. Extended test, 30-minute interval, threshold 10 + that persona's Sleaze. If it runs silent, the trail ends near it.</p><p><em>DT p. 179</em></p>",
+      "source": "DT p. 185 ; EN : DT p. 179",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionUnloadProgram_GE": {
       "fr": "<p>Désactive un programme et libère son emplacement.</p><p><em>SR5 p. 229</em></p>",
-      "en": "<p>Unloads a program and frees its slot.</p><p><em>SR5 p. 229</em></p>",
-      "source": "SR5 p. 229",
+      "en": "<p>Unloads a program and frees its slot.</p><p><em>SR5 p. 228</em></p>",
+      "source": "SR5 p. 229 ; EN : SR5 p. 228",
       "garder": false,
       "note": ""
     },
     "SR5.MatrixActionWatchdog_GE": {
       "fr": "<p>Pose une mark sur un persona ou un appareil : tant qu'elle tient, vous voyez venir ses actions matricielles et pouvez lancer contre lui Détraquer ou Popup en interruption (−10 d'initiative) ou Isoler (−5).</p><p><em>KC p. 45</em></p>",
-      "en": "<p>Places a mark on a persona or device: while it holds, you see its Matrix actions coming and can use Haywire or Popup against it as Interrupts (−10 Initiative) or Squelch (−5).</p><p><em>KC p. 45</em></p>",
-      "source": "KC p. 45",
+      "en": "<p>Places a mark on a persona or device: while it holds, you see its Matrix actions coming and can use Haywire or Popup against it as Interrupts (−10 Initiative) or Squelch (−5).</p><p><em>KC p. 40</em></p>",
+      "source": "KC p. 45 ; EN : KC p. 40",
       "garder": false,
       "note": ""
     },
     "SR5.SpriteDataDescription": {
       "fr": "<p>Spécialiste de l'information : trouver, trier et manipuler des données.</p><p><em>SR5 p. 261</em></p>",
-      "en": "<p>Information specialist: finding, sorting and handling data.</p><p><em>SR5 p. 261</em></p>",
-      "source": "SR5 p. 261",
+      "en": "<p>Information specialist: finding, sorting and handling data.</p><p><em>SR5 p. 259</em></p>",
+      "source": "SR5 p. 261 ; EN : SR5 p. 259",
       "garder": false,
       "note": ""
     },
     "SR5.SpriteFaultDescription": {
       "fr": "<p>Le sprite de combat : il protège son technomancien et s'en prend à ses ennemis matriciels.</p><p><em>SR5 p. 261</em></p>",
-      "en": "<p>The combat sprite: guards its technomancer and goes after Matrix enemies.</p><p><em>SR5 p. 261</em></p>",
-      "source": "SR5 p. 261",
+      "en": "<p>The combat sprite: guards its technomancer and goes after Matrix enemies.</p><p><em>SR5 p. 259</em></p>",
+      "source": "SR5 p. 261 ; EN : SR5 p. 259",
       "garder": false,
       "note": ""
     },
     "SR5.SpriteMachineDescription": {
       "fr": "<p>Le sprite de l'électronique : il agit sur le monde physique à travers les appareils.</p><p><em>SR5 p. 261</em></p>",
-      "en": "<p>The electronics sprite: affects the physical world through devices.</p><p><em>SR5 p. 261</em></p>",
-      "source": "SR5 p. 261",
+      "en": "<p>The electronics sprite: affects the physical world through devices.</p><p><em>SR5 p. 259</em></p>",
+      "source": "SR5 p. 261 ; EN : SR5 p. 259",
       "garder": false,
       "note": ""
     },
     "SR5.SpriteCompanionDescription": {
       "fr": "<p>Le sprite garde du corps : il reste près de son technomancien pour le défendre (Informatique, Guerre électronique ; pouvoirs Bouclier et Garde du corps).</p><p><em>KC p. 110</em></p>",
-      "en": "<p>The bodyguard sprite: stays close to its technomancer to defend them (Computer, Electronic Warfare; Shield and Bodyguard powers).</p><p><em>KC p. 110</em></p>",
-      "source": "KC p. 110",
+      "en": "<p>The bodyguard sprite: stays close to its technomancer to defend them (Computer, Electronic Warfare; Shield and Bodyguard powers).</p><p><em>KC p. 100</em></p>",
+      "source": "KC p. 110 ; EN : KC p. 100",
       "garder": false,
       "note": "Ajout demandé par Élise (23/10) : texte du livre sous le seuil de 200 caractères."
     },
     "SR5.SpriteCourierDescription": {
       "fr": "<p>Le sprite messager : il transporte des données en sécurité et sait suivre une piste dans la Matrice.</p><p><em>SR5 p. 261</em></p>",
-      "en": "<p>The messenger sprite: carries data safely and can follow a trail through the Matrix.</p><p><em>SR5 p. 261</em></p>",
-      "source": "SR5 p. 261",
+      "en": "<p>The messenger sprite: carries data safely and can follow a trail through the Matrix.</p><p><em>SR5 p. 259</em></p>",
+      "source": "SR5 p. 261 ; EN : SR5 p. 259",
       "garder": false,
       "note": "Ajout demandé par Élise (23/10) : texte du livre sous le seuil de 200 caractères."
     },
     "SR5.SpriteCrackDescription": {
       "fr": "<p>Le sprite de l’infiltration : utile quand le run doit passer inaperçu.</p><p><em>SR5 p. 261</em></p>",
-      "en": "<p>The infiltration sprite: useful when the run has to go unnoticed.</p><p><em>SR5 p. 261</em></p>",
-      "source": "SR5 p. 261",
+      "en": "<p>The infiltration sprite: useful when the run has to go unnoticed.</p><p><em>SR5 p. 259</em></p>",
+      "source": "SR5 p. 261 ; EN : SR5 p. 259",
       "garder": false,
       "note": "Ajout demandé par Élise (23/10) : texte du livre sous le seuil de 200 caractères."
     },
     "SR5.SpriteGeneralistDescription": {
       "fr": "<p>Le sprite polyvalent, sans point fort ni point faible (Hacking, Informatique, Guerre électronique ; deux pouvoirs optionnels au choix).</p><p><em>KC p. 110</em></p>",
-      "en": "<p>The all-rounder sprite, with no particular strength or weakness (Hacking, Computer, Electronic Warfare; two optional powers of your choice).</p><p><em>KC p. 110</em></p>",
-      "source": "KC p. 110",
+      "en": "<p>The all-rounder sprite, with no particular strength or weakness (Hacking, Computer, Electronic Warfare; two optional powers of your choice).</p><p><em>KC p. 100</em></p>",
+      "source": "KC p. 110 ; EN : KC p. 100",
       "garder": false,
       "note": "Ajout demandé par Élise (23/10) : texte du livre sous le seuil de 200 caractères."
     }

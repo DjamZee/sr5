@@ -206,8 +206,8 @@
     },
     "SR5.HermeticElementalist_D": {
       "fr": "Arcanes Interdites p. 175 : le trait Élémentaire s'applique à tous ses esprits de l'air, de l'eau, du feu et de la terre (attributs mentaux réduits, liens facilités). Ajustement de +6 à appliquer.",
-      "en": "Forbidden Arcana p. 175: their air, water, fire and earth spirits take the Elemental trait (lower mental attributes, easier binding). Apply the +6 adjustment.",
-      "source": "ARC p. 175",
+      "en": "Forbidden Arcana p. 181: their air, water, fire and earth spirits take the Elemental trait (lower mental attributes, easier binding). Apply the +6 adjustment.",
+      "source": "ARC p. 175 ; EN : Forbidden Arcana p. 181",
       "garder": false,
       "note": ""
     },
@@ -234,15 +234,15 @@
     },
     "SR5.SETTINGS_CommcodeCipher_D": {
       "fr": "Ajout hors livre (le livre de base ne chiffre pas les messages, SR5 p. 241). Coché : un message ou un fichier peut porter un chiffre à clé (genre Vigenère). On le pose comme une protection de fichier (succès = indice, SR5 p. 240) ; le destinataire lit avec la clé de son répertoire ; un intercepteur le casse comme Pirater un fichier (SR5 p. 242) et seul lui voit le clair. Le MJ voit toujours le clair. Décoché (défaut) : rien de plus que le livre.",
-      "en": "Off-book addition (the core book does not encrypt messages, SR5 p. 241). Checked: a message or file can carry a key cipher (Vigenère-like). It is set like file protection (hits = rating, SR5 p. 240); the recipient reads it with the key in their directory; an interceptor breaks it like Crack File (SR5 p. 242) and only they see the plain text. The GM always sees the plain text. Unchecked (default): nothing beyond the book.",
-      "source": "SR5 p. 240-242",
+      "en": "Off-book addition (the core book does not encrypt messages, SR5 p. 242). Checked: a message or file can carry a key cipher (Vigenère-like). It is set like file protection (hits = rating, SR5 p. 239); the recipient reads it with the key in their directory; an interceptor breaks it like Crack File (SR5 p. 238) and only they see the plain text. The GM always sees the plain text. Unchecked (default): nothing beyond the book.",
+      "source": "SR5 p. 240-242 ; EN : SR5 p. 242, SR5 p. 239, SR5 p. 238",
       "garder": false,
       "note": ""
     },
     "SR5.SETTINGS_WithdrawalModifier_D": {
       "fr": "SR5 p. 417 prévoit un modificateur selon le degré d'addiction sans en donner la valeur. Aucun : réserve du test d'addiction seule. Malus du manque : Dévorante −6, Grave ou Modérée −4, Légère −2 (chiffres de SR5 p. 79).",
-      "en": "SR5 p. 417 calls for a modifier by addiction level without giving its value. None: the addiction test pool alone. Craving penalty: Burnout −6, Severe or Moderate −4, Mild −2 (figures from SR5 p. 79).",
-      "source": "SR5 p. 417",
+      "en": "SR5 p. 415 calls for a modifier by addiction level without giving its value. None: the addiction test pool alone. Craving penalty: Burnout −6, Severe or Moderate −4, Mild −2 (figures from SR5 p. 78).",
+      "source": "SR5 p. 417 ; EN : SR5 p. 415, SR5 p. 78",
       "garder": false,
       "note": ""
     },

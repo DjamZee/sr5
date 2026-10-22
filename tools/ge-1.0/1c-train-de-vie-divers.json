@@ -143,35 +143,35 @@
     },
     "SR5.LifeStyleOptionGarageAirplane_GE": {
       "fr": "<p>Atout (avion) : 4 points, 20 000 ¥ par mois, gratuit dès un style de vie Luxueux. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
-      "en": "<p>Asset (airplane): 4 points, 20,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "en": "<p>Asset (airplane): 4 points, 20,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 143).</p><p><em>Run Faster p. 221</em></p>",
       "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageBoat_GE": {
       "fr": "<p>Atout (bateau, avec quai) : 3 points, 5 000 ¥ par mois, gratuit dès un style de vie Élevé. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
-      "en": "<p>Asset (boat, dock included): 3 points, 5,000¥ per month, free from a High lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "en": "<p>Asset (boat, dock included): 3 points, 5,000¥ per month, free from a High lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 143).</p><p><em>Run Faster p. 221</em></p>",
       "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageHelicopter_GE": {
       "fr": "<p>Atout (hélicoptère, avec aire de décollage) : 4 points, 10 000 ¥ par mois, gratuit dès un style de vie Luxueux. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
-      "en": "<p>Asset (helicopter, landing pad included): 4 points, 10,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "en": "<p>Asset (helicopter, landing pad included): 4 points, 10,000¥ per month, free from a Luxury lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 143).</p><p><em>Run Faster p. 221</em></p>",
       "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": ""
     },
     "SR5.LifeStyleOptionGarageLargeCar_GE": {
       "fr": "<p>Atout (voiture de Structure 15 ou plus) : 2 points, 100 ¥ par mois, gratuit dès un style de vie Moyen. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
-      "en": "<p>Asset (car, Body 15 or more): 2 points, 100¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "en": "<p>Asset (car, Body 15 or more): 2 points, 100¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 143).</p><p><em>Run Faster p. 221</em></p>",
       "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": "Seuil VF 14 / 15 suivi, aussi en EN : la VO imprime Body 4 / 5, ce qui ne laisse que le Dodge Scoot (Structure 4) en petit garage alors que toutes les voitures de SR5 p. 467 ont 8 à 15 ; avec 14 / 15, les voitures (8-12) sont petites, Nightsky (15) et camions (15-18) grands. Coquille VO probable (chiffre 1 perdu), aucun errata."
     },
     "SR5.LifeStyleOptionGarageSmallCar_GE": {
       "fr": "<p>Atout (voiture de Structure 14 ou moins) : 1 point, 50 ¥ par mois, gratuit dès un style de vie Moyen. Abrite et entretient un seul véhicule ; se prend plusieurs fois. Avec un atelier adapté (SR5 p. 446), le véhicule répare 1 case par semaine sans frais, 2 avec une installation (réparation : SR5 p. 148, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 216</em></p>",
-      "en": "<p>Asset (car, Body 14 or less): 1 point, 50¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 154).</p><p><em>Run Faster p. 221</em></p>",
+      "en": "<p>Asset (car, Body 14 or less): 1 point, 50¥ per month, free from a Middle lifestyle. Shelters and maintains a single vehicle; can be taken several times. With a matching shop (SR5 p. 443), the vehicle repairs 1 box per week at no cost, 2 with a facility (repair: SR5 p. 145, Run &amp; Gun p. 143).</p><p><em>Run Faster p. 221</em></p>",
       "source": "Run Faster p. 216 (VF) / p. 221 (EN)",
       "garder": false,
       "note": "Seuil VF 14 / 15 suivi, aussi en EN : la VO imprime Body 4 / 5, ce qui ne laisse que le Dodge Scoot (Structure 4) en petit garage alors que toutes les voitures de SR5 p. 467 ont 8 à 15 ; avec 14 / 15, les voitures (8-12) sont petites, Nightsky (15) et camions (15-18) grands. Coquille VO probable (chiffre 1 perdu), aucun errata."
