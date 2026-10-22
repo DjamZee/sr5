@@ -8,6 +8,7 @@
 
 Les noms de famille CSS `srfoundry_*` sont gardés : des modules les citent. Les fichiers d'origine (« Shadowrun Foundry »,
 licence inconnue) ont été retirés pour la 1.0 publique.
+| `audiowide/Audiowide-Regular.ttf` | Audiowide (Astigmatic) | SIL Open Font License 1.1, `audiowide/OFL.txt` (nom réservé « Audiowide », fichier non modifié). Écran de pause seulement : famille CSS `sr5_pause`. |
 | `pt-serif/PT_Serif-Web-*.ttf` | PT Serif (ParaType) | SIL Open Font License 1.1, `pt-serif/OFL.txt`. Texte des journaux. |
 
 Le thème SR5 demande la police **Armadura Solid** pour les titres des pages de journal, mais ne la
