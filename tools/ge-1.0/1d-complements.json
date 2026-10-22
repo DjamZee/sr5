@@ -1,0 +1,432 @@
+{
+  "famille": "1d-complements",
+  "entrees": {
+    "SR5.AssensingResult1a": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult1b": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2a": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2b": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult2c": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3a": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3b": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3c": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult3d": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult4a": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult4c": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5a": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5b": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AssensingResult5c": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.AttackModFiringWithImagingDevice": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CA_Maneuver_drillSergeant_Effect": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CA_Maneuver_hustle_Effect": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CFD_ScrubGlitch": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_clear": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_limited": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_normal": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainBookBook_restricted": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Impossible": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Light": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Obstructed": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Open": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Restricted": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CHASE_TerrainR5Book_r5Tight": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.CON_Step_evaluation_D": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.HermeticElementalist_D": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.MatrixActionSwapTwoPrograms": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.PerceptionModFarAway": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.PerceptionModSpecificallyLooking": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SETTINGS_CommcodeCipher_D": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SETTINGS_WithdrawalModifier_D": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneSpamMajorEvent": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneSpamMassiveGatering": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneStaticRemotePlace": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SceneStaticRuralArea": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModAuthority": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModBadLook": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModBlackmailed": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModEvaluateSituation": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModEvidence": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModFan": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModLacksKnowledge": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModNervous": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModObliviousToDanger": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModOutnumber": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModOutnumberTarget": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModReputation": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModRomantic": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModStrata": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModTorture": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModWieldingWeapon": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SocialModWieldingWeaponTarget": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteCompanionDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteCourierDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteCrackDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.SpriteGeneralistDescription": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    },
+    "SR5.VehicleModSpecialSkill": {
+      "fr": "",
+      "en": "",
+      "source": "",
+      "garder": false,
+      "note": ""
+    }
+  }
+}

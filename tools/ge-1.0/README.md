@@ -11,6 +11,11 @@ Aucune phrase du livre, aucune paraphrase proche.
 | `1a-accessoires-statuts.json` | `Accessory*`, `STATUSES_*`, `Toxin*`, `Anticoagulant*` | 139 |
 | `1b-matrice-ci-sprites.json` | `Matrix*`, `Ice*`, `Sprite*` | 76 |
 | `1c-train-de-vie-divers.json` | `LifeStyle*`, `LifeStyleZone_*`, `HELP_*` longs, le reste (dont les `_GE` du fork) | 66 |
+| `1d-complements.json` | chaînes plus courtes qui partagent une phrase avec un livre (`balayer-livres.mjs`) : résultats de la perception astrale, modificateurs sociaux / de scène / de perception, terrains de poursuite, quelques aides de réglage ; descriptions de sprites | 61 |
+
+Pour une étiquette courte (modificateur, terrain), la page va dans `source` seulement : le texte reste une étiquette.
+Le cache des livres est en VF : le contrôle contre les livres ne voit que le français ; l'anglais n'est contrôlé que
+contre l'ancien texte.
 
 Liste produite par `lister.mjs` : toutes les clés `_GE`, plus les chaînes de plus de 200 caractères reprises telles
 quelles de l'amont. **Une session = un fichier** ; personne n'écrit dans `lang/*.json` (c'est `fusionner.mjs`, à la fin).
