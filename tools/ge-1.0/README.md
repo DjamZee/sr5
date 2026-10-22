@@ -9,9 +9,9 @@ Aucune phrase du livre, aucune paraphrase proche.
 | Fichier | Familles | Clés |
 |---|---|---|
 | `1a-accessoires-statuts.json` | `Accessory*`, `STATUSES_*`, `Toxin*`, `Anticoagulant*` | 139 |
-| `1b-matrice-ci-sprites.json` | `Matrix*`, `Ice*`, `Sprite*` | 76 |
+| `1b-matrice-ci-sprites.json` | `Matrix*`, `Ice*`, `Sprite*` (dont 4 descriptions de sprites) | 80 |
 | `1c-train-de-vie-divers.json` | `LifeStyle*`, `LifeStyleZone_*`, `HELP_*` longs, le reste (dont les `_GE` du fork) | 66 |
-| `1d-complements.json` | chaînes plus courtes qui partagent une phrase avec un livre (`balayer-livres.mjs`) : résultats de la perception astrale, modificateurs sociaux / de scène / de perception, terrains de poursuite, quelques aides de réglage ; descriptions de sprites | 61 |
+| `1d-complements.json` | chaînes plus courtes qui partagent une phrase avec un livre (`balayer-livres.mjs`) : résultats de la perception astrale, modificateurs sociaux / de scène / de perception, terrains de poursuite, quelques aides de réglage | 57 |
 
 Pour une étiquette courte (modificateur, terrain), la page va dans `source` seulement : le texte reste une étiquette.
 Le cache des livres est en VF : le contrôle contre les livres ne voit que le français ; l'anglais n'est contrôlé que

@@ -7,7 +7,7 @@ import {
 } from "./commun.mjs"
 
 // Shorter strings sharing a 45-character window with a book (balayer-livres.mjs on dc8f88fcd, FR only: the cache
-// holds the VF), plus the four sprite descriptions found by Gaston#6620: the labels of tables and short descriptions
+// holds the VF): the labels of tables and short descriptions
 export const COMPLEMENTS = new Set([
   "SR5.AssensingResult1a", "SR5.AssensingResult1b", "SR5.AssensingResult2a", "SR5.AssensingResult2b", "SR5.AssensingResult2c",
   "SR5.AssensingResult3a", "SR5.AssensingResult3b", "SR5.AssensingResult3c", "SR5.AssensingResult3d", "SR5.AssensingResult4a",
@@ -24,9 +24,14 @@ export const COMPLEMENTS = new Set([
   "SR5.SocialModEvidence", "SR5.SocialModFan", "SR5.SocialModLacksKnowledge", "SR5.SocialModNervous",
   "SR5.SocialModObliviousToDanger", "SR5.SocialModOutnumber", "SR5.SocialModOutnumberTarget", "SR5.SocialModReputation",
   "SR5.SocialModRomantic", "SR5.SocialModStrata", "SR5.SocialModTorture", "SR5.SocialModWieldingWeapon",
-  "SR5.SocialModWieldingWeaponTarget", "SR5.SpriteCompanionDescription", "SR5.SpriteCourierDescription",
-  "SR5.SpriteCrackDescription", "SR5.SpriteGeneralistDescription", "SR5.VehicleModSpecialSkill"
+  "SR5.SocialModWieldingWeaponTarget", "SR5.VehicleModSpecialSkill"
 ])
+
+// The four sprite descriptions found by Gaston#6620, written in the 1b file (Sprite*)
+export const AJOUTS = [
+  "SR5.SpriteCompanionDescription", "SR5.SpriteCourierDescription", "SR5.SpriteCrackDescription",
+  "SR5.SpriteGeneralistDescription"
+]
 
 export const FAMILLES = [
   {
@@ -53,7 +58,7 @@ export function clesARecrire() {
       else if (sansBalises(valeur).length > 200 && amont[cle] === valeur) cles.add(cle)
     }
   }
-  for (const cle of COMPLEMENTS) cles.add(cle)
+  for (const cle of [...COMPLEMENTS, ...AJOUTS]) cles.add(cle)
   return [...cles].sort()
 }
 

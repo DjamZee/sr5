@@ -393,34 +393,6 @@
       "garder": false,
       "note": ""
     },
-    "SR5.SpriteCompanionDescription": {
-      "fr": "",
-      "en": "",
-      "source": "",
-      "garder": false,
-      "note": ""
-    },
-    "SR5.SpriteCourierDescription": {
-      "fr": "",
-      "en": "",
-      "source": "",
-      "garder": false,
-      "note": ""
-    },
-    "SR5.SpriteCrackDescription": {
-      "fr": "",
-      "en": "",
-      "source": "",
-      "garder": false,
-      "note": ""
-    },
-    "SR5.SpriteGeneralistDescription": {
-      "fr": "",
-      "en": "",
-      "source": "",
-      "garder": false,
-      "note": ""
-    },
     "SR5.VehicleModSpecialSkill": {
       "fr": "",
       "en": "",
