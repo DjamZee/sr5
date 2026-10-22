@@ -4,6 +4,9 @@ import {
 import {
   sleutherMarksOn, isLegitimateUser, sleutherDice, spiderByHook
 } from '../modules/system/ice-sleuther.js'
+import {
+  foundryHooks
+} from './fixtures/foundry-hooks.js'
 
 // Kill Code p. 74: each Sleuther mark gives the legitimate user +2 dice on Matrix Search and Matrix Perception about the
 // marked icon. Legitimate user: the host, its IC, its spider (arbitrage de DjamZ, 08/10)
@@ -99,12 +102,12 @@ describe('Sleuther IC (Kill Code p. 74)', () => {
   it('asks the modules through the hook sr5.iceLegitimateUser', () => {
     const calls = []
     const saved = globalThis.Hooks
-    globalThis.Hooks = {
-      callAll: (name, verdict) => {
-        calls.push(name)
+    globalThis.Hooks = foundryHooks({
+      'sr5.iceLegitimateUser': verdict => {
+        calls.push('sr5.iceLegitimateUser')
         if (verdict.roller === spider) verdict.legitimate = true
       }
-    }
+    })
     expect(spiderByHook({
       roller: spider, ice: sleuther, host
     })).toBe(true)

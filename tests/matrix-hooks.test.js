@@ -10,6 +10,10 @@ vi.mock('../modules/socket.js', () => ({
   },
 }))
 
+import {
+  foundryHooks
+} from './fixtures/foundry-hooks.js'
+
 globalThis.ui = {
   notifications: {
     info: vi.fn(), warn: vi.fn()
@@ -140,12 +144,11 @@ describe('the marks of markItem, through the hooks', () => {
       isGM: true, id: 'gm'
     }
     seen = []
-    globalThis.Hooks = {
-      callAll: (hook, ...args) => {
-        seen.push([hook, ...args])
-        if (hook === MATRIX_HOOKS.markCap && globalThis.__cap) args[0].cap = globalThis.__cap
-      }
-    }
+    // Foundry's own Hooks (the verdict of the cap is asked of its subscribers one by one, verdictCall)
+    globalThis.Hooks = foundryHooks(Object.fromEntries(Object.values(MATRIX_HOOKS).map(hook => [hook, (...args) => {
+      seen.push([hook, ...args])
+      if (hook === MATRIX_HOOKS.markCap && globalThis.__cap) args[0].cap = globalThis.__cap
+    }])))
     const doc = data => {
       const d = {
         ...data, update: vi.fn(async changes => {

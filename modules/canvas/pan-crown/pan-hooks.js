@@ -8,8 +8,13 @@
 // - it can only HIDE, and only from the players: the system's visibility (SR5 p. 236-238, the rulings of DjamZ)
 //   stays a ceiling, and the gamemaster sees everything;
 // - it can grey out an entry of the menu, never enable one the system greys out;
-// - an error of a subscriber is ignored: the crown is drawn as the system builds it.
+// - an error of a subscriber is ignored: the crown is drawn as the system builds it, and what that subscriber wrote
+//   before failing is thrown away (guardedCall, house-rule-hooks.js: Foundry's callAll would keep it);
 // Without a module, no hook has a subscriber and the crown follows the book.
+
+import {
+  guardedCall
+} from "../../system/house-rule-hooks.js"
 
 export const PAN_CROWN_HOOKS = {
   graph: "sr5.panCrownGraph",
@@ -103,11 +108,17 @@ export function normalizeContributedNode(node){
 export function contributeToGraph(graph, {
   token = null, actor = null
 } = {
-}, call = defaultCall){
+}, call = null){
   if (!graph) return graph
   const copy = plainCopy(graph)
   if (!copy) return graph
-  safeCall(PAN_CROWN_HOOKS.graph, [copy, token, actor], call)
+  safeCall(PAN_CROWN_HOOKS.graph, [copy, token, actor], call ?? ((hook, ...args) => guardedCall(hook, args,
+    () => plainCopy({
+      nodes: copy.nodes, links: copy.links
+    }), before => {
+      if (!before) return false
+      Object.assign(copy, before)
+    })))
   // A8: a color the subscriber put on a line of the system, and on nothing else of it
   const colors = new Map()
   for (const link of Array.isArray(copy.links) ? copy.links : []){
@@ -156,7 +167,7 @@ export function contributeToGraph(graph, {
 export function applyVisibilityHooks(node, viewer, verdict, {
   token = null, actor = null
 } = {
-}, call = defaultCall){
+}, call = null){
   // The gamemaster sees everything: what a module hides from the players shows in her yellow ring
   if (!verdict?.visible || viewer?.isGM) return verdict
   const proposed = {
@@ -165,7 +176,11 @@ export function applyVisibilityHooks(node, viewer, verdict, {
   safeCall(PAN_CROWN_HOOKS.visibility, [plainCopy(node) ?? {
   }, viewer, proposed, {
     token, actor
-  }], call)
+  }], call ?? ((hook, ...args) => guardedCall(hook, args, () => ({
+    ...proposed
+  }), before => {
+    Object.assign(proposed, before)
+  })))
   if (proposed.visible !== false) return verdict
   return {
     visible: false, reason: typeof proposed.reason === "string" && proposed.reason !== verdict.reason ? proposed.reason : "module"
@@ -183,12 +198,18 @@ export function applyVisibilityHooks(node, viewer, verdict, {
  *           out a subscriber gave an extraReason (a string shown after the system's reason, which stays);
  *   added:  [{key, label, tooltip, enabled, onClick}], the entries the subscribers added
  */
-export function contributeActions(node, viewer, entries = [], call = defaultCall){
+export function contributeActions(node, viewer, entries = [], call = null){
   const list = entries.map(entry => ({
     ...entry, system: true
   }))
+  // The entries as they were before each subscriber, one level deep: an added entry keeps its onClick
   safeCall(PAN_CROWN_HOOKS.actions, [plainCopy(node) ?? {
-  }, viewer, list], call)
+  }, viewer, list], call ?? ((hook, ...args) => guardedCall(hook, args,
+    () => list.map(entry => entry && typeof entry === "object" ? {
+      ...entry
+    } : entry), before => {
+      list.splice(0, list.length, ...before)
+    })))
   const greyed = new Map()
   const added = []
   const systemKeys = new Set(entries.map(e => e.key))

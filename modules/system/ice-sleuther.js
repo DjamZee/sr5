@@ -7,6 +7,10 @@
 // answering the hook sr5.iceLegitimateUser ({roller, ice, host, legitimate}), setting legitimate = true.
 // A Sleuther tied to no host: the IC alone
 
+import {
+  verdictCall
+} from "./house-rule-hooks.js"
+
 /** The actions that read the Sleuther marks */
 export const SLEUTHER_ACTIONS = ["matrixPerception", "matrixSearch"]
 
@@ -77,14 +81,15 @@ export function isLegitimateUser(roller, ice, host, isSpider = () => false){
 }
 
 /** Asks the modules whether the roller is a spider of the host (hook sr5.iceLegitimateUser); a failing subscriber is
- *  logged by Foundry and counts for nothing */
+ *  logged and counts for nothing */
 export function spiderByHook({
   roller, ice, host
 }){
   const verdict = {
     roller, ice, host, legitimate: false
   }
-  globalThis.Hooks?.callAll?.("sr5.iceLegitimateUser", verdict)
+  // Each subscriber in turn, the answer of one that throws thrown away (verdictCall, house-rule-hooks.js)
+  verdictCall(verdict, ["legitimate"])("sr5.iceLegitimateUser", verdict)
   return verdict.legitimate === true
 }
 

@@ -1,9 +1,12 @@
 import {
-  describe, it, expect, vi, afterEach
+  describe, it, expect, afterEach
 } from 'vitest'
 import {
   matrixOwnership, ownerOf, administratorByHook, administersIcon, OWNER, NOT_OWNER, UNKNOWN_OWNER
 } from '../modules/system/matrix-ownership.js'
+import {
+  foundryHooks
+} from './fixtures/foundry-hooks.js'
 
 // Lot 19: who owns an icon (SR5 p. 238), and the spiders of a host (KC p. 51)
 
@@ -121,14 +124,14 @@ describe('the hook sr5.matrixAdministrator', () => {
     delete globalThis.Hooks
   })
   it('reads what a module answers, and null when nobody does', () => {
-    globalThis.Hooks = {
-      callAll: vi.fn()
-    }
+    globalThis.Hooks = foundryHooks()
     expect(administratorByHook({
       actor: pc('a'), target: host, host
     })).toBeNull()
-    globalThis.Hooks.callAll = vi.fn((_name, verdict) => {
-      verdict.administrator = verdict.actor.id === 'spider'
+    globalThis.Hooks = foundryHooks({
+      'sr5.matrixAdministrator': verdict => {
+        verdict.administrator = verdict.actor.id === 'spider'
+      }
     })
     expect(administratorByHook({
       actor: pc('spider'), target: host, host
