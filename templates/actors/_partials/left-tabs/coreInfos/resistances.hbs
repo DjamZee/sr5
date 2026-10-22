@@ -7,7 +7,8 @@
 		</li>
 		{{#each system.resistances}}
 		<li class="grid">
-			{{#if (or (eq @key 'fatigue') (eq @key 'fall') (eq @key 'astralDamage'))}}
+			{{!-- addiction: physiological / psychological, rolled from the addictions block (qualities tab) --}}
+			{{#if (or (eq @key 'fatigue') (eq @key 'fall') (eq @key 'astralDamage') (eq @key 'addiction'))}}
 			{{else if (eq @key 'disease')}}
 				<div class="col-5">{{localize 'SR5.Pathogen'}}</div>
 				<div class="col-5" data-helpTitle="{{localize 'SR5.HELP_ResistanceDiseaseChoice'}}" data-helpMessage="{{localize 'SR5.HELP_ResistanceDiseaseChoiceMsg'}}">
