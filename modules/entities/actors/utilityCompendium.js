@@ -281,7 +281,8 @@ export class SR5_CompendiumUtility extends Actor {
       baseItems = baseItems.concat(await SR5_CompendiumUtility.givenSpritePowers(actorSubType, baseItems))
       // The Generalist sprite has no power of its own, only two optional ones chosen at compilation (Kill Code
       // p. 110): nothing found in a compendium that does hold sprite powers is the book, not a missing reference
-      if (!baseItems.length && spritePowers.length) return baseItems
+      // The Generalist only: another type without powers still warns the GM (Romane)
+      if (!baseItems.length && spritePowers.length && actorSubType === "generalist") return baseItems
     }
 
     // A spirit or a sprite that comes with nothing at all is almost always a

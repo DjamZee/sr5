@@ -37,6 +37,16 @@ describe('consequences table, p. 160', () => {
     expect(shiftAttitude('neutral', -4)).toBe('enemy')
     expect(shiftAttitude(undefined, 0)).toBe('neutral')
   })
+
+  // Romane, D-API-1: game.sr5.factions.shiftAttitude("neutral") gave undefined
+  it('rounds the steps, and takes none when they are not a finite number', () => {
+    expect(shiftAttitude('neutral')).toBe('neutral')
+    expect(shiftAttitude('neutral', '')).toBe('neutral')
+    expect(shiftAttitude('neutral', NaN)).toBe('neutral')
+    expect(shiftAttitude('neutral', Infinity)).toBe('neutral')
+    expect(shiftAttitude('neutral', 0.6)).toBe('friendly')
+    expect(shiftAttitude('neutral', -1.4)).toBe('suspicious')
+  })
 })
 
 describe('spending, p. 159-160', () => {

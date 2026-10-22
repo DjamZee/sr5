@@ -1190,7 +1190,7 @@ export class SR5Actor extends Actor {
       await this.takeDamage(messageData)
     } else {
       return ui.notifications.info(`${game.i18n.format("SR5.INFO_ArmorGreaterThanDVSoNoDamage", {
-        armor: this.itemsProperties.armor.value + (messageData.combat.situationalArmor || 0) + messageData.combat.armorPenetration, damage:originalDamage
+        armor: this.system.itemsProperties.armor.value + (messageData.combat.situationalArmor || 0) + messageData.combat.armorPenetration, damage:originalDamage
       })}`) 
     }
   }

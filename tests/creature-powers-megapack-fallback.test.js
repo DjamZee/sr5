@@ -129,6 +129,13 @@ describe("base items on auto: the Megapack first, sr5-compendiums as a fallback"
     expect(warn).not.toHaveBeenCalled()
   })
 
+  // Romane: only the Generalist; a type (a module's, say) whose powers are not found still warns the GM
+  it("another sprite type found without powers, in a compendium that holds some, is reported", async () => {
+    SR5_CompendiumUtility._warnedEmptyBaseItems.clear()
+    expect(await SR5_CompendiumUtility.getBaseItems("actorSprite", "typeDeModule", 3)).toEqual([])
+    expect(warn).toHaveBeenCalled()
+  })
+
   it("a sprite with no sprite power anywhere is reported", async () => {
     SR5_CompendiumUtility._warnedEmptyBaseItems.clear()
     megapackActive = false

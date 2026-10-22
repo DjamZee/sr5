@@ -59,12 +59,13 @@ export const ATTITUDES = ["friendly", "neutral", "suspicious", "prejudiced", "ho
 /**
  * Moves an attitude by a number of steps, clamped to the table.
  * @param {string} base - an ATTITUDES key, "neutral" when unknown
- * @param {number} steps - positive = friendlier
+ * @param {number} steps - positive = friendlier; rounded, and 0 when not a finite number (game.sr5.factions is public)
  */
 export function shiftAttitude(base, steps){
   let i = ATTITUDES.indexOf(base)
   if (i < 0) i = ATTITUDES.indexOf("neutral")
-  return ATTITUDES[Math.min(ATTITUDES.length - 1, Math.max(0, i - steps))]
+  const n = typeof steps === "number" && Number.isFinite(steps) ? Math.round(steps) : 0
+  return ATTITUDES[Math.min(ATTITUDES.length - 1, Math.max(0, i - n))]
 }
 
 /**

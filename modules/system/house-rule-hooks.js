@@ -367,7 +367,8 @@ export function situationalArmorFor({
   for (const line of data.bonuses) {
     if (lines.length >= MAX_REMINDERS) break
     const label = cleanText(line?.label)
-    const value = Number(line?.value)
+    // A number only: Number() would take true, "3" or [5] (Romane)
+    const value = typeof line?.value === "number" ? line.value : NaN
     if (!label || !Number.isInteger(value) || value < 1 || value > MAX_SITUATIONAL_ARMOR) continue
     lines.push({
       label, source: cleanText(line?.source), value
