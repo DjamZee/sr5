@@ -9,6 +9,14 @@ export function sr5ManualPacks() {
   return game.i18n.lang === 'fr' ? [SR5_MANUAL_PACK] : [SR5_MANUAL_PACK_EN, SR5_MANUAL_PACK]
 }
 
+// The manual in the other language, which the compendium list hides (both packs stood side by side): only once the
+// table's own manual has pages. It stays in game.packs, so its links and the fallback above still reach it
+export function otherLanguageManualPack(lang = game.i18n.lang, packs = game.packs) {
+  const own = lang === 'fr' ? SR5_MANUAL_PACK : SR5_MANUAL_PACK_EN
+  if (!packs?.get(own)?.index?.size) return null
+  return own === SR5_MANUAL_PACK ? SR5_MANUAL_PACK_EN : SR5_MANUAL_PACK
+}
+
 // First page of the first journal of the manual pack (the table of contents of "0. Démarrer"),
 // read from the pack index: nothing is imported into the world
 export async function sr5OpenManual() {

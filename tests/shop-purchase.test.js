@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  purchaseStamp, stampAll, purchaseOf, withoutPurchase, PURCHASE_FLAG
+  purchaseStamp, stampAll, withoutPurchase, PURCHASE_FLAG
 } from '../modules/interface/shop-purchase.js'
 
 // Lot 12: one purchase id on the debit and on every piece, the same in play and in creation
@@ -43,18 +43,10 @@ describe('purchase trace', () => {
   it('reads the trace back, and drops it from what a vendor puts on its counter', () => {
     const [data] = stampAll([{
     }], stamp, 50)
-    expect(purchaseOf(data)).toMatchObject({
+    expect(data.flags.sr5[PURCHASE_FLAG]).toMatchObject({
       id: 'abc123', price: 50
     })
-    expect(purchaseOf({
-      flags: {
-        sr5: {
-          [PURCHASE_FLAG]: {
-          }
-        }
-      }
-    })).toBeNull()
-    expect(purchaseOf(withoutPurchase(data))).toBeNull()
+    expect(withoutPurchase(data).flags.sr5[PURCHASE_FLAG]).toBeUndefined()
     expect(withoutPurchase({
     })).toEqual({
     })

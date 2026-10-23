@@ -101,11 +101,6 @@ export function defaultContactImages(contact, seed, list = CONTACT_IMAGES) {
   }
 }
 
-/** The path of a contact's portrait (see defaultContactImages). */
-export function defaultContactImage(contact, seed, list = CONTACT_IMAGES) {
-  return defaultContactImages(contact, seed, list)?.portrait ?? null
-}
-
 /** Whether a contact's portrait is a default one: Foundry's, the system's icon, or the one drawn for that contact. */
 export function isDefaultContactPortrait(img, images) {
   if (img == null) return true

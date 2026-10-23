@@ -55,6 +55,9 @@ import {
 } from "../../socket.js"
 import SR5_PanDialog from "../../interface/pan-dialog.js"
 import {
+  sheetMatrixActions
+} from "../../system/matrix-ownership.js"
+import {
   SR5Credstick 
 } from "../../interface/credstick.js"
 import {
@@ -2442,6 +2445,16 @@ export class ActorSheetSR5 extends foundry.applications.api.HandlebarsApplicatio
     backpack: "fa-suitcase",
     cache: "fa-box-archive",
     garage: "fa-warehouse",
+  }
+
+  //The Matrix actions of a character's or a grunt's sheet (system/matrix-ownership.js); agents and sprites keep their own
+  _prepareMatrixActions(actor) {
+    actor.system.matrix.actions = sheetMatrixActions(actor.system, {
+      emulates: SR5_CharacterUtility.isDevicelessAI(this.actor),
+      killCodeRules: game.settings.get("sr5", "sr5KillCodeRules"),
+      rigger5Actions: game.settings.get("sr5", "sr5Rigger5Actions"),
+      showAll: this._shownNonRollableMatrixActions,
+    })
   }
 
   _prepareStorages(actor, storages) {

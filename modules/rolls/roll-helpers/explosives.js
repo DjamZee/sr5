@@ -151,8 +151,3 @@ export function chargeOutcome({
     backgroundRadius: dv,
   }
 }
-
-/** The DV a blast still has at a distance (meters), never below 0 */
-export function dvAtDistance(dv, falloff, distance) {
-  return Math.max(0, (Number(dv) || 0) + Math.round(Number(distance) || 0) * (Number(falloff) || 0))
-}

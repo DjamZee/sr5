@@ -2,7 +2,7 @@ import {
   describe, it, expect, afterEach
 } from 'vitest'
 import {
-  matrixOwnership, ownerOf, administratorByHook, administersIcon, OWNER, NOT_OWNER, UNKNOWN_OWNER
+  matrixOwnership, ownerOf, administratorByHook, administersIcon, sheetMatrixActions, OWNER, NOT_OWNER, UNKNOWN_OWNER
 } from '../modules/system/matrix-ownership.js'
 import {
   foundryHooks
@@ -139,5 +139,69 @@ describe('the hook sr5.matrixAdministrator', () => {
     expect(administratorByHook({
       actor: pc('a'), target: host, host
     })).toBe(false)
+  })
+})
+
+// The Matrix actions the sheet of a character or a grunt lists (one rule for both sheets)
+describe('sheetMatrixActions', () => {
+  const action = (source, linkedAttribute, dicePool) => ({
+    source, limit: {
+      linkedAttribute
+    }, test: {
+      dicePool
+    }
+  })
+  const system = ({
+    attack = 0, sleaze = 0, depth = false
+  } = {
+  }) => ({
+    activeSpecialAttribute: depth ? 'depth' : '', matrix: {
+      attributes: {
+        attack: {
+          value: attack
+        }, sleaze: {
+          value: sleaze
+        }
+      },
+      actions: {
+        dataSpike: action('core', 'attack', 0),
+        hackOnTheFly: action('core', 'sleaze', 0),
+        matrixPerception: action('core', 'dataProcessing', 4),
+        editFile: action('core', 'dataProcessing', 0),
+        tamper: action('killCode', 'dataProcessing', 3),
+        calibration: action('rigger5', 'dataProcessing', 3),
+        depthAction: action('dataTrails', 'dataProcessing', 3),
+        gridHop: {
+        },
+      }
+    }
+  })
+  const keys = (s, options) => Object.keys(sheetMatrixActions(s, options)).sort()
+
+  it('lists the rollable core actions, Attack and Sleaze ones only with those attributes', () => {
+    expect(keys(system())).toEqual(['matrixPerception'])
+    expect(keys(system({
+      attack: 4, sleaze: 3
+    }))).toEqual(['dataSpike', 'hackOnTheFly', 'matrixPerception'])
+  })
+  it('adds the actions of the optional rules turned on, and Depth actions to an AI using Depth', () => {
+    expect(keys(system(), {
+      killCodeRules: true, rigger5Actions: true
+    })).toEqual(['calibration', 'matrixPerception', 'tamper'])
+    expect(keys(system({
+      depth: true
+    }))).toEqual(['depthAction', 'matrixPerception'])
+  })
+  it('an AI without a device emulates Attack and Sleaze, without its Depth actions (Data Trails p. 159)', () => {
+    expect(keys(system({
+      depth: true
+    }), {
+      emulates: true
+    })).toEqual(['dataSpike', 'hackOnTheFly', 'matrixPerception'])
+  })
+  it('unfolded, every action of the rules on, and the actions with no test the sheet takes', () => {
+    expect(keys(system(), {
+      showAll: true
+    })).toEqual(['dataSpike', 'editFile', 'gridHop', 'hackOnTheFly', 'matrixPerception'])
   })
 })

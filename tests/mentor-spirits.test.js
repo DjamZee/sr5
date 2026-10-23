@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  mentorPathFor, mentorEffectApplies, drainFloor, maskedDrain, extraMentors
+  mentorPathFor, mentorEffectApplies, drainFloor, maskedDrain
 } from "../modules/entities/items/mentor-spirits.js"
 
 describe("mentor spirit blocks (SR5 p. 324)", () => {
@@ -60,18 +60,5 @@ describe("mask of the mentor (Forbidden Arcana p. 176) and Drain floors (SR5 p. 
     expect(maskedDrain(3, 2)).toBe(2)
     expect(maskedDrain(2, 2)).toBe(2)
     expect(maskedDrain(1, 0)).toBe(0)
-  })
-})
-
-describe("a single mentor (SR5 p. 76)", () => {
-  it("lists the mentors beyond the first", () => {
-    const items = [{
-      type: "itemQuality" 
-    }, {
-      type: "itemMentorSpirit", name: "Loup" 
-    }, {
-      type: "itemMentorSpirit", name: "Rat" 
-    }]
-    expect(extraMentors(items).map(i => i.name)).toEqual(["Rat"])
   })
 })

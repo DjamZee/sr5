@@ -43,10 +43,6 @@ const COLLISION_AP = -6
 // The resistance of such a damage (rollData-Resistance.js): a collision, not an attack
 export const CHASE_DAMAGE_TEST = "chaseDamage"
 
-export function isChaseDamageButton(type) {
-  return typeof type === "string" && (type.startsWith(CHASE_DAMAGE_PREFIX) || type.startsWith(CHASE_CRASH_PREFIX))
-}
-
 function actionLabel(key) {
   return game.i18n.localize(`SR5.CHASE_Action_${key}`)
 }

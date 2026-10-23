@@ -16,6 +16,33 @@
 // sheets' filter left them out of the unfolded list
 export const SHEET_ACTIONS_WITHOUT_TEST = ["changeIcon", "inviteMark", "switchInterfaceMode", "gridHop", "enterOrExitHost"]
 
+// The Matrix actions the sheet of a character or a grunt lists (characterSheet, gruntSheet; agents and sprites have
+// their own): the core actions and those of the optional rules turned on, when a test can be rolled, all of them once
+// unfolded (`showAll`). `emulates`: an AI without a device emulates Attack and Sleaze (Data Trails p. 159)
+export function sheetMatrixActions(system, {
+  emulates = false, killCodeRules = false, rigger5Actions = false, showAll = false
+} = {
+}){
+  const shown = {
+  }
+  const hasAttack = emulates || system.matrix.attributes.attack.value > 0
+  const hasSleaze = emulates || system.matrix.attributes.sleaze.value > 0
+  for (const [key, action] of Object.entries(system.matrix.actions)) {
+    //Depth actions need the AI loaded on the device it acts on (Data Trails p. 159)
+    if (emulates && action.source === "dataTrails") continue
+    const linkedAttribute = action.limit?.linkedAttribute
+    const fromRules = action.source === "core" || (killCodeRules && action.source === "killCode") ||
+      (rigger5Actions && action.source === "rigger5") || (action.source === "dataTrails" && system.activeSpecialAttribute === "depth")
+    const rollable = (action.test?.dicePool >= 0 && linkedAttribute === "attack" && hasAttack) ||
+      (action.test?.dicePool >= 0 && linkedAttribute === "sleaze" && hasSleaze) ||
+      (action.test?.dicePool > 0 && (linkedAttribute === "firewall" || linkedAttribute === "dataProcessing" || linkedAttribute === ""))
+    if (fromRules && (rollable || showAll)) shown[key] = action
+    //Lot 19: the actions with no test the sheet takes (owner's actions, Grid Hop), in the unfolded list
+    else if (showAll && SHEET_ACTIONS_WITHOUT_TEST.includes(key)) shown[key] = action
+  }
+  return shown
+}
+
 export const OWNER = "owner"
 export const NOT_OWNER = "notOwner"
 export const UNKNOWN_OWNER = "unknown"

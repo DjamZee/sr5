@@ -187,15 +187,6 @@ export function wildBanishProgress(previousTotal, netHits, force){
   }
 }
 
-// Drain of that attempt (p. 172): "égale au nombre de succès (pas les succès excédentaires) sur le dernier test de
-// Défense de l'esprit, avec une valeur de drain minimum de 2", Physical when Force exceeds the banisher's Magic.
-export function wildBanishDrain(spiritHits, force, magic){
-  return {
-    value: Math.max(2, Number(spiritHits) || 0),
-    type: (Number(force) || 0) > (Number(magic) || 0) ? "physical" : "stun",
-  }
-}
-
 // Domain trait (p. 172): "Lorsque vous utilisez les pouvoirs d'Accident, de Garde ou de Recherche, utilisez la
 // Magie x 2 de l'esprit".
 export const DOMAIN_POWERS = ["accident", "guard", "search"]

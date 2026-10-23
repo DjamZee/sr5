@@ -63,12 +63,6 @@ export async function startDrugCrash(data, actor, itemId = "", options = {
   }
 }
 
-//Chrome Flesh p. 197, interaction 11 to 13: "the crashes deal Physical damage rather than Stun", noted on the drug
-//(handleShot.crashPhysical) until its crash
-export function crashDamageType(shot) {
-  return shot?.crashPhysical ? "physical" : "stun"
-}
-
 // How many extra doses are taken at once (Aisa, Chrome Flesh p. 185), between 0 and the doses left; 0 when closed
 export async function askDrugDoses(name, max) {
   const extra = await foundry.applications.api.DialogV2.prompt({

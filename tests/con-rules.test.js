@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   CON_STEPS, MATRIX_DEGREES, stepAllowed, netHits, intelDelta, evaluationTest, propFabrication, propAcquisition,
-  propTotal, rolledStepOutcome, conOpposition, conArtistBonus, factionReasonOf, openRolledSteps
+  propTotal, rolledStepOutcome, conOpposition, factionReasonOf, openRolledSteps
 } from '../modules/system/con-rules.js'
 
 // Using Con, Cutting Aces p. 162-164 (VF)
@@ -109,15 +109,6 @@ describe('phases two and three, p. 163-164', () => {
     expect(conOpposition('exit', {
       judgeIntentions: 7, conIntuition: 5
     }, 3).intelModifier).toBe(0)
-  })
-
-  it('the props add dice to the bait only', () => {
-    expect(conArtistBonus('bait', [{
-      rating: 2
-    }])).toBe(2)
-    expect(conArtistBonus('exit', [{
-      rating: 2
-    }])).toBe(0)
   })
 
   it('offers the steps the con has reached', () => {

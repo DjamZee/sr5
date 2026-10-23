@@ -1,5 +1,5 @@
 import {
-  SR5, AUGMENTATION_GRADE_TABLE
+  AUGMENTATION_GRADE_TABLE
 } from '../config.js'
 
 /**
@@ -76,15 +76,6 @@ export class SR5ShopGrades {
     if (!value) return 0
     const from = SR5ShopGrades.row(system?.grade).availability
     return Math.max(0, value - from + SR5ShopGrades.row(grade).availability)
-  }
-
-  /**
-   * The regraded availability as the books print it: the rating, then the
-   * legality letter — `5R`, `12P`, or a bare number for legal gear.
-   */
-  static availabilityLabel(system, grade) {
-    const letter = SR5.legalTypesShort[system?.legality]
-    return `${SR5ShopGrades.availability(system, grade)}${letter ? game.i18n.localize(letter) : ''}`
   }
 
   /**

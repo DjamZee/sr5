@@ -27,11 +27,6 @@ export function phaseFromFlags(isActive, wirelessTurnedOn) {
   return ""
 }
 
-// A click on the sheet moves one step: not taken, rise, crash, not taken
-export function nextDrugPhase(phase) {
-  return DRUG_PHASES[(DRUG_PHASES.indexOf(phase ?? "") + 1) % DRUG_PHASES.length]
-}
-
 // The phase of an effect not yet migrated follows the former convention. The "crash" box of the effect
 // editor sends a boolean
 export function effectPhase(customEffect) {

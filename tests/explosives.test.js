@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  explosiveDV, effectiveRating, baseRating, chargeOutcome, explosionBackgroundCount, outsideBlast, detonatorFails, dvAtDistance,
+  explosiveDV, effectiveRating, baseRating, chargeOutcome, explosionBackgroundCount, outsideBlast, detonatorFails,
 } from '../modules/rolls/roll-helpers/explosives.js'
 import {
   SR5_CombatHelpers
@@ -127,10 +127,6 @@ describe('blasts and detonators', () => {
     expect(outsideBlast(10, 10)).toBe(false)
     expect(outsideBlast(11, 10)).toBe(true)
     expect(outsideBlast(30, 0)).toBe(false)
-  })
-  it('the DV at a distance', () => {
-    expect(dvAtDistance(16, -2, 3)).toBe(10)
-    expect(dvAtDistance(16, -2, 9)).toBe(0)
   })
   it('a cheap detonator may fail (RG p. 206-207)', () => {
     expect(detonatorFails(1, 2)).toBe(true)

@@ -57,12 +57,6 @@ export function stampAll(datas, stamp, total) {
   return list
 }
 
-/** The trace a document carries, or null. */
-export function purchaseOf(doc) {
-  const trace = doc?.flags?.sr5?.[PURCHASE_FLAG]
-  return trace && typeof trace === 'object' && trace.id ? trace : null
-}
-
 /** A document's data without the trace: what a vendor puts on its counter is no longer anyone's purchase. */
 export function withoutPurchase(data) {
   if (data?.flags?.sr5) delete data.flags.sr5[PURCHASE_FLAG]

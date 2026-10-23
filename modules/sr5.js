@@ -124,6 +124,9 @@ import {
   sr5HookRenderJournalDirectory
 } from './hooks/journal.js'
 import {
+  localizeSystemMegapackLabels
+} from './system/megapack.js'
+import {
   renderSceneIndicators, sr5HookUpdateSceneIndicators
 } from './interface/scene-indicators.js'
 import {
@@ -204,6 +207,8 @@ import {
 
 // Register all hooks
 Hooks.once('init', sr5HookInit)
+// The Lite's compendiums in the table's language: the translations are loaded, game.packs not yet built
+Hooks.once('i18nInit', () => localizeSystemMegapackLabels())
 Hooks.once('ready', sr5HookReady)
 // The GMs remember the Overwatch Scores, to be told of a lowering a player writes
 Hooks.once('ready', seedOverwatch)

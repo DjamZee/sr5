@@ -10,7 +10,7 @@ vi.hoisted(() => {
 import {
   MEGAPACK_FULL_ID, MEGAPACK_LITE_ID, MEGAPACK_SYSTEM_ID, MEGAPACK_PACKS, activeMegapackId, inActiveMegapack,
   isMegapackCollection, isMegapackPack, systemShipsMegapack, withoutSystemMegapack, megapackUuidRedirects,
-  installSystemMegapack, litePathUpdate, megapackRoot, shadowedMegapackIds
+  installSystemMegapack, litePathUpdate, megapackRoot, shadowedMegapackIds, localizeSystemMegapackLabels
 } from "../modules/system/megapack.js"
 import {
   megapackBannerFolder
@@ -246,5 +246,52 @@ describe("the compendium of base items on auto, with the system's edition", () =
   it("the full module, once active, is read instead", () => {
     globalThis.game.modules = modulesOf(MEGAPACK_FULL_ID)
     expect(SR5_CompendiumUtility.getMainCompendiumIds("creaturePowers")[0]).toBe("megapack-sr5-foundry-vtt.sr5-megapack-items")
+  })
+})
+
+// A table in English saw "SR5 - Objets" (Lorène#8261, 23/10): the Lite's labels are read in the table's language
+describe("localizeSystemMegapackLabels, at i18nInit", () => {
+  const i18n = keys => ({
+    has: key => key in keys, localize: key => keys[key]
+  })
+  it("names the system's Megapack packs in the table's language, and leaves the other packs as they are", () => {
+    const game = {
+      i18n: i18n({
+        "SR5.MegapackPack_sr5-megapack-items": "SR5 - Items", "SR5.MegapackPack_sr5-megapack-actors": "SR5 - Actors"
+      }),
+      data: {
+        packs: [{
+          ...meta("sr5", "manuel", "JournalEntry"), label: "Manuel Shadowrun 5"
+        }, {
+          ...meta("sr5", "sr5-megapack-items"), label: "SR5 - Objets"
+        }, {
+          ...meta("sr5", "sr5-megapack-actors", "Actor"), label: "SR5 - Acteurs"
+        }, {
+          ...meta("sr5", "sr5-megapack-tables", "RollTable"), label: "SR5 - Tables"
+        }, {
+          ...meta(MEGAPACK_FULL_ID, "sr5-megapack-items"), label: "SR5 - Objets"
+        }]
+      }
+    }
+    localizeSystemMegapackLabels(game)
+    expect(game.data.packs.map(p => p.label)).toEqual(["Manuel Shadowrun 5", "SR5 - Items", "SR5 - Actors", "SR5 - Tables", "SR5 - Objets"])
+  })
+  it("renames a pack already built too", () => {
+    const metadata = {
+      ...meta("sr5", "sr5-megapack-items"), label: "SR5 - Objets"
+    }
+    const game = {
+      i18n: i18n({
+        "SR5.MegapackPack_sr5-megapack-items": "SR5 - Items"
+      }),
+      data: {
+        packs: []
+      },
+      packs: new Map([["sr5.sr5-megapack-items", {
+        metadata
+      }]])
+    }
+    localizeSystemMegapackLabels(game)
+    expect(metadata.label).toBe("SR5 - Items")
   })
 })

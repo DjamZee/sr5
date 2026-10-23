@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  migrateDrugSource, drugPhaseFlags, phaseFromFlags, drugEffectApplies, nextDrugPhase
+  migrateDrugSource, drugPhaseFlags, phaseFromFlags, drugEffectApplies
 } from "../modules/entities/items/drug-phase.js"
 
 //A drug as the compendiums stored it: the effects of the crash ticked "wireless"
@@ -133,12 +133,6 @@ describe("Bascule montée / descente", () => {
     expect(phaseFromFlags(true, false)).toBe("rise")
     expect(phaseFromFlags(false, true)).toBe("crash")
     expect(phaseFromFlags(false, false)).toBe("")
-  })
-
-  it("un clic avance d'un cran : rien, montée, descente, rien", () => {
-    expect(nextDrugPhase("")).toBe("rise")
-    expect(nextDrugPhase("rise")).toBe("crash")
-    expect(nextDrugPhase("crash")).toBe("")
   })
 
   it("un effet ne vaut que dans sa phase", () => {

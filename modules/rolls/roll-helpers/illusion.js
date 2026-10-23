@@ -152,15 +152,6 @@ export function ledgerAfterSustain(ledger, isSustained){
   return changed ? next : null
 }
 
-// The ledger without the spells no longer sustained (their item gone or switched off)
-export function ledgerWithout(ledger, isSustained){
-  const next = {
-  }
-  for (const [uuid, entry] of Object.entries(ledger ?? {
-  })) if (isSustained(uuid)) next[uuid] = entry
-  return next
-}
-
 // The illusions on a subject an observer has not seen through, among the spells still sustained
 export function unpiercedIllusions(ledger, subjectUuid, observer, isSustained = () => true){
   const found = []
