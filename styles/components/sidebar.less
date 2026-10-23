@@ -113,3 +113,8 @@
   .sr-block-sidebar();
 }
 
+
+// The manual in the other language (hooks/compendium.js): hidden from the compendium list, found again by its search
+.directory:not(:has(input[type="search"]:not(:placeholder-shown))) .sr-other-language-manual {
+  display: none !important;
+}
