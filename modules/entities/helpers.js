@@ -210,20 +210,6 @@ export class SR5_EntityHelpers {
     statusBars[monitorType].max = conditionMonitors[monitorType].value
   }
 
-  static getTotalPenalty(actor) {
-    if (!actor) {
-      SR5_SystemHelpers.srLog(1, `Missing or invalid actor in call to 'getTotalPenalty()'`)
-      return
-    }
-    if (!actor.penalties) {
-      SR5_SystemHelpers.srLog(1, `No penalties properties for '${actor.name}' actor in call to 'getTotalPenalty()'`)
-      return
-    }
-    return actor.penalties.actual.reduce(function (totalPenalty, currentPenalty) {
-      return totalPenalty + currentPenalty.value
-    }, 0)
-  }
-
   //Get the real actor Document based on ID. `uuids` (a card's actorUuids, cardActorUuids) gives the token or actor
   //the roller meant by that id: an unlinked token is found on its own scene, whatever scene the reader looks at,
   //and a token copied with its scene (same id on two scenes) is not mistaken for the other one

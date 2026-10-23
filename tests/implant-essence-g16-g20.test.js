@@ -12,8 +12,11 @@ import {
   reservedChangedBy, valueAfterUpdate, reservedMismatches
 } from "../modules/system/reserved-fields.js"
 import {
-  expectedAtCreation, expectedValues, reservedFieldsOf, sourceReversible, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken, registerWithoutPeak, resetEssencePeak
+  expectedAtCreation, expectedValues, reservedFieldsOf, vouchedMarks, sourceEntry, nextPeak, PEAK_COST, essenceTaken, registerWithoutPeak, resetEssencePeak
 } from "../modules/system/implant-register.js"
+
+// Whether the compendium entry an implant was taken from gives its Essence back (Better Than Bad p. 141)
+const sourceReversible = async (doc, resolve) => !!(await sourceEntry(doc, resolve))?.system?.reversibleEssence
 import {
   mentorMagic
 } from "../modules/entities/items/mentor-spirits.js"

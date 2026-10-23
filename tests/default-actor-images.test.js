@@ -2,7 +2,7 @@ import {
   describe, it, expect, beforeAll, afterEach
 } from 'vitest'
 import {
-  isDefaultActorImage, defaultIceImages, defaultSpriteImages, contactImageCandidates, defaultContactImage, defaultContactImages,
+  isDefaultActorImage, defaultIceImages, defaultSpriteImages, contactImageCandidates, defaultContactImages,
   seededRandom,
   imageChanges, defaultImageOnCreate, defaultImageOnUpdate, ICE_IMAGE_DIR, SPRITE_IMAGE_DIR, CONTACT_IMAGE_DIR,
   isDefaultContactPortrait, contactItemOf
@@ -132,9 +132,9 @@ describe('contacts', () => {
     }, LIST).map((e) => e.file)).toEqual(['damian-welsch-fixer.webp'])
   })
   it('même contact, même visage ; tirage dans [0, 1)', () => {
-    const a = defaultContactImage({
-      }, 'abc123', LIST), b = defaultContactImage({
-      }, 'abc123', LIST)
+    const a = defaultContactImages({
+      }, 'abc123', LIST)?.portrait, b = defaultContactImages({
+      }, 'abc123', LIST)?.portrait
     expect(a).toBe(b)
     for (const s of ['', 'x', 'abcdefghijklmnop']) expect(seededRandom(s)).toBeGreaterThanOrEqual(0)
     for (const s of ['', 'x', 'abcdefghijklmnop']) expect(seededRandom(s)).toBeLessThan(1)
@@ -148,14 +148,14 @@ describe('contacts', () => {
     expect(defaultContactImages({
       job: 'Fixer'
     }, 's', LIST).token).toBe(`${CONTACT_IMAGE_DIR}/damian-welsch-fixer.webp`)
-    // sur la vraie liste, pour toute graine : même portrait que defaultContactImage, et son jeton
+    // sur la vraie liste, pour toute graine : le portrait tiré, et son jeton
     for (const seed of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) {
       const i = defaultContactImages({
         metatype: 'ork', gender: 'male'
       }, seed)
-      expect(i.portrait).toBe(defaultContactImage({
+      expect(i.portrait).toBe(defaultContactImages({
         metatype: 'ork', gender: 'male'
-      }, seed))
+      }, seed)?.portrait)
       expect(i.token).toBe(i.portrait.replace(/\.webp$/, '-token.webp'))
     }
   })

@@ -2,9 +2,12 @@ import {
   describe, it, expect
 } from 'vitest'
 import {
-  usesModPoints, attributeChange, modPointsDemand, modPointsOf, modPointsUsage, modPointsRefusal, modPointsPrice,
+  usesModPoints, attributeChange, modPointsDemand, modPointsUsage, modPointsRefusal, modPointsPrice,
   armorOverload, attributeCap, modPointsLines, weaponMountPoints, modsTakingPoints, modPointsCost, modPointsOnDrone
 } from '../modules/system/drone-mod-points.js'
+
+// The points of a mod alone on its drone, its line as the sheet shows it
+const modPointsOf = (system, vehicle = null) => modPointsLines([system], undefined, vehicle)[0]
 import {
   dealerPointsGauge, buildPointsRefusal
 } from '../modules/system/vehicle-dealership.js'

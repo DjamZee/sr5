@@ -3,9 +3,15 @@ import {
 } from 'vitest'
 import {
   astralReputation, wildReputation, elementalReduction, elementalServices, leashThreshold, testsLeash, resolveLeash,
-  wildBanishProgress, wildBanishDrain, domainMagicMultiplier, domainPowerKey,
+  wildBanishProgress, domainMagicMultiplier, domainPowerKey,
   stripGMOnlyChanges, GM_ONLY_ACTOR_PATHS
 } from '../modules/entities/items/spirit-bonds.js'
+import {
+  drainFloor
+} from '../modules/entities/items/mentor-spirits.js'
+import {
+  isSpiritForceDrain
+} from '../modules/rolls/roll-helpers/drainType.js'
 
 describe('GM-only paths (DjamZ ruling, 2026-10-06)', () => {
   const current = {
@@ -194,13 +200,15 @@ describe('Wild spirits (Forbidden Arcana p. 170-172)', () => {
       total: 8, dissipated: true
     })
   })
-  it('drain is the spirit hits, minimum 2, Physical when Force exceeds Magic', () => {
-    expect(wildBanishDrain(1, 4, 5)).toEqual({
-      value: 2, type: "stun"
-    })
-    expect(wildBanishDrain(5, 6, 5)).toEqual({
-      value: 5, type: "physical"
-    })
+  it('drain of a banishing: minimum 2, its type read from the spirit Force (the banishing card of any spirit)', () => {
+    expect(drainFloor({
+      type: "skillDicePool", typeSub: "banishing"
+    })).toBe(2)
+    expect(isSpiritForceDrain({
+      test: {
+        type: "skillDicePool", typeSub: "banishing"
+      }
+    })).toBe(true)
   })
   it('the Domain trait doubles Magic for Accident, Guard and Search only', () => {
     expect(domainMagicMultiplier("search", true)).toBe(2)

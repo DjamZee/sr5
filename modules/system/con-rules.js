@@ -172,13 +172,6 @@ export function conOpposition(step, pools, intel){
   }
 }
 
-/**
- * The bonus dice of the con artist on the bait: the cumulated Prop Rating (p. 163). None on the other steps.
- */
-export function conArtistBonus(step, props){
-  return step === "bait" ? propTotal(props) : 0
-}
-
 // A con still running: in preparation, the mark hooked, or the mark wary after a tie on a long con's bait
 export const ACTIVE_STATUSES = ["preparing", "hooked", "wary"]
 

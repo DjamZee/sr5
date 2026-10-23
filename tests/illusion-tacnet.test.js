@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  illusionResistanceAttributes, isFooledBy, ledgerAfterCast, ledgerAfterResistance, ledgerWithout,
+  illusionResistanceAttributes, isFooledBy, ledgerAfterCast, ledgerAfterResistance,
   unpiercedIllusions, blindFireOffer, BLIND_FIRE, countHits, resistanceVerdict, castVerdict, messageUsed, ledgerAfterSustain
 } from "../modules/rolls/roll-helpers/illusion.js"
 import {
@@ -89,11 +89,6 @@ describe("illusions: the GM's ledger (SR5 p. 294)", () => {
     expect(result.known).toBe(false)
     expect(result.ledger).toEqual({
     })
-  })
-  it("forgets the spells no longer sustained", () => {
-    expect(ledgerWithout(cast(), () => false)).toEqual({
-    })
-    expect(Object.keys(ledgerWithout(cast(), () => true))).toEqual(["Spell.inv"])
   })
 })
 

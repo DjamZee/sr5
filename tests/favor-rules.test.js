@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 import {
   favorsOf, balanceOf, chipsForFavor, favorNeedsTest, spendableChips, afterFavorObtained, chipsClearedByFavors,
-  loyaltyImprovement, repaymentDelayWeeks, pushLog, LOG_LENGTH, CHIPS_FOR_SERVICE
+  loyaltyImprovement, pushLog, LOG_LENGTH, CHIPS_FOR_SERVICE
 } from '../modules/system/favor-rules.js'
 
 // Run Faster p. 170-172 (VF), SR5 p. 391
@@ -96,13 +96,6 @@ describe('paying back and improving', () => {
     expect(loyaltyImprovement(2, 9, {
       relation: 'blackmail'
     }).refused).toBe('blackmail')
-  })
-
-  it('gives the delay of a nuyen debt (RF p. 171)', () => {
-    expect(repaymentDelayWeeks(100)).toBe(4)
-    expect(repaymentDelayWeeks(101)).toBe(3)
-    expect(repaymentDelayWeeks(10000)).toBe(2)
-    expect(repaymentDelayWeeks(50000)).toBe(1)
   })
 
   it('keeps a short history, newest first', () => {

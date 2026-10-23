@@ -60,11 +60,6 @@ export function withdrawalDue(addiction){
   return !!WITHDRAWAL_INTERVALS[addiction?.level]
 }
 
-// The rent counts down when it is rented (not bought) and has an end
-export function rentCounts(system){
-  return !system?.rent?.bought && system?.rent?.paidUntil !== null && system?.rent?.paidUntil !== undefined
-}
-
 /**
  * When a rent with no end yet runs out (a character pays each month, SR5 p. 377): at the first debit the player chose,
  * or else at the end of the months paid in advance. With neither, nothing yet (null): the rent waits for the player
