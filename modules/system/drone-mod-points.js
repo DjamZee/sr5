@@ -154,14 +154,6 @@ export function modPointsDemand(system, vehicle) {
   }
 }
 
-/** The points a mod shows on its own line: an upgrade its steps less the free one, as if alone (R5 p. 127) */
-export function modPointsOf(system, vehicle) {
-  const d = modPointsDemand(system, vehicle)
-  if (d.kind === "upgrade") return Math.max(0, d.steps - 1)
-  if (d.kind === "downgrade") return 0
-  return d.points
-}
-
 /** The points of each line of a drone's mods, the free +1 taken once per drone (arbitrage de DjamZ, 08/10): by the first
  *  upgrade that takes its points (`takesPoints`), or the first upgrade of the list when none does yet. The lines that
  *  take their points then add up to `used` (review 40). `vehicle` = {attributes}: the drone, for a Sensor replacement */
@@ -177,7 +169,7 @@ export function modPointsLines(mods, takesPoints = takesModPoints, vehicle = nul
 }
 
 /** The points a mod about to be fitted will take on its line, beside the drone's mods (lot 16b): the free +1 is not its
- *  own when an upgrade already fitted took it, unlike modPointsOf ("as if alone") */
+ *  own when an upgrade already fitted took it, unlike a mod alone on its drone */
 export function modPointsOnDrone(mods, system, vehicle = null) {
   const fitted = {
     system: {

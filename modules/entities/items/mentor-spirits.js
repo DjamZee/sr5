@@ -54,11 +54,6 @@ export function maskedDrain(value, floor){
   return Math.max(floor, value - 1)
 }
 
-// A character follows a single mentor (SR5 p. 76): the mentors beyond the first, to warn about
-export function extraMentors(items){
-  return (items || []).filter(i => i.type === "itemMentorSpirit").slice(1)
-}
-
 // Whether this mentor is the one the character follows: the first of its items (SR5 p. 76)
 export function isFollowedMentor(item, items){
   const first = (items || []).find(i => i.type === "itemMentorSpirit")

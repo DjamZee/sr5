@@ -122,18 +122,6 @@ export function loyaltyImprovement(loyalty, chips, {
   }
 }
 
-/**
- * RF p. 171, « Rembourser les faveurs »: the time to pay a debt agreed in nuyens, in weeks.
- * Past it, a Loyalty test each week, threshold = weeks overdue (RF p. 172).
- */
-export function repaymentDelayWeeks(amount) {
-  const a = Math.max(0, Number(amount) || 0)
-  if (a <= 100) return 4
-  if (a <= 1000) return 3
-  if (a <= 10000) return 2
-  return 1
-}
-
 /** A history line, newest first, the list kept to LOG_LENGTH. */
 export function pushLog(log, entry) {
   return [entry, ...(Array.isArray(log) ? log : [])].slice(0, LOG_LENGTH)

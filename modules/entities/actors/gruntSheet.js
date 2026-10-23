@@ -8,14 +8,8 @@ import {
   mentorWarningLines
 } from "../items/mentor-conversion.js"
 import {
-  SR5_CharacterUtility
-} from "./utilityActor.js"
-import {
   SR5_ActorHelper
 } from "./entityActor-helpers.js"
-import {
-  SHEET_ACTIONS_WITHOUT_TEST
-} from "../../system/matrix-ownership.js"
 import {
   gruntEssenceFromForm, gruntEssenceMax
 } from "../../system/grunt-profile-essence.js"
@@ -98,32 +92,6 @@ export class SR5GruntSheet extends ActorSheetSR5 {
         activeGroups[key] = group
     }
     actor.system.skillGroups = activeGroups
-  }
-
-  _prepareMatrixActions(actor) {
-    const activeMatrixActions = {
-    }
-    //An AI without a device emulates Attack and Sleaze (Data Trails p. 159)
-    let emulates = SR5_CharacterUtility.isDevicelessAI(this.actor)
-    let hasAttack = emulates || actor.system.matrix.attributes.attack.value > 0
-    let hasSleaze = emulates || actor.system.matrix.attributes.sleaze.value > 0
-    let killCodeRules = game.settings.get("sr5", "sr5KillCodeRules")
-    let rigger5Actions = game.settings.get("sr5", "sr5Rigger5Actions")
-
-    for (let [key, matrixAction] of Object.entries(actor.system.matrix.actions)) {
-      //Depth actions need the AI loaded on the device it acts on (Data Trails p. 159)
-      if (emulates && matrixAction.source === "dataTrails") continue
-      let linkedAttribute = matrixAction.limit?.linkedAttribute
-      if ( (matrixAction.source === "core" || (killCodeRules && matrixAction.source === "killCode") || (rigger5Actions && matrixAction.source === "rigger5") || (matrixAction.source === "dataTrails" && actor.system.activeSpecialAttribute === "depth")) && ((matrixAction.test?.dicePool >= 0 && (linkedAttribute === "attack" && hasAttack) ) ||
-			(matrixAction.test?.dicePool >= 0 && (linkedAttribute === "sleaze" && hasSleaze) ) ||
-			(matrixAction.test?.dicePool > 0 && (linkedAttribute === "firewall" || linkedAttribute === "dataProcessing" || linkedAttribute === "") ) ||
-			this._shownNonRollableMatrixActions)) {
-        activeMatrixActions[key] = matrixAction
-      }
-      //Lot 19: the actions with no test the sheet takes (owner's actions, Grid Hop), in the unfolded list
-      else if (this._shownNonRollableMatrixActions && SHEET_ACTIONS_WITHOUT_TEST.includes(key)) activeMatrixActions[key] = matrixAction
-    }
-    actor.system.matrix.actions = activeMatrixActions
   }
 
   _prepareItems(actor) {

@@ -3,7 +3,7 @@ import {
 } from 'vitest'
 
 const {
-  sr5OpenManual, sr5HookRenderJournalDirectory
+  sr5OpenManual, sr5HookRenderJournalDirectory, otherLanguageManualPack
 } = await import('../modules/hooks/journal.js')
 
 // Point L11 of the manual (decision of DjamZ, 08/10): a "Manual" button opens the first page of the manual pack,
@@ -157,5 +157,34 @@ describe("Manual button (L11)", () => {
     sr5HookRenderJournalDirectory(null, bare)
     expect(bare.header.children.length).toBe(0)
     delete globalThis.document
+  })
+})
+
+// The two manuals stood side by side in the compendiums (Lorène#8261, 23/10): the other language's is hidden, only
+// once the table's own has pages
+describe('otherLanguageManualPack', () => {
+  const packs = sizes => new Map(Object.entries(sizes).map(([id, size]) => [id, {
+    index: {
+      size
+    }
+  }]))
+  it("hides the English manual from a French table, and the French one from any other", () => {
+    expect(otherLanguageManualPack('fr', packs({
+      'sr5.manuel': 3, 'sr5.manual': 3
+    }))).toBe('sr5.manual')
+    expect(otherLanguageManualPack('en', packs({
+      'sr5.manuel': 3, 'sr5.manual': 3
+    }))).toBe('sr5.manuel')
+    expect(otherLanguageManualPack('de', packs({
+      'sr5.manuel': 3, 'sr5.manual': 3
+    }))).toBe('sr5.manuel')
+  })
+  it("hides nothing while the table's own manual is empty or missing", () => {
+    expect(otherLanguageManualPack('en', packs({
+      'sr5.manuel': 3, 'sr5.manual': 0
+    }))).toBe(null)
+    expect(otherLanguageManualPack('fr', packs({
+      'sr5.manual': 3
+    }))).toBe(null)
   })
 })

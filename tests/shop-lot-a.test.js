@@ -296,23 +296,15 @@ describe('second review (Dana)', () => {
     }
   })
 
-  it('keeps the legality letter on the regraded availability', () => {
-    const localize = globalThis.game.i18n.localize
-    globalThis.game.i18n.localize = (key) => ({
-      'SR5.RestrictedShort': 'R', 'SR5.ForbiddenShort': 'P'
-    }[key] ?? key)
-    try {
-      const item = (legality) => ({
-        grade: 'standard', legality, availability: {
-          value: 3
-        }
-      })
-      expect(SR5ShopGrades.availabilityLabel(item('R'), 'alphaware')).toBe('5R')
-      expect(SR5ShopGrades.availabilityLabel(item('F'), 'deltaware')).toBe('11P')
-      expect(SR5ShopGrades.availabilityLabel(item(''), 'used')).toBe('0')
-    } finally {
-      globalThis.game.i18n.localize = localize
-    }
+  it('regrades the availability rating', () => {
+    const item = (legality) => ({
+      grade: 'standard', legality, availability: {
+        value: 3
+      }
+    })
+    expect(SR5ShopGrades.availability(item('R'), 'alphaware')).toBe(5)
+    expect(SR5ShopGrades.availability(item('F'), 'deltaware')).toBe(11)
+    expect(SR5ShopGrades.availability(item(''), 'used')).toBe(0)
   })
 
   it('announces the Essence the created item will carry, rounded the same way', () => {

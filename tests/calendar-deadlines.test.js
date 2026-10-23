@@ -2,7 +2,7 @@ import {
   describe, it, expect
 } from "vitest"
 import {
-  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentCounts, rentStart, rentDebitState
+  WITHDRAWAL_INTERVALS, addMonths, addInterval, monthsLeft, withdrawalDue, rentStart, rentDebitState
 } from "../modules/system/deadlines.js"
 import {
   componentsToWorldTime
@@ -122,20 +122,14 @@ describe("months of rent paid in advance (SR5 p. 377)", () => {
   })
 
   it("count only for a rented lifestyle with an end", () => {
-    expect(rentCounts({
-      rent: {
-        bought: false, paidUntil: 100
-      }
-    })).toBe(true)
-    expect(rentCounts({
-      rent: {
-        bought: true, paidUntil: 100
-      }
-    })).toBe(false)
-    expect(rentCounts({
-      rent: {
-        bought: false, paidUntil: null
-      }
-    })).toBe(false)
+    expect(rentDebitState({
+      bought: false, paidUntil: 100
+    }).started).toBe(true)
+    expect(rentDebitState({
+      bought: true, paidUntil: 100
+    })).toBe(null)
+    expect(rentDebitState({
+      bought: false, paidUntil: null
+    }).started).toBe(false)
   })
 })

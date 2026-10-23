@@ -40,15 +40,6 @@ export function reservedFieldsOf(doc) {
 }
 
 /**
- * Whether the compendium entry `doc` was taken from gives its Essence back on removal (Better Than Bad p. 141), and
- * `doc` is still that implant (same kind, same Essence): a compendium is the gamemaster's, a player cannot write it.
- * @param {Function} [resolve] how a uuid is read (fromUuid)
- */
-export async function sourceReversible(doc, resolve) {
-  return !!(await sourceEntry(doc, resolve))?.system?.reversibleEssence
-}
-
-/**
  * The compendium entry `doc` was taken from, while `doc` is still that implant (same kind, same Essence and
  * multiplier); null otherwise. A drag from a compendium notes compendiumSource; the shop notes where it sold from
  * (shop.js, shopSource).

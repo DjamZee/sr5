@@ -4,6 +4,9 @@ import {
 import {
   SR5CompendiumBrowser
 } from "../interface/compendium-browser.js"
+import {
+  otherLanguageManualPack
+} from "./journal.js"
 
 export async function sr5HookRenderCompendium(pack, html, compendiumData) {
   SR5CompendiumInfo.onRenderCompendium(pack, html, compendiumData)
@@ -16,6 +19,9 @@ export function sr5HookCompendiumDocumentChanged(document) {
 
 // Add Compendium Browser button to the compendium sidebar
 export function sr5HookRenderCompendiumDirectory(_app, html) {
+  const otherManual = otherLanguageManualPack()
+  //A class and not a style: Foundry's search filter writes the entries' display after this hook (sidebar.less)
+  if (otherManual) html.querySelector(`[data-pack="${otherManual}"]`)?.classList.add("sr-other-language-manual")
   const header = html.querySelector('.directory-header')
   if (!header) return
   const btn = document.createElement('button')

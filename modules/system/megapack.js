@@ -164,3 +164,20 @@ export function installSystemMegapack(game = globalThis.game, config = globalThi
     Object.assign(config.compendium.uuidRedirects, megapackUuidRedirects(game?.modules, ships))
   }
 }
+
+/**
+ * At i18nInit, before Foundry builds game.packs: the system's Megapack packs named in the table's language (system.json
+ * gives the French labels, "SR5 - Objets"...). A key missing from the language keeps the label of system.json.
+ */
+export function localizeSystemMegapackLabels(game = globalThis.game) {
+  const label = name => {
+    const key = `SR5.MegapackPack_${name}`
+    return game?.i18n?.has?.(key) ? game.i18n.localize(key) : null
+  }
+  const packs = [...(game?.data?.packs ?? []), ...MEGAPACK_PACKS.map(name => game?.packs?.get?.(`${MEGAPACK_SYSTEM_ID}.${name}`)?.metadata)]
+  for (const metadata of packs) {
+    const [packageId, name] = String(packId(metadata) ?? "").split(".")
+    if (packageId !== MEGAPACK_SYSTEM_ID || !MEGAPACK_PACKS.includes(name)) continue
+    metadata.label = label(name) ?? metadata.label
+  }
+}

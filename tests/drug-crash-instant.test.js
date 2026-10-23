@@ -23,8 +23,11 @@ vi.mock("../modules/rolls/roll-prepare.js", () => ({
 }))
 
 const {
-  startDrugCrash, crashDamageType
+  startDrugCrash
 } = await import("../modules/entities/items/drug-crash.js")
+const {
+  crashDamageOf
+} = await import("../modules/entities/items/drug-damage.js")
 const {
   drugCrashIsInstant
 } = await import("../modules/entities/items/drug-stat.js")
@@ -109,8 +112,8 @@ describe("the crash of the Cram", () => {
     })
     await startDrugCrash(data, actor)
     expect(actor.takeDamage.mock.calls[0][0].damage.type).toBe("physical")
-    expect(crashDamageType({
-    })).toBe("stun")
+    expect(crashDamageOf("cram", {
+    }).type).toBe("stun")
   })
   it("a resisted crash (Hurlg) is Physical too after it", async () => {
     const actor = owner(), data = cram({
