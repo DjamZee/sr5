@@ -12,7 +12,7 @@ body:
     attributes:
       label: System Version
       description: Found in Foundry's system management screen or in `system.json`
-      placeholder: "13.1.1"
+      placeholder: "13.1.2"
     validations:
       required: true
 

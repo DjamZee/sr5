@@ -12,7 +12,7 @@ body:
     attributes:
       label: Version du système
       description: Visible dans l'écran de gestion des systèmes de Foundry ou dans `system.json`
-      placeholder: "13.1.1"
+      placeholder: "13.1.2"
     validations:
       required: true
 
