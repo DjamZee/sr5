@@ -9,7 +9,7 @@ français et en anglais. Projet de fans, gratuit, **sans lien avec Catalyst Game
 Editions**.
 
 Il prolonge le système `sr5` créé par **Karmaroms** et **deurk** (avec Michel_Platinium), repris et poursuivi par DjamZ
-depuis 2026. Version actuelle : **1.0.2** (numéro technique 13.1.2 : le premier chiffre suit la version de Foundry).
+depuis 2026. Version actuelle : **1.0.3** (numéro technique 13.1.3 : le premier chiffre suit la version de Foundry).
 
 ## Ce que contient le système (et ce qu'il ne contient pas)
 
@@ -60,7 +60,7 @@ An **unofficial** implementation of the Shadowrun fifth edition roleplaying game
 English. A free fan project, **not affiliated with Catalyst Game Labs, The Topps Company or Black Book Editions**.
 
 It carries on the `sr5` system created by **Karmaroms** and **deurk** (with Michel_Platinium), taken over by DjamZ in
-2026. Current version: **1.0.2** (technical number 13.1.2: the first digit follows the Foundry version).
+2026. Current version: **1.0.3** (technical number 13.1.3: the first digit follows the Foundry version).
 
 ## What the system holds (and what it does not)
 
