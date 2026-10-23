@@ -923,4 +923,21 @@ describe("G20 — lots d'augmentations (Chrome Flesh p. 96)", () => {
       augmentationBundle: true
     }), [])).toBe(1)
   })
+
+  // « sans aucune augmentation de prix ou de Disponibilité » : the lot moves neither, and no invasiveness rule exists
+  // in the book (Chrome Flesh p. 70 is background only)
+  it("adds nothing to the price or the Availability of a marked implant", () => {
+    withSettings({
+      sr5AugmentationBundles: true
+    })
+    const plain = implant("cyberware", 1, "standard")
+    const inLot = implant("cyberware", 1, "standard", {
+      augmentationBundle: true
+    })
+    onActor(plain, [])
+    onActor(inLot, [])
+    expect(inLot.price.value).toBe(plain.price.value)
+    expect(inLot.availability.value).toBe(plain.availability.value)
+    expect(inLot.availability.value).toBe(4)
+  })
 })
