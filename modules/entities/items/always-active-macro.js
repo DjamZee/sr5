@@ -4,42 +4,12 @@
 import {
   planActivation
 } from "./always-active.js"
+import {
+  gmMacroActors
+} from "../../system/gm-macro-actors.js"
 
 // The actors a run covers: the ones given, or those the GM picks in a dialog
-async function actorsFor({
-  actor, all
-} = {
-}){
-  if (!game.user.isGM){
-    ui.notifications.warn(game.i18n.localize("SR5.AutoPowersGMOnly"))
-    return null
-  }
-  if (actor) return [actor]
-  if (all) return game.actors.contents
-  const choice = await foundry.applications.api.DialogV2.wait({
-    window: {
-      title: game.i18n.localize("SR5.AutoPowersTitle")
-    },
-    content: `<p>${game.i18n.localize("SR5.AutoPowersScope")}</p>`,
-    buttons: [
-      {
-        action: "selected", label: game.i18n.localize("SR5.AutoPowersSelected"), default: true
-      },
-      {
-        action: "all", label: game.i18n.localize("SR5.AutoPowersAll")
-      },
-    ],
-    rejectClose: false,
-  })
-  if (choice === "all") return game.actors.contents
-  if (choice !== "selected") return null
-  const selected = canvas?.tokens?.controlled?.[0]?.actor ?? game.user.character
-  if (!selected){
-    ui.notifications.warn(game.i18n.localize("SR5.AutoPowersNoActor"))
-    return null
-  }
-  return [selected]
-}
+const actorsFor = options => gmMacroActors("SR5.AutoPowers", options)
 
 export async function activateAutomaticPowers(options = {
 }){
