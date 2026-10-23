@@ -6884,7 +6884,7 @@
 	"SR5.AddictionTest": "Addiction test",
 	"SR5.AddictionTestShort": "Test",
 	"SR5.AddictionWorsen": "Failed: the addiction worsens by one level",
-	"SR5.AddictionAlreadyWorsened": "{drug}: the addiction already gained its level for this test. An addiction both physiological and psychological is tested with both pools, but only one level is gained even if both tests fail (SR5 p. 416).",
+	"SR5.AddictionAlreadyWorsened": "{drug}: the addiction already gained its level for this test. An addiction both physiological and psychological is tested with both pools, but only one level is gained even if both tests fail (SR5 p. 414).",
 	"SR5.AddictionResisted": "Addiction resisted",
 	"SR5.AddictionBurnoutEither": "Body or Willpower, by a coin toss (tie, SR5 p. 414)",
 	"SR5.AddictionBurnoutLoss": "{name} fails an addiction test ({drug}) at Burnout: 1 point of {attribute} is lost for good, and 1 point of its maximum (SR5 p. 414). At 0, coma: both monitors filled, plus 1 box of physical overflow. To apply by hand.",
