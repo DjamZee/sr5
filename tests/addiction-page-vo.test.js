@@ -6,7 +6,7 @@ import {
 } from "node:fs"
 
 // The English addiction texts cite the English core rulebook: Addiction Tests are on p. 414 there (p. 416 in French)
-const read = file => JSON.parse(readFileSync(file, "utf8").replace(/^﻿/, ""))
+const read = file => JSON.parse(readFileSync(file, "utf8").replace(/^\uFEFF/, ""))
 const en = read("lang/en.json")
 const fr = read("lang/fr.json")
 
